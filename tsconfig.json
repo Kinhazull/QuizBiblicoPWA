@@ -32,10 +32,11 @@
   ],
   "exclude": [
     "node_modules",
-    "db/**/*",
+    "db/index.ts",
     "examples/**/*",
     "build/**/*",
     "worker/**/*",
+    "functions/**/*",
     "drizzle.config.ts"
   ]
 }

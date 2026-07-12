@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./admin-extra.css";
 
 export const metadata: Metadata = {
   title: "Contem o que Deus fez — Quiz Bíblico",

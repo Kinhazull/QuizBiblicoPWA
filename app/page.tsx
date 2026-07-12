@@ -27,6 +27,11 @@ const QUESTIONS: Question[] = [
 const LETTERS = ["A", "B", "C", "D"];
 
 export default function Home() {
+  const [authReady, setAuthReady] = useState(false);
+  const [user, setUser] = useState<{ displayName: string; role: string } | null>(null);
+  const [authMode, setAuthMode] = useState<"login" | "register">("login");
+  const [authError, setAuthError] = useState("");
+  const [authBusy, setAuthBusy] = useState(false);
   const [screen, setScreen] = useState<"start" | "game" | "result">("start");
   const [index, setIndex] = useState(0);
   const [score, setScore] = useState(0);
@@ -40,7 +45,29 @@ export default function Home() {
     const stored = Number(localStorage.getItem("quizup-best") || 0);
     setBest(stored);
     if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js");
+    fetch("/api/auth/me").then(async (response) => {
+      if (response.ok) setUser((await response.json()).user);
+    }).finally(() => setAuthReady(true));
   }, []);
+
+  async function submitAuth(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault(); setAuthBusy(true); setAuthError("");
+    const data = Object.fromEntries(new FormData(event.currentTarget));
+    const payload = authMode === "login"
+      ? { username: data.username, password: data.password, persistent: data.persistent === "on" }
+      : { displayName: data.displayName, username: data.username, password: data.password, inviteCode: data.inviteCode };
+    try {
+      const response = await fetch(`/api/auth/${authMode}`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload) });
+      const result = await response.json();
+      if (!response.ok) {
+        const messages: Record<string, string> = { invalid_credentials: "Usuário ou senha incorretos.", pending_approval: "Seu cadastro ainda aguarda aprovação.", account_unavailable: "Esta conta não está disponível.", invalid_invitation: "O código de convite é inválido ou expirou.", username_unavailable: "Este nome de usuário já está em uso.", invalid_fields: "Confira os dados. A senha deve ter pelo menos 8 caracteres." };
+        setAuthError(messages[result.error] || "Não foi possível continuar."); return;
+      }
+      if (authMode === "register") { setAuthError(result.status === "pending" ? "Cadastro enviado! Aguarde a aprovação do líder." : "Cadastro aprovado. Agora entre com sua conta."); setAuthMode("login"); return; }
+      setUser(result.user);
+    } catch { setAuthError("Sem conexão com o servidor. Tente novamente."); }
+    finally { setAuthBusy(false); }
+  }
 
   useEffect(() => {
     if (screen !== "game" || selected !== null) return;
@@ -72,16 +99,40 @@ export default function Home() {
     setIndex((i) => i + 1); setSelected(null); setTime(15);
   }
 
+  if (!authReady) return <main className="shell auth-screen"><div className="auth-loading"><span className="brand-dot">✦</span><p>Preparando sua competição...</p></div></main>;
+
+  if (!user) return <main className="shell auth-screen">
+    <div className="ambient one" /><div className="ambient two" />
+    <section className="auth-card">
+      <header className="brand"><span className="brand-dot">✦</span> CONTE OS FEITOS</header>
+      <p className="eyebrow">COMPETIÇÃO BÍBLICA</p>
+      <h1>{authMode === "login" ? <>Que bom ter você<br/><em>de volta</em></> : <>Entre para a<br/><em>competição</em></>}</h1>
+      <p className="intro">{authMode === "login" ? "Acesse sua conta para jogar a rodada da semana e acompanhar os rankings." : "Use o código do seu grupo. Seu cadastro será analisado por um líder."}</p>
+      <form onSubmit={submitAuth}>
+        {authMode === "register" && <label>Seu nome<input name="displayName" autoComplete="name" required minLength={3} placeholder="Nome e sobrenome" /></label>}
+        {authMode === "register" && <label>Código do grupo<input name="inviteCode" autoCapitalize="characters" required placeholder="Ex.: FAROL-2026" /></label>}
+        <label>Nome de usuário<input name="username" autoCapitalize="none" autoComplete="username" required minLength={3} placeholder="Como você vai entrar" /></label>
+        <label>Senha<input name="password" type="password" autoComplete={authMode === "login" ? "current-password" : "new-password"} required minLength={8} placeholder="Mínimo de 8 caracteres" /></label>
+        {authMode === "login" && <label className="remember"><input name="persistent" type="checkbox" /> Permanecer conectado neste aparelho</label>}
+        {authError && <p className="auth-message">{authError}</p>}
+        <button className="primary" disabled={authBusy}>{authBusy ? "AGUARDE..." : authMode === "login" ? "ENTRAR" : "CRIAR MINHA CONTA"}<span>→</span></button>
+      </form>
+      <button className="auth-switch" onClick={() => { setAuthMode(authMode === "login" ? "register" : "login"); setAuthError(""); }}>{authMode === "login" ? "Ainda não tenho conta" : "Já tenho uma conta"}</button>
+    </section>
+  </main>;
+
   if (screen === "start") return (
     <main className="shell start-screen">
       <div className="ambient one" /><div className="ambient two" />
       <header className="brand"><span className="brand-dot">✦</span> CONTE OS FEITOS</header>
+      <p className="welcome">Olá, {user.displayName}</p>
       <section className="hero-card">
         <div className="orbit"><span>📖</span><i /><b /></div>
         <p className="eyebrow">QUIZ BÍBLICO</p>
         <h1>Contem o que<br/><em>Deus fez</em></h1>
         <p className="intro">Testemunhos, milagres e os feitos de Deus. Dez perguntas para aprender, lembrar e compartilhar.</p>
-        <button className="primary" onClick={startGame}>COMEÇAR AGORA <span>→</span></button>
+        <button className="primary" onClick={() => location.href = "/jogar"}>VER RODADA DA SEMANA <span>→</span></button>
+        <div className="home-links"><a href="/rankings">🏆 Ver rankings</a>{["admin", "leader"].includes(user.role) && <a href="/admin">⚙️ Painel administrativo</a>}</div>
         <div className="mini-stats"><span><b>10</b> perguntas</span><span><b>15s</b> cada</span><span><b>🏆</b> recorde {best}</span></div>
       </section>
       <p className="footer-note">Sem cadastro · Grátis · Feito para jogar no celular</p>
