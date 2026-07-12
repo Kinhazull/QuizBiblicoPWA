@@ -105,7 +105,7 @@ export default function Home() {
     <div className="ambient one" /><div className="ambient two" />
     <section className="auth-card">
       <header className="brand"><span className="brand-dot">✦</span> CONTE OS FEITOS</header>
-      <p className="eyebrow">COMPETIÇÃO BÍBLICA</p>
+      <p className="eyebrow">JORNADA BÍBLICA</p>
       <h1>{authMode === "login" ? <>Que bom ter você<br/><em>de volta</em></> : <>Entre para a<br/><em>competição</em></>}</h1>
       <p className="intro">{authMode === "login" ? "Acesse sua conta para jogar a rodada da semana e acompanhar os rankings." : "Use o código do seu grupo. Seu cadastro será analisado por um líder."}</p>
       <form onSubmit={submitAuth}>

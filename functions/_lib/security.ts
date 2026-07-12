@@ -16,7 +16,9 @@ export async function sha256(value: string) {
 
 export async function hashPassword(password: string, salt = randomToken(16)) {
   const key = await crypto.subtle.importKey("raw", encoder.encode(password), "PBKDF2", false, ["deriveBits"]);
-  const bits = await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt: encoder.encode(salt), iterations: 120_000 }, key, 256);
+  // Kept within the Workers Free CPU budget; login throttling provides the
+  // complementary protection against online password guessing.
+  const bits = await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt: encoder.encode(salt), iterations: 25_000 }, key, 256);
   return { salt, hash: toBase64Url(new Uint8Array(bits)) };
 }
 
