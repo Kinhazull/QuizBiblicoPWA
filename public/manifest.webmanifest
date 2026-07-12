@@ -1,0 +1,12 @@
+{
+  "name": "Contem o que Deus fez — Quiz Bíblico",
+  "short_name": "Conte os Feitos",
+  "description": "Quiz bíblico sobre testemunhos, milagres e os feitos de Deus.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#130e2d",
+  "theme_color": "#281852",
+  "orientation": "portrait",
+  "lang": "pt-BR",
+  "icons": [{ "src": "/app-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}
