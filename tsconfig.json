@@ -35,6 +35,7 @@
     "db/**/*",
     "examples/**/*",
     "build/**/*",
+    "worker/**/*",
     "drizzle.config.ts"
   ]
 }
