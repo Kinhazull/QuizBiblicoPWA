@@ -32,6 +32,8 @@ export default function Home() {
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
   const [authError, setAuthError] = useState("");
   const [authBusy, setAuthBusy] = useState(false);
+  const [journey, setJourney] = useState<any>(null);
+  const [clock, setClock] = useState(Date.now());
   const [screen, setScreen] = useState<"start" | "game" | "result">("start");
   const [index, setIndex] = useState(0);
   const [score, setScore] = useState(0);
@@ -49,6 +51,20 @@ export default function Home() {
       if (response.ok) setUser((await response.json()).user);
     }).finally(() => setAuthReady(true));
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    fetch("/api/rounds/status").then((response) => response.ok ? response.json() : null).then(setJourney);
+    const timer = window.setInterval(() => setClock(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, [user]);
+
+  function remaining(target?: number) {
+    if (!target) return "Aguardando agendamento";
+    const seconds = Math.max(0, Math.floor((target - clock) / 1000));
+    const days = Math.floor(seconds / 86400); const hours = Math.floor((seconds % 86400) / 3600); const minutes = Math.floor((seconds % 3600) / 60);
+    return `${days ? `${days}d ` : ""}${String(hours).padStart(2, "0")}h ${String(minutes).padStart(2, "0")}min`;
+  }
 
   async function submitAuth(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault(); setAuthBusy(true); setAuthError("");
@@ -126,13 +142,14 @@ export default function Home() {
       <div className="ambient one" /><div className="ambient two" />
       <header className="brand"><span className="brand-dot">✦</span> CONTE OS FEITOS</header>
       <p className="welcome">Olá, {user.displayName}</p>
+      {journey && <aside className={`journey-status ${journey.completion?.completed ? "done" : journey.current ? "pending" : "waiting"}`}><b>{journey.completion?.completed ? "✓" : journey.current ? "!" : "🔒"}</b><span><strong>{journey.completion?.completed ? "Rodada concluída" : journey.current ? "Sua rodada está pendente" : "Próxima jornada"}</strong><small>{journey.completion?.completed ? `Próxima rodada em ${remaining(journey.next?.opensAt)}` : journey.current ? `Termina em ${remaining(journey.current.closesAt)}` : journey.next ? `Começa em ${remaining(journey.next.opensAt)}` : "Ainda não agendada"}</small></span></aside>}
       <section className="hero-card">
         <div className="orbit"><span>📖</span><i /><b /></div>
         <p className="eyebrow">QUIZ BÍBLICO</p>
         <h1>Contem o que<br/><em>Deus fez</em></h1>
         <p className="intro">Testemunhos, milagres e os feitos de Deus. Dez perguntas para aprender, lembrar e compartilhar.</p>
         <button className="primary" onClick={() => location.href = "/jogar"}>VER RODADA DA SEMANA <span>→</span></button>
-        <div className="home-links"><a href="/rankings">🏆 Ver rankings</a>{["admin", "leader"].includes(user.role) && <a href="/admin">⚙️ Painel administrativo</a>}</div>
+        <div className="home-links"><a href="/rankings">🏆 Rankings</a><a href="/medalhas">🎖️ Medalhas</a>{["admin", "leader"].includes(user.role) && <a href="/admin">⚙️ Painel</a>}</div>
         <div className="mini-stats"><span><b>10</b> perguntas</span><span><b>15s</b> cada</span><span><b>🏆</b> recorde {best}</span></div>
       </section>
       <p className="footer-note">Sem cadastro · Grátis · Feito para jogar no celular</p>
