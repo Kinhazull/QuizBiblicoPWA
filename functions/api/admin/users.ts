@@ -13,12 +13,12 @@ export const onRequestPatch = async ({ request, env }: { request: Request; env: 
   try {
     const admin: any = await requireAdmin(request, env);
     const body: any = await request.json();
-    const status = String(body.status); const userId = String(body.userId || "");
-    if (!['active','suspended','rejected'].includes(status) || !userId || userId === admin.id) return json({ error: "invalid_request" }, 400);
+    const status = body.status === undefined ? null : String(body.status); const role = body.role === undefined ? null : String(body.role); const userId = String(body.userId || "");
+    if ((!status && !role) || (status && !['active','suspended','rejected'].includes(status)) || (role && !['participant','leader'].includes(role)) || !userId || userId === admin.id) return json({ error: "invalid_request" }, 400);
     const now = Date.now();
-    const result = await env.DB.prepare(`UPDATE users SET status=?1, approved_at=CASE WHEN ?1='active' THEN ?2 ELSE approved_at END, approved_by=CASE WHEN ?1='active' THEN ?3 ELSE approved_by END, updated_at=?2 WHERE id=?4 AND organization_id=?5 AND role='participant'`).bind(status, now, admin.id, userId, admin.organizationId).run();
+    const result = await env.DB.prepare(`UPDATE users SET status=COALESCE(?1,status), role=COALESCE(?2,role), approved_at=CASE WHEN ?1='active' THEN ?3 ELSE approved_at END, approved_by=CASE WHEN ?1='active' THEN ?4 ELSE approved_by END, updated_at=?3 WHERE id=?5 AND organization_id=?6 AND role!='admin'`).bind(status, role, now, admin.id, userId, admin.organizationId).run();
     if (!result.meta.changes) return json({ error: "not_found" }, 404);
-    await env.DB.prepare("INSERT INTO audit_logs (id,organization_id,actor_user_id,action,entity_type,entity_id,details_json,created_at) VALUES (?1,?2,?3,?4,'user',?5,?6,?7)").bind(crypto.randomUUID(), admin.organizationId, admin.id, `user.${status}`, userId, JSON.stringify({ status }), now).run();
+    await env.DB.prepare("INSERT INTO audit_logs (id,organization_id,actor_user_id,action,entity_type,entity_id,details_json,created_at) VALUES (?1,?2,?3,?4,'user',?5,?6,?7)").bind(crypto.randomUUID(), admin.organizationId, admin.id, role ? 'user.role_changed' : `user.${status}`, userId, JSON.stringify({ status, role }), now).run();
     return json({ ok: true });
   } catch (response) { if (response instanceof Response) return response; throw response; }
 };

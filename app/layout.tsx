@@ -9,6 +9,11 @@ import "./management.css";
 import "./profile.css";
 import "./members.css";
 import "./admin-nav.css";
+import "./navigation-cleanup.css";
+import "./round-details.css";
+import "./reports.css";
+import "./journey.css";
+import "./notifications.css";
 import { AdminQuickNav } from "./AdminQuickNav";
 import { BackNavigation } from "./BackNavigation";
 

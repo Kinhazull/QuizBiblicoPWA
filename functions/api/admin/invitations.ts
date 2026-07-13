@@ -10,7 +10,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
     const now = Date.now();
     try { await env.DB.prepare("INSERT INTO invitations (id,organization_id,group_id,code_hash,label,approval_required,max_uses,uses,expires_at,active,created_by,created_at) VALUES (?1,?2,?3,?4,?5,1,?6,0,?7,1,?8,?9)").bind(crypto.randomUUID(), admin.organizationId, group?.id || null, await sha256(code), label, body.maxUses || null, body.expiresAt || null, admin.id, now).run(); }
     catch { return json({ error: "code_in_use" }, 409); }
-    return json({ ok: true }, 201);
+    return json({ ok: true, code }, 201);
   } catch (response) { if (response instanceof Response) return response; throw response; }
 };
 

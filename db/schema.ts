@@ -75,7 +75,7 @@ export const rounds = sqliteTable("rounds", {
   opensAt: integer("opens_at").notNull(),
   closesAt: integer("closes_at").notNull(),
   officialAttemptLimit: integer("official_attempt_limit").notNull().default(3),
-  secondsPerQuestion: integer("seconds_per_question").notNull().default(15),
+  secondsPerQuestion: integer("seconds_per_question").notNull().default(20),
   createdBy: text("created_by").notNull(),
   createdAt: integer("created_at").notNull(),
   updatedAt: integer("updated_at").notNull(),

@@ -6,7 +6,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
   try {
     const user: any = await requireUser(request, env); const body: any = await request.json(); const roundId = String(body.roundId || ""); const mode = body.mode === "practice" ? "practice" : "official"; const now = Date.now();
     const round: any = await env.DB.prepare(`SELECT * FROM rounds WHERE id=?1 AND organization_id=?2`).bind(roundId, user.organizationId).first();
-    if (!round || now < round.opens_at || now >= round.closes_at) return json({ error: "round_unavailable" }, 403);
+    if (!round || !['scheduled','active'].includes(round.status) || now < round.opens_at || now >= round.closes_at) return json({ error: "round_unavailable" }, 403);
     const count: any = await env.DB.prepare(`SELECT COUNT(*) AS total FROM attempts WHERE user_id=?1 AND round_id=?2 AND mode=?3`).bind(user.id, roundId, mode).first(); const attemptNumber = Number(count?.total || 0) + 1;
     if (mode === "official" && attemptNumber > round.official_attempt_limit) return json({ error: "attempt_limit" }, 403);
     const questionsResult = await env.DB.prepare(`SELECT id,reference,prompt,commentary FROM questions WHERE round_id=?1 AND active=1`).bind(roundId).all(); const seed = randomToken(18); const questions = seededShuffle(questionsResult.results as any[], seed);
