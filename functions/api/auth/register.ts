@@ -1,5 +1,6 @@
 import { hashPassword, json, normalizeUsername, sha256 } from "../../_lib/security";
 import type { AppEnv } from "../../_lib/auth";
+import { PRIVACY_VERSION, TERMS_VERSION } from "../../_lib/legal";
 
 export const onRequestPost = async ({ request, env }: { request: Request; env: AppEnv }) => {
   const body: any = await request.json().catch(() => null);
@@ -8,7 +9,8 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
   const username = normalizeUsername(String(body.username || ""));
   const password = String(body.password || "");
   const inviteCode = String(body.inviteCode || "").trim().toUpperCase();
-  if (displayName.length < 3 || username.length < 3 || password.length < 8 || !inviteCode) return json({ error: "invalid_fields" }, 400);
+  if (displayName.length < 3 || username.length < 3 || password.length < 8 || password.length > 128 || !inviteCode) return json({ error: "invalid_fields" }, 400);
+  if (body.legalAccepted !== true || body.termsVersion !== TERMS_VERSION || body.privacyVersion !== PRIVACY_VERSION) return json({ error: "legal_consent_required" }, 400);
 
   const codeHash = await sha256(inviteCode);
   const now = Date.now();
@@ -23,6 +25,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
   await env.DB.batch([
     env.DB.prepare(`INSERT INTO users (id, organization_id, group_id, username, display_name, password_hash, password_salt, role, status, must_change_password, created_at, updated_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, 'participant', ?8, 0, ?9, ?9)`).bind(id, invite.organization_id, invite.group_id, username, displayName, credential.hash, credential.salt, status, now),
     env.DB.prepare(`UPDATE invitations SET uses = uses + 1 WHERE id = ?1`).bind(invite.id),
+    env.DB.prepare(`INSERT INTO legal_consents (id,user_id,terms_version,privacy_version,accepted_at) VALUES (?1,?2,?3,?4,?5)`).bind(crypto.randomUUID(), id, TERMS_VERSION, PRIVACY_VERSION, now),
     env.DB.prepare(`INSERT INTO audit_logs (id, organization_id, actor_user_id, action, entity_type, entity_id, details_json, created_at) VALUES (?1, ?2, NULL, 'user.registered', 'user', ?3, ?4, ?5)`).bind(crypto.randomUUID(), invite.organization_id, id, JSON.stringify({ username }), now),
   ]);
   return json({ ok: true, status }, 201);

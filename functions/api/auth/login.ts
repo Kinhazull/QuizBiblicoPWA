@@ -6,7 +6,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
   const username = normalizeUsername(String(body?.username || ""));
   const password = String(body?.password || "");
   const persistent = Boolean(body?.persistent);
-  if (!username || !password) return json({ error: "invalid_credentials" }, 401);
+  if (!username || !password || password.length > 128) return json({ error: "invalid_credentials" }, 401);
   const now = Date.now();
   const usernameHash = await sha256(username);
   const security: any = await env.DB.prepare("SELECT failed_count,first_failed_at,locked_until FROM login_security WHERE username_hash=?1").bind(usernameHash).first();
@@ -29,6 +29,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
   const token = randomToken();
   const expires = now + (persistent ? 30 : .5) * 24 * 60 * 60 * 1000;
   await env.DB.batch([
+    env.DB.prepare(`DELETE FROM sessions WHERE expires_at <= ?1`).bind(now),
     env.DB.prepare(`INSERT INTO sessions (id, user_id, token_hash, persistent, expires_at, last_seen_at, created_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?6)`).bind(crypto.randomUUID(), user.id, await sha256(token), persistent ? 1 : 0, expires, now),
     env.DB.prepare(`UPDATE users SET last_login_at = ?1, updated_at = ?1 WHERE id = ?2`).bind(now, user.id),
     env.DB.prepare(`DELETE FROM login_security WHERE username_hash=?1`).bind(usernameHash),

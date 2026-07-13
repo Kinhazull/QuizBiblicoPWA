@@ -46,8 +46,8 @@ function parseHeader(text: string): Header {
     ["title", /^(?:t[ií]tulo)\s*:\s*(.+)$/i],
     ["theme", /^(?:tema)\s*:\s*(.+)$/i],
     ["description", /^(?:apresenta[cç][aã]o|descri[cç][aã]o)\s*:\s*(.+)$/i],
-    ["opensAt", /^(?:libera[cç][aã]o|abertura)(?:\s*\(utc\))?\s*:\s*(.+)$/i],
-    ["closesAt", /^(?:encerramento|fechamento)(?:\s*\(utc\))?\s*:\s*(.+)$/i],
+    ["opensAt", /^(?:libera[cç][aã]o|abertura)(?:\s*\((?:utc|hor[aá]rio de bras[ií]lia|bras[ií]lia)\))?\s*:\s*(.+)$/i],
+    ["closesAt", /^(?:encerramento|fechamento)(?:\s*\((?:utc|hor[aá]rio de bras[ií]lia|bras[ií]lia)\))?\s*:\s*(.+)$/i],
     ["secondsPerQuestion", /^(?:segundos(?:\s+por\s+pergunta)?|tempo(?:\s+por\s+pergunta)?)\s*:\s*(\d+)\s*(?:s|segundos?)?$/i],
   ];
 
@@ -148,8 +148,8 @@ export default function Import() {
   return <main className="admin-shell">
     <section className="admin-title"><p className="eyebrow">IMPORTAÇÃO RÁPIDA</p><h1>Cole sua <em>rodada</em></h1></section>
     {!questions.length && <section className="admin-panel import-panel">
-      <textarea value={text} onChange={event => setText(event.target.value)} placeholder={"Título: Contem o que Deus fez\nTema: Testemunhos e milagres\nApresentação: Uma breve introdução\nLiberação (UTC): 2026-07-19 12:30\nEncerramento (UTC): 2026-07-26 12:29\nSegundos por pergunta: 20\n\nPergunta 1\nQual era...?\nA) ...\nB) ...\nC) ...\nD) ...\nResposta: C\nComentário: ..."} />
-      <p className="import-help">O cabeçalho é opcional. Use uma informação por linha, seguida de dois-pontos. Datas podem ser informadas como AAAA-MM-DD HH:MM ou DD/MM/AAAA HH:MM, sempre em UTC.</p>
+      <textarea value={text} onChange={event => setText(event.target.value)} placeholder={"Título: Contem o que Deus fez\nTema: Testemunhos e milagres\nApresentação: Uma breve introdução\nLiberação (horário de Brasília): 19/07/2026 09:30\nEncerramento (horário de Brasília): 26/07/2026 09:29\nSegundos por pergunta: 20\n\nPergunta 1\nQual era...?\nA) ...\nB) ...\nC) ...\nD) ...\nResposta: C\nComentário: ..."} />
+      <p className="import-help">O cabeçalho é opcional. Use uma informação por linha, seguida de dois-pontos. Informe as datas no formato DD/MM/AAAA HH:MM, usando o horário de Brasília.</p>
       <button className="primary" onClick={preview}>INTERPRETAR E REVISAR</button>
       {message && <p className="auth-message">{message}</p>}
     </section>}
@@ -158,10 +158,10 @@ export default function Import() {
         <label>Título<input name="title" required defaultValue={header.title} placeholder="Ex.: Contem o que Deus fez" /></label>
         <label>Tema<input name="theme" required defaultValue={header.theme} placeholder="Testemunhos e milagres" /></label>
         <label className="wide">Apresentação<textarea name="description" defaultValue={header.description} placeholder="Uma breve introdução para os participantes" /></label>
-        <label>Liberação (UTC)<input name="opensAt" type="datetime-local" required defaultValue={header.opensAt} /></label>
-        <label>Encerramento (UTC)<input name="closesAt" type="datetime-local" required defaultValue={header.closesAt} /></label>
+        <label>Liberação (horário de Brasília)<input name="opensAt" type="datetime-local" required defaultValue={header.opensAt} /></label>
+        <label>Encerramento (horário de Brasília)<input name="closesAt" type="datetime-local" required defaultValue={header.closesAt} /></label>
         <label>Segundos por pergunta<select name="secondsPerQuestion" defaultValue={header.secondsPerQuestion}><option>15</option><option>20</option><option>25</option><option>30</option></select></label>
-        <p className="utc-note">Preencha em UTC. Após salvar, o sistema exibirá o horário convertido para Brasília.</p>
+        <p className="utc-note">Informe no horário de Brasília. Exemplo: 19/07/2026 09:30.</p>
       </section>
       <section className="import-preview">{questions.map((question, index) => <article className="admin-panel" key={index}>
         <small>PERGUNTA {index + 1}</small>

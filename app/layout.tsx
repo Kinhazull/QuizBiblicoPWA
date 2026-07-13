@@ -14,6 +14,7 @@ import "./round-details.css";
 import "./reports.css";
 import "./journey.css";
 import "./notifications.css";
+import "./legal.css";
 import { AdminQuickNav } from "./AdminQuickNav";
 import { BackNavigation } from "./BackNavigation";
 

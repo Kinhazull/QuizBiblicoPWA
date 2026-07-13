@@ -2,7 +2,11 @@
 
 import { useEffect, useState } from "react";
 
-const utcDate = (value: number) => new Date(value).toISOString().slice(0, 16);
+const brasiliaDate = (value: number) => {
+  const parts = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date(value));
+  const part = (type: string) => parts.find(item => item.type === type)?.value || "";
+  return `${part("year")}-${part("month")}-${part("day")}T${part("hour")}:${part("minute")}`;
+};
 
 export default function Details() {
   const [data, setData] = useState<any>(null);
@@ -99,11 +103,11 @@ export default function Details() {
       <label>Tema<input name="theme" defaultValue={data.round.theme} required /></label>
       <label>Descrição<textarea name="description" defaultValue={data.round.description || ""} /></label>
       <div>
-        <label>Abertura (UTC)<input name="opensAt" type="datetime-local" defaultValue={utcDate(data.round.opens_at)} required /></label>
-        <label>Encerramento (UTC)<input name="closesAt" type="datetime-local" defaultValue={utcDate(data.round.closes_at)} required /></label>
+        <label>Abertura (horário de Brasília)<input name="opensAt" type="datetime-local" defaultValue={brasiliaDate(data.round.opens_at)} required /></label>
+        <label>Encerramento (horário de Brasília)<input name="closesAt" type="datetime-local" defaultValue={brasiliaDate(data.round.closes_at)} required /></label>
         <label>Segundos por pergunta<input name="secondsPerQuestion" type="number" min="15" max="60" defaultValue={data.round.seconds_per_question} /></label>
       </div>
-      <p>Preencha em UTC. Após salvar, os horários serão exibidos convertidos para o horário de Brasília.</p>
+      <p>Informe a data e o horário de Brasília. Exemplo: 19/07/2026 09:30.</p>
       <footer><button type="button" onClick={() => setEditing(false)}>Cancelar</button><button className="release">Salvar alterações</button></footer>
     </form>}
     <section className="question-detail-list">

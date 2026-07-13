@@ -1,12 +1,85 @@
 "use client";
-import{useEffect,useState}from"react";
-export default function Home(){
- const[authReady,setAuthReady]=useState(false),[user,setUser]=useState<any>(null),[authMode,setAuthMode]=useState<'login'|'register'>('login'),[authError,setAuthError]=useState(''),[authBusy,setAuthBusy]=useState(false),[journey,setJourney]=useState<any>(null),[clock,setClock]=useState(Date.now()),[newBadges,setNewBadges]=useState<any[]>([]),[unreadNotifications,setUnreadNotifications]=useState(0);
- useEffect(()=>{const invite=new URLSearchParams(location.search).get('convite');if(invite)setAuthMode('register');if('serviceWorker'in navigator)navigator.serviceWorker.register('/sw.js');fetch('/api/auth/me').then(async response=>{if(response.ok){const result=await response.json();if(result.user?.mustChangePassword)location.href='/alterar-senha';else setUser(result.user)}}).finally(()=>setAuthReady(true))},[]);
- useEffect(()=>{if(!user)return;fetch('/api/rounds/status').then(r=>r.ok?r.json():null).then(setJourney);fetch('/api/badges').then(r=>r.ok?r.json():null).then(d=>d&&setNewBadges(d.newBadges||[]));fetch('/api/notifications').then(r=>r.ok?r.json():null).then(d=>d&&setUnreadNotifications(d.unread||0));const timer=window.setInterval(()=>setClock(Date.now()),1000);return()=>clearInterval(timer)},[user]);
- function remaining(target?:number){if(!target)return'Aguardando agendamento';const seconds=Math.max(0,Math.floor((target-clock)/1000)),days=Math.floor(seconds/86400),hours=Math.floor((seconds%86400)/3600),minutes=Math.floor((seconds%3600)/60);return`${days?`${days}d `:''}${String(hours).padStart(2,'0')}h ${String(minutes).padStart(2,'0')}min`}
- async function submitAuth(event:React.FormEvent<HTMLFormElement>){event.preventDefault();setAuthBusy(true);setAuthError('');const data=Object.fromEntries(new FormData(event.currentTarget)),payload=authMode==='login'?{username:data.username,password:data.password,persistent:data.persistent==='on'}:{displayName:data.displayName,username:data.username,password:data.password,inviteCode:data.inviteCode};try{const response=await fetch(`/api/auth/${authMode}`,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload)}),result=await response.json();if(!response.ok){const messages:any={invalid_credentials:'Usuário ou senha incorretos.',pending_approval:'Seu cadastro ainda aguarda aprovação.',account_unavailable:'Esta conta não está disponível.',invalid_invitation:'O código de convite é inválido ou expirou.',username_unavailable:'Este nome de usuário já está em uso.',invalid_fields:'Confira os dados. A senha deve ter pelo menos 8 caracteres.',too_many_attempts:'Muitas tentativas incorretas. O acesso foi protegido por 15 minutos.'},extra=result.error==='invalid_credentials'&&result.attemptsRemaining<=2?` Restam ${result.attemptsRemaining} tentativa(s) antes do bloqueio temporário.`:'';setAuthError((messages[result.error]||'Não foi possível continuar.')+extra);return}if(authMode==='register'){setAuthError(result.status==='pending'?'Cadastro enviado! Aguarde a aprovação do líder.':'Cadastro aprovado. Agora entre com sua conta.');setAuthMode('login');return}if(result.mustChangePassword){location.href='/alterar-senha';return}setUser(result.user)}catch{setAuthError('Sem conexão com o servidor. Tente novamente.')}finally{setAuthBusy(false)}}
- if(!authReady)return <main className="shell auth-screen"><div className="auth-loading"><span className="brand-dot">✦</span><p>Preparando sua jornada...</p></div></main>;
- if(!user)return <main className="shell auth-screen"><div className="ambient one"/><div className="ambient two"/><section className="auth-card"><header className="brand"><span className="brand-dot">✦</span> CONTE OS FEITOS</header><p className="eyebrow">JORNADA BÍBLICA</p><h1>{authMode==='login'?<>Que bom ter você<br/><em>de volta</em></>:<>Entre para a<br/><em>jornada</em></>}</h1><p className="intro">{authMode==='login'?'Acesse sua conta para jogar a rodada da semana e acompanhar sua jornada.':'Use o código do seu grupo. Seu cadastro será analisado por um líder.'}</p><form onSubmit={submitAuth}>{authMode==='register'&&<label>Seu nome<input name="displayName" autoComplete="name" required minLength={3} placeholder="Nome e sobrenome"/></label>}{authMode==='register'&&<label>Código do grupo<input name="inviteCode" autoCapitalize="characters" required placeholder="Ex.: FAROL-2026" defaultValue={new URLSearchParams(location.search).get('convite')||''}/></label>}<label>Nome de usuário<input name="username" autoCapitalize="none" autoComplete="username" required minLength={3} placeholder="Como você vai entrar"/></label><label>Senha<input name="password" type="password" autoComplete={authMode==='login'?'current-password':'new-password'} required minLength={8} placeholder="Mínimo de 8 caracteres"/></label>{authMode==='login'&&<label className="remember"><input name="persistent" type="checkbox"/> Permanecer conectado neste aparelho</label>}{authError&&<p className="auth-message">{authError}</p>}<button className="primary" disabled={authBusy}>{authBusy?'AGUARDE...':authMode==='login'?'ENTRAR':'CRIAR MINHA CONTA'}<span>→</span></button></form><button className="auth-switch" onClick={()=>{setAuthMode(authMode==='login'?'register':'login');setAuthError('')}}>{authMode==='login'?'Ainda não tenho conta':'Já tenho uma conta'}</button></section></main>;
- return <main className="shell start-screen"><div className="ambient one"/><div className="ambient two"/><header className="brand"><span className="brand-dot">✦</span> CONTE OS FEITOS</header><p className="welcome">Olá, {user.displayName}</p>{journey&&<aside className={`journey-status ${journey.completion?.completed?'done':journey.current?'pending':'waiting'}`}><b>{journey.completion?.completed?'✓':journey.current?'!':'🔒'}</b><span><strong>{journey.completion?.completed?'Rodada concluída':journey.current?'Sua rodada está pendente':'Próxima jornada'}</strong><small>{journey.completion?.completed?journey.completion.optionalAttemptsRemaining>0?`${journey.completion.optionalAttemptsRemaining} tentativa(s) opcional(is) para melhorar · termina em ${remaining(journey.current?.closesAt)}`:`Melhor resultado registrado · termina em ${remaining(journey.current?.closesAt)}`:journey.current?`Termina em ${remaining(journey.current.closesAt)}`:journey.next?`Começa em ${remaining(journey.next.opensAt)}`:'Ainda não agendada'}</small></span></aside>}{newBadges.length>0&&<aside className="badge-notice"><b>🎖️</b><span><strong>{newBadges.length===1?'Nova medalha conquistada!':`${newBadges.length} novas medalhas conquistadas!`}</strong><small>{newBadges.map(item=>item.name).join(' · ')}</small></span><a href="/medalhas">VER</a></aside>}<section className="hero-card"><div className="orbit"><span>📖</span><i/><b/></div><p className="eyebrow">QUIZ BÍBLICO</p><h1>Contem o que<br/><em>Deus fez</em></h1><p className="intro">Testemunhos, milagres e os feitos de Deus. Dez perguntas para aprender, lembrar e compartilhar.</p><button className="primary" onClick={()=>location.href='/jogar'}>VER RODADA DA SEMANA <span>→</span></button><div className="home-links"><a href="/notificacoes">🔔 Avisos{unreadNotifications>0?` (${unreadNotifications})`:''}</a><a href="/jornada">📖 Minha jornada</a><a href="/perfil">👤 Perfil</a><a href="/rankings">🏆 Rankings</a><a href="/medalhas">🎖️ Medalhas</a>{['admin','leader'].includes(user.role)&&<a href="/admin">⚙️ Painel</a>}</div><div className="mini-stats"><span><b>10</b> perguntas</span><span><b>20s</b> cada</span><span><b>🏆</b> melhor resultado</span></div></section><p className="footer-note">Jornada Bíblica · Horário de Brasília · Feito para jogar no celular</p></main>;
+
+import { useEffect, useState } from "react";
+
+const LEGAL_VERSION = "2026-07-13";
+
+export default function Home() {
+  const [authReady, setAuthReady] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [authMode, setAuthMode] = useState<"login" | "register">("login");
+  const [authError, setAuthError] = useState("");
+  const [authBusy, setAuthBusy] = useState(false);
+  const [journey, setJourney] = useState<any>(null);
+  const [clock, setClock] = useState(Date.now());
+  const [newBadges, setNewBadges] = useState<any[]>([]);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
+
+  useEffect(() => {
+    const invite = new URLSearchParams(location.search).get("convite");
+    if (invite) setAuthMode("register");
+    if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js");
+    fetch("/api/auth/me").then(async response => {
+      if (response.ok) {
+        const result = await response.json();
+        if (result.user?.mustChangePassword) location.href = "/alterar-senha";
+        else setUser(result.user);
+      }
+    }).finally(() => setAuthReady(true));
+  }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    fetch("/api/rounds/status").then(response => response.ok ? response.json() : null).then(setJourney);
+    fetch("/api/badges").then(response => response.ok ? response.json() : null).then(data => data && setNewBadges(data.newBadges || []));
+    fetch("/api/notifications").then(response => response.ok ? response.json() : null).then(data => data && setUnreadNotifications(data.unread || 0));
+    const timer = window.setInterval(() => setClock(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, [user]);
+
+  function remaining(target?: number) {
+    if (!target) return "Aguardando agendamento";
+    const seconds = Math.max(0, Math.floor((target - clock) / 1000));
+    const days = Math.floor(seconds / 86400);
+    const hours = Math.floor((seconds % 86400) / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    return `${days ? `${days}d ` : ""}${String(hours).padStart(2, "0")}h ${String(minutes).padStart(2, "0")}min`;
+  }
+
+  async function submitAuth(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setAuthBusy(true);
+    setAuthError("");
+    const data = Object.fromEntries(new FormData(event.currentTarget));
+    const payload = authMode === "login"
+      ? { username: data.username, password: data.password, persistent: data.persistent === "on" }
+      : { displayName: data.displayName, username: data.username, password: data.password, inviteCode: data.inviteCode, legalAccepted: data.legalAccepted === "on", termsVersion: LEGAL_VERSION, privacyVersion: LEGAL_VERSION };
+    try {
+      const response = await fetch(`/api/auth/${authMode}`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload) });
+      const result = await response.json();
+      if (!response.ok) {
+        const messages: any = { invalid_credentials: "Usuário ou senha incorretos.", pending_approval: "Seu cadastro ainda aguarda aprovação.", account_unavailable: "Esta conta não está disponível.", invalid_invitation: "O código de convite é inválido ou expirou.", username_unavailable: "Este nome de usuário já está em uso.", invalid_fields: "Confira os dados. A senha deve ter pelo menos 8 caracteres.", legal_consent_required: "Você precisa aceitar os Termos de Uso e a Política de Privacidade.", too_many_attempts: "Muitas tentativas incorretas. O acesso foi protegido por 15 minutos." };
+        const extra = result.error === "invalid_credentials" && result.attemptsRemaining <= 2 ? ` Restam ${result.attemptsRemaining} tentativa(s) antes do bloqueio temporário.` : "";
+        setAuthError((messages[result.error] || "Não foi possível continuar.") + extra);
+        return;
+      }
+      if (authMode === "register") {
+        setAuthError(result.status === "pending" ? "Cadastro enviado! Aguarde a aprovação do líder." : "Cadastro aprovado. Agora entre com sua conta.");
+        setAuthMode("login");
+        return;
+      }
+      if (result.mustChangePassword) { location.href = "/alterar-senha"; return; }
+      setUser(result.user);
+    } catch {
+      setAuthError("Sem conexão com o servidor. Tente novamente.");
+    } finally {
+      setAuthBusy(false);
+    }
+  }
+
+  if (!authReady) return <main className="shell auth-screen"><div className="auth-loading"><span className="brand-dot">✦</span><p>Preparando sua jornada...</p></div></main>;
+
+  if (!user) return <main className="shell auth-screen"><div className="ambient one"/><div className="ambient two"/><section className="auth-card"><header className="brand"><span className="brand-dot">✦</span> CONTE OS FEITOS</header><p className="eyebrow">JORNADA BÍBLICA</p><h1>{authMode === "login" ? <>Que bom ter você<br/><em>de volta</em></> : <>Entre para a<br/><em>jornada</em></>}</h1><p className="intro">{authMode === "login" ? "Acesse sua conta para jogar a rodada da semana e acompanhar sua jornada." : "Use o código do seu grupo. Seu cadastro será analisado por um líder."}</p><form onSubmit={submitAuth}>{authMode === "register" && <label>Seu nome<input name="displayName" autoComplete="name" required minLength={3} placeholder="Nome e sobrenome"/></label>}{authMode === "register" && <label>Código do grupo<input name="inviteCode" autoCapitalize="characters" required placeholder="Ex.: FAROL-2026" defaultValue={new URLSearchParams(location.search).get("convite") || ""}/></label>}<label>Nome de usuário<input name="username" autoCapitalize="none" autoComplete="username" required minLength={3} placeholder="Como você vai entrar"/></label><label>Senha<input name="password" type="password" autoComplete={authMode === "login" ? "current-password" : "new-password"} required minLength={8} placeholder="Mínimo de 8 caracteres"/></label>{authMode === "login" && <label className="remember"><input name="persistent" type="checkbox"/> Permanecer conectado neste aparelho</label>}{authMode === "register" && <label className="legal-consent"><input name="legalAccepted" type="checkbox" required/><span>Li e aceito os <a href="/termos" target="_blank" rel="noreferrer">Termos de Uso</a> e a <a href="/privacidade" target="_blank" rel="noreferrer">Política de Privacidade</a>.</span></label>}{authError && <p className="auth-message" role="status" aria-live="polite">{authError}</p>}<button className="primary" disabled={authBusy}>{authBusy ? "AGUARDE..." : authMode === "login" ? "ENTRAR" : "CRIAR MINHA CONTA"}<span>→</span></button></form><button className="auth-switch" onClick={() => { setAuthMode(authMode === "login" ? "register" : "login"); setAuthError(""); }}>{authMode === "login" ? "Ainda não tenho conta" : "Já tenho uma conta"}</button><nav className="legal-links" aria-label="Documentos legais"><a href="/termos">Termos de Uso</a><a href="/privacidade">Privacidade</a></nav></section></main>;
+
+  return <main className="shell start-screen"><div className="ambient one"/><div className="ambient two"/><header className="brand"><span className="brand-dot">✦</span> CONTE OS FEITOS</header><p className="welcome">Olá, {user.displayName}</p>{journey && <aside className={`journey-status ${journey.completion?.completed ? "done" : journey.current ? "pending" : "waiting"}`}><b>{journey.completion?.completed ? "✓" : journey.current ? "!" : "🔒"}</b><span><strong>{journey.completion?.completed ? "Rodada concluída" : journey.current ? "Sua rodada está pendente" : "Próxima jornada"}</strong><small>{journey.completion?.completed ? journey.completion.optionalAttemptsRemaining > 0 ? `${journey.completion.optionalAttemptsRemaining} tentativa(s) opcional(is) para melhorar · termina em ${remaining(journey.current?.closesAt)}` : `Melhor resultado registrado · termina em ${remaining(journey.current?.closesAt)}` : journey.current ? `Termina em ${remaining(journey.current.closesAt)}` : journey.next ? `Começa em ${remaining(journey.next.opensAt)}` : "Ainda não agendada"}</small></span></aside>}{newBadges.length > 0 && <aside className="badge-notice"><b>🎖️</b><span><strong>{newBadges.length === 1 ? "Nova medalha conquistada!" : `${newBadges.length} novas medalhas conquistadas!`}</strong><small>{newBadges.map(item => item.name).join(" · ")}</small></span><a href="/medalhas">VER</a></aside>}<section className="hero-card"><div className="orbit"><span>📖</span><i/><b/></div><p className="eyebrow">QUIZ BÍBLICO</p><h1>Contem o que<br/><em>Deus fez</em></h1><p className="intro">Testemunhos, milagres e os feitos de Deus. Dez perguntas para aprender, lembrar e compartilhar.</p><button className="primary" onClick={() => location.href = "/jogar"}>VER RODADA DA SEMANA <span>→</span></button><div className="home-links"><a href="/notificacoes">🔔 Avisos{unreadNotifications > 0 ? ` (${unreadNotifications})` : ""}</a><a href="/jornada">📖 Minha jornada</a><a href="/perfil">👤 Perfil</a><a href="/rankings">🏆 Rankings</a><a href="/medalhas">🎖️ Medalhas</a>{["admin", "leader"].includes(user.role) && <a href="/admin">⚙️ Painel</a>}</div><div className="mini-stats"><span><b>10</b> perguntas</span><span><b>20s</b> cada</span><span><b>🏆</b> melhor resultado</span></div></section><p className="footer-note">Jornada Bíblica · Horário de Brasília · <a href="/termos">Termos</a> · <a href="/privacidade">Privacidade</a></p></main>;
 }

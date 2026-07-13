@@ -15,6 +15,7 @@ export async function sha256(value: string) {
 }
 
 export async function hashPassword(password: string, salt = randomToken(16)) {
+  if (password.length > 128) throw new Error("password_too_long");
   const key = await crypto.subtle.importKey("raw", encoder.encode(password), "PBKDF2", false, ["deriveBits"]);
   // Kept within the Workers Free CPU budget; login throttling provides the
   // complementary protection against online password guessing.
@@ -23,6 +24,7 @@ export async function hashPassword(password: string, salt = randomToken(16)) {
 }
 
 export async function verifyPassword(password: string, salt: string, expected: string) {
+  if (password.length > 128) return false;
   const result = await hashPassword(password, salt);
   return timingSafeEqual(result.hash, expected);
 }

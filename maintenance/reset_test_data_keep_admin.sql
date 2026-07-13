@@ -9,6 +9,7 @@ DELETE FROM questions;
 DELETE FROM rounds;
 DELETE FROM user_badges;
 DELETE FROM notification_receipts;
+DELETE FROM legal_consents WHERE user_id IN (SELECT id FROM users WHERE role <> 'admin');
 DELETE FROM audit_logs;
 DELETE FROM login_security;
 DELETE FROM invitations;
