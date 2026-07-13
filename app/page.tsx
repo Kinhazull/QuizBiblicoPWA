@@ -142,14 +142,14 @@ export default function Home() {
       <div className="ambient one" /><div className="ambient two" />
       <header className="brand"><span className="brand-dot">✦</span> CONTE OS FEITOS</header>
       <p className="welcome">Olá, {user.displayName}</p>
-      {journey && <aside className={`journey-status ${journey.completion?.completed ? "done" : journey.current ? "pending" : "waiting"}`}><b>{journey.completion?.completed ? "✓" : journey.current ? "!" : "🔒"}</b><span><strong>{journey.completion?.completed ? "Rodada concluída" : journey.current ? "Sua rodada está pendente" : "Próxima jornada"}</strong><small>{journey.completion?.completed ? `Próxima rodada em ${remaining(journey.next?.opensAt)}` : journey.current ? `Termina em ${remaining(journey.current.closesAt)}` : journey.next ? `Começa em ${remaining(journey.next.opensAt)}` : "Ainda não agendada"}</small></span></aside>}
+      {journey && <aside className={`journey-status ${journey.completion?.completed ? "done" : journey.current ? "pending" : "waiting"}`}><b>{journey.completion?.completed ? "✓" : journey.current ? "!" : "🔒"}</b><span><strong>{journey.completion?.completed ? "Rodada concluída" : journey.current ? "Sua rodada está pendente" : "Próxima jornada"}</strong><small>{journey.completion?.completed ? journey.completion.optionalAttemptsRemaining > 0 ? `${journey.completion.optionalAttemptsRemaining} tentativa(s) opcional(is) para melhorar · termina em ${remaining(journey.current?.closesAt)}` : `Melhor resultado registrado · termina em ${remaining(journey.current?.closesAt)}` : journey.current ? `Termina em ${remaining(journey.current.closesAt)}` : journey.next ? `Começa em ${remaining(journey.next.opensAt)}` : "Ainda não agendada"}</small></span></aside>}
       <section className="hero-card">
         <div className="orbit"><span>📖</span><i /><b /></div>
         <p className="eyebrow">QUIZ BÍBLICO</p>
         <h1>Contem o que<br/><em>Deus fez</em></h1>
         <p className="intro">Testemunhos, milagres e os feitos de Deus. Dez perguntas para aprender, lembrar e compartilhar.</p>
         <button className="primary" onClick={() => location.href = "/jogar"}>VER RODADA DA SEMANA <span>→</span></button>
-        <div className="home-links"><a href="/rankings">🏆 Rankings</a><a href="/medalhas">🎖️ Medalhas</a>{["admin", "leader"].includes(user.role) && <a href="/admin">⚙️ Painel</a>}</div>
+        <div className="home-links"><a href="/perfil">👤 Perfil</a><a href="/rankings">🏆 Rankings</a><a href="/medalhas">🎖️ Medalhas</a>{["admin", "leader"].includes(user.role) && <a href="/admin">⚙️ Painel</a>}</div>
         <div className="mini-stats"><span><b>10</b> perguntas</span><span><b>15s</b> cada</span><span><b>🏆</b> recorde {best}</span></div>
       </section>
       <p className="footer-note">Sem cadastro · Grátis · Feito para jogar no celular</p>

@@ -3,6 +3,14 @@ import "./globals.css";
 import "./admin-extra.css";
 import "./medals.css";
 import "./status.css";
+import "./back-navigation.css";
+import "./import.css";
+import "./management.css";
+import "./profile.css";
+import "./members.css";
+import "./admin-nav.css";
+import { AdminQuickNav } from "./AdminQuickNav";
+import { BackNavigation } from "./BackNavigation";
 
 export const metadata: Metadata = {
   title: "Contem o que Deus fez — Quiz Bíblico",
@@ -14,5 +22,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="pt-BR"><body>{children}</body></html>;
+  return <html lang="pt-BR"><body><BackNavigation /><AdminQuickNav />{children}</body></html>;
 }

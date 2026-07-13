@@ -22,6 +22,9 @@ export const users = sqliteTable("users", {
   groupId: text("group_id").references(() => groups.id),
   username: text("username").notNull(),
   displayName: text("display_name").notNull(),
+  nickname: text("nickname"),
+  useNicknameInRanking: integer("use_nickname_in_ranking", { mode: "boolean" }).notNull().default(false),
+  profilePublic: integer("profile_public", { mode: "boolean" }).notNull().default(true),
   passwordHash: text("password_hash").notNull(),
   passwordSalt: text("password_salt").notNull(),
   role: text("role", { enum: ["admin", "leader", "participant"] }).notNull().default("participant"),
@@ -136,4 +139,3 @@ export const auditLogs = sqliteTable("audit_logs", {
   detailsJson: text("details_json"),
   createdAt: integer("created_at").notNull(),
 }, (table) => [index("audit_org_time_idx").on(table.organizationId, table.createdAt)]);
-
