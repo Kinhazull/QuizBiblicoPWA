@@ -1,10 +1,11 @@
 import { requireAdmin, type AppEnv } from "../../../_lib/auth";
+import { requirePermission } from "../../../_lib/permissions";
 import { json, verifyPassword } from "../../../_lib/security";
 import { parseBrasiliaDateTime } from "../../../_lib/time";
 
 export const onRequestGet = async ({ request, env, params }: { request: Request; env: AppEnv; params: { id: string } }) => {
   try {
-    const admin: any = await requireAdmin(request, env);
+    const admin: any = await requirePermission(request, env, "rounds.manage");
     const round: any = await env.DB.prepare("SELECT * FROM rounds WHERE id=?1 AND organization_id=?2").bind(params.id, admin.organizationId).first();
     if (!round) return json({ error: "not_found" }, 404);
     const found = await env.DB.prepare("SELECT * FROM questions WHERE round_id=?1 ORDER BY position").bind(params.id).all();
@@ -23,7 +24,7 @@ export const onRequestGet = async ({ request, env, params }: { request: Request;
 
 export const onRequestPatch = async ({ request, env, params }: { request: Request; env: AppEnv; params: { id: string } }) => {
   try {
-    const admin: any = await requireAdmin(request, env);
+    const admin: any = await requirePermission(request, env, "rounds.manage");
     const body: any = await request.json();
     const current: any = await env.DB.prepare("SELECT r.*,(SELECT COUNT(*) FROM attempts a WHERE a.round_id=r.id) attempt_count FROM rounds r WHERE r.id=?1 AND r.organization_id=?2").bind(params.id, admin.organizationId).first();
     if (!current) return json({ error: "not_found" }, 404);
@@ -33,14 +34,16 @@ export const onRequestPatch = async ({ request, env, params }: { request: Reques
     const opensAt = status === "active" && body.releaseNow ? now : body.opensAt ? parseBrasiliaDateTime(body.opensAt) : current.opens_at;
     const closesAt = body.closesAt ? parseBrasiliaDateTime(body.closesAt) : current.closes_at;
     if (!Number.isFinite(opensAt) || !Number.isFinite(closesAt) || closesAt <= opensAt) return json({ error: "invalid_schedule" }, 400);
-    const editingDetails = body.title !== undefined || body.theme !== undefined || body.description !== undefined || body.secondsPerQuestion !== undefined || body.opensAt !== undefined || body.closesAt !== undefined;
+    const editingDetails = body.title !== undefined || body.theme !== undefined || body.description !== undefined || body.secondsPerQuestion !== undefined || body.opensAt !== undefined || body.closesAt !== undefined || body.seasonId !== undefined || body.roundType !== undefined || body.officialAttemptLimit !== undefined || body.advancedRules !== undefined;
     if (editingDetails && (Number(current.attempt_count) > 0 || !["draft", "scheduled"].includes(current.status))) return json({ error: "round_locked" }, 409);
     const title = String(body.title ?? current.title).trim();
     const theme = String(body.theme ?? current.theme).trim();
     const description = body.description === undefined ? current.description : String(body.description).trim();
     const seconds = Math.max(15, Math.min(60, Number(body.secondsPerQuestion ?? current.seconds_per_question)));
+    const bounded=(value:any,fallback:number,min:number,max:number)=>{const parsed=Number(value);return Math.max(min,Math.min(max,Number.isFinite(parsed)?parsed:fallback))},attemptLimit=Math.max(1,Math.min(5,Number(body.officialAttemptLimit??current.official_attempt_limit))),roundType=body.roundType==="special"?"special":body.roundType==="regular"?"regular":current.round_type,seasonId=body.seasonId===undefined?current.season_id:(String(body.seasonId||"")||null),featured=body.featured===undefined?current.featured:(body.featured?1:0),advancedRules=body.advancedRules===undefined?current.advanced_rules_json:(body.advancedRules?JSON.stringify({allowPractice:body.advancedRules.allowPractice!==false,basePoints:bounded(body.advancedRules.basePoints,400,100,1000),speedPointsPerSecond:bounded(body.advancedRules.speedPointsPerSecond,40,0,100),streakBonus:bounded(body.advancedRules.streakBonus,100,0,300),minimumCorrectPoints:bounded(body.advancedRules.minimumCorrectPoints,100,0,500)}):null);
+    if(seasonId){const season=await env.DB.prepare(`SELECT id FROM seasons WHERE id=?1 AND organization_id=?2 AND status!='cancelled'`).bind(seasonId,admin.organizationId).first();if(!season)return json({error:"invalid_season"},400)}
     if (title.length < 3 || theme.length < 3) return json({ error: "invalid_fields" }, 400);
-    await env.DB.prepare("UPDATE rounds SET title=?1,theme=?2,description=?3,status=?4,opens_at=?5,closes_at=?6,seconds_per_question=?7,updated_at=?8 WHERE id=?9 AND organization_id=?10").bind(title, theme, description || null, status, opensAt, closesAt, seconds, now, params.id, admin.organizationId).run();
+    await env.DB.prepare("UPDATE rounds SET title=?1,theme=?2,description=?3,status=?4,opens_at=?5,closes_at=?6,seconds_per_question=?7,official_attempt_limit=?8,season_id=?9,round_type=?10,featured=?11,advanced_rules_json=?12,updated_at=?13 WHERE id=?14 AND organization_id=?15").bind(title,theme,description||null,status,opensAt,closesAt,seconds,attemptLimit,seasonId,roundType,featured,advancedRules,now,params.id,admin.organizationId).run();
     await env.DB.prepare("INSERT INTO audit_logs (id,organization_id,actor_user_id,action,entity_type,entity_id,details_json,created_at) VALUES (?1,?2,?3,'round.updated','round',?4,?5,?6)").bind(crypto.randomUUID(), admin.organizationId, admin.id, params.id, JSON.stringify({ status, editingDetails }), now).run();
     return json({ ok: true });
   } catch (response) {
@@ -51,7 +54,7 @@ export const onRequestPatch = async ({ request, env, params }: { request: Reques
 
 export const onRequestDelete = async ({ request, env, params }: { request: Request; env: AppEnv; params: { id: string } }) => {
   try {
-    const admin: any = await requireAdmin(request, env);
+    const admin: any = await requirePermission(request, env, "rounds.manage");
     const body: any = await request.json();
     const credentials: any = await env.DB.prepare("SELECT password_hash,password_salt FROM users WHERE id=?1").bind(admin.id).first();
     if (!credentials || !await verifyPassword(String(body.password || ""), credentials.password_salt, credentials.password_hash)) return json({ error: "invalid_password" }, 403);

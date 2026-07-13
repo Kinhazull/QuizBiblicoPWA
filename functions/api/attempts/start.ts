@@ -12,6 +12,8 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
     const now = Date.now();
     const round: any = await env.DB.prepare("SELECT r.*,(SELECT COUNT(*) FROM questions q WHERE q.round_id=r.id AND q.active=1) question_count FROM rounds r WHERE r.id=?1 AND r.organization_id=?2").bind(roundId, user.organizationId).first();
     if (!round || !["scheduled", "active"].includes(round.status) || now < Number(round.opens_at)) return json({ error: "round_unavailable" }, 403);
+    const rules=round.advanced_rules_json?JSON.parse(round.advanced_rules_json):null;
+    if(mode==="practice"&&rules?.allowPractice===false)return json({error:"practice_disabled"},403);
 
     const existing: any = await env.DB.prepare("SELECT * FROM attempts WHERE user_id=?1 AND round_id=?2 AND mode=?3 AND status='in_progress' ORDER BY started_at DESC LIMIT 1").bind(user.id, roundId, mode).first();
     if (existing) {

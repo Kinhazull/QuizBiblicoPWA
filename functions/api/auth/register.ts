@@ -1,15 +1,17 @@
 import { hashPassword, json, normalizeUsername, sha256 } from "../../_lib/security";
 import type { AppEnv } from "../../_lib/auth";
 import { PRIVACY_VERSION, TERMS_VERSION } from "../../_lib/legal";
+import { enforceRateLimit, requestFingerprint, strongEnough } from "../../_lib/abuse";
 
 export const onRequestPost = async ({ request, env }: { request: Request; env: AppEnv }) => {
+  const fingerprint=await requestFingerprint(request),retry=await enforceRateLimit(env,`register:${fingerprint}`,8,60*60*1000);if(retry)return json({error:'too_many_requests',retryAfter:retry},429,{'retry-after':String(retry)});
   const body: any = await request.json().catch(() => null);
   if (!body) return json({ error: "invalid_request" }, 400);
   const displayName = String(body.displayName || "").trim().replace(/\s+/g, " ");
   const username = normalizeUsername(String(body.username || ""));
   const password = String(body.password || "");
   const inviteCode = String(body.inviteCode || "").trim().toUpperCase();
-  if (displayName.length < 3 || username.length < 3 || password.length < 8 || password.length > 128 || !inviteCode) return json({ error: "invalid_fields" }, 400);
+  if (displayName.length < 3 || username.length < 3 || !strongEnough(password) || !inviteCode) return json({ error: "invalid_fields" }, 400);
   if (body.legalAccepted !== true || body.termsVersion !== TERMS_VERSION || body.privacyVersion !== PRIVACY_VERSION) return json({ error: "legal_consent_required" }, 400);
 
   const codeHash = await sha256(inviteCode);

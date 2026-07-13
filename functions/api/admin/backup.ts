@@ -16,7 +16,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
     const organizationId = admin.organizationId;
     const data = {
       format: "conte-os-feitos-backup",
-      schemaVersion: 6,
+      schemaVersion: 8,
       exportedAt: Date.now(),
       organizationId,
       tables: {
@@ -33,6 +33,16 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
         user_badges: await rows(env, "SELECT ub.* FROM user_badges ub JOIN users u ON u.id=ub.user_id WHERE u.organization_id=?1", organizationId),
         notification_receipts: await rows(env, "SELECT nr.* FROM notification_receipts nr JOIN users u ON u.id=nr.user_id WHERE u.organization_id=?1", organizationId),
         legal_consents: await rows(env, "SELECT lc.* FROM legal_consents lc JOIN users u ON u.id=lc.user_id WHERE u.organization_id=?1", organizationId),
+        announcements: await rows(env, "SELECT * FROM announcements WHERE organization_id=?1", organizationId),
+        privacy_requests: await rows(env, "SELECT * FROM privacy_requests WHERE organization_id=?1", organizationId),
+        seasons: await rows(env, "SELECT * FROM seasons WHERE organization_id=?1", organizationId),
+        question_bank: await rows(env, "SELECT * FROM question_bank WHERE organization_id=?1", organizationId),
+        question_bank_choices: await rows(env, "SELECT qbc.* FROM question_bank_choices qbc JOIN question_bank qb ON qb.id=qbc.question_id WHERE qb.organization_id=?1", organizationId),
+        user_permissions: await rows(env, "SELECT up.* FROM user_permissions up JOIN users u ON u.id=up.user_id WHERE u.organization_id=?1", organizationId),
+        ai_question_suggestions: await rows(env, "SELECT * FROM ai_question_suggestions WHERE organization_id=?1", organizationId),
+        batch_operations: await rows(env, "SELECT * FROM batch_operations WHERE organization_id=?1", organizationId),
+        season_snapshots: await rows(env, "SELECT ss.* FROM season_snapshots ss JOIN seasons s ON s.id=ss.season_id WHERE s.organization_id=?1", organizationId),
+        season_awards: await rows(env, "SELECT sa.* FROM season_awards sa JOIN seasons s ON s.id=sa.season_id WHERE s.organization_id=?1", organizationId),
       },
     };
 

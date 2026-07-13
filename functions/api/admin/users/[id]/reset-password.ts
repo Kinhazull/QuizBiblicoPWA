@@ -1,9 +1,10 @@
 import { requireAdmin, type AppEnv } from "../../../../_lib/auth";
+import { requirePermission } from "../../../../_lib/permissions";
 import { hashPassword, json, randomToken } from "../../../../_lib/security";
 
 export const onRequestPost = async ({ request, env, params }: { request: Request; env: AppEnv; params: { id: string } }) => {
   try {
-    const admin: any = await requireAdmin(request, env);
+    const admin: any = await requirePermission(request, env, "members.manage");
     const target: any = await env.DB.prepare("SELECT id,role FROM users WHERE id=?1 AND organization_id=?2").bind(params.id, admin.organizationId).first();
     if (!target || target.role === "admin" || target.id === admin.id) return json({ error: "not_found" }, 404);
     const temporaryPassword = `Jornada-${randomToken(6).slice(0,8)}`;

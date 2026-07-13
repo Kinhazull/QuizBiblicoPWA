@@ -1,5 +1,6 @@
 import { json, normalizeUsername, randomToken, sessionCookie, sha256, verifyPassword } from "../../_lib/security";
 import type { AppEnv } from "../../_lib/auth";
+import { requestFingerprint } from "../../_lib/abuse";
 
 export const onRequestPost = async ({ request, env }: { request: Request; env: AppEnv }) => {
   const body: any = await request.json().catch(() => null);
@@ -30,7 +31,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
   const expires = now + (persistent ? 30 : .5) * 24 * 60 * 60 * 1000;
   await env.DB.batch([
     env.DB.prepare(`DELETE FROM sessions WHERE expires_at <= ?1`).bind(now),
-    env.DB.prepare(`INSERT INTO sessions (id, user_id, token_hash, persistent, expires_at, last_seen_at, created_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?6)`).bind(crypto.randomUUID(), user.id, await sha256(token), persistent ? 1 : 0, expires, now),
+    env.DB.prepare(`INSERT INTO sessions (id,user_id,token_hash,persistent,expires_at,last_seen_at,created_at,user_agent,ip_hash) VALUES (?1,?2,?3,?4,?5,?6,?6,?7,?8)`).bind(crypto.randomUUID(),user.id,await sha256(token),persistent?1:0,expires,now,String(request.headers.get('user-agent')||'').slice(0,180),await requestFingerprint(request)),
     env.DB.prepare(`UPDATE users SET last_login_at = ?1, updated_at = ?1 WHERE id = ?2`).bind(now, user.id),
     env.DB.prepare(`DELETE FROM login_security WHERE username_hash=?1`).bind(usernameHash),
   ]);

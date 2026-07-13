@@ -1,4 +1,5 @@
-import { requireAdmin, type AppEnv } from "../../_lib/auth";
+import type { AppEnv } from "../../_lib/auth";
+import { requirePermission } from "../../_lib/permissions";
 import { json } from "../../_lib/security";
 
 function csv(rows: any[], columns: { key: string; label: string }[]) {
@@ -8,8 +9,8 @@ function csv(rows: any[], columns: { key: string; label: string }[]) {
 
 export const onRequestGet = async ({ request, env }: { request: Request; env: AppEnv }) => {
   try {
-    const admin: any = await requireAdmin(request, env); const url = new URL(request.url); const type = url.searchParams.get("type") || "members"; const roundId = url.searchParams.get("roundId");
-    let rows: any[] = []; let columns: { key: string; label: string }[] = []; let filename = type;
+    const admin: any = await requirePermission(request, env, "reports.view"); const url = new URL(request.url); const type = url.searchParams.get("type") || "members"; const roundId = url.searchParams.get("roundId");
+    let rows: any[] = []; let columns: { key: string; label: string }[] = []; const filename = type;
     if (type === "members") {
       ({ results: rows } = await env.DB.prepare(`SELECT display_name AS name,username,COALESCE(nickname,'') AS nickname,role,status,created_at AS createdAt,last_login_at AS lastLoginAt FROM users WHERE organization_id=?1 ORDER BY display_name`).bind(admin.organizationId).all());
       rows = rows.map(row => ({ ...row, createdAt: new Date(row.createdAt).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }), lastLoginAt: row.lastLoginAt ? new Date(row.lastLoginAt).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }) : "Nunca" }));

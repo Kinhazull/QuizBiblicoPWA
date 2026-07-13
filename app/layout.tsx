@@ -15,8 +15,27 @@ import "./reports.css";
 import "./journey.css";
 import "./notifications.css";
 import "./legal.css";
+import "./question-bank.css";
+import "./question-picker.css";
+import "./question-import.css";
+import "./question-pagination.css";
+import "./question-compose.css";
+import "./permissions.css";
+import "./review.css";
+import "./collaboration.css";
+import "./calendar.css";
+import "./round-rules.css";
+import "./analytics.css";
+import "./ai.css";
+import "./batch.css";
+import "./members-batch.css";
+import "./quality.css";
+import "./seasons.css";
 import { AdminQuickNav } from "./AdminQuickNav";
 import { BackNavigation } from "./BackNavigation";
+import { LearningQuickNav } from "./LearningQuickNav";
+import { AuthRecoveryLink } from "./AuthRecoveryLink";
+import { PwaStatus } from "./PwaStatus";
 
 export const metadata: Metadata = {
   title: "Contem o que Deus fez — Quiz Bíblico",
@@ -28,5 +47,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="pt-BR"><body><BackNavigation /><AdminQuickNav />{children}</body></html>;
+  return <html lang="pt-BR"><body><a className="skip-link" href="#main-content">Pular para o conteúdo</a><BackNavigation /><AdminQuickNav /><LearningQuickNav /><AuthRecoveryLink /><PwaStatus /><div id="main-content">{children}</div></body></html>;
 }

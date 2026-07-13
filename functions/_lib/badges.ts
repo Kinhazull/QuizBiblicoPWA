@@ -1,6 +1,7 @@
 import type { AppEnv } from "./auth";
-export type Badge={code:string;category:string;name:string;description:string;icon:string;metric:string;threshold:number};
-const series=(category:string,label:string,metric:string,levels:number[],icon:string,unit:string):Badge[]=>levels.map((threshold,index)=>({code:`${category}_${index+1}`,category,name:`${label} ${index+1}`,description:`Alcance ${threshold} ${unit}.`,icon,metric,threshold}));
+export type Badge={code:string;category:string;name:string;description:string;icon:string;metric:string;threshold:number;level:number;tier:string};
+const tiers=['Bronze','Prata','Ouro','Platina','Diamante'];
+const series=(category:string,label:string,metric:string,levels:number[],icon:string,unit:string):Badge[]=>levels.map((threshold,index)=>({code:`${category}_${index+1}`,category,name:`${label} ${index+1}`,description:`Alcance ${threshold} ${unit}.`,icon,metric,threshold,level:index+1,tier:tiers[Math.min(4,Math.floor(index/2))]}));
 export const BADGES:Badge[]=[
  ...series('journey','Caminho da Palavra','roundsPlayed',[1,3,5,8,12,18,25,35,50,75],'📖','rodadas concluídas'),
  ...series('knowledge','Conhecedor','totalCorrect',[10,30,60,100,160,250,400,650,1000,1500],'🧠','acertos acumulados'),

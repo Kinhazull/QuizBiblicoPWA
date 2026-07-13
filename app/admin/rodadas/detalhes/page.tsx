@@ -14,6 +14,7 @@ export default function Details() {
   const [confirming, setConfirming] = useState(false);
   const [editing, setEditing] = useState(false);
   const [message, setMessage] = useState("");
+  const [seasons, setSeasons] = useState<any[]>([]);
   const id = typeof window === "undefined" ? "" : new URL(location.href).searchParams.get("id") || "";
 
   async function load() {
@@ -28,6 +29,7 @@ export default function Details() {
 
   useEffect(() => {
     load();
+    fetch("/api/admin/seasons").then(async response => { if(response.ok)setSeasons((await response.json()).seasons||[]); });
   }, [id]);
 
   async function action(status: string, releaseNow = false) {
@@ -47,7 +49,7 @@ export default function Details() {
     const response = await fetch(`/api/admin/rounds/${id}`, {
       method: "PATCH",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ ...form, status: data.round.status }),
+      body: JSON.stringify({ ...form, featured: form.featured === "on", advancedRules: form.useAdvanced === "on" ? { allowPractice: form.allowPractice === "on", basePoints: form.basePoints, speedPointsPerSecond: form.speedPointsPerSecond, streakBonus: form.streakBonus, minimumCorrectPoints: form.minimumCorrectPoints } : null, status: data.round.status }),
     });
     const result = await response.json();
     if (response.ok) {
@@ -82,6 +84,7 @@ export default function Details() {
 
   const editable = Number(data.attempts?.total || 0) === 0 && ["draft", "scheduled"].includes(data.round.status);
   const canRelease = data.round.status === "scheduled" && Number(data.round.opens_at) > Date.now();
+  const rules = data.round.advanced_rules_json ? JSON.parse(data.round.advanced_rules_json) : null;
 
   return <main className="admin-shell">
     <section className="admin-title">
@@ -106,6 +109,16 @@ export default function Details() {
         <label>Abertura (horário de Brasília)<input name="opensAt" type="datetime-local" defaultValue={brasiliaDate(data.round.opens_at)} required /></label>
         <label>Encerramento (horário de Brasília)<input name="closesAt" type="datetime-local" defaultValue={brasiliaDate(data.round.closes_at)} required /></label>
         <label>Segundos por pergunta<input name="secondsPerQuestion" type="number" min="15" max="60" defaultValue={data.round.seconds_per_question} /></label>
+        <label>Tentativas oficiais<input name="officialAttemptLimit" type="number" min="1" max="5" defaultValue={data.round.official_attempt_limit} /></label>
+        <label>Temporada<select name="seasonId" defaultValue={data.round.season_id||""}><option value="">Sem temporada</option>{seasons.filter(item=>item.status!=="cancelled").map(item=><option value={item.id} key={item.id}>{item.title}</option>)}</select></label>
+        <label>Tipo<select name="roundType" defaultValue={data.round.round_type||"regular"}><option value="regular">Regular</option><option value="special">Evento especial</option></select></label>
+        <label className="round-checkbox"><input name="featured" type="checkbox" defaultChecked={Boolean(data.round.featured)} /> Destacar evento</label>
+        <label className="round-checkbox"><input name="useAdvanced" type="checkbox" defaultChecked={Boolean(rules)} /> Usar regras avançadas</label>
+        <label>Pontos base<input name="basePoints" type="number" min="100" max="1000" defaultValue={rules?.basePoints??400} /></label>
+        <label>Pontos por segundo<input name="speedPointsPerSecond" type="number" min="0" max="100" defaultValue={rules?.speedPointsPerSecond??40} /></label>
+        <label>Bônus de sequência<input name="streakBonus" type="number" min="0" max="300" defaultValue={rules?.streakBonus??100} /></label>
+        <label>Pontuação mínima<input name="minimumCorrectPoints" type="number" min="0" max="500" defaultValue={rules?.minimumCorrectPoints??100} /></label>
+        <label className="round-checkbox"><input name="allowPractice" type="checkbox" defaultChecked={rules?.allowPractice!==false} /> Permitir prática</label>
       </div>
       <p>Informe a data e o horário de Brasília. Exemplo: 19/07/2026 09:30.</p>
       <footer><button type="button" onClick={() => setEditing(false)}>Cancelar</button><button className="release">Salvar alterações</button></footer>

@@ -1,9 +1,10 @@
-import { requireAdmin, type AppEnv } from "../../_lib/auth";
+import type { AppEnv } from "../../_lib/auth";
+import { requirePermission } from "../../_lib/permissions";
 import { json, sha256 } from "../../_lib/security";
 
 export const onRequestPost = async ({ request, env }: { request: Request; env: AppEnv }) => {
   try {
-    const admin: any = await requireAdmin(request, env); const body: any = await request.json();
+    const admin: any = await requirePermission(request, env, "invitations.manage"); const body: any = await request.json();
     const code = String(body.code || "").trim().toUpperCase(); const label = String(body.label || "Convite do grupo").trim();
     if (code.length < 6 || label.length < 3) return json({ error: "invalid_fields" }, 400);
     const group: any = await env.DB.prepare("SELECT id FROM groups WHERE organization_id=?1 AND active=1 ORDER BY created_at LIMIT 1").bind(admin.organizationId).first();
@@ -15,6 +16,6 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
 };
 
 export const onRequestGet = async ({ request, env }: { request: Request; env: AppEnv }) => {
-  try { const admin: any = await requireAdmin(request, env); const { results } = await env.DB.prepare("SELECT id,label,uses,max_uses AS maxUses,expires_at AS expiresAt,active,created_at AS createdAt FROM invitations WHERE organization_id=?1 ORDER BY created_at DESC").bind(admin.organizationId).all(); return json({ invitations: results }); }
+  try { const admin: any = await requirePermission(request, env, "invitations.manage"); const { results } = await env.DB.prepare("SELECT id,label,uses,max_uses AS maxUses,expires_at AS expiresAt,active,created_at AS createdAt FROM invitations WHERE organization_id=?1 ORDER BY created_at DESC").bind(admin.organizationId).all(); return json({ invitations: results }); }
   catch (response) { if (response instanceof Response) return response; throw response; }
 };

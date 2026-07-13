@@ -1,0 +1,1 @@
+.member-management article{grid-template-columns:auto 1fr repeat(5,auto)}@media(max-width:760px){.member-management article{grid-template-columns:auto 1fr}.member-management article>div{grid-column:auto}.member-management article>a,.member-management article>button{grid-column:span 1}}

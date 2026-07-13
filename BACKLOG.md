@@ -1,15 +1,22 @@
 # Backlog — Conte os Feitos
 
-## Pacote de segurança e conformidade
+## Próxima avaliação
 
-- Criar páginas públicas e versionadas de Termos de Uso e Política de Privacidade.
-- Exigir no cadastro um checkbox desmarcado: “Li e aceito os Termos de Uso e a Política de Privacidade”, com ambos os documentos em links clicáveis.
-- Impedir o envio do cadastro sem aceite.
-- Registrar no D1 a versão aceita, data/hora, usuário e evidência técnica mínima necessária.
-- Solicitar novo aceite somente quando houver alteração material dos documentos.
-- Incluir regras de participação, uso adequado, ranking/apelido, tratamento de dados, retenção, exclusão de conta, contato do responsável e regras aplicáveis a menores de idade.
-- Permitir consultar os documentos posteriormente no login, cadastro e perfil.
+- Pacote 10: qualidade, acessibilidade, testes automatizados, comportamento offline e diagnóstico de migrações.
+- Se ainda houver margem de uso, Pacote 8: gestão avançada e encerramento das temporadas trimestrais.
 
-## Validação final
+## Futuro
 
+- Pacote 9: comunicação avançada, estatísticas de leitura, modelos, segmentação por pendência e notificações push.
+- Modo projetor.
+- Múltiplos grupos ou comunidades.
+- Sistema social, amigos, comentários e mensagens.
+- Missões e objetivos, depois de definir uma dinâmica que não conflite com medalhas e rankings.
+- Recuperação de conta por e-mail.
+
+## Pré-lançamento
+
+- Configurar o binding `AI` da Cloudflare.
+- Executar as migrações D1 pendentes.
+- Publicar o pacote acumulado.
 - Executar teste simultâneo com vários usuários no dia anterior ao lançamento.

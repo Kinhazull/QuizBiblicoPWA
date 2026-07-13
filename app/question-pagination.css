@@ -1,0 +1,1 @@
+.bank-pagination{display:flex;justify-content:center;align-items:center;gap:14px;padding:24px}.bank-pagination button{border:0;border-radius:10px;padding:11px 15px;background:#7047eb;color:#fff;font-weight:800;cursor:pointer}.bank-pagination button:disabled{background:#ddd6e7;color:#999;cursor:not-allowed}.bank-pagination span{font-size:11px;color:#71677e}
