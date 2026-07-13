@@ -1,8 +1,8 @@
-import { hashPassword, json, normalizeUsername, sha256 } from "../../_lib/security";
+import { hashPassword, json, normalizeUsername, secureEqual, sha256 } from "../../_lib/security";
 import type { AppEnv } from "../../_lib/auth";
 
 export const onRequestPost = async ({ request, env }: { request: Request; env: AppEnv }) => {
-  if (!env.BOOTSTRAP_SECRET || request.headers.get("x-bootstrap-secret") !== env.BOOTSTRAP_SECRET) return json({ error: "forbidden" }, 403);
+  const provided=request.headers.get("x-bootstrap-secret")||"";if(!env.BOOTSTRAP_SECRET||!await secureEqual(provided,env.BOOTSTRAP_SECRET))return json({error:"forbidden"},403);
   const existing = await env.DB.prepare("SELECT id FROM organizations LIMIT 1").first();
   if (existing) return json({ error: "already_initialized" }, 409);
   const body: any = await request.json().catch(() => null);

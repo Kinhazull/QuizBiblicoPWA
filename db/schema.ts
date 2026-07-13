@@ -152,6 +152,7 @@ export const attempts = sqliteTable("attempts", {
   mode: text("mode", { enum: ["official", "practice"] }).notNull().default("official"),
   status: text("status", { enum: ["in_progress", "completed", "abandoned", "invalid"] }).notNull().default("in_progress"),
   shuffleSeed: text("shuffle_seed").notNull(),
+  questionOrderJson: text("question_order_json"),
   score: integer("score").notNull().default(0),
   correctAnswers: integer("correct_answers").notNull().default(0),
   totalTimeMs: integer("total_time_ms").notNull().default(0),
@@ -159,7 +160,8 @@ export const attempts = sqliteTable("attempts", {
   startedAt: integer("started_at").notNull(),
   completedAt: integer("completed_at"),
 }, (table) => [
-  uniqueIndex("attempts_user_round_number_uq").on(table.userId, table.roundId, table.attemptNumber),
+  uniqueIndex("attempts_user_round_mode_number_uq").on(table.userId, table.roundId, table.mode, table.attemptNumber),
+  index("attempts_user_round_mode_status_idx").on(table.userId, table.roundId, table.mode, table.status),
   index("attempts_round_ranking_idx").on(table.roundId, table.status, table.score),
 ]);
 

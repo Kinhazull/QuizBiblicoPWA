@@ -3,7 +3,7 @@ import { requirePermission } from "../../_lib/permissions";
 import { json } from "../../_lib/security";
 
 function csv(rows: any[], columns: { key: string; label: string }[]) {
-  const escape = (value: unknown) => `"${String(value ?? "").replace(/"/g, '""')}"`;
+  const escape = (value: unknown) => {const raw=String(value??"");const safe=/^[=+\-@]/.test(raw)?`'${raw}`:raw;return `"${safe.replace(/"/g,'""')}"`};
   return "\uFEFF" + [columns.map(column => escape(column.label)).join(";"), ...rows.map(row => columns.map(column => escape(row[column.key])).join(";"))].join("\r\n");
 }
 

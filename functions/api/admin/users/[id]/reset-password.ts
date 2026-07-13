@@ -1,4 +1,4 @@
-import { requireAdmin, type AppEnv } from "../../../../_lib/auth";
+import type { AppEnv } from "../../../../_lib/auth";
 import { requirePermission } from "../../../../_lib/permissions";
 import { hashPassword, json, randomToken } from "../../../../_lib/security";
 

@@ -118,7 +118,7 @@ export default function Details() {
         <label>Pontos por segundo<input name="speedPointsPerSecond" type="number" min="0" max="100" defaultValue={rules?.speedPointsPerSecond??40} /></label>
         <label>Bônus de sequência<input name="streakBonus" type="number" min="0" max="300" defaultValue={rules?.streakBonus??100} /></label>
         <label>Pontuação mínima<input name="minimumCorrectPoints" type="number" min="0" max="500" defaultValue={rules?.minimumCorrectPoints??100} /></label>
-        <label className="round-checkbox"><input name="allowPractice" type="checkbox" defaultChecked={rules?.allowPractice!==false} /> Permitir prática</label>
+        <label className="round-checkbox"><input name="allowPractice" type="checkbox" defaultChecked={rules?.allowPractice===true} /> Permitir prática</label>
       </div>
       <p>Informe a data e o horário de Brasília. Exemplo: 19/07/2026 09:30.</p>
       <footer><button type="button" onClick={() => setEditing(false)}>Cancelar</button><button className="release">Salvar alterações</button></footer>

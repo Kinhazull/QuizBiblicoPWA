@@ -36,6 +36,8 @@ function timingSafeEqual(a: string, b: string) {
   return diff === 0;
 }
 
+export async function secureEqual(a:string,b:string){const[left,right]=await Promise.all([sha256(a),sha256(b)]);return timingSafeEqual(left,right)}
+
 function toBase64Url(bytes: Uint8Array) {
   let binary = "";
   bytes.forEach((byte) => binary += String.fromCharCode(byte));

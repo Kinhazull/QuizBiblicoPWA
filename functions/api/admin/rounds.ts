@@ -1,4 +1,4 @@
-import { requireAdmin, type AppEnv } from "../../_lib/auth";
+import type { AppEnv } from "../../_lib/auth";
 import { requirePermission } from "../../_lib/permissions";
 import { json } from "../../_lib/security";
 import { parseBrasiliaDateTime } from "../../_lib/time";

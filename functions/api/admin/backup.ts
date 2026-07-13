@@ -1,4 +1,5 @@
-import { requireAdmin, type AppEnv } from "../../_lib/auth";
+import type { AppEnv } from "../../_lib/auth";
+import { requirePermission } from "../../_lib/permissions";
 import { json, verifyPassword } from "../../_lib/security";
 
 async function rows(env: AppEnv, sql: string, ...bindings: unknown[]) {
@@ -8,7 +9,7 @@ async function rows(env: AppEnv, sql: string, ...bindings: unknown[]) {
 
 export const onRequestPost = async ({ request, env }: { request: Request; env: AppEnv }) => {
   try {
-    const admin: any = await requireAdmin(request, env);
+    const admin: any = await requirePermission(request,env,"permissions.manage");
     const body: any = await request.json();
     const credentials: any = await env.DB.prepare("SELECT password_hash,password_salt FROM users WHERE id=?1").bind(admin.id).first();
     if (!credentials || !await verifyPassword(String(body.password || ""), credentials.password_salt, credentials.password_hash)) return json({ error: "invalid_password" }, 403);
@@ -16,14 +17,15 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
     const organizationId = admin.organizationId;
     const data = {
       format: "conte-os-feitos-backup",
-      schemaVersion: 8,
+      schemaVersion: 16,
+      credentialsExcluded: true,
       exportedAt: Date.now(),
       organizationId,
       tables: {
         organizations: await rows(env, "SELECT * FROM organizations WHERE id=?1", organizationId),
         groups: await rows(env, "SELECT * FROM groups WHERE organization_id=?1", organizationId),
-        users: await rows(env, "SELECT * FROM users WHERE organization_id=?1", organizationId),
-        invitations: await rows(env, "SELECT * FROM invitations WHERE organization_id=?1", organizationId),
+        users: await rows(env, "SELECT id,organization_id,group_id,username,display_name,role,status,must_change_password,approved_at,approved_by,last_login_at,created_at,updated_at,nickname,use_nickname_in_ranking,profile_public,bio,favorite_book,favorite_verse FROM users WHERE organization_id=?1", organizationId),
+        invitations: await rows(env, "SELECT id,organization_id,group_id,label,approval_required,max_uses,uses,expires_at,active,created_by,created_at FROM invitations WHERE organization_id=?1", organizationId),
         rounds: await rows(env, "SELECT * FROM rounds WHERE organization_id=?1", organizationId),
         questions: await rows(env, "SELECT q.* FROM questions q JOIN rounds r ON r.id=q.round_id WHERE r.organization_id=?1", organizationId),
         choices: await rows(env, "SELECT c.* FROM choices c JOIN questions q ON q.id=c.question_id JOIN rounds r ON r.id=q.round_id WHERE r.organization_id=?1", organizationId),
@@ -39,7 +41,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
         question_bank: await rows(env, "SELECT * FROM question_bank WHERE organization_id=?1", organizationId),
         question_bank_choices: await rows(env, "SELECT qbc.* FROM question_bank_choices qbc JOIN question_bank qb ON qb.id=qbc.question_id WHERE qb.organization_id=?1", organizationId),
         user_permissions: await rows(env, "SELECT up.* FROM user_permissions up JOIN users u ON u.id=up.user_id WHERE u.organization_id=?1", organizationId),
-        ai_question_suggestions: await rows(env, "SELECT * FROM ai_question_suggestions WHERE organization_id=?1", organizationId),
+        ai_question_suggestions: await rows(env, "SELECT id,organization_id,requested_by,model,request_json,question_json,status,imported_question_id,created_at,reviewed_at,reviewed_by FROM ai_question_suggestions WHERE organization_id=?1", organizationId),
         batch_operations: await rows(env, "SELECT * FROM batch_operations WHERE organization_id=?1", organizationId),
         season_snapshots: await rows(env, "SELECT ss.* FROM season_snapshots ss JOIN seasons s ON s.id=ss.season_id WHERE s.organization_id=?1", organizationId),
         season_awards: await rows(env, "SELECT sa.* FROM season_awards sa JOIN seasons s ON s.id=sa.season_id WHERE s.organization_id=?1", organizationId),

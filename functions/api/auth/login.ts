@@ -1,6 +1,6 @@
 import { json, normalizeUsername, randomToken, sessionCookie, sha256, verifyPassword } from "../../_lib/security";
 import type { AppEnv } from "../../_lib/auth";
-import { requestFingerprint } from "../../_lib/abuse";
+import { enforceRateLimit, requestFingerprint } from "../../_lib/abuse";
 
 export const onRequestPost = async ({ request, env }: { request: Request; env: AppEnv }) => {
   const body: any = await request.json().catch(() => null);
@@ -10,6 +10,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
   if (!username || !password || password.length > 128) return json({ error: "invalid_credentials" }, 401);
   const now = Date.now();
   const usernameHash = await sha256(username);
+  const fingerprint=await requestFingerprint(request),retry=await enforceRateLimit(env,`login:${fingerprint}:${usernameHash}`,10,15*60*1000);if(retry)return json({error:"too_many_attempts",retryAfter:retry},429,{"retry-after":String(retry)});
   const security: any = await env.DB.prepare("SELECT failed_count,first_failed_at,locked_until FROM login_security WHERE username_hash=?1").bind(usernameHash).first();
   if (security?.locked_until && Number(security.locked_until) > now) {
     return json({ error: "too_many_attempts", retryAfter: Math.ceil((Number(security.locked_until) - now) / 1000) }, 429, { "retry-after": String(Math.ceil((Number(security.locked_until) - now) / 1000)) });
