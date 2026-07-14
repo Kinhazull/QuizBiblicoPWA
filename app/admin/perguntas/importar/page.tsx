@@ -1,11 +1,80 @@
 "use client";
-import { useState } from "react";
 
-const required=["livro","referencia","tema","categoria","dificuldade","enunciado","alternativa_a","alternativa_b","alternativa_c","alternativa_d","correta","comentario"];
-function parseCsv(text:string){const delimiter=(text.split(/\r?\n/,1)[0].match(/;/g)||[]).length>=(text.split(/\r?\n/,1)[0].match(/,/g)||[]).length?";":",";const rows:string[][]=[];let row:string[]=[],cell="",quoted=false;for(let i=0;i<text.length;i++){const char=text[i];if(char==='"'){if(quoted&&text[i+1]==='"'){cell+='"';i++}else quoted=!quoted}else if(char===delimiter&&!quoted){row.push(cell.trim());cell=""}else if((char==='\n'||char==='\r')&&!quoted){if(char==='\r'&&text[i+1]==='\n')i++;row.push(cell.trim());if(row.some(Boolean))rows.push(row);row=[];cell=""}else cell+=char}row.push(cell.trim());if(row.some(Boolean))rows.push(row);return rows}
-const clean=(value:string)=>value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/\s+/g,"_");
-export default function ImportQuestionBank(){const [items,setItems]=useState<any[]>([]),[review,setReview]=useState<any[]>([]),[message,setMessage]=useState(""),[busy,setBusy]=useState(false);
- async function read(file:File){setMessage("");setReview([]);const rows=parseCsv(await file.text());if(rows.length<2){setMessage("A planilha não possui linhas de conteúdo.");return}const headers=rows[0].map(clean),missing=required.filter(name=>!headers.includes(name));if(missing.length){setMessage(`Colunas ausentes: ${missing.join(", ")}. Use o modelo disponível.`);return}const value=(row:string[],name:string)=>row[headers.indexOf(name)]||"";const parsed=rows.slice(1).map((row,index)=>{const correct=clean(value(row,"correta"));return {row:index+2,book:value(row,"livro"),reference:value(row,"referencia"),theme:value(row,"tema"),category:value(row,"categoria"),difficulty:{facil:"easy",media:"medium",dificil:"hard",easy:"easy",medium:"medium",hard:"hard"}[clean(value(row,"dificuldade"))]||"medium",prompt:value(row,"enunciado"),choices:[value(row,"alternativa_a"),value(row,"alternativa_b"),value(row,"alternativa_c"),value(row,"alternativa_d")],correctIndex:{a:0,b:1,c:2,d:3,"1":0,"2":1,"3":2,"4":3}[correct]??-1,commentary:value(row,"comentario")}});setItems(parsed);await preview(parsed)}
- async function preview(questions:any[]){setBusy(true);const response=await fetch("/api/admin/questions/import",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({questions})}),data=await response.json();setBusy(false);if(response.ok){setReview(data.review);setMessage(`${data.totals.ready} pronta(s), ${data.totals.similar} semelhante(s) para revisar e ${data.totals.duplicate} duplicada(s).`)}else setMessage(data.error==="invalid_questions"?"Há campos inválidos. Confira enunciados, alternativas e resposta correta.":"Não foi possível validar a planilha.")}
- async function commit(){if(!review.length||!confirm("Adicionar ao banco todas as questões prontas e semelhantes? As duplicadas serão ignoradas."))return;setBusy(true);const response=await fetch("/api/admin/questions/import",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({questions:items,commit:true})}),data=await response.json();setBusy(false);if(response.ok){setMessage(`${data.added} pergunta(s) importada(s); ${data.skipped} duplicada(s) ignorada(s).`);setItems([]);setReview([])}else setMessage("A importação não foi concluída.")}
- return <main className="admin-shell"><section className="admin-title"><p className="eyebrow">IMPORTAÇÃO EM LOTE</p><h1>Importar <em>planilha</em></h1><p>Use um arquivo CSV com até 100 perguntas. O sistema fará uma prévia antes de gravar.</p></section><section className="admin-panel bank-import-head"><a className="primary" href="/modelo-banco-perguntas.csv" download>BAIXAR MODELO CSV</a><label className="file-pick">SELECIONAR PLANILHA<input type="file" accept=".csv,text/csv" onChange={event=>{const file=event.target.files?.[0];if(file)read(file)}}/></label><p>O modelo pode ser aberto e salvo pelo Excel ou Google Planilhas. Preserve os nomes das colunas.</p></section>{message&&<p className="auth-message">{message}</p>}{items.length>0&&<section className="admin-panel bank-import-preview"><header><h2>Prévia de {items.length} pergunta(s)</h2><button className="primary" disabled={busy||!review.length} onClick={commit}>{busy?"PROCESSANDO...":"CONFIRMAR IMPORTAÇÃO"}</button></header><div className="import-table"><div className="import-row import-label"><b>Linha</b><b>Questão</b><b>Classificação</b><b>Situação</b></div>{items.map((item,index)=>{const result=review[index];return <div className={`import-row ${result?.status||"checking"}`} key={index}><span>{item.row}</span><span><strong>{item.prompt||"Sem enunciado"}</strong><small>{item.reference} · {item.book}</small></span><span>{item.theme}<small>{item.category} · {item.difficulty==="easy"?"Fácil":item.difficulty==="hard"?"Difícil":"Média"}</small></span><span><b>{result?.status==="duplicate"?"Duplicada":result?.status==="similar"?"Revisar semelhança":result?.status==="ready"?"Pronta":"Validando"}</b>{result?.match&&<small>Parecida com: {result.match}</small>}</span></div>})}</div></section>}</main>}
+import { useState } from "react";
+import { decodeQuestionUpload } from "./decode-upload";
+
+const required = ["livro", "referencia", "tema", "categoria", "dificuldade", "enunciado", "alternativa_a", "alternativa_b", "alternativa_c", "alternativa_d", "correta", "comentario"];
+
+function parseCsv(text: string) {
+  const first = text.split(/\r?\n/, 1)[0];
+  const candidates: Array<[string, number]> = [
+    [";", (first.match(/;/g) || []).length],
+    [",", (first.match(/,/g) || []).length],
+    ["\t", (first.match(/\t/g) || []).length],
+  ];
+  const delimiter = candidates.sort((a, b) => b[1] - a[1])[0][0];
+  const rows: string[][] = [];
+  let row: string[] = [], cell = "", quoted = false;
+  for (let index = 0; index < text.length; index++) {
+    const character = text[index];
+    if (character === '"') {
+      if (quoted && text[index + 1] === '"') { cell += '"'; index++; }
+      else quoted = !quoted;
+    } else if (character === delimiter && !quoted) {
+      row.push(cell.trim()); cell = "";
+    } else if ((character === "\n" || character === "\r") && !quoted) {
+      if (character === "\r" && text[index + 1] === "\n") index++;
+      row.push(cell.trim());
+      if (row.some(Boolean)) rows.push(row);
+      row = []; cell = "";
+    } else cell += character;
+  }
+  row.push(cell.trim());
+  if (row.some(Boolean)) rows.push(row);
+  return rows;
+}
+
+const clean = (value: string) => value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, "_");
+
+export default function ImportQuestionBank() {
+  const [items, setItems] = useState<any[]>([]), [review, setReview] = useState<any[]>([]), [message, setMessage] = useState(""), [busy, setBusy] = useState(false);
+
+  async function read(file: File) {
+    setMessage(""); setReview([]);
+    const rows = parseCsv(decodeQuestionUpload(await file.arrayBuffer()));
+    if (rows.length < 2) { setMessage("A planilha não possui linhas de conteúdo."); return; }
+    const headers = rows[0].map(clean), missing = required.filter(name => !headers.includes(name));
+    if (missing.length) { setMessage(`Colunas ausentes: ${missing.join(", ")}. Use o modelo disponível.`); return; }
+    const value = (row: string[], name: string) => row[headers.indexOf(name)] || "";
+    const parsed = rows.slice(1).map((row, index) => {
+      const correct = clean(value(row, "correta"));
+      return {
+        row: index + 2, book: value(row, "livro"), reference: value(row, "referencia"), theme: value(row, "tema"), category: value(row, "categoria"),
+        difficulty: ({ facil: "easy", media: "medium", dificil: "hard", easy: "easy", medium: "medium", hard: "hard" } as Record<string, string>)[clean(value(row, "dificuldade"))] || "medium",
+        prompt: value(row, "enunciado"), choices: [value(row, "alternativa_a"), value(row, "alternativa_b"), value(row, "alternativa_c"), value(row, "alternativa_d")],
+        correctIndex: ({ a: 0, b: 1, c: 2, d: 3, "1": 0, "2": 1, "3": 2, "4": 3 } as Record<string, number>)[correct] ?? -1,
+        commentary: value(row, "comentario"),
+      };
+    });
+    setItems(parsed); await preview(parsed);
+  }
+
+  async function preview(questions: any[]) {
+    setBusy(true);
+    const response = await fetch("/api/admin/questions/import", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ questions }) }), data = await response.json();
+    setBusy(false);
+    if (response.ok) { setReview(data.review); setMessage(`${data.totals.ready} pronta(s), ${data.totals.similar} semelhante(s) para revisar e ${data.totals.duplicate} duplicada(s).`); }
+    else setMessage(data.error === "invalid_encoding" ? "A planilha contém caracteres ilegíveis. Salve novamente como CSV UTF-8 ou selecione o arquivo original." : data.error === "invalid_questions" ? "Há campos inválidos. Confira enunciados, alternativas e resposta correta." : "Não foi possível validar a planilha.");
+  }
+
+  async function commit() {
+    if (!review.length || !confirm("Adicionar ao banco todas as questões prontas e semelhantes? As duplicadas serão ignoradas.")) return;
+    setBusy(true);
+    const response = await fetch("/api/admin/questions/import", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ questions: items, commit: true }) }), data = await response.json();
+    setBusy(false);
+    if (response.ok) { setMessage(`${data.added} pergunta(s) importada(s); ${data.skipped} duplicada(s) ignorada(s).`); setItems([]); setReview([]); }
+    else setMessage("A importação não foi concluída.");
+  }
+
+  return <main className="admin-shell"><section className="admin-title"><p className="eyebrow">IMPORTAÇÃO EM LOTE</p><h1>Importar <em>planilha</em></h1><p>Use um arquivo CSV com até 100 perguntas. O sistema fará uma prévia antes de gravar.</p></section><section className="admin-panel bank-import-head"><a className="primary" href="/modelo-banco-perguntas.csv" download>BAIXAR MODELO CSV</a><label className="file-pick">SELECIONAR PLANILHA<input type="file" accept=".csv,text/csv" onChange={event => { const file = event.target.files?.[0]; if (file) read(file); }}/></label><p>Compatível com CSV em UTF-8 ou ANSI/Windows-1252, salvo pelo Excel ou Google Planilhas. Preserve os nomes das colunas.</p></section>{message && <p className="auth-message">{message}</p>}{items.length > 0 && <section className="admin-panel bank-import-preview"><header><h2>Prévia de {items.length} pergunta(s)</h2><button className="primary" disabled={busy || !review.length} onClick={commit}>{busy ? "PROCESSANDO..." : "CONFIRMAR IMPORTAÇÃO"}</button></header><div className="import-table"><div className="import-row import-label"><b>Linha</b><b>Questão</b><b>Classificação</b><b>Situação</b></div>{items.map((item, index) => { const result = review[index]; return <div className={`import-row ${result?.status || "checking"}`} key={index}><span>{item.row}</span><span><strong>{item.prompt || "Sem enunciado"}</strong><small>{item.reference} · {item.book}</small></span><span>{item.theme}<small>{item.category} · {item.difficulty === "easy" ? "Fácil" : item.difficulty === "hard" ? "Difícil" : "Média"}</small></span><span><b>{result?.status === "duplicate" ? "Duplicada" : result?.status === "similar" ? "Revisar semelhança" : result?.status === "ready" ? "Pronta" : "Validando"}</b>{result?.match && <small>Parecida com: {result.match}</small>}</span></div>; })}</div></section>}</main>;
+}
