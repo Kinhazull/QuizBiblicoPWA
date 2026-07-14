@@ -5,7 +5,7 @@ import { json } from "../../../_lib/security";
 
 export const onRequestGet = async ({ request, env, params }: { request: Request; env: AppEnv; params: { id: string } }) => {
   try {
-    const admin: any = await requireAnyPermission(request, env, ["questions.edit","questions.review"]);
+    const admin: any = await requireAnyPermission(request, env, ["questions.edit","questions.review","rounds.manage"]);
     const question = await env.DB.prepare(`SELECT * FROM question_bank WHERE id=?1 AND organization_id=?2`).bind(params.id, admin.organizationId).first();
     if (!question) return json({ error: "not_found" }, 404);
     const choices = await env.DB.prepare(`SELECT * FROM question_bank_choices WHERE question_id=?1 ORDER BY position`).bind(params.id).all();

@@ -7,6 +7,7 @@ import { json } from "../../../_lib/security";
 export const onRequestPost = async ({ request, env }: { request: Request; env: AppEnv }) => {
   try {
     const admin: any = await requirePermission(request, env, "questions.edit"); const now = Date.now();
+    await env.DB.prepare(`UPDATE question_bank SET status='active',review_status='approved',updated_at=?1 WHERE organization_id=?2 AND category='Base inicial' AND status<>'archived'`).bind(now,admin.organizationId).run();
     const existing = await env.DB.prepare(`SELECT normalized_prompt FROM question_bank WHERE organization_id=?1 AND status<>'archived'`).bind(admin.organizationId).all();
     const known = new Set(existing.results.map((item: any) => item.normalized_prompt)); let skipped = 0;
     const omitted = new Set([3, 6, 8, 10, 22, 32, 40, 48, 50, 55, 60]);

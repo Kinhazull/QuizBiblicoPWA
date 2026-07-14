@@ -22,17 +22,21 @@ export default function RoundsAdmin() {
     const state = { index, search: "", theme: "", book: "", difficulty: "", page: 1, ...(picker?.index === index ? picker : {}), ...patch };
     const params = new URLSearchParams({ q: state.search, theme: state.theme, book: state.book, difficulty: state.difficulty, page: String(state.page), selectable: "1" });
     const response = await fetch(`/api/admin/questions?${params}`); const data = await response.json();
+    if (!response.ok) { setMessage("Não foi possível abrir o acervo. Verifique sua permissão e o Diagnóstico do sistema."); return; }
     setPicker({ ...state, items: data.questions || [], facets: data.facets || [], total: data.total || 0, totalPages: data.totalPages || 1 });
   }
 
   async function chooseFromBank(id: string) {
     if (!picker) return; const response = await fetch(`/api/admin/questions/${id}`); const data = await response.json();
+    if (!response.ok || !data.question) { setMessage("Não foi possível carregar esta pergunta do acervo."); return; }
     updateQuestion(picker.index, { bankQuestionId: id, reference: data.question.reference || "", prompt: data.question.prompt, commentary: data.question.commentary || "", choices: data.choices.map((choice: any) => choice.text), correctIndex: Math.max(0, data.choices.findIndex((choice: any) => choice.correct)) });
     setPicker(null);
   }
 
   async function openComposer() {
     const response = await fetch("/api/admin/questions?selectable=1"); const data = await response.json();
+    if (!response.ok) { setMessage("Não foi possível consultar o acervo aprovado."); return; }
+    if (!data.total) { setMessage("Não há perguntas aprovadas disponíveis. Aprove a Base 100 na Revisão de Perguntas ou execute a regularização da base."); return; }
     setComposer({ theme: "", book: "", category: "", difficulty: "", facets: data.facets || [], busy: false });
   }
 
