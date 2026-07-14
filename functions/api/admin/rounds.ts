@@ -2,7 +2,8 @@ import type { AppEnv } from "../../_lib/auth";
 import { requirePermission } from "../../_lib/permissions";
 import { json } from "../../_lib/security";
 import { parseBrasiliaDateTime } from "../../_lib/time";
-import { normalizeQuestion, validateQuestion } from "../../_lib/questions";
+import { QUESTION_COUNT, normalizeQuestion, validateQuestion, validateQuestionResult } from "../../_lib/questions";
+import { validateRoundConfiguration } from "../../_lib/rounds";
 
 export const onRequestGet = async ({ request, env }: { request: Request; env: AppEnv }) => {
   try { const admin: any = await requirePermission(request, env, "rounds.manage"); const { results } = await env.DB.prepare(`SELECT r.*, COUNT(q.id) AS questionCount FROM rounds r LEFT JOIN questions q ON q.round_id=r.id WHERE r.organization_id=?1 GROUP BY r.id ORDER BY r.opens_at DESC`).bind(admin.organizationId).all(); return json({ rounds: results }); }
@@ -14,10 +15,12 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
     const admin: any = await requirePermission(request, env, "rounds.manage"); const body: any = await request.json();
     const title = String(body.title || "").trim(); const theme = String(body.theme || "").trim(); const questions = Array.isArray(body.questions) ? body.questions : [];
     const opensAt = parseBrasiliaDateTime(body.opensAt); const closesAt = parseBrasiliaDateTime(body.closesAt);
-    if (title.length < 3 || theme.length < 3 || questions.length !== 10 || !Number.isFinite(opensAt) || !Number.isFinite(closesAt) || closesAt <= opensAt) return json({ error: "invalid_round" }, 400);
-    if (questions.some((q: any) => !validateQuestion({ ...q, theme: q.theme || theme }))) return json({ error: "invalid_questions" }, 400);
-    const roundId = crypto.randomUUID(); const now = Date.now(); const seconds = Math.max(15, Math.min(60, Number(body.secondsPerQuestion) || 20));
-    const attemptLimit=Math.max(1,Math.min(5,Number(body.officialAttemptLimit)||3)),roundType=body.roundType==="special"?"special":"regular",featured=body.featured?1:0,seasonId=String(body.seasonId||"")||null;
+    if (title.length < 3 || title.length > 100 || theme.length < 3 || theme.length > 80 || questions.length !== QUESTION_COUNT) return json({ error: "invalid_round" }, 400);
+    const invalidQuestion = questions.map((q: any) => validateQuestionResult({ ...q, theme: q.theme || theme })).find(result => !result.ok);
+    if (invalidQuestion && !invalidQuestion.ok) return json({ error: "invalid_questions", reason: invalidQuestion.error }, 400);
+    const roundId = crypto.randomUUID(); const now = Date.now(); const seconds = Number(body.secondsPerQuestion ?? 20);
+    const attemptLimit=Number(body.officialAttemptLimit??3),roundType=body.roundType==="special"?"special":"regular",featured=body.featured?1:0,seasonId=String(body.seasonId||"")||null;
+    const configurationError=validateRoundConfiguration({opensAt,closesAt,secondsPerQuestion:seconds,attemptLimit});if(configurationError)return json({error:configurationError},400);
     if(seasonId){const season=await env.DB.prepare(`SELECT id FROM seasons WHERE id=?1 AND organization_id=?2 AND status!='cancelled'`).bind(seasonId,admin.organizationId).first();if(!season)return json({error:"invalid_season"},400)}
     const ruleNumber=(value:any,fallback:number,min:number,max:number)=>{const parsed=Number(value);return Math.max(min,Math.min(max,Number.isFinite(parsed)?parsed:fallback))};
     const advanced=body.advancedRules?{allowPractice:body.advancedRules.allowPractice!==false,basePoints:ruleNumber(body.advancedRules.basePoints,400,100,1000),speedPointsPerSecond:ruleNumber(body.advancedRules.speedPointsPerSecond,40,0,100),streakBonus:ruleNumber(body.advancedRules.streakBonus,100,0,300),minimumCorrectPoints:ruleNumber(body.advancedRules.minimumCorrectPoints,100,0,500)}:null;
@@ -39,9 +42,10 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
         }
       }
       const questionId = crypto.randomUUID(); statements.push(env.DB.prepare(`INSERT INTO questions (id,round_id,position,reference,prompt,commentary,active,source_question_id) VALUES (?1,?2,?3,?4,?5,?6,1,?7)`).bind(questionId, roundId, position + 1, q.reference, q.prompt, q.commentary, sourceId));
-      q.choices.forEach((choice: string, i: number) => statements.push(env.DB.prepare(`INSERT INTO choices (id,question_id,text,correct) VALUES (?1,?2,?3,?4)`).bind(crypto.randomUUID(), questionId, choice, i === q.correctIndex ? 1 : 0)));
+      q.choices.forEach((choice: string, i: number) => statements.push(env.DB.prepare(`INSERT INTO choices (id,question_id,text,position,correct) VALUES (?1,?2,?3,?4,?5)`).bind(crypto.randomUUID(), questionId, choice, i, i === q.correctIndex ? 1 : 0)));
       statements.push(env.DB.prepare(`UPDATE question_bank SET times_used=times_used+1,updated_at=?1 WHERE id=?2`).bind(now, sourceId));
     }
+    statements.push(env.DB.prepare("INSERT INTO audit_logs(id,organization_id,actor_user_id,action,entity_type,entity_id,details_json,created_at) VALUES(?1,?2,?3,'round.created_and_scheduled','round',?4,?5,?6)").bind(crypto.randomUUID(),admin.organizationId,admin.id,roundId,JSON.stringify({questionCount:QUESTION_COUNT,opensAt,closesAt,attemptLimit,seconds}),now));
     await env.DB.batch(statements); return json({ ok: true, roundId }, 201);
   } catch (response) { if (response instanceof Response) return response; throw response; }
 };

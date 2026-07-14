@@ -5,7 +5,7 @@ import { DatabaseSync } from "node:sqlite";
 
 test("all migrations are sequential and apply to an empty SQLite database", async () => {
   const files = (await readdir(new URL("../drizzle/", import.meta.url))).filter(file => file.endsWith(".sql")).sort();
-  assert.equal(files.length, 18);
+  assert.equal(files.length, 19);
   files.forEach((file, index) => assert.equal(file.slice(0, 4), String(index).padStart(4, "0")));
   const db = new DatabaseSync(":memory:");
   for (const file of files) db.exec(await readFile(new URL(`../drizzle/${file}`, import.meta.url), "utf8"));
@@ -18,5 +18,7 @@ test("all migrations are sequential and apply to an empty SQLite database", asyn
   assert.ok(attemptColumns.includes("question_order_json"));
   const attemptIndexes = db.prepare("PRAGMA index_list('attempts')").all().map(row => row.name);
   assert.ok(attemptIndexes.includes("attempts_user_round_mode_number_uq"));
+  assert.ok(db.prepare("PRAGMA table_info(choices)").all().some(row => row.name === "position"));
+  assert.ok(db.prepare("PRAGMA index_list('attempt_answers')").all().some(row => row.name === "attempt_answers_order_uq"));
   db.close();
 });

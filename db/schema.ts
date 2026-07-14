@@ -70,6 +70,18 @@ export const sessions = sqliteTable("sessions", {
   ipHash: text("ip_hash"),
 }, (table) => [index("sessions_user_idx").on(table.userId), index("sessions_expiry_idx").on(table.expiresAt)]);
 
+export const legalConsents = sqliteTable("legal_consents", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  organizationId: text("organization_id").references(() => organizations.id),
+  documentType: text("document_type").notNull().default("terms_and_privacy"),
+  termsVersion: text("terms_version").notNull(),
+  privacyVersion: text("privacy_version").notNull(),
+  acceptedAt: integer("accepted_at").notNull(),
+  ipHash: text("ip_hash"),
+  userAgent: text("user_agent"),
+}, (table) => [index("legal_consents_user_idx").on(table.userId, table.acceptedAt), index("legal_consents_org_time_idx").on(table.organizationId, table.acceptedAt)]);
+
 export const seasons = sqliteTable("seasons", {
   id: text("id").primaryKey(), organizationId: text("organization_id").notNull().references(() => organizations.id), title: text("title").notNull(), year: integer("year").notNull(), quarter: integer("quarter").notNull(), startsAt: integer("starts_at").notNull(), endsAt: integer("ends_at").notNull(), status: text("status", { enum: ["draft","active","closed","cancelled"] }).notNull().default("draft"), closedAt:integer("closed_at"),snapshotCreatedAt:integer("snapshot_created_at"),createdBy: text("created_by").notNull().references(() => users.id), createdAt: integer("created_at").notNull(), updatedAt: integer("updated_at").notNull(),
 }, (table) => [uniqueIndex("seasons_org_period_uq").on(table.organizationId, table.year, table.quarter)]);
@@ -141,8 +153,9 @@ export const choices = sqliteTable("choices", {
   id: text("id").primaryKey(),
   questionId: text("question_id").notNull().references(() => questions.id, { onDelete: "cascade" }),
   text: text("text").notNull(),
+  position: integer("position"),
   correct: integer("correct", { mode: "boolean" }).notNull().default(false),
-}, (table) => [index("choices_question_idx").on(table.questionId)]);
+}, (table) => [index("choices_question_idx").on(table.questionId), uniqueIndex("choices_question_position_uq").on(table.questionId, table.position)]);
 
 export const attempts = sqliteTable("attempts", {
   id: text("id").primaryKey(),
@@ -175,7 +188,7 @@ export const attemptAnswers = sqliteTable("attempt_answers", {
   responseTimeMs: integer("response_time_ms").notNull(),
   points: integer("points").notNull(),
   answeredAt: integer("answered_at").notNull(),
-}, (table) => [primaryKey({ columns: [table.attemptId, table.questionId] })]);
+}, (table) => [primaryKey({ columns: [table.attemptId, table.questionId] }), uniqueIndex("attempt_answers_order_uq").on(table.attemptId, table.questionOrder)]);
 
 export const auditLogs = sqliteTable("audit_logs", {
   id: text("id").primaryKey(),

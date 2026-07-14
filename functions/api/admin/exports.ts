@@ -1,15 +1,17 @@
 import type { AppEnv } from "../../_lib/auth";
 import { requirePermission } from "../../_lib/permissions";
 import { json } from "../../_lib/security";
+import { enforceRateLimit, requestFingerprint } from "../../_lib/abuse";
 
 function csv(rows: any[], columns: { key: string; label: string }[]) {
-  const escape = (value: unknown) => {const raw=String(value??"");const safe=/^[=+\-@]/.test(raw)?`'${raw}`:raw;return `"${safe.replace(/"/g,'""')}"`};
+  const escape = (value: unknown) => {const raw=String(value??"");const safe=/^[\t\r ]*[=+\-@]/.test(raw)||/^[\t\r]/.test(raw)?`'${raw}`:raw;return `"${safe.replace(/"/g,'""')}"`};
   return "\uFEFF" + [columns.map(column => escape(column.label)).join(";"), ...rows.map(row => columns.map(column => escape(row[column.key])).join(";"))].join("\r\n");
 }
 
 export const onRequestGet = async ({ request, env }: { request: Request; env: AppEnv }) => {
   try {
     const admin: any = await requirePermission(request, env, "reports.view"); const url = new URL(request.url); const type = url.searchParams.get("type") || "members"; const roundId = url.searchParams.get("roundId");
+    const retry = await enforceRateLimit(env, `export:${admin.id}:${await requestFingerprint(request)}`, 20, 60 * 60 * 1000); if (retry) return json({error:"too_many_requests",retryAfter:retry},429,{"retry-after":String(retry)});
     let rows: any[] = []; let columns: { key: string; label: string }[] = []; const filename = type;
     if (type === "members") {
       ({ results: rows } = await env.DB.prepare(`SELECT display_name AS name,username,COALESCE(nickname,'') AS nickname,role,status,created_at AS createdAt,last_login_at AS lastLoginAt FROM users WHERE organization_id=?1 ORDER BY display_name`).bind(admin.organizationId).all());
@@ -37,6 +39,7 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: Ap
       ({ results: rows } = await env.DB.prepare(`SELECT l.created_at AS createdAt,COALESCE(u.display_name,'Sistema') AS actor,l.action,l.entity_type AS entityType,l.entity_id AS entityId,l.details_json AS details FROM audit_logs l LEFT JOIN users u ON u.id=l.actor_user_id WHERE l.organization_id=?1 ORDER BY l.created_at DESC LIMIT 5000`).bind(admin.organizationId).all());
       rows=rows.map(row=>({...row,createdAt:new Date(row.createdAt).toLocaleString("pt-BR",{timeZone:"America/Sao_Paulo"})})); columns=[{key:"createdAt",label:"Data"},{key:"actor",label:"Responsável"},{key:"action",label:"Ação"},{key:"entityType",label:"Tipo"},{key:"entityId",label:"Registro"},{key:"details",label:"Detalhes"}];
     } else return json({ error: "invalid_export" }, 400);
-    const date = new Date().toISOString().slice(0,10); return new Response(csv(rows,columns),{headers:{"content-type":"text/csv; charset=utf-8","content-disposition":`attachment; filename="conte-os-feitos-${filename}-${date}.csv"`,"cache-control":"no-store"}});
+    await env.DB.prepare("INSERT INTO audit_logs(id,organization_id,actor_user_id,action,entity_type,entity_id,details_json,created_at) VALUES(?1,?2,?3,'data.exported','export',NULL,?4,?5)").bind(crypto.randomUUID(),admin.organizationId,admin.id,JSON.stringify({type,roundId:roundId||null,rowCount:rows.length}),Date.now()).run();
+    const date = new Date().toISOString().slice(0,10); return new Response(csv(rows,columns),{headers:{"content-type":"text/csv; charset=utf-8","content-disposition":`attachment; filename="conte-os-feitos-${filename}-${date}.csv"`,"cache-control":"no-store, private","x-content-type-options":"nosniff"}});
   } catch (response) { if (response instanceof Response) return response; throw response; }
 };

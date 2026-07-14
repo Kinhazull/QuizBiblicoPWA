@@ -1,6 +1,7 @@
 import type { AppEnv } from "../../_lib/auth";
 import { requirePermission } from "../../_lib/permissions";
 import { json, verifyPassword } from "../../_lib/security";
+import { enforceRateLimit, requestFingerprint } from "../../_lib/abuse";
 
 async function rows(env: AppEnv, sql: string, ...bindings: unknown[]) {
   const result = await env.DB.prepare(sql).bind(...bindings).all();
@@ -10,6 +11,8 @@ async function rows(env: AppEnv, sql: string, ...bindings: unknown[]) {
 export const onRequestPost = async ({ request, env }: { request: Request; env: AppEnv }) => {
   try {
     const admin: any = await requirePermission(request,env,"permissions.manage");
+    const retry = await enforceRateLimit(env, `backup:${admin.id}:${await requestFingerprint(request)}`, 3, 60 * 60 * 1000);
+    if (retry) return json({ error: "too_many_requests", retryAfter: retry }, 429, { "retry-after": String(retry) });
     const body: any = await request.json();
     const credentials: any = await env.DB.prepare("SELECT password_hash,password_salt FROM users WHERE id=?1").bind(admin.id).first();
     if (!credentials || !await verifyPassword(String(body.password || ""), credentials.password_salt, credentials.password_hash)) return json({ error: "invalid_password" }, 403);
@@ -17,7 +20,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
     const organizationId = admin.organizationId;
     const data = {
       format: "conte-os-feitos-backup",
-      schemaVersion: 16,
+      schemaVersion: 18,
       credentialsExcluded: true,
       exportedAt: Date.now(),
       organizationId,

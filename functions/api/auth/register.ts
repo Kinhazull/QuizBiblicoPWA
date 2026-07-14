@@ -24,11 +24,15 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
   const id = crypto.randomUUID();
   const credential = await hashPassword(password);
   const status = invite.approval_required ? "pending" : "active";
+  const consentColumns = new Set(((await env.DB.prepare("PRAGMA table_info(legal_consents)").all()).results as any[]).map(column => column.name));
+  const consentStatement = consentColumns.has("organization_id")
+    ? env.DB.prepare(`INSERT INTO legal_consents (id,user_id,terms_version,privacy_version,accepted_at,organization_id,document_type,ip_hash,user_agent) VALUES (?1,?2,?3,?4,?5,?6,'combined',?7,?8)`).bind(crypto.randomUUID(), id, TERMS_VERSION, PRIVACY_VERSION, now, invite.organization_id, fingerprint, String(request.headers.get("user-agent") || "").slice(0,300))
+    : env.DB.prepare(`INSERT INTO legal_consents (id,user_id,terms_version,privacy_version,accepted_at) VALUES (?1,?2,?3,?4,?5)`).bind(crypto.randomUUID(), id, TERMS_VERSION, PRIVACY_VERSION, now);
   const reserved=await env.DB.prepare("UPDATE invitations SET uses=uses+1 WHERE id=?1 AND active=1 AND (expires_at IS NULL OR expires_at>?2) AND (max_uses IS NULL OR uses<max_uses)").bind(invite.id,now).run();
   if(!reserved.meta.changes)return json({error:"invitation_limit"},409);
   try{await env.DB.batch([
     env.DB.prepare(`INSERT INTO users (id, organization_id, group_id, username, display_name, password_hash, password_salt, role, status, must_change_password, created_at, updated_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, 'participant', ?8, 0, ?9, ?9)`).bind(id, invite.organization_id, invite.group_id, username, displayName, credential.hash, credential.salt, status, now),
-    env.DB.prepare(`INSERT INTO legal_consents (id,user_id,terms_version,privacy_version,accepted_at) VALUES (?1,?2,?3,?4,?5)`).bind(crypto.randomUUID(), id, TERMS_VERSION, PRIVACY_VERSION, now),
+    consentStatement,
     env.DB.prepare(`INSERT INTO audit_logs (id, organization_id, actor_user_id, action, entity_type, entity_id, details_json, created_at) VALUES (?1, ?2, NULL, 'user.registered', 'user', ?3, ?4, ?5)`).bind(crypto.randomUUID(), invite.organization_id, id, JSON.stringify({ username }), now),
   ]);}catch(error){await env.DB.prepare("UPDATE invitations SET uses=MAX(0,uses-1) WHERE id=?1").bind(invite.id).run();if(String(error).includes("UNIQUE"))return json({error:"username_unavailable"},409);throw error}
   return json({ ok: true, status }, 201);
