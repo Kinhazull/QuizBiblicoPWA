@@ -16,6 +16,13 @@ export const onRequestGet = async ({ request, env, params }: { request: Request;
 export const onRequestPatch = async ({ request, env, params }: { request: Request; env: AppEnv; params: { id: string } }) => {
   try {
     const admin: any = await requirePermission(request, env, "questions.edit"); const body: any = await request.json();
+    if (body.restore === true) {
+      const now = Date.now();
+      const result = await env.DB.prepare(`UPDATE question_bank SET status='active',review_status='draft',updated_by=?1,updated_at=?2 WHERE id=?3 AND organization_id=?4 AND status='archived'`).bind(admin.id,now,params.id,admin.organizationId).run();
+      if (!result.meta.changes) return json({ error: "not_found" }, 404);
+      await env.DB.prepare(`INSERT INTO audit_logs (id,organization_id,actor_user_id,action,entity_type,entity_id,created_at) VALUES (?1,?2,?3,'question.restored','question_bank',?4,?5)`).bind(crypto.randomUUID(),admin.organizationId,admin.id,params.id,now).run();
+      return json({ ok: true, reviewStatus: "draft" });
+    }
     const question = validateQuestion(body); if (!question) return json({ error: "invalid_question" }, 400);
     const normalized = normalizeQuestion(question.prompt);
     const duplicate = await env.DB.prepare(`SELECT id,prompt FROM question_bank WHERE organization_id=?1 AND normalized_prompt=?2 AND id<>?3 AND status<>'archived'`).bind(admin.organizationId, normalized, params.id).first();

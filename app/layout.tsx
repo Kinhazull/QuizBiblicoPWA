@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import "./admin-extra.css";
+import "./admin-quality.css";
 import "./medals.css";
 import "./status.css";
 import "./back-navigation.css";

@@ -4,25 +4,6 @@ import { json } from "../../_lib/security";
 import { normalizeQuestion, validateQuestion } from "../../_lib/questions";
 
 const MODEL = "@cf/meta/llama-3.1-8b-instruct";
-const questionSchema = {
-  type: "object",
-  properties: {
-    questions: {
-      type: "array", minItems: 1, maxItems: 5,
-      items: {
-        type: "object",
-        properties: {
-          prompt: { type: "string" }, choices: { type: "array", minItems: 4, maxItems: 4, items: { type: "string" } },
-          correctIndex: { type: "integer", minimum: 0, maximum: 3 }, reference: { type: "string" }, book: { type: "string" },
-          theme: { type: "string" }, category: { type: "string" }, difficulty: { type: "string", enum: ["easy", "medium", "hard"] }, commentary: { type: "string" },
-        },
-        required: ["prompt", "choices", "correctIndex", "reference", "book", "theme", "category", "difficulty", "commentary"],
-      },
-    },
-  },
-  required: ["questions"],
-};
-
 function parseJsonText(text: string): any {
   const cleaned = text.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
   try { return JSON.parse(cleaned); } catch {
@@ -40,6 +21,13 @@ function parseResult(result: any): any[] {
   if (Array.isArray(payload)) return payload;
   if (Array.isArray(payload?.questions)) return payload.questions;
   if (Array.isArray(payload?.items)) return payload.items;
+  if (typeof payload?.questions === "string") return parseResult(payload.questions);
+  if (payload && typeof payload === "object") {
+    for (const value of Object.values(payload)) {
+      if (Array.isArray(value)) return value;
+      if (value && typeof value === "object") { try { return parseResult(value); } catch {} }
+    }
+  }
   throw new Error("invalid_ai_response");
 }
 
@@ -66,7 +54,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
     ];
     let generated: any[];
     try {
-      generated = parseResult(await env.AI.run(MODEL, { messages, max_tokens: 2600, temperature: 0.35, response_format: { type: "json_schema", json_schema: questionSchema } }));
+      generated = parseResult(await env.AI.run(MODEL, { messages, max_tokens: 2600, temperature: 0.35, response_format: { type: "json_object" } }));
     } catch (error) {
       console.error(JSON.stringify({ event: "ai_question_parse_failed", message: error instanceof Error ? error.message : String(error) }));
       return json({ error: "invalid_ai_response" }, 502);

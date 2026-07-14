@@ -8,7 +8,8 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: Ap
     const admin: any = await requireAnyPermission(request, env, ["questions.edit","questions.review","rounds.manage"]);
     const url = new URL(request.url);
     const search = String(url.searchParams.get("q") || "").trim().slice(0, 45);
-    const filters: string[] = ["qb.organization_id=?1", url.searchParams.get("selectable") === "1" ? "qb.status='active' AND qb.review_status='approved'" : "qb.status<>'archived'"];
+    const archived = url.searchParams.get("archived") === "1";
+    const filters: string[] = ["qb.organization_id=?1", archived ? "qb.status='archived'" : url.searchParams.get("selectable") === "1" ? "qb.status='active' AND qb.review_status='approved'" : "qb.status<>'archived'"];
     const values: any[] = [admin.organizationId];
     for (const [field, column] of [["theme", "qb.theme"], ["book", "qb.book"], ["category", "qb.category"], ["difficulty", "qb.difficulty"]]) {
       const value = String(url.searchParams.get(field) || "").trim();
@@ -17,7 +18,7 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: Ap
     if (search) { values.push(`%${search}%`); filters.push(`(qb.prompt LIKE ?${values.length} OR qb.reference LIKE ?${values.length})`); }
     const reviewStatus=String(url.searchParams.get("reviewStatus")||""); if(reviewStatus){values.push(reviewStatus);filters.push(`qb.review_status=?${values.length}`)}
     const page = Math.max(1, Number(url.searchParams.get("page")) || 1);
-    const limit = 20;
+    const limit = Math.max(20, Math.min(100, Number(url.searchParams.get("limit")) || 20));
     const countValues = [...values];
     const count: any = await env.DB.prepare(`SELECT COUNT(*) AS total FROM question_bank qb WHERE ${filters.join(" AND ")}`).bind(...countValues).first();
     values.push(limit, (page - 1) * limit);
