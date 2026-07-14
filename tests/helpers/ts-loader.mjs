@@ -1,0 +1,2 @@
+import{access}from"node:fs/promises";
+export async function resolve(specifier,context,nextResolve){try{return await nextResolve(specifier,context)}catch(error){if((specifier.startsWith(".")||specifier.startsWith("/"))&&!specifier.match(/\.[a-z]+$/i)){const candidate=new URL(`${specifier}.ts`,context.parentURL);try{await access(candidate);return{url:candidate.href,shortCircuit:true}}catch{}}throw error}}
