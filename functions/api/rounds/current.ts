@@ -15,7 +15,7 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: Ap
     }
 
     if (!round) return json({ round: null });
-    const attempts: any = await env.DB.prepare("SELECT COUNT(*) AS used,MAX(score) AS best FROM attempts WHERE user_id=?1 AND round_id=?2 AND mode='official' AND status='completed'").bind(user.id, round.id).first();
+    const attempts: any = await env.DB.prepare("SELECT COUNT(CASE WHEN status<>'invalid' THEN 1 END) AS used,MAX(CASE WHEN status='completed' THEN score END) AS best FROM attempts WHERE user_id=?1 AND round_id=?2 AND mode='official'").bind(user.id, round.id).first();
     const rules=round.advanced_rules_json?JSON.parse(round.advanced_rules_json):null;
     const latestStartAt = latestAttemptStart(Number(round.closes_at), Number(round.question_count || 10), Number(round.seconds_per_question));
     return json({ round: {
