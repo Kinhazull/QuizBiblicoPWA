@@ -16,6 +16,8 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: Ap
     completion = { attemptsUsed, bestScore: Number(official?.bestScore || 0), completed: Number(official?.completedAttempts || 0) >= 1, inProgress: Boolean(official?.inProgress), optionalAttemptsRemaining: Math.max(0, Number(current.attemptLimit || 2) - attemptsUsed) };
     practice = { completed: Number(training?.completed || 0), inProgress: Boolean(training?.inProgress) };
     if (completion.completed) ranking = await env.DB.prepare(`WITH best AS (SELECT user_id,MAX(score) score,MAX(correct_answers) correctAnswers,MIN(total_time_ms) totalTimeMs FROM attempts WHERE round_id=?1 AND mode='official' AND status='completed' GROUP BY user_id),ranked AS (SELECT user_id,RANK() OVER(ORDER BY score DESC,correctAnswers DESC,totalTimeMs ASC) position FROM best) SELECT position FROM ranked WHERE user_id=?2`).bind(current.id, user.id).first();
+  } else if (recent?.bestScore != null) {
+    ranking = await env.DB.prepare(`WITH best AS (SELECT user_id,MAX(score) score,MAX(correct_answers) correctAnswers,MIN(total_time_ms) totalTimeMs FROM attempts WHERE round_id=?1 AND mode='official' AND status='completed' GROUP BY user_id),ranked AS (SELECT user_id,RANK() OVER(ORDER BY score DESC,correctAnswers DESC,totalTimeMs ASC) position FROM best) SELECT position FROM ranked WHERE user_id=?2`).bind(recent.id, user.id).first();
   }
-  return json({ serverNow: now, current, next, recent, completion, practice, ranking: ranking ? { position: Number((ranking as any).position), provisional: true } : null });
+  return json({ serverNow: now, current, next, recent, completion, practice, ranking: ranking ? { position: Number((ranking as any).position), provisional: Boolean(current) } : null });
 } catch (response) { if (response instanceof Response) return response; throw response; } };

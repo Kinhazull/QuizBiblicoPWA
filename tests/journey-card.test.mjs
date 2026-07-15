@@ -8,8 +8,12 @@ const view=(extra={})=>getJourneyCardView({current,completion:{attemptsUsed:0,co
 
 test("card da Jornada cobre estados oficiais e ação dinâmica",()=>{
   assert.equal(view().action,"INICIAR JORNADA");
-  assert.equal(view({completion:{attemptsUsed:1,completed:false,optionalAttemptsRemaining:2,bestScore:0,inProgress:true}}).action,"CONTINUAR JORNADA");
-  assert.equal(view({completion:{attemptsUsed:1,completed:true,optionalAttemptsRemaining:2,bestScore:8400}}).action,"MELHORAR RESULTADO");
+  const active=view({completion:{attemptsUsed:1,completed:false,optionalAttemptsRemaining:2,bestScore:0,inProgress:true}});
+  assert.equal(active.eyebrow,"JORNADA EM ANDAMENTO");
+  assert.equal(active.action,"CONTINUAR JORNADA");
+  const recorded=view({completion:{attemptsUsed:1,completed:true,optionalAttemptsRemaining:2,bestScore:8400}});
+  assert.equal(recorded.eyebrow,"RESULTADO REGISTRADO");
+  assert.equal(recorded.action,"MELHORAR RESULTADO");
   assert.equal(getJourneyCardView({next:{id:"j2",title:"Próxima",opensAt:2}},remaining).eyebrow,"PRÓXIMA JORNADA");
   assert.equal(getJourneyCardView({recent:{id:"j0",title:"Encerrada",closesAt:1,bestScore:5000}},remaining).action,"VER RESULTADO");
 });
