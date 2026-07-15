@@ -1,18 +1,25 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
-
-const groups = [
-  { label: "Visão geral", links: [["/admin", "Painel"], ["/", "Abrir aplicativo"], ["/admin/analises", "Análises"], ["/admin/relatorios", "Relatórios"]] },
-  { label: "Comunidade", links: [["/admin/acessos", "Acessos"], ["/admin/membros", "Membros"], ["/admin/convites", "Convites"], ["/admin/comunicacao", "Comunicação"]] },
-  { label: "Perguntas", links: [["/admin/perguntas", "Acervo"], ["/admin/perguntas/arquivadas", "Arquivadas"], ["/admin/perguntas/ia", "Sugestões IA"], ["/admin/perguntas/revisao", "Revisão"], ["/admin/perguntas/colaboracao", "Colaboração"], ["/admin/perguntas/importar", "Importar banco"], ["/admin/perguntas/base", "Base 100"]] },
-  { label: "Rodadas", links: [["/admin/rodadas/lista", "Todas as rodadas"], ["/admin/rodadas", "Nova rodada"], ["/admin/rodadas/importar", "Importar rodada"], ["/admin/calendario", "Calendário"], ["/admin/temporadas", "Temporadas"]] },
-  { label: "Gestão", links: [["/admin/permissoes", "Permissões"], ["/admin/historico", "Histórico"], ["/admin/privacidade", "Privacidade"], ["/admin/diagnostico", "Diagnóstico"]] },
-];
+import { AccountMenu } from "./AccountMenu";
+import { adminNavigation, BrandIcon } from "./navigation";
 
 export function AdminQuickNav() {
-  const path = usePathname(), [open, setOpen] = useState(false);
-  useEffect(() => setOpen(false), [path]);
+  const path = usePathname(), toggleRef = useRef<HTMLButtonElement>(null);
+  const current = useMemo(() => adminNavigation.find(group => group.items.some(item => path === item.href || (item.href !== "/admin" && path.startsWith(`${item.href}/`))))?.label || "Visão geral", [path]);
+  const [open, setOpen] = useState(false), [expanded, setExpanded] = useState<Record<string, boolean>>({ [current]: true });
+  function close(restore = false) { setOpen(false); if (restore) requestAnimationFrame(() => toggleRef.current?.focus()); }
+  useEffect(() => { setExpanded(value => ({ ...value, [current]: true })); close(); }, [path, current]);
+  useEffect(() => { const escape = (event: KeyboardEvent) => { if (event.key === "Escape" && open) close(true); }; document.addEventListener("keydown", escape); document.body.classList.toggle("admin-menu-open", open); return () => { document.removeEventListener("keydown", escape); document.body.classList.remove("admin-menu-open"); }; }, [open]);
   if (!path.startsWith("/admin")) return null;
-  return <><button className="admin-menu-toggle" aria-expanded={open} aria-controls="admin-side-menu" onClick={() => setOpen(!open)}><span>☰</span> Menu</button>{open && <button className="admin-menu-backdrop" aria-label="Fechar menu" onClick={() => setOpen(false)}/>}<aside id="admin-side-menu" className={`admin-side-menu ${open ? "open" : ""}`}><header><strong>CONTE OS FEITOS</strong><button onClick={() => setOpen(false)} aria-label="Fechar menu">×</button></header>{groups.map(group => <section key={group.label}><small>{group.label}</small>{group.links.map(([href, label]) => <a className={path === href ? "active" : ""} href={href} key={href}>{label}</a>)}</section>)}</aside></>;
+  return <>
+    <header className="admin-brand-header"><a className="admin-brand-link" href="/admin"><span>✦</span><strong>CONTE OS FEITOS</strong><small>Central de gestão</small></a><div className="admin-header-account"><AccountMenu compact /></div></header>
+    <button ref={toggleRef} type="button" className="admin-menu-toggle" aria-label="Abrir menu administrativo" aria-expanded={open} aria-controls="admin-side-menu" onClick={() => setOpen(value => !value)}><BrandIcon name="menu" /><span>Menu</span></button>
+    {open && <button type="button" className="admin-menu-backdrop" aria-label="Fechar menu administrativo" onClick={() => close(true)} />}
+    <aside id="admin-side-menu" className={`admin-side-menu ${open ? "open" : ""}`} aria-label="Navegação administrativa">
+      <div className="admin-drawer-heading"><strong>Navegação</strong><button type="button" onClick={() => close(true)} aria-label="Fechar menu">×</button></div>
+      <a className="admin-open-app" href="/"><BrandIcon name="home" /> Abrir aplicativo</a>
+      {adminNavigation.map(group => { const groupOpen = Boolean(expanded[group.label]); return <section className="admin-nav-group" key={group.label}><button type="button" className="admin-nav-group-toggle" aria-expanded={groupOpen} onClick={() => setExpanded(value => ({ ...value, [group.label]: !groupOpen }))}><BrandIcon name={group.icon} /><span>{group.label}</span><BrandIcon name="chevron" /></button>{groupOpen && <nav aria-label={group.label}>{group.items.map(item => { const active = path === item.href || (item.href !== "/admin" && path.startsWith(`${item.href}/`)); return <a href={item.href} key={item.href} className={active ? "active" : ""} aria-current={active ? "page" : undefined} title={item.description}><BrandIcon name={item.icon} /><span>{item.label}</span></a>; })}</nav>}</section>; })}
+    </aside>
+  </>;
 }
