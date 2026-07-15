@@ -38,6 +38,7 @@ import { BackNavigation } from "./BackNavigation";
 import { LearningQuickNav } from "./LearningQuickNav";
 import { AuthRecoveryLink } from "./AuthRecoveryLink";
 import { PwaStatus } from "./PwaStatus";
+import { LogoutButton } from "./LogoutButton";
 
 export const metadata: Metadata = {
   title: "Contem o que Deus fez — Quiz Bíblico",
@@ -49,5 +50,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="pt-BR"><body><a className="skip-link" href="#main-content">Pular para o conteúdo</a><BackNavigation /><AdminQuickNav /><LearningQuickNav /><AuthRecoveryLink /><PwaStatus /><div id="main-content">{children}</div></body></html>;
+  return <html lang="pt-BR"><body><a className="skip-link" href="#main-content">Pular para o conteúdo</a><BackNavigation /><AdminQuickNav /><LearningQuickNav /><AuthRecoveryLink /><LogoutButton/><PwaStatus /><div id="main-content">{children}</div></body></html>;
 }
