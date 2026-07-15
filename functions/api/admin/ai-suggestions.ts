@@ -2,6 +2,9 @@ import { requirePermission } from "../../_lib/permissions";
 import type { AppEnv } from "../../_lib/auth";
 import { json } from "../../_lib/security";
 import { normalizeQuestion, validateQuestion } from "../../_lib/questions";
+import { AI_SUGGESTIONS_ENABLED } from "../../../shared/features";
+
+const featureDisabled = () => json({ error: "feature_disabled" }, 404);
 
 const MODEL = "@cf/meta/llama-3.1-8b-instruct";
 function parseJsonText(text: string): any {
@@ -40,6 +43,7 @@ function normalizeGeneratedQuestion(raw: any, defaults: any) {
 }
 
 export const onRequestGet = async ({ request, env }: { request: Request; env: AppEnv }) => {
+  if (!AI_SUGGESTIONS_ENABLED) return featureDisabled();
   try {
     const user: any = await requirePermission(request, env, "questions.edit");
     const rows = await env.DB.prepare(`SELECT id,model,question_json questionJson,status,imported_question_id importedQuestionId,created_at createdAt FROM ai_question_suggestions WHERE organization_id=?1 ORDER BY created_at DESC LIMIT 60`).bind(user.organizationId).all();
@@ -48,6 +52,7 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: Ap
 };
 
 export const onRequestPost = async ({ request, env }: { request: Request; env: AppEnv }) => {
+  if (!AI_SUGGESTIONS_ENABLED) return featureDisabled();
   try {
     const user: any = await requirePermission(request, env, "questions.edit");
     if (!env.AI) return json({ error: "ai_not_configured" }, 503);
@@ -84,6 +89,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
 };
 
 export const onRequestPatch = async ({ request, env }: { request: Request; env: AppEnv }) => {
+  if (!AI_SUGGESTIONS_ENABLED) return featureDisabled();
   try {
     const user: any = await requirePermission(request, env, "questions.edit"), body: any = await request.json(), id = String(body.id || ""), action = String(body.action || "");
     const stored: any = await env.DB.prepare("SELECT * FROM ai_question_suggestions WHERE id=?1 AND organization_id=?2 AND status='suggested'").bind(id, user.organizationId).first();

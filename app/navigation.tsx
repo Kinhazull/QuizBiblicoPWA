@@ -28,7 +28,6 @@ export const adminNavigation: NavigationGroup[] = [
   { label: "Perguntas", icon: "questions", items: [
     { label: "Banco de perguntas", href: "/admin/perguntas", icon: "questions", description: "Criar, localizar e organizar perguntas." },
     { label: "Perguntas arquivadas", href: "/admin/perguntas/arquivadas", icon: "file", description: "Consultar conteúdo preservado fora de uso." },
-    { label: "Sugestões com IA", href: "/admin/perguntas/ia", icon: "sparkles", description: "Gerar rascunhos para revisão humana." },
     { label: "Revisão de perguntas", href: "/admin/perguntas/revisao", icon: "review", description: "Revisar e aprovar perguntas do banco." },
     { label: "Revisão colaborativa", href: "/admin/perguntas/colaboracao", icon: "users", description: "Compartilhar perguntas e acompanhar contribuições." },
     { label: "Importar perguntas", href: "/admin/perguntas/importar", icon: "upload", description: "Adicionar perguntas em lote ao banco." },
