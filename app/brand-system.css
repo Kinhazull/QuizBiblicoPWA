@@ -13,3 +13,5 @@ body:has(.admin-shell){background:radial-gradient(circle at 80% 0,#dcd0f5 0,tran
 
 /* Jornada, ranking e medalhas reutilizam admin-shell apenas para o layout. */
 body:has(.journey-page) .global-back,body:has(.ranking-page) .global-back,body:has(.medals-page) .global-back{display:block!important}
+
+.admin-shell.journey-page,.admin-shell.ranking-page,.admin-shell.medals-page{padding-top:70px!important}.journey-page>.admin-title,.ranking-page>.admin-title,.medals-page>.admin-title{padding-top:0}@media(max-width:700px){.admin-shell.journey-page,.admin-shell.ranking-page,.admin-shell.medals-page{padding-top:56px!important}}
