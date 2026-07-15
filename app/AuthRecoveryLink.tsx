@@ -3,20 +3,19 @@
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { createPortal } from "react-dom";
+import { useAuth } from "./AuthProvider";
 
 export function AuthRecoveryLink() {
   const path = usePathname();
+  const { user, loading } = useAuth();
   const [target, setTarget] = useState<Element | null>(null);
-  const [visible, setVisible] = useState(path === "/");
 
   useEffect(() => {
     if (path !== "/") {
-      setVisible(false);
       setTarget(null);
       return;
     }
 
-    let stopped = false;
     let slot: HTMLDivElement | null = null;
 
     const mount = () => {
@@ -30,23 +29,17 @@ export function AuthRecoveryLink() {
       setTarget(slot);
     };
 
-    const checkSession = () => fetch("/api/auth/me", { cache: "no-store" })
-      .then(response => { if (!stopped) setVisible(!response.ok); })
-      .catch(() => { if (!stopped) setVisible(true); });
-
     mount();
-    checkSession();
     const observer = new MutationObserver(mount);
     observer.observe(document.body, { childList: true, subtree: true });
 
     return () => {
-      stopped = true;
       observer.disconnect();
       slot?.remove();
     };
-  }, [path]);
+  }, [path, user, loading]);
 
-  if (!visible || !target) return null;
+  if (loading || user || !target) return null;
   return createPortal(
     <a className="auth-recovery-link" href="/recuperar-conta">Esqueci minha senha</a>,
     target,

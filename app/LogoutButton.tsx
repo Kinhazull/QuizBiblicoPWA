@@ -1,8 +1,10 @@
 "use client";
 import { useState } from "react";
 import { BrandIcon } from "./navigation";
+import { useAuth } from "./AuthProvider";
 
 export function LogoutButton({ className = "" }: { className?: string }) {
+  const { clearUser } = useAuth();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   async function logout() {
@@ -11,6 +13,7 @@ export function LogoutButton({ className = "" }: { className?: string }) {
     try {
       const response = await fetch("/api/auth/logout", { method: "POST", cache: "no-store", credentials: "same-origin" });
       if (!response.ok) throw new Error("logout_failed");
+      clearUser();
       navigator.serviceWorker?.controller?.postMessage({ type: "CLEAR_PRIVATE_STATE" });
       sessionStorage.clear();
       location.replace("/");
