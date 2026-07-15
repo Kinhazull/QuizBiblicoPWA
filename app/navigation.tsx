@@ -33,11 +33,11 @@ export const adminNavigation: NavigationGroup[] = [
     { label: "Importar perguntas", href: "/admin/perguntas/importar", icon: "upload", description: "Adicionar perguntas em lote ao banco." },
     { label: "Base inicial", href: "/admin/perguntas/base", icon: "book", description: "Gerenciar a coleção bíblica inicial." },
   ]},
-  { label: "Rodadas", icon: "calendar", items: [
-    { label: "Gerenciar rodadas", href: "/admin/rodadas/lista", icon: "calendar", description: "Consultar e administrar rodadas." },
-    { label: "Nova rodada", href: "/admin/rodadas", icon: "sparkles", description: "Montar uma rodada manualmente ou pelo banco." },
-    { label: "Importar rodada", href: "/admin/rodadas/importar", icon: "upload", description: "Criar uma rodada a partir de texto estruturado." },
-    { label: "Calendário", href: "/admin/calendario", icon: "calendar", description: "Visualizar a programação das rodadas." },
+  { label: "Jornadas", icon: "calendar", items: [
+    { label: "Gerenciar jornadas", href: "/admin/rodadas/lista", icon: "calendar", description: "Consultar e administrar jornadas." },
+    { label: "Nova jornada", href: "/admin/rodadas", icon: "sparkles", description: "Montar uma jornada manualmente ou pelo banco." },
+    { label: "Importar jornada", href: "/admin/rodadas/importar", icon: "upload", description: "Criar uma jornada a partir de texto estruturado." },
+    { label: "Calendário", href: "/admin/calendario", icon: "calendar", description: "Visualizar a programação das jornadas." },
     { label: "Temporadas", href: "/admin/temporadas", icon: "trophy", description: "Planejar e acompanhar ciclos trimestrais." },
   ]},
   { label: "Gestão", icon: "shield", items: [
