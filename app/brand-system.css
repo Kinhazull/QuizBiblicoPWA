@@ -10,3 +10,6 @@ body:has(.admin-shell){background:radial-gradient(circle at 80% 0,#dcd0f5 0,tran
 
 /* Cabeçalho estável das áreas do participante. */
 .participant-section-header-global{position:absolute;z-index:70;top:max(72px,calc(env(safe-area-inset-top) + 58px));left:50%;width:min(900px,calc(100% - 208px));transform:translateX(-50%);pointer-events:none}.participant-section-header-global a{pointer-events:auto}body:has(.participant-section-header-global) .global-back{display:block!important}body:has(.participant-section-header-global) .admin-shell,body:has(.participant-section-header-global) .profile-shell{padding-top:150px!important}@media(max-width:700px){.participant-section-header-global{top:max(58px,calc(env(safe-area-inset-top) + 50px));left:68px;width:calc(100% - 88px);transform:none}.participant-section-header-global strong{font-size:15px}body:has(.participant-section-header-global) .admin-shell,body:has(.participant-section-header-global) .profile-shell{padding-top:128px!important}}
+
+/* Jornada, ranking e medalhas reutilizam admin-shell apenas para o layout. */
+body:has(.journey-page) .global-back,body:has(.ranking-page) .global-back,body:has(.medals-page) .global-back{display:block!important}
