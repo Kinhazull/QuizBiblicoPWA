@@ -7,12 +7,13 @@ import { calculateAnswerPoints, scoringRules, summarizeAnswers } from "../../../
 import { syncBadges } from "../../../_lib/badges";
 
 async function persistedAnswer(env: AppEnv, attemptId: string, questionId: string) {
-  return env.DB.prepare("SELECT aa.choice_id choiceId,aa.correct,aa.points,q.commentary FROM attempt_answers aa JOIN questions q ON q.id=aa.question_id WHERE aa.attempt_id=?1 AND aa.question_id=?2").bind(attemptId, questionId).first<any>();
+  return env.DB.prepare("SELECT aa.choice_id choiceId,aa.correct,aa.points,q.commentary,c.correct choiceCorrect FROM attempt_answers aa JOIN questions q ON q.id=aa.question_id JOIN choices c ON c.id=aa.choice_id WHERE aa.attempt_id=?1 AND aa.question_id=?2").bind(attemptId, questionId).first<any>();
 }
 
 async function savedResponse(env: AppEnv, saved: any, attemptId: string) {
   const totals: any = await env.DB.prepare("SELECT COALESCE(SUM(points),0) totalScore FROM attempt_answers WHERE attempt_id=?1").bind(attemptId).first();
-  return { correct: Boolean(saved.correct), points: Number(saved.points), commentary: saved.commentary || "", alreadySaved: true, totalScore: Number(totals?.totalScore || 0) };
+  const timedOut = !saved.correct && Boolean(saved.choiceCorrect);
+  return { correct: Boolean(saved.correct), timedOut, points: Number(saved.points), commentary: timedOut ? `A alternativa estava correta, mas chegou após o encerramento do tempo. ${saved.commentary || ""}`.trim() : saved.commentary || "", alreadySaved: true, totalScore: Number(totals?.totalScore || 0) };
 }
 
 export const onRequestPost = async ({ request, env, params }: { request: Request; env: AppEnv; params: { id: string } }) => {
@@ -60,6 +61,7 @@ export const onRequestPost = async ({ request, env, params }: { request: Request
     }
     if (isLast) await syncBadges(env, user.id);
     const totalScore = finalResult?.score ?? Number((await env.DB.prepare("SELECT COALESCE(SUM(points),0) total FROM attempt_answers WHERE attempt_id=?1").bind(params.id).first<any>())?.total || 0);
-    return json({ correct, points, commentary: choice.commentary || "", alreadySaved: false, totalScore, attemptCompleted: isLast, result: finalResult });
+    const expiredCorrect = serverTimedOut && Boolean(choice.correct);
+    return json({ correct, timedOut: expiredCorrect, points, commentary: expiredCorrect ? `A alternativa estava correta, mas chegou após o encerramento do tempo. ${choice.commentary || ""}`.trim() : choice.commentary || "", alreadySaved: false, totalScore, attemptCompleted: isLast, result: finalResult });
   } catch (response) { if (response instanceof Response) return response; throw response; }
 };

@@ -24,7 +24,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
     const invalidQuestion = questions.map((q: any) => validateQuestionResult({ ...q, theme: q.theme || theme })).find(result => !result.ok);
     if (invalidQuestion && !invalidQuestion.ok) return json({ error: "invalid_questions", reason: invalidQuestion.error }, 400);
     const roundId = crypto.randomUUID(); const now = Date.now(); const seconds = Number(body.secondsPerQuestion ?? 20);
-    const attemptLimit=Number(body.officialAttemptLimit??3),roundType=body.roundType==="special"?"special":"regular",featured=body.featured?1:0,seasonId=String(body.seasonId||"")||null;
+    const attemptLimit=Number(body.officialAttemptLimit??2),roundType=body.roundType==="special"?"special":"regular",featured=body.featured?1:0,seasonId=String(body.seasonId||"")||null;
     const configurationError=validateRoundConfiguration({opensAt,closesAt,secondsPerQuestion:seconds,attemptLimit});if(configurationError)return json({error:configurationError},400);
     const seasonValidation=await validateRoundSeason(env,admin.organizationId,roundType,seasonId,opensAt,closesAt);if(!seasonValidation.ok)return json({error:seasonValidation.error,field:"seasonId"},400);
     const conflictingRound=await findRoundScheduleConflict(env,admin.organizationId,opensAt,closesAt);if(conflictingRound)return json({error:"round_schedule_conflict",conflictingRound},409);

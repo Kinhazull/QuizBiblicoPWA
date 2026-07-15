@@ -5,6 +5,7 @@ export type JourneyCardData = {
   recent?: { id: string; title: string; closesAt: number; bestScore?: number } | null;
   completion?: { attemptsUsed: number; completed: boolean; optionalAttemptsRemaining: number; bestScore: number; inProgress?: boolean } | null;
   practice?: { completed: number; inProgress: boolean } | null;
+  ranking?: { position: number; provisional: boolean } | null;
 };
 
 export type JourneyCardView = { eyebrow: string; title: string; detail: string; action: string; href: string; tone: string; meta?: string };
@@ -13,7 +14,7 @@ export function getJourneyCardView(data: JourneyCardData | null, remaining: (tar
   if (!data) return { eyebrow: "JORNADA DA SEMANA", title: "Preparando sua jornada", detail: "Buscando as informações mais recentes.", action: "AGUARDE", href: "#", tone: "waiting" };
   const { current, next, recent, completion, practice } = data;
   if (current) {
-    const attemptsLeft = Math.max(0, completion?.optionalAttemptsRemaining ?? current.attemptLimit ?? 3);
+    const attemptsLeft = Math.max(0, completion?.optionalAttemptsRemaining ?? current.attemptLimit ?? 2);
     const meta = `${current.secondsPerQuestion || 20}s por pergunta · termina em ${remaining(current.closesAt)}`;
     if (completion?.inProgress) return { eyebrow: "JORNADA OFICIAL", title: current.title, detail: "Sua tentativa está em andamento e foi preservada com segurança.", action: "CONTINUAR JORNADA", href: "/jogar", tone: "active", meta };
     if (!completion?.completed) return { eyebrow: "JORNADA OFICIAL DISPONÍVEL", title: current.title, detail: current.theme || "Uma nova oportunidade para aprender e compartilhar.", action: "INICIAR JORNADA", href: "/jogar", tone: "available", meta };

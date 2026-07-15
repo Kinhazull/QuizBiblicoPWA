@@ -36,7 +36,7 @@ export default function AdminPage() {
         <div className="invite-list">{invitations.map(invite => <div key={invite.id}><span><b>{invite.label}</b><small>{invite.uses}{invite.maxUses ? ` de ${invite.maxUses}` : " usos"}</small></span><i className={invite.active ? "active" : ""}>{invite.active ? "Ativo" : "Inativo"}</i></div>)}</div>
       </section>
       <section className="admin-panel full"><div className="panel-title"><div><small>MEMBROS</small><h2>Participantes aprovados</h2></div><b>{users.filter(u => u.status === "active").length}</b></div>
-        <div className="member-table">{users.filter(u => u.status === "active").map(user => <div key={user.id}><strong>{user.displayName}</strong><span>@{user.username}</span><em>{user.role}</em>{user.role === "participant" && <button onClick={() => updateUser(user.id,"suspended")}>Suspender</button>}</div>)}</div>
+        <div className="member-table"><div className="member-table-head" aria-hidden="true"><b>Nome</b><b>Usuário</b><b>Perfil</b><b>Ação</b></div>{users.filter(u => u.status === "active").map(user => <div className="member-table-row" key={user.id}><strong>{user.displayName}</strong><span>@{user.username}</span><em>{user.role === "participant" ? "Participante" : user.role === "leader" ? "Líder" : "Administrador"}</em><span className="member-action">{user.role === "participant" ? <button onClick={() => updateUser(user.id,"suspended")}>Suspender</button> : <small>Conta protegida</small>}</span></div>)}</div>
       </section>
     </div>}
   </main>;
