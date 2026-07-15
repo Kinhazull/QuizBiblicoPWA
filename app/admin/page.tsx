@@ -1,24 +1,15 @@
 "use client";
-
 import { useEffect, useState } from "react";
-
-const groups = [
-  { title: "Comunidade", description: "Participantes, convites e comunicação.", links: [["/admin/acessos","Acessos"],["/admin/membros","Membros"],["/admin/convites","Convites"],["/admin/comunicacao","Comunicação"]] },
-  { title: "Perguntas", description: "Acervo, criação, revisão e colaboração.", links: [["/admin/perguntas","Banco de perguntas"],["/admin/perguntas/ia","Sugestões IA"],["/admin/perguntas/revisao","Revisão"],["/admin/perguntas/colaboracao","Colaboração"],["/admin/perguntas/importar","Importar banco"]] },
-  { title: "Rodadas", description: "Planejamento, calendário e temporadas.", links: [["/admin/rodadas/lista","Todas as rodadas"],["/admin/rodadas","Nova rodada"],["/admin/rodadas/importar","Importar rodada"],["/admin/calendario","Calendário"],["/admin/temporadas","Temporadas"]] },
-  { title: "Gestão", description: "Indicadores, segurança e configurações.", links: [["/admin/analises","Análises"],["/admin/relatorios","Relatórios"],["/admin/permissoes","Permissões"],["/admin/historico","Histórico"],["/admin/diagnostico","Diagnóstico"]] }
-];
-
-export default function AdminHub(){
-  const [summary,setSummary]=useState({pending:0,members:0,rounds:0});
-  useEffect(()=>{Promise.all([fetch('/api/admin/users'),fetch('/api/admin/rounds')]).then(async([u,r])=>{
-    if(u.status===401||u.status===403){location.href='/';return}
-    const users=u.ok?(await u.json()).users||[]:[],rounds=r.ok?(await r.json()).rounds||[]:[];
-    setSummary({pending:users.filter((x:any)=>x.status==='pending').length,members:users.filter((x:any)=>x.status==='active').length,rounds:rounds.length});
-  }).catch(()=>{})},[]);
-  return <main className="admin-shell admin-hub">
-    <section className="admin-title"><p className="eyebrow">PAINEL ADMINISTRATIVO</p><h1>Central de <em>gestão</em></h1><p>Acompanhe o que precisa de atenção e acesse rapidamente cada área.</p></section>
-    <section className="hub-summary"><a href="/admin/acessos"><small>APROVAÇÕES PENDENTES</small><strong>{summary.pending}</strong><span>Revisar acessos →</span></a><a href="/admin/membros"><small>MEMBROS ATIVOS</small><strong>{summary.members}</strong><span>Gerenciar comunidade →</span></a><a href="/admin/rodadas/lista"><small>RODADAS CADASTRADAS</small><strong>{summary.rounds}</strong><span>Abrir rodadas →</span></a><a href="/admin/diagnostico"><small>SAÚDE DO SISTEMA</small><strong>✓</strong><span>Executar diagnóstico →</span></a></section>
-    <section className="hub-groups">{groups.map(group=><article className="admin-panel" key={group.title}><header><h2>{group.title}</h2><p>{group.description}</p></header><nav>{group.links.map(([href,label])=><a href={href} key={href}>{label}<span>→</span></a>)}</nav></article>)}</section>
-  </main>
+import { adminNavigation, BrandIcon, type IconName } from "../navigation";
+type Dashboard = { metrics: { pending: number; members: number; rounds: number; review: number; health: "healthy" | "attention" }; attention: Array<{ id: string; severity: string; count: number; title: string; description: string; href: string; action: string }> };
+const blocks = [adminNavigation[1], adminNavigation[2], adminNavigation[3], adminNavigation[4]];
+export default function AdminHub() {
+  const [data, setData] = useState<Dashboard | null>(null), [error, setError] = useState("");
+  useEffect(() => { fetch("/api/admin/dashboard", { cache: "no-store" }).then(async response => { if (response.status === 401 || response.status === 403) { location.replace("/"); return null; } if (!response.ok) throw new Error("dashboard_failed"); return response.json(); }).then(value => value && setData(value)).catch(() => setError("Não foi possível carregar a visão geral. Tente novamente.")); }, []);
+  const metrics: Array<[IconName, string, string, number | string, string]> = data ? [["users", "Aprovações pendentes", "Cadastros aguardando decisão", data.metrics.pending, "/admin/acessos"], ["users", "Membros ativos", "Participantes com acesso", data.metrics.members, "/admin/membros"], ["calendar", "Rodadas cadastradas", "Histórico e programação", data.metrics.rounds, "/admin/rodadas/lista"], ["review", "Perguntas em revisão", "Conteúdo aguardando avaliação", data.metrics.review, "/admin/perguntas/revisao"], ["health", "Saúde do sistema", "Integridade operacional", data.metrics.health === "healthy" ? "Saudável" : "Atenção", "/admin/diagnostico"]] : [];
+  return <main className="admin-shell admin-hub"><section className="admin-title"><p className="eyebrow">VISÃO GERAL</p><h1>Central de <em>gestão</em></h1><p>Acompanhe as prioridades e acesse cada área do Conte os Feitos.</p></section>
+    <section className="attention-section" aria-labelledby="attention-title"><header><div><p className="eyebrow">PRIORIDADES</p><h2 id="attention-title">Precisa de atenção</h2></div><a href="/admin/diagnostico">Abrir diagnóstico</a></header>{!data && !error && <p className="dashboard-state" role="status" aria-live="polite">Carregando pendências…</p>}{error && <p className="dashboard-state error" role="alert">{error} <button type="button" onClick={() => location.reload()}>Tentar novamente</button></p>}{data && data.attention.length === 0 && <div className="attention-empty"><BrandIcon name="health" /><div><strong>Nenhuma pendência crítica no momento</strong><span>Os principais indicadores estão em ordem.</span></div></div>}{data?.attention.map(item => <article className={`attention-item ${item.severity}`} key={item.id}><BrandIcon name={item.severity === "critical" ? "shield" : item.severity === "warning" ? "health" : "bell"} /><div><strong>{item.title}</strong><p>{item.description}</p></div><a href={item.href}>{item.action}</a></article>)}</section>
+    <section className="hub-summary" aria-label="Indicadores rápidos">{!data && !error ? Array.from({ length: 5 }, (_, i) => <div className="metric-skeleton" key={i} aria-hidden="true" />) : metrics.map(([icon, title, description, value, href]) => <a href={href} key={title}><BrandIcon name={icon} /><strong>{value}</strong><div><span>{title}</span><small>{description}</small></div></a>)}</section>
+    <section className="hub-groups" aria-label="Módulos administrativos">{blocks.map(group => <article className="admin-panel" key={group.label}><header><BrandIcon name={group.icon} /><div><h2>{group.label}</h2><p>{group.label === "Comunidade" ? "Participantes, aprovações, convites e avisos." : group.label === "Perguntas" ? "Conteúdo, revisão e colaboração editorial." : group.label === "Rodadas" ? "Planejamento, calendário e temporadas." : "Permissões, auditoria, privacidade e diagnóstico."}</p></div></header><nav>{group.items.map(item => <a href={item.href} key={item.href}><div><strong>{item.label}</strong><small>{item.description}</small></div><span aria-hidden="true">→</span></a>)}</nav></article>)}</section>
+  </main>;
 }
