@@ -1,7 +1,7 @@
 import type { AppEnv } from "../../../_lib/auth";
 import { requireAnyPermission, requirePermission } from "../../../_lib/permissions";
 import { normalizeQuestion, validateQuestion } from "../../../_lib/questions";
-import { json } from "../../../_lib/security";
+import { json, verifyPassword } from "../../../_lib/security";
 
 export const onRequestGet = async ({ request, env, params }: { request: Request; env: AppEnv; params: { id: string } }) => {
   try {
@@ -42,7 +42,15 @@ export const onRequestPatch = async ({ request, env, params }: { request: Reques
 
 export const onRequestDelete = async ({ request, env, params }: { request: Request; env: AppEnv; params: { id: string } }) => {
   try {
-    const admin: any = await requirePermission(request, env, "questions.edit"); const now = Date.now();
+    const admin: any = await requirePermission(request, env, "questions.edit"); const now = Date.now(), permanent=new URL(request.url).searchParams.get("permanent")==="1";
+    if(permanent){
+      if(admin.role!=="admin")return json({error:"forbidden"},403);
+      const body:any=await request.json().catch(()=>({})),question:any=await env.DB.prepare("SELECT id,prompt,status FROM question_bank WHERE id=?1 AND organization_id=?2").bind(params.id,admin.organizationId).first();
+      if(!question)return json({error:"not_found"},404);if(question.status!=="archived")return json({error:"question_not_archived"},409);
+      const credentials:any=await env.DB.prepare("SELECT password_hash,password_salt FROM users WHERE id=?1").bind(admin.id).first();if(!credentials||!await verifyPassword(String(body.password||""),credentials.password_salt,credentials.password_hash))return json({error:"invalid_password"},403);
+      await env.DB.batch([env.DB.prepare("UPDATE questions SET source_question_id=NULL WHERE source_question_id=?1").bind(params.id),env.DB.prepare("UPDATE ai_question_suggestions SET imported_question_id=NULL WHERE imported_question_id=?1").bind(params.id),env.DB.prepare("DELETE FROM question_bank WHERE id=?1 AND organization_id=?2 AND status='archived'").bind(params.id,admin.organizationId),env.DB.prepare("INSERT INTO audit_logs(id,organization_id,actor_user_id,action,entity_type,entity_id,details_json,created_at) VALUES(?1,?2,?3,'question.permanently_deleted','question_bank',?4,?5,?6)").bind(crypto.randomUUID(),admin.organizationId,admin.id,params.id,JSON.stringify({prompt:question.prompt,irreversible:true}),now)]);
+      return json({ok:true,permanentlyDeleted:true});
+    }
     const result = await env.DB.prepare(`UPDATE question_bank SET status='archived',updated_at=?1 WHERE id=?2 AND organization_id=?3`).bind(now, params.id, admin.organizationId).run();
     if (!result.meta.changes) return json({ error: "not_found" }, 404);
     await env.DB.prepare(`INSERT INTO audit_logs (id,organization_id,actor_user_id,action,entity_type,entity_id,created_at) VALUES (?1,?2,?3,'question.archived','question_bank',?4,?5)`).bind(crypto.randomUUID(), admin.organizationId, admin.id, params.id, now).run();
