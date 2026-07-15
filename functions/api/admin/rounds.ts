@@ -3,7 +3,7 @@ import { requirePermission } from "../../_lib/permissions";
 import { json } from "../../_lib/security";
 import { parseBrasiliaDateTime } from "../../_lib/time";
 import { QUESTION_COUNT, normalizeQuestion, validateQuestion, validateQuestionResult } from "../../_lib/questions";
-import { validateRoundConfiguration } from "../../_lib/rounds";
+import { findRoundScheduleConflict, validateRoundConfiguration, validateRoundSeason } from "../../_lib/rounds";
 
 export const onRequestGet = async ({ request, env }: { request: Request; env: AppEnv }) => {
   try { const admin: any = await requirePermission(request, env, "rounds.manage"); const { results } = await env.DB.prepare(`SELECT r.*, COUNT(q.id) AS questionCount FROM rounds r LEFT JOIN questions q ON q.round_id=r.id WHERE r.organization_id=?1 GROUP BY r.id ORDER BY r.opens_at DESC`).bind(admin.organizationId).all(); return json({ rounds: results }); }
@@ -15,13 +15,19 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
     const admin: any = await requirePermission(request, env, "rounds.manage"); const body: any = await request.json();
     const title = String(body.title || "").trim(); const theme = String(body.theme || "").trim(); const questions = Array.isArray(body.questions) ? body.questions : [];
     const opensAt = parseBrasiliaDateTime(body.opensAt); const closesAt = parseBrasiliaDateTime(body.closesAt);
-    if (title.length < 3 || title.length > 100 || theme.length < 3 || theme.length > 80 || questions.length !== QUESTION_COUNT) return json({ error: "invalid_round" }, 400);
+    if (title.length < 3 || title.length > 100) return json({ error: "invalid_title", field: "title" }, 400);
+    if (theme.length < 3 || theme.length > 80) return json({ error: "invalid_theme", field: "theme" }, 400);
+    if (!Number.isFinite(opensAt)) return json({ error: "invalid_opening_date", field: "opensAt" }, 400);
+    if (!Number.isFinite(closesAt)) return json({ error: "invalid_closing_date", field: "closesAt" }, 400);
+    if (closesAt <= opensAt) return json({ error: "invalid_schedule", field: "closesAt" }, 400);
+    if (questions.length !== QUESTION_COUNT) return json({ error: "invalid_question_count", field: "questions", expected: QUESTION_COUNT }, 400);
     const invalidQuestion = questions.map((q: any) => validateQuestionResult({ ...q, theme: q.theme || theme })).find(result => !result.ok);
     if (invalidQuestion && !invalidQuestion.ok) return json({ error: "invalid_questions", reason: invalidQuestion.error }, 400);
     const roundId = crypto.randomUUID(); const now = Date.now(); const seconds = Number(body.secondsPerQuestion ?? 20);
     const attemptLimit=Number(body.officialAttemptLimit??3),roundType=body.roundType==="special"?"special":"regular",featured=body.featured?1:0,seasonId=String(body.seasonId||"")||null;
     const configurationError=validateRoundConfiguration({opensAt,closesAt,secondsPerQuestion:seconds,attemptLimit});if(configurationError)return json({error:configurationError},400);
-    if(seasonId){const season=await env.DB.prepare(`SELECT id FROM seasons WHERE id=?1 AND organization_id=?2 AND status!='cancelled'`).bind(seasonId,admin.organizationId).first();if(!season)return json({error:"invalid_season"},400)}
+    const seasonValidation=await validateRoundSeason(env,admin.organizationId,roundType,seasonId,opensAt,closesAt);if(!seasonValidation.ok)return json({error:seasonValidation.error,field:"seasonId"},400);
+    const conflictingRound=await findRoundScheduleConflict(env,admin.organizationId,opensAt,closesAt);if(conflictingRound)return json({error:"round_schedule_conflict",conflictingRound},409);
     const ruleNumber=(value:any,fallback:number,min:number,max:number)=>{const parsed=Number(value);return Math.max(min,Math.min(max,Number.isFinite(parsed)?parsed:fallback))};
     const advanced=body.advancedRules?{allowPractice:body.advancedRules.allowPractice!==false,basePoints:ruleNumber(body.advancedRules.basePoints,400,100,1000),speedPointsPerSecond:ruleNumber(body.advancedRules.speedPointsPerSecond,40,0,100),streakBonus:ruleNumber(body.advancedRules.streakBonus,100,0,300),minimumCorrectPoints:ruleNumber(body.advancedRules.minimumCorrectPoints,100,0,500)}:null;
     const statements = [env.DB.prepare(`INSERT INTO rounds (id,organization_id,title,theme,description,status,opens_at,closes_at,official_attempt_limit,seconds_per_question,season_id,round_type,featured,advanced_rules_json,created_by,created_at,updated_at) VALUES (?1,?2,?3,?4,?5,'scheduled',?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?15)`).bind(roundId, admin.organizationId, title, theme, body.description || null, opensAt, closesAt, attemptLimit,seconds,seasonId,roundType,featured,advanced?JSON.stringify(advanced):null,admin.id,now)];

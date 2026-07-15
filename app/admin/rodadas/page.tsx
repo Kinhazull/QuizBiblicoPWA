@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { roundErrorMessage } from "../../round-errors";
 
 const blankQuestion = () => ({ reference: "", prompt: "", choices: ["", "", "", ""], correctIndex: 0, commentary: "", bankQuestionId: "" });
 
@@ -55,7 +56,9 @@ export default function RoundsAdmin() {
     if (busy) return;
     setBusy(true);
     setMessage("");
-    const data = Object.fromEntries(new FormData(event.currentTarget));
+    const formElement=event.currentTarget;const data = Object.fromEntries(new FormData(formElement));
+    if(data.roundType==="regular"&&!data.seasonId){setMessage("Selecione uma temporada para a rodada regular.");(formElement.elements.namedItem("seasonId") as HTMLElement)?.focus();setBusy(false);return}
+    const opening=new Date(String(data.opensAt)).getTime(),closing=new Date(String(data.closesAt)).getTime();if(Number.isFinite(opening)&&Number.isFinite(closing)&&closing<=opening){setMessage("O encerramento deve acontecer depois da abertura.");(formElement.elements.namedItem("closesAt") as HTMLElement)?.focus();setBusy(false);return}
     const response = await fetch("/api/admin/rounds", {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -66,7 +69,8 @@ export default function RoundsAdmin() {
       location.replace(`/admin/rodadas/detalhes?id=${result.roundId}`);
       return;
     }
-    setMessage("Confira os dados e as dez perguntas.");
+    setMessage(roundErrorMessage(result));
+    if(result.field)(formElement.elements.namedItem(result.field) as HTMLElement)?.focus();
     setBusy(false);
   }
 
@@ -80,7 +84,7 @@ export default function RoundsAdmin() {
         <label className="wide">Apresentação<textarea name="description" placeholder="Uma breve introdução para os participantes" /></label>
         <label>Liberação (horário de Brasília)<input name="opensAt" type="datetime-local" required /></label>
         <label>Encerramento (horário de Brasília)<input name="closesAt" type="datetime-local" required /></label>
-        <label>Temporada<select name="seasonId"><option value="">Sem temporada</option>{seasons.filter(item => !["closed","cancelled"].includes(item.status)).map(item => <option value={item.id} key={item.id}>{item.title}</option>)}</select></label>
+        <label>Temporada <b>· Obrigatório para rodada regular</b><select name="seasonId"><option value="">Selecione uma temporada</option>{seasons.filter(item => !["closed","cancelled"].includes(item.status)).map(item => <option value={item.id} key={item.id}>{item.title}</option>)}</select>{!seasons.some(item=>!["closed","cancelled"].includes(item.status))&&<small>Nenhuma temporada disponível. <a href="/admin/temporadas">Crie uma temporada</a> antes de agendar.</small>}</label>
         <label>Tipo<select name="roundType"><option value="regular">Rodada regular</option><option value="special">Evento especial</option></select></label>
         <label className="round-checkbox"><input type="checkbox" name="featured" /> Destacar na comunidade</label>
         <p className="utc-note">Informe no horário de Brasília. Exemplo: 19/07/2026 09:30.</p>

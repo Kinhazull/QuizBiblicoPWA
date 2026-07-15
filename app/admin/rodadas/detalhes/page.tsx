@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { roundErrorMessage } from "../../../round-errors";
 
 const brasiliaDate = (value: number) => {
   const parts = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date(value));
@@ -39,7 +40,7 @@ export default function Details() {
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ status, releaseNow }),
     });
-    setMessage(response.ok ? "Rodada atualizada." : "Não foi possível atualizar.");
+    const result=await response.json();setMessage(response.ok ? "Rodada atualizada." : roundErrorMessage(result));
     if (response.ok) load();
   }
 
@@ -57,7 +58,7 @@ export default function Details() {
       setMessage("Agendamento atualizado.");
       load();
     } else {
-      setMessage(result.error === "round_locked" ? "Esta rodada já começou ou possui tentativas e não pode mais ser editada." : "Confira as datas e os campos.");
+      setMessage(roundErrorMessage(result));
     }
   }
 

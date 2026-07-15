@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { roundErrorMessage } from "../../../round-errors";
 
 type Question = {
   reference: string;
@@ -101,6 +102,8 @@ export default function Import() {
   const [header, setHeader] = useState<Header>(emptyHeader);
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const [seasons,setSeasons]=useState<any[]>([]);
+  useEffect(()=>{fetch("/api/admin/seasons").then(async response=>{if(response.ok)setSeasons((await response.json()).seasons||[])})},[]);
 
   function preview() {
     const parsedQuestions = parseQuestions(text);
@@ -121,7 +124,8 @@ export default function Import() {
     event.preventDefault();
     if (questions.length !== 10 || busy) return;
     setBusy(true);
-    const data = Object.fromEntries(new FormData(event.currentTarget));
+    const formElement=event.currentTarget,data = Object.fromEntries(new FormData(formElement));
+    if(data.roundType==="regular"&&!data.seasonId){setMessage("Selecione uma temporada para a rodada regular.");(formElement.elements.namedItem("seasonId") as HTMLElement)?.focus();setBusy(false);return}
     const response = await fetch("/api/admin/rounds", {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -132,6 +136,7 @@ export default function Import() {
         opensAt: data.opensAt,
         closesAt: data.closesAt,
         secondsPerQuestion: Number(data.secondsPerQuestion) || 20,
+        seasonId:data.seasonId,roundType:data.roundType,
         questions,
       }),
     });
@@ -141,7 +146,7 @@ export default function Import() {
       location.replace(`/admin/rodadas/detalhes?id=${result.roundId}`);
       return;
     }
-    setMessage("Não foi possível agendar. Revise os dados.");
+    setMessage(roundErrorMessage(result));if(result.field)(formElement.elements.namedItem(result.field) as HTMLElement)?.focus();
     setBusy(false);
   }
 
@@ -161,6 +166,8 @@ export default function Import() {
         <label>Liberação (horário de Brasília)<input name="opensAt" type="datetime-local" required defaultValue={header.opensAt} /></label>
         <label>Encerramento (horário de Brasília)<input name="closesAt" type="datetime-local" required defaultValue={header.closesAt} /></label>
         <label>Segundos por pergunta<select name="secondsPerQuestion" defaultValue={header.secondsPerQuestion}><option>15</option><option>20</option><option>25</option><option>30</option></select></label>
+        <label>Temporada · Obrigatório para rodada regular<select name="seasonId"><option value="">Selecione uma temporada</option>{seasons.filter(item=>!["closed","cancelled"].includes(item.status)).map(item=><option key={item.id} value={item.id}>{item.title}</option>)}</select></label>
+        <label>Tipo<select name="roundType" defaultValue="regular"><option value="regular">Rodada regular</option><option value="special">Evento especial</option></select></label>
         <p className="utc-note">Informe no horário de Brasília. Exemplo: 19/07/2026 09:30.</p>
       </section>
       <section className="import-preview">{questions.map((question, index) => <article className="admin-panel" key={index}>
