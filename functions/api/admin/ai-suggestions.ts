@@ -31,6 +31,14 @@ function parseResult(result: any): any[] {
   throw new Error("invalid_ai_response");
 }
 
+function normalizeGeneratedQuestion(raw: any, defaults: any) {
+  const choices = raw?.choices ?? raw?.alternatives ?? raw?.options;
+  let correctIndex = raw?.correctIndex ?? raw?.indiceCorreto ?? raw?.correct_index;
+  if (!Number.isInteger(correctIndex) && typeof raw?.respostaCorreta === "string") correctIndex = "ABCD".indexOf(raw.respostaCorreta.trim().toUpperCase()[0]);
+  if (!Number.isInteger(correctIndex) && typeof raw?.correctAnswer === "string") correctIndex = "ABCD".indexOf(raw.correctAnswer.trim().toUpperCase()[0]);
+  return { prompt: raw?.prompt ?? raw?.pergunta ?? raw?.question, choices, correctIndex, reference: raw?.reference ?? raw?.referencia ?? null, commentary: raw?.commentary ?? raw?.comentario ?? raw?.explanation ?? null, theme: raw?.theme ?? raw?.tema ?? defaults.theme, book: raw?.book ?? raw?.livro ?? defaults.book, category: raw?.category ?? raw?.categoria ?? defaults.category, difficulty: raw?.difficulty ?? raw?.dificuldade ?? defaults.difficulty };
+}
+
 export const onRequestGet = async ({ request, env }: { request: Request; env: AppEnv }) => {
   try {
     const user: any = await requirePermission(request, env, "questions.edit");
@@ -49,20 +57,16 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
     if (Number(usage?.total || 0) >= 30) return json({ error: "daily_ai_limit" }, 429);
 
     const messages = [
-      { role: "system", content: "Você cria perguntas para um quiz bíblico cristão em português do Brasil. Use somente fatos bíblicos verificáveis, evite ambiguidades e nunca invente referências." },
-      { role: "user", content: `Gere exatamente ${count} perguntas de múltipla escolha. Tema: ${theme}. Livro: ${book || "qualquer livro bíblico"}. Categoria: ${category || "geral"}. Dificuldade: ${difficulty}. Referência ou orientação adicional: ${reference || "nenhuma"}. Cada pergunta deve ter quatro alternativas, uma resposta correta, referência e comentário curto.` },
+      { role: "system", content: "Você cria perguntas para um quiz bíblico cristão em português do Brasil. Responda exclusivamente com JSON válido, sem markdown. Use fatos bíblicos verificáveis, evite ambiguidades e nunca invente referências." },
+      { role: "user", content: `Gere exatamente ${count} perguntas. Tema: ${theme}. Livro: ${book || "qualquer livro bíblico"}. Categoria: ${category || "geral"}. Dificuldade: ${difficulty}. Orientação: ${reference || "nenhuma"}. Retorne {"questions":[{"prompt":"...","choices":["...","...","...","..."],"correctIndex":0,"reference":"...","commentary":"...","theme":"...","book":"...","category":"...","difficulty":"${difficulty}"}]}. correctIndex deve ser inteiro de 0 a 3.` },
     ];
     let generated: any[];
-    try {
-      generated = parseResult(await env.AI.run(MODEL, { messages, max_tokens: 2600, temperature: 0.35, response_format: { type: "json_object" } }));
-    } catch (error) {
-      console.error(JSON.stringify({ event: "ai_question_parse_failed", message: error instanceof Error ? error.message : String(error) }));
-      return json({ error: "invalid_ai_response" }, 502);
-    }
+    let modelResult:any;try{modelResult=await env.AI.run(MODEL,{messages,max_tokens:2600,temperature:0.25})}catch(error){console.error(JSON.stringify({event:"ai_provider_failed",message:error instanceof Error?error.message:String(error)}));return json({error:"ai_provider_unavailable"},503)}
+    try { generated=parseResult(modelResult); } catch(error){console.error(JSON.stringify({event:"ai_question_parse_failed",message:error instanceof Error?error.message:String(error)}));return json({error:"invalid_ai_response"},502)}
 
     const accepted: any[] = [];
     for (const raw of generated.slice(0, count)) {
-      const question = validateQuestion({ ...raw, theme: raw.theme || theme, book: raw.book || book, category: raw.category || category, difficulty: raw.difficulty || difficulty });
+      const question = validateQuestion(normalizeGeneratedQuestion(raw,{theme,book,category,difficulty}));
       if (!question) continue;
       const duplicate = await env.DB.prepare("SELECT id FROM question_bank WHERE organization_id=?1 AND normalized_prompt=?2 AND status<>'archived'").bind(user.organizationId, normalizeQuestion(question.prompt)).first();
       if (!duplicate) accepted.push(question);
