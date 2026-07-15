@@ -1,1 +1,11 @@
-"use client";import{usePathname}from"next/navigation";const visible=new Set(['/jornada','/rankings','/medalhas','/perfil','/revisao-inteligente','/privacidade/conta','/temporadas']);export function LearningQuickNav(){const path=usePathname();if(!visible.has(path))return null;return <nav className="learning-quick-nav" aria-label="Minha aprendizagem"><a href="/jornada">Jornada</a><a href="/temporadas">Temporadas</a><a href="/revisao-inteligente">Revisão inteligente</a><a href="/rankings">Rankings</a><a href="/medalhas">Medalhas</a><a href="/privacidade/conta">Privacidade</a></nav>}
+"use client";
+import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+import { BrandIcon, participantNavigation } from "./navigation";
+const participantRoutes = new Set(["/", "/jornada", "/rankings", "/medalhas", "/perfil"]);
+export function LearningQuickNav() {
+  const path = usePathname(), [authenticated, setAuthenticated] = useState(false);
+  useEffect(() => { fetch("/api/auth/me", { cache: "no-store" }).then(r => setAuthenticated(r.ok)).catch(() => setAuthenticated(false)); }, [path]);
+  if (!authenticated || !participantRoutes.has(path)) return null;
+  return <nav className="participant-bottom-nav" aria-label="Navegação principal">{participantNavigation.map(item => { const active = path === item.href; return <a key={item.href} href={item.href} className={active ? "active" : ""} aria-current={active ? "page" : undefined}><BrandIcon name={item.icon} /><span>{item.label}</span></a>; })}</nav>;
+}
