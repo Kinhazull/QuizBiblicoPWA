@@ -9,8 +9,8 @@ export function AuthRecoveryLink() {
     let stopped = false;
     const check = () => fetch("/api/auth/me", { cache: "no-store" }).then(r => { if (!stopped) setVisible(!r.ok); }).catch(() => { if (!stopped) setVisible(true); });
     check(); const timer = window.setInterval(check, 800);
-    const form = document.querySelector(".auth-card form"); setTarget(form);
-    return () => { stopped = true; clearInterval(timer); };
+    const card=document.querySelector(".auth-card"),legal=card?.querySelector(".legal-links");let slot:HTMLDivElement|null=null;if(card&&legal){slot=document.createElement("div");slot.className="auth-recovery-slot";card.insertBefore(slot,legal);setTarget(slot)}
+    return () => { stopped = true; clearInterval(timer); slot?.remove(); };
   }, [path]);
   if (!visible || !target) return null;
   return createPortal(<a className="auth-recovery-link" href="/recuperar-conta">Esqueci minha senha</a>, target);

@@ -13,6 +13,7 @@ const specs=[
  ["attempts","user_id IN (SELECT id FROM users WHERE organization_id=?)"],["notification_receipts","user_id IN (SELECT id FROM users WHERE organization_id=?)"],["user_badges","user_id IN (SELECT id FROM users WHERE organization_id=?)"],
  ["season_awards","season_id IN (SELECT id FROM seasons WHERE organization_id=?)"],["season_snapshots","season_id IN (SELECT id FROM seasons WHERE organization_id=?)"],["seasons","organization_id=?"],
  ["rounds","organization_id=?"],["announcements","organization_id=?"],["invitations","organization_id=?"],["privacy_requests","user_id IN (SELECT id FROM users WHERE organization_id=? AND id<>?)"],
+ ["ai_question_suggestions","organization_id=?"],["question_bank","organization_id=? AND status='archived'"],
  ["sessions","user_id IN (SELECT id FROM users WHERE organization_id=? AND id<>?)"],["legal_consents","user_id IN (SELECT id FROM users WHERE organization_id=? AND id<>?)"],["account_recovery_codes","user_id IN (SELECT id FROM users WHERE organization_id=? AND id<>?)"],["user_permissions","user_id IN (SELECT id FROM users WHERE organization_id=? AND id<>?)"],
  ["users","organization_id=? AND id<>?"],["groups","organization_id=? AND id NOT IN (SELECT group_id FROM users WHERE id=? AND group_id IS NOT NULL)"],
 ];

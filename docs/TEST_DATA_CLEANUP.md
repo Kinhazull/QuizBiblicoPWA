@@ -10,4 +10,4 @@ Para executar em uma cópia local, forneça também um backup existente:
 
 `node scripts/cleanup-test-data.mjs --execute --db caminho/local.sqlite --organization ORG_ID --preserve-admin ADMIN_ID --backup caminho/backup.sqlite`
 
-O administrador principal, a organização e o banco de perguntas são preservados. Rodadas, tentativas, respostas, temporadas, premiações, notificações, convites e usuários de teste são removidos na transação. Nunca execute diretamente contra produção.
+O administrador principal, a organização e as perguntas não arquivadas são preservados. Rodadas, tentativas, respostas, temporadas, premiações, notificações, convites, usuários de teste, sugestões de IA e perguntas arquivadas são removidos na transação. Nunca execute diretamente contra produção sem revisar o dry-run e possuir backup.

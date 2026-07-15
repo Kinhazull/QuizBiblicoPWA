@@ -19,7 +19,7 @@ test("participant controls expose notices settings active state and safe areas",
 
 test("profile owns explicit secure logout and privileged admin entry", () => {
   const profile = read("app/ProfilePrivacySections.tsx"), logout = read("app/LogoutButton.tsx");
-  assert.match(profile, /Abrir painel administrativo/); assert.match(profile, /LogoutButton/);
+  assert.doesNotMatch(profile, /Abrir painel administrativo|Administração|Sessão/); assert.match(profile, /LogoutButton/);
   assert.match(logout, /Sair da conta/); assert.match(logout, /\/api\/auth\/logout/); assert.match(logout, /CLEAR_PRIVATE_STATE/); assert.match(logout, /location\.replace/);
 });
 
