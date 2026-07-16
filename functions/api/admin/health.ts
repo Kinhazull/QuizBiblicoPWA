@@ -3,22 +3,295 @@ import type { AppEnv } from "../../_lib/auth";
 import { json } from "../../_lib/security";
 import { QUESTION_COUNT } from "../../_lib/questions";
 
-const SCHEMA_TARGET="0021_award_job_checkpoints";
-const required=["organizations","groups","users","invitations","sessions","rounds","questions","choices","attempts","attempt_answers","audit_logs","question_bank","question_bank_choices","user_permissions","question_revisions","seasons","user_review_progress","announcements","account_recovery_codes","privacy_requests","ai_question_suggestions","batch_operations","season_snapshots","season_awards","legal_consents","abuse_counters","round_award_processing","round_badge_reconciliations","round_award_participant_processing"];
-const expected:Record<string,string[]>={sessions:["user_agent","ip_hash"],attempts:["resumed_count","last_resumed_at","question_order_json","current_question_started_at"],users:["nickname","bio","favorite_book","favorite_verse"],rounds:["season_id","round_type","advanced_rules_json"],seasons:["closed_at","snapshot_created_at"],choices:["position"],legal_consents:["organization_id","document_type","ip_hash","user_agent"]};
+const SCHEMA_TARGET = "0022_release_hardening";
+const AWARD_PARTICIPANTS_PER_RUN = 7;
+const required = [
+  "organizations",
+  "groups",
+  "users",
+  "invitations",
+  "sessions",
+  "rounds",
+  "questions",
+  "choices",
+  "attempts",
+  "attempt_answers",
+  "audit_logs",
+  "question_bank",
+  "question_bank_choices",
+  "user_permissions",
+  "question_revisions",
+  "seasons",
+  "user_review_progress",
+  "announcements",
+  "account_recovery_codes",
+  "privacy_requests",
+  "ai_question_suggestions",
+  "batch_operations",
+  "season_snapshots",
+  "season_awards",
+  "legal_consents",
+  "abuse_counters",
+  "round_award_processing",
+  "round_badge_reconciliations",
+  "round_award_participant_processing",
+];
+const expected: Record<string, string[]> = {
+  sessions: ["user_agent", "ip_hash"],
+  attempts: [
+    "resumed_count",
+    "last_resumed_at",
+    "question_order_json",
+    "current_question_started_at",
+  ],
+  users: ["nickname", "bio", "favorite_book", "favorite_verse"],
+  rounds: ["season_id", "round_type", "advanced_rules_json"],
+  seasons: ["closed_at", "snapshot_created_at"],
+  choices: ["position"],
+  legal_consents: ["organization_id", "document_type", "ip_hash", "user_agent"],
+};
 
-export const onRequestGet=async({request,env}:{request:Request;env:AppEnv})=>{try{
- const user:any=await requirePermission(request,env,"reports.view"),now=Date.now(),tables=await env.DB.prepare("SELECT name FROM sqlite_master WHERE type='table'").all(),found=new Set((tables.results as any[]).map(row=>row.name)),missing=required.filter(name=>!found.has(name)),checks:any[]=[];
- for(const[name,sql]of[["users","SELECT COUNT(*) total FROM users WHERE organization_id=?1"],["rounds","SELECT COUNT(*) total FROM rounds WHERE organization_id=?1"],["questions","SELECT COUNT(*) total FROM question_bank WHERE organization_id=?1"],["attempts","SELECT COUNT(*) total FROM attempts a JOIN users u ON u.id=a.user_id WHERE u.organization_id=?1"],["staleAttempts","SELECT COUNT(*) total FROM attempts a JOIN users u ON u.id=a.user_id WHERE u.organization_id=?1 AND a.status='in_progress' AND a.started_at<?2"]]as const){try{const row:any=name==="staleAttempts"?await env.DB.prepare(sql).bind(user.organizationId,now-86400000).first():await env.DB.prepare(sql).bind(user.organizationId).first();checks.push({name,ok:true,total:Number(row?.total||0)})}catch{checks.push({name,ok:false})}}
- const overlaps=await env.DB.prepare("SELECT a.id firstId,a.title firstTitle,b.id secondId,b.title secondTitle FROM rounds a JOIN rounds b ON a.organization_id=b.organization_id AND a.id<b.id AND a.opens_at<b.closes_at AND a.closes_at>b.opens_at WHERE a.organization_id=?1 AND a.status IN ('scheduled','active') AND b.status IN ('scheduled','active') ORDER BY a.opens_at LIMIT 50").bind(user.organizationId).all();
- const invalidRounds=await env.DB.prepare("SELECT r.id,r.title,r.status,r.round_type roundType,r.season_id seasonId,r.opens_at opensAt,r.closes_at closesAt,(SELECT COUNT(*) FROM questions q WHERE q.round_id=r.id AND q.active=1) questionCount FROM rounds r WHERE r.organization_id=?1 AND ((r.opens_at>=r.closes_at) OR (r.round_type='regular' AND r.season_id IS NULL) OR (r.status IN ('scheduled','active') AND (SELECT COUNT(*) FROM questions q WHERE q.round_id=r.id AND q.active=1)<>?2)) ORDER BY r.opens_at LIMIT 100").bind(user.organizationId,QUESTION_COUNT).all();
- const overdue:any=found.has("round_award_processing")?await env.DB.prepare("SELECT COUNT(*) total FROM rounds r LEFT JOIN round_award_processing p ON p.round_id=r.id WHERE r.organization_id=?1 AND p.round_id IS NULL AND r.status NOT IN ('draft','cancelled') AND r.closes_at<=?2").bind(user.organizationId,now).first():{total:0};
- const queued:any=await env.DB.prepare(`SELECT COUNT(DISTINCT requested.entity_id) total FROM audit_logs requested WHERE requested.organization_id=?1 AND requested.action='badge.sync_requested' AND NOT EXISTS(SELECT 1 FROM audit_logs completed WHERE completed.action='badge.sync_completed' AND completed.entity_id=requested.entity_id AND completed.created_at>=requested.created_at)`).bind(user.organizationId).first();
- const checkpointed:any=found.has("round_award_participant_processing")?await env.DB.prepare("SELECT COUNT(*) total FROM round_award_participant_processing p JOIN rounds r ON r.id=p.round_id WHERE r.organization_id=?1").bind(user.organizationId).first():{total:0};
- const migrationRows=found.has("d1_migrations")?Number((await env.DB.prepare("SELECT COUNT(*) total FROM d1_migrations").first<any>())?.total||0):null;
- checks.push({name:"roundOverlaps",ok:overlaps.results.length===0,total:overlaps.results.length,items:overlaps.results},{name:"invalidRounds",ok:invalidRounds.results.length===0,total:invalidRounds.results.length,items:invalidRounds.results},{name:"awardProcessing",ok:Number(overdue.total||0)===0,total:Number(overdue.total||0),queued:Number(queued.total||0),checkpointed:Number(checkpointed.total||0)},{name:"migrationLedger",ok:migrationRows===null||migrationRows>=22,total:migrationRows,expected:22},{name:"aiConfiguration",ok:Boolean(env.AI),total:env.AI?1:0,configured:Boolean(env.AI)},{name:"serviceWorker",ok:true,total:5,expectedVersion:"conte-os-feitos-v5"});
- const missingColumns:string[]=[];for(const[table,names]of Object.entries(expected)){if(!found.has(table))continue;const columns=new Set(((await env.DB.prepare(`PRAGMA table_info(${table})`).all()).results as any[]).map(row=>row.name));for(const name of names)if(!columns.has(name))missingColumns.push(`${table}.${name}`)}
- const requiredIndexes=["choices_question_position_uq","attempt_answers_order_uq","attempts_user_round_mode_number_uq","rounds_window_idx","round_award_participant_pending_idx"],indexes=new Set(((await env.DB.prepare("SELECT name FROM sqlite_master WHERE type='index'").all()).results as any[]).map(row=>row.name)),missingIndexes=requiredIndexes.filter(name=>!indexes.has(name));
- const status=missing.length||missingColumns.length||missingIndexes.length||checks.some(check=>!check.ok)?"attention":"healthy",recommendations:string[]=[];if(missing.length||missingColumns.length||missingIndexes.length)recommendations.push("Execute as migrations D1 pendentes antes de publicar.");if(migrationRows!==null&&migrationRows<22)recommendations.push("O histórico de migrations do D1 não corresponde ao schema esperado; execute a reconciliação segura.");if(Number(overdue.total||0)>0)recommendations.push("Existem Jornadas encerradas aguardando processamento automático de classificação e medalhas.");if(Number(queued.total||0)>0)recommendations.push("Existem sincronizações de medalhas pendentes; o Cron continuará o processamento em lotes.");if(checks.find(check=>check.name==="staleAttempts"&&check.total>0))recommendations.push("Existem tentativas em andamento há mais de 24 horas; revise antes do lançamento.");if(overlaps.results.length)recommendations.push("Existem Jornadas sobrepostas. Encerre ou reagende os registros listados.");if(invalidRounds.results.length)recommendations.push("Existem Jornadas com período, temporada ou quantidade de perguntas inconsistente.");if(!env.AI)recommendations.push("O binding Workers AI chamado AI não está configurado.");
- return json({status,checkedAt:now,schemaTarget:SCHEMA_TARGET,tables:{required:required.length,found:required.length-missing.length,missing},migrationLedger:{rows:migrationRows,expected:22},missingColumns,missingIndexes,checks,recommendations,roundConflicts:{count:overlaps.results.length,items:overlaps.results},invalidRounds:{count:invalidRounds.results.length,items:invalidRounds.results},awardProcessing:{overdue:Number(overdue.total||0),queued:Number(queued.total||0),checkpointed:Number(checkpointed.total||0)},ai:{configured:Boolean(env.AI)},serviceWorker:{expectedVersion:"conte-os-feitos-v5"}});
-}catch(response){if(response instanceof Response)return response;throw response}};
+export const onRequestGet = async ({
+  request,
+  env,
+}: {
+  request: Request;
+  env: AppEnv;
+}) => {
+  try {
+    const user: any = await requirePermission(request, env, "reports.view"),
+      now = Date.now(),
+      tables = await env.DB.prepare(
+        "SELECT name FROM sqlite_master WHERE type='table'",
+      ).all(),
+      found = new Set((tables.results as any[]).map((row) => row.name)),
+      missing = required.filter((name) => !found.has(name)),
+      checks: any[] = [];
+    for (const [name, sql] of [
+      ["users", "SELECT COUNT(*) total FROM users WHERE organization_id=?1"],
+      ["rounds", "SELECT COUNT(*) total FROM rounds WHERE organization_id=?1"],
+      [
+        "questions",
+        "SELECT COUNT(*) total FROM question_bank WHERE organization_id=?1",
+      ],
+      [
+        "attempts",
+        "SELECT COUNT(*) total FROM attempts a JOIN users u ON u.id=a.user_id WHERE u.organization_id=?1",
+      ],
+      [
+        "staleAttempts",
+        "SELECT COUNT(*) total FROM attempts a JOIN users u ON u.id=a.user_id WHERE u.organization_id=?1 AND a.status='in_progress' AND a.started_at<?2",
+      ],
+    ] as const) {
+      try {
+        const row: any =
+          name === "staleAttempts"
+            ? await env.DB.prepare(sql)
+                .bind(user.organizationId, now - 86400000)
+                .first()
+            : await env.DB.prepare(sql).bind(user.organizationId).first();
+        checks.push({ name, ok: true, total: Number(row?.total || 0) });
+      } catch {
+        checks.push({ name, ok: false });
+      }
+    }
+    const overlaps = await env.DB.prepare(
+      "SELECT a.id firstId,a.title firstTitle,b.id secondId,b.title secondTitle FROM rounds a JOIN rounds b ON a.organization_id=b.organization_id AND a.id<b.id AND a.opens_at<b.closes_at AND a.closes_at>b.opens_at WHERE a.organization_id=?1 AND a.status IN ('scheduled','active') AND b.status IN ('scheduled','active') ORDER BY a.opens_at LIMIT 50",
+    )
+      .bind(user.organizationId)
+      .all();
+    const invalidRounds = await env.DB.prepare(
+      "SELECT r.id,r.title,r.status,r.round_type roundType,r.season_id seasonId,r.opens_at opensAt,r.closes_at closesAt,(SELECT COUNT(*) FROM questions q WHERE q.round_id=r.id AND q.active=1) questionCount FROM rounds r WHERE r.organization_id=?1 AND ((r.opens_at>=r.closes_at) OR (r.round_type='regular' AND r.season_id IS NULL) OR (r.status IN ('scheduled','active') AND (SELECT COUNT(*) FROM questions q WHERE q.round_id=r.id AND q.active=1)<>?2)) ORDER BY r.opens_at LIMIT 100",
+    )
+      .bind(user.organizationId, QUESTION_COUNT)
+      .all();
+    const overdue: any = found.has("round_award_processing")
+      ? await env.DB.prepare(
+          "SELECT COUNT(*) total FROM rounds r LEFT JOIN round_award_processing p ON p.round_id=r.id WHERE r.organization_id=?1 AND p.round_id IS NULL AND r.status NOT IN ('draft','cancelled') AND r.closes_at<=?2",
+        )
+          .bind(user.organizationId, now)
+          .first()
+      : { total: 0 };
+    const queued: any = await env.DB.prepare(
+      `SELECT COUNT(DISTINCT requested.entity_id) total FROM audit_logs requested WHERE requested.organization_id=?1 AND requested.action='badge.sync_requested' AND NOT EXISTS(SELECT 1 FROM audit_logs completed WHERE completed.action='badge.sync_completed' AND completed.entity_id=requested.entity_id AND completed.created_at>=requested.created_at)`,
+    )
+      .bind(user.organizationId)
+      .first();
+    const checkpointed: any = found.has("round_award_participant_processing")
+      ? await env.DB.prepare(
+          "SELECT COUNT(*) total FROM round_award_participant_processing p JOIN rounds r ON r.id=p.round_id WHERE r.organization_id=?1",
+        )
+          .bind(user.organizationId)
+          .first()
+      : { total: 0 };
+    const awardBacklog: any = found.has("round_award_participant_processing")
+      ? await env.DB.prepare(
+          `SELECT COUNT(*) total FROM (SELECT DISTINCT a.round_id,a.user_id FROM attempts a JOIN rounds r ON r.id=a.round_id LEFT JOIN round_award_participant_processing p ON p.round_id=a.round_id AND p.user_id=a.user_id AND p.job_type='close' WHERE r.organization_id=?1 AND r.status NOT IN ('draft','cancelled') AND r.closes_at<=?2 AND a.mode='official' AND a.status='completed' AND p.user_id IS NULL)`,
+        )
+          .bind(user.organizationId, now)
+          .first()
+      : { total: 0 };
+    const migrationRows = found.has("d1_migrations")
+      ? Number(
+          (
+            await env.DB.prepare(
+              "SELECT COUNT(*) total FROM d1_migrations",
+            ).first<any>()
+          )?.total || 0,
+        )
+      : null;
+    const awardPending =
+        Number(awardBacklog.total || 0) + Number(queued.total || 0),
+      awardEstimatedMinutes = Math.ceil(
+        awardPending / AWARD_PARTICIPANTS_PER_RUN,
+      );
+    checks.push(
+      {
+        name: "roundOverlaps",
+        ok: overlaps.results.length === 0,
+        total: overlaps.results.length,
+        items: overlaps.results,
+      },
+      {
+        name: "invalidRounds",
+        ok: invalidRounds.results.length === 0,
+        total: invalidRounds.results.length,
+        items: invalidRounds.results,
+      },
+      {
+        name: "awardProcessing",
+        ok: Number(overdue.total || 0) === 0 && awardPending === 0,
+        total: Number(overdue.total || 0),
+        queued: Number(queued.total || 0),
+        backlog: Number(awardBacklog.total || 0),
+        checkpointed: Number(checkpointed.total || 0),
+        estimatedMinutes: awardEstimatedMinutes,
+      },
+      {
+        name: "migrationLedger",
+        ok: migrationRows === null || migrationRows >= 23,
+        total: migrationRows,
+        expected: 23,
+      },
+      {
+        name: "aiConfiguration",
+        ok: Boolean(env.AI),
+        total: env.AI ? 1 : 0,
+        configured: Boolean(env.AI),
+      },
+      {
+        name: "serviceWorker",
+        ok: true,
+        total: 5,
+        expectedVersion: "conte-os-feitos-v5",
+      },
+    );
+    const missingColumns: string[] = [];
+    for (const [table, names] of Object.entries(expected)) {
+      if (!found.has(table)) continue;
+      const columns = new Set(
+        (
+          (await env.DB.prepare(`PRAGMA table_info(${table})`).all())
+            .results as any[]
+        ).map((row) => row.name),
+      );
+      for (const name of names)
+        if (!columns.has(name)) missingColumns.push(`${table}.${name}`);
+    }
+    const requiredIndexes = [
+        "choices_question_position_uq",
+        "attempt_answers_order_uq",
+        "attempts_user_round_mode_number_uq",
+        "rounds_window_idx",
+        "round_award_participant_pending_idx",
+        "audit_action_entity_time_idx",
+      ],
+      indexes = new Set(
+        (
+          (
+            await env.DB.prepare(
+              "SELECT name FROM sqlite_master WHERE type='index'",
+            ).all()
+          ).results as any[]
+        ).map((row) => row.name),
+      ),
+      missingIndexes = requiredIndexes.filter((name) => !indexes.has(name));
+    const status =
+        missing.length ||
+        missingColumns.length ||
+        missingIndexes.length ||
+        checks.some((check) => !check.ok)
+          ? "attention"
+          : "healthy",
+      recommendations: string[] = [];
+    if (missing.length || missingColumns.length || missingIndexes.length)
+      recommendations.push(
+        "Execute as migrations D1 pendentes antes de publicar.",
+      );
+    if (migrationRows !== null && migrationRows < 23)
+      recommendations.push(
+        "O histórico de migrations do D1 não corresponde ao schema esperado; execute a reconciliação segura.",
+      );
+    if (Number(overdue.total || 0) > 0)
+      recommendations.push(
+        "Existem Jornadas encerradas aguardando processamento automático de classificação e medalhas.",
+      );
+    if (awardPending > 0)
+      recommendations.push(
+        `Existem ${awardPending} participante(s) na fila de medalhas. Estimativa atual: ${awardEstimatedMinutes} minuto(s).`,
+      );
+    if (
+      checks.find((check) => check.name === "staleAttempts" && check.total > 0)
+    )
+      recommendations.push(
+        "Existem tentativas em andamento há mais de 24 horas; revise antes do lançamento.",
+      );
+    if (overlaps.results.length)
+      recommendations.push(
+        "Existem Jornadas sobrepostas. Encerre ou reagende os registros listados.",
+      );
+    if (invalidRounds.results.length)
+      recommendations.push(
+        "Existem Jornadas com período, temporada ou quantidade de perguntas inconsistente.",
+      );
+    if (!env.AI)
+      recommendations.push(
+        "O binding Workers AI chamado AI não está configurado.",
+      );
+    return json({
+      status,
+      checkedAt: now,
+      schemaTarget: SCHEMA_TARGET,
+      tables: {
+        required: required.length,
+        found: required.length - missing.length,
+        missing,
+      },
+      migrationLedger: { rows: migrationRows, expected: 23 },
+      missingColumns,
+      missingIndexes,
+      checks,
+      recommendations,
+      roundConflicts: {
+        count: overlaps.results.length,
+        items: overlaps.results,
+      },
+      invalidRounds: {
+        count: invalidRounds.results.length,
+        items: invalidRounds.results,
+      },
+      awardProcessing: {
+        overdue: Number(overdue.total || 0),
+        queued: Number(queued.total || 0),
+        backlog: Number(awardBacklog.total || 0),
+        checkpointed: Number(checkpointed.total || 0),
+        estimatedMinutes: awardEstimatedMinutes,
+      },
+      ai: { configured: Boolean(env.AI) },
+      serviceWorker: { expectedVersion: "conte-os-feitos-v5" },
+    });
+  } catch (response) {
+    if (response instanceof Response) return response;
+    throw response;
+  }
+};

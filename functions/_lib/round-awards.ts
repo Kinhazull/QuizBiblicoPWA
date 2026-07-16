@@ -1,7 +1,8 @@
 import type { AppEnv } from "./auth";
 import { flushBadgeSync, syncBadges } from "./badges";
 
-const PARTICIPANTS_PER_RUN = 7;
+export const PARTICIPANTS_PER_RUN = 7;
+export const AWARD_CRON_INTERVAL_MINUTES = 1;
 
 async function pendingParticipants(env: AppEnv, roundId: string, jobType: "close" | "cancel", limit: number) {
   return env.DB.prepare(`SELECT DISTINCT a.user_id userId
@@ -21,8 +22,15 @@ async function processParticipantBatch(env: AppEnv, roundId: string, jobType: "c
       (round_id,user_id,job_type,processed_at) VALUES(?1,?2,?3,?4)`)
       .bind(roundId, row.userId, jobType, now).run();
   }
-  const remaining: any = await pendingParticipants(env, roundId, jobType, 1);
-  return { processed: pending.results.length, complete: remaining.results.length === 0 };
+  const remaining: any = await env.DB.prepare(`SELECT COUNT(DISTINCT a.user_id) total
+    FROM attempts a
+    LEFT JOIN round_award_participant_processing p
+      ON p.round_id=a.round_id AND p.user_id=a.user_id AND p.job_type=?2
+   WHERE a.round_id=?1 AND p.user_id IS NULL
+     AND (?2='cancel' OR (a.mode='official' AND a.status='completed'))`)
+    .bind(roundId, jobType).first();
+  const remainingParticipants = Number(remaining?.total || 0);
+  return { processed: pending.results.length, complete: remainingParticipants === 0, remainingParticipants };
 }
 
 export async function processClosedRoundAwards(env: AppEnv, now = Date.now(), roundLimit = 4, participantLimit = PARTICIPANTS_PER_RUN) {
@@ -42,12 +50,13 @@ export async function processClosedRoundAwards(env: AppEnv, now = Date.now(), ro
     FROM rounds r LEFT JOIN round_award_processing p ON p.round_id=r.id
    WHERE p.round_id IS NULL AND r.status<>'cancelled' AND r.status<>'draft' AND r.closes_at<=?1
    ORDER BY r.closes_at,r.id LIMIT ?2`).bind(now, roundLimit).all();
-  let rounds = 0, participants = 0, pendingRounds = 0;
+  let rounds = 0, participants = 0, pendingRounds = 0, remainingParticipants = 0;
   for (const round of due.results as any[]) {
     if (!budget) { pendingRounds += 1; continue; }
     const batch = await processParticipantBatch(env, round.id, "close", now, budget);
     participants += batch.processed;
     budget -= batch.processed;
+    remainingParticipants += batch.remainingParticipants;
     if (!batch.complete) { pendingRounds += 1; continue; }
     const count: any = await env.DB.prepare("SELECT COUNT(*) total FROM round_award_participant_processing WHERE round_id=?1 AND job_type='close'").bind(round.id).first();
     const participantCount = Number(count?.total || 0);
@@ -65,9 +74,21 @@ export async function processClosedRoundAwards(env: AppEnv, now = Date.now(), ro
     const batch = await processParticipantBatch(env, round.id, "cancel", now, budget);
     participants += batch.processed;
     budget -= batch.processed;
+    remainingParticipants += batch.remainingParticipants;
     if (!batch.complete) { pendingCancelled += 1; continue; }
     await env.DB.prepare("INSERT OR IGNORE INTO round_badge_reconciliations(round_id,reconciled_at) VALUES(?1,?2)").bind(round.id, now).run();
     reconciledCancelled += 1;
   }
-  return { rounds, participants, queuedParticipants, reconciledCancelled, pendingRounds, pendingCancelled };
+  return {
+    rounds,
+    participants,
+    queuedParticipants,
+    reconciledCancelled,
+    pendingRounds,
+    pendingCancelled,
+    ...(remainingParticipants > 0 ? {
+      remainingParticipants,
+      estimatedMinutes: Math.ceil(remainingParticipants / PARTICIPANTS_PER_RUN) * AWARD_CRON_INTERVAL_MINUTES,
+    } : {}),
+  };
 }

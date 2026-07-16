@@ -22,21 +22,24 @@ test("Worker separado possui fechamento automático idempotente configurado", as
   assert.match(worker, /async scheduled/);
   assert.match(worker, /processClosedRoundAwards/);
   assert.match(worker, /Journey awards worker is active/);
-  assert.match(config, /"crons": \["\*\/5 \* \* \* \*"\]/);
+  assert.match(config, /"crons": \["\* \* \* \* \*"\]/);
   assert.match(config, /"binding": "DB"/);
   assert.match(config, /"database_name": "quiz-biblico-db"/);
   assert.match(processor, /INSERT OR IGNORE INTO round_award_processing/);
   assert.match(migration, /round_id TEXT PRIMARY KEY/);
 });
 
-test("pipeline publica Worker somente após qualidade e nunca altera migrations no push", async () => {
+test("pipeline publica Pages e Worker somente após qualidade e nunca altera migrations no push", async () => {
   const [workflow, pkg, migration] = await Promise.all([
     read(".github/workflows/quality-security.yml"),
     read("package.json"),
     read("drizzle/0019_round_award_processing.sql"),
   ]);
   assert.match(workflow, /deploy-journey-awards:/);
-  assert.match(workflow, /needs: \[quality, browser-smoke\]/);
+  assert.match(workflow, /deploy-pages:/);
+  assert.match(workflow, /needs: \[quality, browser-smoke, deploy-pages\]/);
+  assert.match(workflow, /wrangler pages deploy out/);
+  assert.match(workflow, /production_deployments_enabled/);
   assert.match(workflow, /github\.event_name == 'push'/);
   assert.match(workflow, /secrets\.CLOUDFLARE_API_TOKEN/);
   assert.match(workflow, /db:reconcile-migrations:verify-final/);
@@ -71,7 +74,8 @@ test("reconciliação é manual, confirmada, precedida por backup e não faz dep
   assert.match(workflow, /db:reconcile-migrations:compare/);
   assert.doesNotMatch(workflow, /worker:awards:deploy/);
   assert.match(script, /Unsafe migration ledger state/);
-  assert.match(script, /validateMigration0021\(sql, targetMigration\)/);
+  assert.match(script, /validateMigration0021/);
+  assert.match(script, /validateMigration0022/);
   assert.match(script, /assertExactNames\(ledgerNames\(\), expectedFinalLedger/);
   assert.match(docs, /Actions/);
 });
