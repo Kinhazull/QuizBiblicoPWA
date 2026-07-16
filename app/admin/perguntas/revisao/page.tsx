@@ -1,17 +1,304 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import QuestionEditorModal from "../QuestionEditorModal";
 
-const labels: Record<string, string> = { draft: "Rascunho", in_review: "Aguardando revisão", approved: "Aprovada", changes_requested: "Ajustes solicitados" };
+const labels: Record<string, string> = {
+  draft: "Rascunho",
+  in_review: "Aguardando revisão",
+  approved: "Aprovada",
+  changes_requested: "Ajustes solicitados",
+};
 export default function ReviewQueue() {
-  const [items, setItems] = useState<any[]>([]), [status, setStatus] = useState("in_review"), [message, setMessage] = useState(""), [note, setNote] = useState(""), [target, setTarget] = useState<any>(null), [editing, setEditing] = useState<string | null>(null), [selected, setSelected] = useState<string[]>([]), [page, setPage] = useState(1), [limit, setLimit] = useState(50), [total, setTotal] = useState(0), [totalPages, setTotalPages] = useState(1), [batchAction, setBatchAction] = useState("submit"), [busy, setBusy] = useState(false);
-  async function load() { const params = new URLSearchParams({ reviewStatus: status, page: String(page), limit: String(limit) }); const response = await fetch(`/api/admin/questions?${params}`); if (!response.ok) { location.href = "/admin"; return; } const data = await response.json(); setItems(data.questions || []); setTotal(data.total || 0); setTotalPages(data.totalPages || 1); setSelected([]); }
-  useEffect(() => { load(); }, [status, page, limit]);
-  function changeStatus(value: string) { setStatus(value); setPage(1); setBatchAction(value === "in_review" ? "approve" : "submit"); }
-  function toggle(id: string) { setSelected(current => current.includes(id) ? current.filter(value => value !== id) : [...current, id]); }
-  async function action(item: any, actionName: string) { if (actionName === "request_changes") { setTarget(item); return; } const response = await fetch(`/api/admin/questions/${item.id}/review`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: actionName }) }), data = await response.json(); setMessage(response.ok ? "Fluxo editorial atualizado." : data.error === "forbidden" ? "Seu perfil não possui permissão para esta ação." : "Não foi possível realizar a transição."); if (response.ok) load(); }
-  async function batchReview() { if (!selected.length || busy) return; const direct = batchAction === "approve_reviewed_import"; if (!confirm(direct ? `Confirmar que as ${selected.length} perguntas foram revisadas antes da importação e aprová-las diretamente?` : `${batchAction === "approve" ? "Aprovar" : "Enviar para revisão"} ${selected.length} pergunta(s)?`)) return; setBusy(true); const response = await fetch("/api/admin/questions/review-batch", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ ids: selected, action: batchAction }) }), data = await response.json(); setBusy(false); setMessage(response.ok ? `${data.count} pergunta(s) atualizada(s) em lote.` : data.error === "invalid_transition" ? "Alguma pergunta mudou de etapa. Atualize a página e tente novamente." : data.error === "forbidden" ? "Seu perfil não possui permissão para esta aprovação." : "Não foi possível concluir a operação em lote."); if (response.ok) load(); }
-  async function requestChanges() { const response = await fetch(`/api/admin/questions/${target.id}/review`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "request_changes", note }) }); setMessage(response.ok ? "Ajustes solicitados ao editor." : "Informe claramente os ajustes necessários."); if (response.ok) { setTarget(null); setNote(""); load(); } }
-  const batchOptions = status === "in_review" ? [["approve", "Aprovar selecionadas"]] : status === "approved" ? [] : [["submit", "Enviar selecionadas para revisão"], ["approve_reviewed_import", "Aprovar lote já revisado"]];
-  return <main className="admin-shell"><section className="admin-title"><p className="eyebrow">FLUXO EDITORIAL</p><h1>Revisão de <em>perguntas</em></h1><p>{total} questão(ões) nesta etapa. Somente questões aprovadas ficam disponíveis para novas rodadas.</p></section>{message && <p className="auth-message">{message}</p>}<nav className="review-tabs">{Object.entries(labels).map(([value, label]) => <button className={status === value ? "active" : ""} onClick={() => changeStatus(value)} key={value}>{label}</button>)}</nav><aside className="review-batch-toolbar"><label><input type="checkbox" checked={Boolean(items.length) && selected.length === items.length} onChange={event => setSelected(event.target.checked ? items.map(item => item.id) : [])}/> Selecionar esta página</label><strong>{selected.length} selecionada(s)</strong><label>Exibir<select value={limit} onChange={event => { setPage(1); setLimit(Number(event.target.value)); }}><option value="20">20</option><option value="50">50</option><option value="100">100</option></select></label>{batchOptions.length > 0 && <><select value={batchAction} onChange={event => setBatchAction(event.target.value)}>{batchOptions.map(([value, label]) => <option value={value} key={value}>{label}</option>)}</select><button disabled={!selected.length || busy} onClick={batchReview}>{busy ? "PROCESSANDO..." : "APLICAR EM LOTE"}</button></>}</aside><section className="review-grid">{items.map(item => <article className="admin-panel" key={item.id}><label><input type="checkbox" checked={selected.includes(item.id)} onChange={() => toggle(item.id)}/> Selecionar</label><small>{item.reference || item.book || "Sem referência"} · {labels[item.review_status] || item.review_status}</small><h2>{item.prompt}</h2><p>{item.theme} · {item.category || "Sem categoria"} · versão {item.version || 1}</p><footer><button onClick={() => setEditing(item.id)}>EDITAR AQUI</button>{["draft", "changes_requested"].includes(item.review_status) && <button onClick={() => action(item, "submit")}>ENVIAR PARA REVISÃO</button>}{item.review_status === "in_review" && <><button className="approve" onClick={() => action(item, "approve")}>APROVAR</button><button className="changes" onClick={() => action(item, "request_changes")}>SOLICITAR AJUSTES</button></>}</footer></article>)}{!items.length && <section className="admin-panel bank-empty">Nenhuma pergunta nesta etapa.</section>}</section><nav className="bank-pagination"><button disabled={page <= 1} onClick={() => setPage(page - 1)}>← Anterior</button><span>Página <b>{page}</b> de <b>{totalPages}</b></span><button disabled={page >= totalPages} onClick={() => setPage(page + 1)}>Próxima →</button></nav>{target && <div className="modal-layer"><section className="admin-panel removal-modal"><h2>Solicitar ajustes</h2><p>{target.prompt}</p><textarea value={note} onChange={event => setNote(event.target.value)} placeholder="Descreva os ajustes necessários" autoFocus/><div><button onClick={() => setTarget(null)}>Cancelar</button><button className="danger" disabled={note.trim().length < 3} onClick={requestChanges}>ENVIAR AO EDITOR</button></div></section></div>}{editing && <QuestionEditorModal id={editing} onClose={() => setEditing(null)} onChanged={() => { setMessage("Pergunta atualizada. Alterações de conteúdo retornam a pergunta para rascunho."); load(); }}/>}</main>;
+  const [items, setItems] = useState<any[]>([]),
+    [status, setStatus] = useState("in_review"),
+    [message, setMessage] = useState(""),
+    [note, setNote] = useState(""),
+    [target, setTarget] = useState<any>(null),
+    [editing, setEditing] = useState<string | null>(null),
+    [selected, setSelected] = useState<string[]>([]),
+    [page, setPage] = useState(1),
+    [limit, setLimit] = useState(50),
+    [total, setTotal] = useState(0),
+    [totalPages, setTotalPages] = useState(1),
+    [batchAction, setBatchAction] = useState("submit"),
+    [busy, setBusy] = useState(false);
+  const load = useCallback(async () => {
+    const params = new URLSearchParams({
+      reviewStatus: status,
+      page: String(page),
+      limit: String(limit),
+    });
+    const response = await fetch(`/api/admin/questions?${params}`);
+    if (!response.ok) {
+      location.href = "/admin";
+      return;
+    }
+    const data = await response.json();
+    setItems(data.questions || []);
+    setTotal(data.total || 0);
+    setTotalPages(data.totalPages || 1);
+    setSelected([]);
+  }, [status, page, limit]);
+  useEffect(() => {
+    load();
+  }, [load]);
+  function changeStatus(value: string) {
+    setStatus(value);
+    setPage(1);
+    setBatchAction(value === "in_review" ? "approve" : "submit");
+  }
+  function toggle(id: string) {
+    setSelected((current) =>
+      current.includes(id)
+        ? current.filter((value) => value !== id)
+        : [...current, id],
+    );
+  }
+  async function action(item: any, actionName: string) {
+    if (actionName === "request_changes") {
+      setTarget(item);
+      return;
+    }
+    const response = await fetch(`/api/admin/questions/${item.id}/review`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ action: actionName }),
+      }),
+      data = await response.json();
+    setMessage(
+      response.ok
+        ? "Fluxo editorial atualizado."
+        : data.error === "forbidden"
+          ? "Seu perfil não possui permissão para esta ação."
+          : "Não foi possível realizar a transição.",
+    );
+    if (response.ok) load();
+  }
+  async function batchReview() {
+    if (!selected.length || busy) return;
+    const direct = batchAction === "approve_reviewed_import";
+    if (
+      !confirm(
+        direct
+          ? `Confirmar que as ${selected.length} perguntas foram revisadas antes da importação e aprová-las diretamente?`
+          : `${batchAction === "approve" ? "Aprovar" : "Enviar para revisão"} ${selected.length} pergunta(s)?`,
+      )
+    )
+      return;
+    setBusy(true);
+    const response = await fetch("/api/admin/questions/review-batch", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ ids: selected, action: batchAction }),
+      }),
+      data = await response.json();
+    setBusy(false);
+    setMessage(
+      response.ok
+        ? `${data.count} pergunta(s) atualizada(s) em lote.`
+        : data.error === "invalid_transition"
+          ? "Alguma pergunta mudou de etapa. Atualize a página e tente novamente."
+          : data.error === "forbidden"
+            ? "Seu perfil não possui permissão para esta aprovação."
+            : "Não foi possível concluir a operação em lote.",
+    );
+    if (response.ok) load();
+  }
+  async function requestChanges() {
+    const response = await fetch(`/api/admin/questions/${target.id}/review`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ action: "request_changes", note }),
+    });
+    setMessage(
+      response.ok
+        ? "Ajustes solicitados ao editor."
+        : "Informe claramente os ajustes necessários.",
+    );
+    if (response.ok) {
+      setTarget(null);
+      setNote("");
+      load();
+    }
+  }
+  const batchOptions =
+    status === "in_review"
+      ? [["approve", "Aprovar selecionadas"]]
+      : status === "approved"
+        ? []
+        : [
+            ["submit", "Enviar selecionadas para revisão"],
+            ["approve_reviewed_import", "Aprovar lote já revisado"],
+          ];
+  return (
+    <main className="admin-shell">
+      <section className="admin-title">
+        <p className="eyebrow">FLUXO EDITORIAL</p>
+        <h1>
+          Revisão de <em>perguntas</em>
+        </h1>
+        <p>
+          {total} questão(ões) nesta etapa. Somente questões aprovadas ficam
+          disponíveis para novas rodadas.
+        </p>
+      </section>
+      {message && <p className="auth-message">{message}</p>}
+      <nav className="review-tabs">
+        {Object.entries(labels).map(([value, label]) => (
+          <button
+            className={status === value ? "active" : ""}
+            onClick={() => changeStatus(value)}
+            key={value}
+          >
+            {label}
+          </button>
+        ))}
+      </nav>
+      <aside className="review-batch-toolbar">
+        <label>
+          <input
+            type="checkbox"
+            checked={Boolean(items.length) && selected.length === items.length}
+            onChange={(event) =>
+              setSelected(
+                event.target.checked ? items.map((item) => item.id) : [],
+              )
+            }
+          />{" "}
+          Selecionar esta página
+        </label>
+        <strong>{selected.length} selecionada(s)</strong>
+        <label>
+          Exibir
+          <select
+            value={limit}
+            onChange={(event) => {
+              setPage(1);
+              setLimit(Number(event.target.value));
+            }}
+          >
+            <option value="20">20</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+          </select>
+        </label>
+        {batchOptions.length > 0 && (
+          <>
+            <select
+              value={batchAction}
+              onChange={(event) => setBatchAction(event.target.value)}
+            >
+              {batchOptions.map(([value, label]) => (
+                <option value={value} key={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+            <button disabled={!selected.length || busy} onClick={batchReview}>
+              {busy ? "PROCESSANDO..." : "APLICAR EM LOTE"}
+            </button>
+          </>
+        )}
+      </aside>
+      <section className="review-grid">
+        {items.map((item) => (
+          <article className="admin-panel" key={item.id}>
+            <label>
+              <input
+                type="checkbox"
+                checked={selected.includes(item.id)}
+                onChange={() => toggle(item.id)}
+              />{" "}
+              Selecionar
+            </label>
+            <small>
+              {item.reference || item.book || "Sem referência"} ·{" "}
+              {labels[item.review_status] || item.review_status}
+            </small>
+            <h2>{item.prompt}</h2>
+            <p>
+              {item.theme} · {item.category || "Sem categoria"} · versão{" "}
+              {item.version || 1}
+            </p>
+            <footer>
+              <button onClick={() => setEditing(item.id)}>EDITAR AQUI</button>
+              {["draft", "changes_requested"].includes(item.review_status) && (
+                <button onClick={() => action(item, "submit")}>
+                  ENVIAR PARA REVISÃO
+                </button>
+              )}
+              {item.review_status === "in_review" && (
+                <>
+                  <button
+                    className="approve"
+                    onClick={() => action(item, "approve")}
+                  >
+                    APROVAR
+                  </button>
+                  <button
+                    className="changes"
+                    onClick={() => action(item, "request_changes")}
+                  >
+                    SOLICITAR AJUSTES
+                  </button>
+                </>
+              )}
+            </footer>
+          </article>
+        ))}
+        {!items.length && (
+          <section className="admin-panel bank-empty">
+            Nenhuma pergunta nesta etapa.
+          </section>
+        )}
+      </section>
+      <nav className="bank-pagination">
+        <button disabled={page <= 1} onClick={() => setPage(page - 1)}>
+          ← Anterior
+        </button>
+        <span>
+          Página <b>{page}</b> de <b>{totalPages}</b>
+        </span>
+        <button disabled={page >= totalPages} onClick={() => setPage(page + 1)}>
+          Próxima →
+        </button>
+      </nav>
+      {target && (
+        <div className="modal-layer">
+          <section className="admin-panel removal-modal">
+            <h2>Solicitar ajustes</h2>
+            <p>{target.prompt}</p>
+            <textarea
+              value={note}
+              onChange={(event) => setNote(event.target.value)}
+              placeholder="Descreva os ajustes necessários"
+              autoFocus
+            />
+            <div>
+              <button onClick={() => setTarget(null)}>Cancelar</button>
+              <button
+                className="danger"
+                disabled={note.trim().length < 3}
+                onClick={requestChanges}
+              >
+                ENVIAR AO EDITOR
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
+      {editing && (
+        <QuestionEditorModal
+          id={editing}
+          onClose={() => setEditing(null)}
+          onChanged={() => {
+            setMessage(
+              "Pergunta atualizada. Alterações de conteúdo retornam a pergunta para rascunho.",
+            );
+            load();
+          }}
+        />
+      )}
+    </main>
+  );
 }

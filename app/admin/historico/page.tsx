@@ -1,4 +1,109 @@
 "use client";
-import { useEffect,useState } from "react";
-const actionLabel=(value:string)=>({"question.created":"Pergunta criada","question.updated":"Pergunta editada","question.archived":"Pergunta arquivada","question.imported":"Perguntas importadas","question.seeded":"Base inicial carregada","permissions.updated":"Permissões alteradas"} as any)[value]||value.replaceAll("."," · ");
-export default function HistoryPage(){const [data,setData]=useState<any>({logs:[],actors:[],page:1,totalPages:1,total:0}),[page,setPage]=useState(1),[entity,setEntity]=useState(""),[actor,setActor]=useState("");async function load(){const params=new URLSearchParams({page:String(page),entity,actor});const response=await fetch(`/api/admin/history?${params}`);if(!response.ok){location.href="/admin";return}setData(await response.json())}useEffect(()=>{load()},[page,entity,actor]);function filter(setter:(value:string)=>void,value:string){setPage(1);setter(value)}return <main className="admin-shell"><section className="admin-title"><p className="eyebrow">RASTREABILIDADE</p><h1>Histórico de <em>alterações</em></h1><p>{data.total} ação(ões) administrativa(s) registrada(s).</p></section><section className="history-filters admin-panel"><select value={entity} onChange={event=>filter(setEntity,event.target.value)}><option value="">Todos os tipos</option><option value="question_bank">Perguntas</option><option value="round">Rodadas</option><option value="user">Usuários</option><option value="invitation">Convites</option></select><select value={actor} onChange={event=>filter(setActor,event.target.value)}><option value="">Todos os responsáveis</option>{data.actors.map((item:any)=><option value={item.id} key={item.id}>{item.displayName}</option>)}</select></section><section className="admin-panel history-list">{data.logs.map((log:any)=><article key={log.id}><time>{new Date(log.created_at).toLocaleString("pt-BR",{timeZone:"America/Sao_Paulo"})}</time><div><strong>{actionLabel(log.action)}</strong><small>{log.entity_type}{log.entity_id?` · ${log.entity_id}`:""}</small></div><span>{log.actorName||"Sistema"}</span></article>)}{!data.logs.length&&<p>Nenhuma ação encontrada.</p>}</section><nav className="bank-pagination"><button disabled={page<=1} onClick={()=>setPage(page-1)}>← Anterior</button><span>{page} de {data.totalPages}</span><button disabled={page>=data.totalPages} onClick={()=>setPage(page+1)}>Próxima →</button></nav></main>}
+import { useCallback, useEffect, useState } from "react";
+const actionLabel = (value: string) =>
+  (
+    ({
+      "question.created": "Pergunta criada",
+      "question.updated": "Pergunta editada",
+      "question.archived": "Pergunta arquivada",
+      "question.imported": "Perguntas importadas",
+      "question.seeded": "Base inicial carregada",
+      "permissions.updated": "Permissões alteradas",
+    }) as any
+  )[value] || value.replaceAll(".", " · ");
+export default function HistoryPage() {
+  const [data, setData] = useState<any>({
+      logs: [],
+      actors: [],
+      page: 1,
+      totalPages: 1,
+      total: 0,
+    }),
+    [page, setPage] = useState(1),
+    [entity, setEntity] = useState(""),
+    [actor, setActor] = useState("");
+  const load = useCallback(async () => {
+    const params = new URLSearchParams({ page: String(page), entity, actor });
+    const response = await fetch(`/api/admin/history?${params}`);
+    if (!response.ok) {
+      location.href = "/admin";
+      return;
+    }
+    setData(await response.json());
+  }, [page, entity, actor]);
+  useEffect(() => {
+    load();
+  }, [load]);
+  function filter(setter: (value: string) => void, value: string) {
+    setPage(1);
+    setter(value);
+  }
+  return (
+    <main className="admin-shell">
+      <section className="admin-title">
+        <p className="eyebrow">RASTREABILIDADE</p>
+        <h1>
+          Histórico de <em>alterações</em>
+        </h1>
+        <p>{data.total} ação(ões) administrativa(s) registrada(s).</p>
+      </section>
+      <section className="history-filters admin-panel">
+        <select
+          value={entity}
+          onChange={(event) => filter(setEntity, event.target.value)}
+        >
+          <option value="">Todos os tipos</option>
+          <option value="question_bank">Perguntas</option>
+          <option value="round">Rodadas</option>
+          <option value="user">Usuários</option>
+          <option value="invitation">Convites</option>
+        </select>
+        <select
+          value={actor}
+          onChange={(event) => filter(setActor, event.target.value)}
+        >
+          <option value="">Todos os responsáveis</option>
+          {data.actors.map((item: any) => (
+            <option value={item.id} key={item.id}>
+              {item.displayName}
+            </option>
+          ))}
+        </select>
+      </section>
+      <section className="admin-panel history-list">
+        {data.logs.map((log: any) => (
+          <article key={log.id}>
+            <time>
+              {new Date(log.created_at).toLocaleString("pt-BR", {
+                timeZone: "America/Sao_Paulo",
+              })}
+            </time>
+            <div>
+              <strong>{actionLabel(log.action)}</strong>
+              <small>
+                {log.entity_type}
+                {log.entity_id ? ` · ${log.entity_id}` : ""}
+              </small>
+            </div>
+            <span>{log.actorName || "Sistema"}</span>
+          </article>
+        ))}
+        {!data.logs.length && <p>Nenhuma ação encontrada.</p>}
+      </section>
+      <nav className="bank-pagination">
+        <button disabled={page <= 1} onClick={() => setPage(page - 1)}>
+          ← Anterior
+        </button>
+        <span>
+          {page} de {data.totalPages}
+        </span>
+        <button
+          disabled={page >= data.totalPages}
+          onClick={() => setPage(page + 1)}
+        >
+          Próxima →
+        </button>
+      </nav>
+    </main>
+  );
+}
