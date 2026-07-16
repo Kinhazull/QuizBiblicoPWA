@@ -1,5 +1,6 @@
 import { requireUser, type AppEnv } from "../../_lib/auth";
 import { json } from "../../_lib/security";
+import { BEST_ATTEMPTS_CTE } from "../../_lib/ranking";
 
 export const onRequestGet = async ({ request, env }: { request: Request; env: AppEnv }) => { try {
   const user: any = await requireUser(request, env), now = Date.now();
@@ -15,9 +16,9 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: Ap
     const training: any = await env.DB.prepare(`SELECT COUNT(CASE WHEN status='completed' THEN 1 END) completed,MAX(CASE WHEN status='in_progress' THEN 1 ELSE 0 END) inProgress FROM attempts WHERE user_id=?1 AND round_id=?2 AND mode='practice'`).bind(user.id, current.id).first();
     completion = { attemptsUsed, bestScore: Number(official?.bestScore || 0), completed: Number(official?.completedAttempts || 0) >= 1, inProgress: Boolean(official?.inProgress), optionalAttemptsRemaining: Math.max(0, Number(current.attemptLimit || 2) - attemptsUsed) };
     practice = { completed: Number(training?.completed || 0), inProgress: Boolean(training?.inProgress) };
-    if (completion.completed) ranking = await env.DB.prepare(`WITH best AS (SELECT user_id,MAX(score) score,MAX(correct_answers) correctAnswers,MIN(total_time_ms) totalTimeMs FROM attempts WHERE round_id=?1 AND mode='official' AND status='completed' GROUP BY user_id),ranked AS (SELECT user_id,RANK() OVER(ORDER BY score DESC,correctAnswers DESC,totalTimeMs ASC) position FROM best) SELECT position FROM ranked WHERE user_id=?2`).bind(current.id, user.id).first();
+    if (completion.completed) ranking = await env.DB.prepare(`WITH ${BEST_ATTEMPTS_CTE},ranked AS (SELECT user_id,RANK() OVER(ORDER BY score DESC,correct_answers DESC,total_time_ms ASC,completed_at ASC,id ASC) position FROM best_attempts WHERE round_id=?1) SELECT position FROM ranked WHERE user_id=?2`).bind(current.id, user.id).first();
   } else if (recent?.bestScore != null) {
-    ranking = await env.DB.prepare(`WITH best AS (SELECT user_id,MAX(score) score,MAX(correct_answers) correctAnswers,MIN(total_time_ms) totalTimeMs FROM attempts WHERE round_id=?1 AND mode='official' AND status='completed' GROUP BY user_id),ranked AS (SELECT user_id,RANK() OVER(ORDER BY score DESC,correctAnswers DESC,totalTimeMs ASC) position FROM best) SELECT position FROM ranked WHERE user_id=?2`).bind(recent.id, user.id).first();
+    ranking = await env.DB.prepare(`WITH ${BEST_ATTEMPTS_CTE},ranked AS (SELECT user_id,RANK() OVER(ORDER BY score DESC,correct_answers DESC,total_time_ms ASC,completed_at ASC,id ASC) position FROM best_attempts WHERE round_id=?1) SELECT position FROM ranked WHERE user_id=?2`).bind(recent.id, user.id).first();
   }
   return json({ serverNow: now, current, next, recent, completion, practice, ranking: ranking ? { position: Number((ranking as any).position), provisional: Boolean(current) } : null });
 } catch (response) { if (response instanceof Response) return response; throw response; } };

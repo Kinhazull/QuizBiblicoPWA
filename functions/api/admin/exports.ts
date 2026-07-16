@@ -2,6 +2,7 @@ import type { AppEnv } from "../../_lib/auth";
 import { requirePermission } from "../../_lib/permissions";
 import { json } from "../../_lib/security";
 import { enforceRateLimit, requestFingerprint } from "../../_lib/abuse";
+import { BEST_ATTEMPTS_CTE } from "../../_lib/ranking";
 
 function csv(rows: any[], columns: { key: string; label: string }[]) {
   const escape = (value: unknown) => {const raw=String(value??"");const safe=/^[\t\r ]*[=+\-@]/.test(raw)||/^[\t\r]/.test(raw)?`'${raw}`:raw;return `"${safe.replace(/"/g,'""')}"`};
@@ -18,7 +19,7 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: Ap
       rows = rows.map(row => ({ ...row, createdAt: new Date(row.createdAt).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }), lastLoginAt: row.lastLoginAt ? new Date(row.lastLoginAt).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }) : "Nunca" }));
       columns = [{key:"name",label:"Nome"},{key:"username",label:"Usuário"},{key:"nickname",label:"Apelido"},{key:"role",label:"Função"},{key:"status",label:"Situação"},{key:"createdAt",label:"Cadastro"},{key:"lastLoginAt",label:"Último acesso"}];
     } else if (type === "ranking") {
-      ({ results: rows } = await env.DB.prepare(`WITH best AS (SELECT user_id,round_id,MAX(score) score FROM attempts WHERE mode='official' AND status='completed' GROUP BY user_id,round_id) SELECT CASE WHEN u.use_nickname_in_ranking=1 AND u.nickname IS NOT NULL THEN u.nickname ELSE u.display_name END AS name,SUM(best.score) AS score,ROUND(AVG(best.score)) AS average,COUNT(*) AS rounds FROM users u JOIN best ON best.user_id=u.id WHERE u.organization_id=?1 GROUP BY u.id ORDER BY score DESC`).bind(admin.organizationId).all());
+      ({ results: rows } = await env.DB.prepare(`WITH ${BEST_ATTEMPTS_CTE} SELECT CASE WHEN u.use_nickname_in_ranking=1 AND u.nickname IS NOT NULL THEN u.nickname ELSE u.display_name END AS name,SUM(best.score) AS score,ROUND(AVG(best.score)) AS average,COUNT(*) AS rounds FROM users u JOIN best_attempts best ON best.user_id=u.id WHERE u.organization_id=?1 GROUP BY u.id ORDER BY score DESC`).bind(admin.organizationId).all());
       rows = rows.map((row,index)=>({...row,position:index+1})); columns=[{key:"position",label:"Posição"},{key:"name",label:"Nome no ranking"},{key:"score",label:"Pontuação geral"},{key:"average",label:"Média"},{key:"rounds",label:"Rodadas concluídas"}];
     } else if (type === "results") {
       const condition = roundId ? "AND r.id=?2" : ""; const bindings = roundId ? [admin.organizationId,roundId] : [admin.organizationId];

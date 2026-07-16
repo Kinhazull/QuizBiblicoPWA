@@ -208,6 +208,12 @@ export const userPermissions = sqliteTable("user_permissions", {
   grantedAt: integer("granted_at").notNull(),
 }, (table) => [primaryKey({ columns: [table.userId, table.permissionCode] })]);
 
+export const roundAwardProcessing = sqliteTable("round_award_processing", {
+  roundId: text("round_id").primaryKey().references(() => rounds.id),
+  processedAt: integer("processed_at").notNull(),
+  participantCount: integer("participant_count").notNull().default(0),
+}, (table) => [index("round_award_processing_time_idx").on(table.processedAt)]);
+
 export const userReviewProgress = sqliteTable("user_review_progress", {
   userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }), questionId: text("question_id").notNull().references(() => questionBank.id, { onDelete: "cascade" }), timesReviewed: integer("times_reviewed").notNull().default(0), lastReviewedAt: integer("last_reviewed_at"), mastered: integer("mastered", { mode: "boolean" }).notNull().default(false),
 }, (table) => [primaryKey({ columns: [table.userId, table.questionId] })]);
