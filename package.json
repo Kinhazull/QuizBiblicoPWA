@@ -21,6 +21,12 @@
     "worker:awards:types": "wrangler types workers/journey-awards/worker-configuration.d.ts --config workers/journey-awards/wrangler.jsonc",
     "worker:awards:types:check": "wrangler types workers/journey-awards/worker-configuration.d.ts --config workers/journey-awards/wrangler.jsonc --check",
     "worker:awards:check": "wrangler deploy --dry-run --config workers/journey-awards/wrangler.jsonc",
+    "db:reconcile-migrations": "node scripts/reconcile-d1-migrations.mjs",
+    "db:reconcile-migrations:apply": "node scripts/reconcile-d1-migrations.mjs --apply",
+    "db:reconcile-migrations:verify-pending": "node scripts/reconcile-d1-migrations.mjs --verify-pending",
+    "db:reconcile-migrations:verify-final": "node scripts/reconcile-d1-migrations.mjs --verify-final",
+    "db:reconcile-migrations:snapshot": "node scripts/reconcile-d1-migrations.mjs --snapshot d1-before.json",
+    "db:reconcile-migrations:compare": "node scripts/reconcile-d1-migrations.mjs --compare-snapshot d1-before.json",
     "worker:awards:migrate": "wrangler d1 migrations apply quiz-biblico-db --remote --config workers/journey-awards/wrangler.jsonc",
     "worker:awards:deploy": "wrangler deploy --config workers/journey-awards/wrangler.jsonc"
   },

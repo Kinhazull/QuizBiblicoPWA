@@ -72,6 +72,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => { void refreshUser(); }, [refreshUser]);
   useEffect(() => { if (user) void refreshNotifications(); }, [user, refreshNotifications]);
   useEffect(() => {
+    if (!user) return;
+    const timer = window.setInterval(() => { if (!document.hidden) void refreshNotifications(); }, 60_000);
+    return () => window.clearInterval(timer);
+  }, [user, refreshNotifications]);
+  useEffect(() => {
     const onFocus = () => {
       if (document.hidden || Date.now() - lastValidation.current < 60_000) return;
       void refreshUser();
@@ -82,7 +87,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       window.removeEventListener("focus", onFocus);
       document.removeEventListener("visibilitychange", onFocus);
     };
-  }, [refreshNotifications, refreshUser]);
+  }, [refreshUser]);
 
   return <AuthContext.Provider value={{ user, loading, unreadNotifications, refreshUser, refreshNotifications, setAuthenticatedUser, clearUser }}>{children}</AuthContext.Provider>;
 }

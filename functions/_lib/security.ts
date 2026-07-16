@@ -1,4 +1,6 @@
 const encoder = new TextEncoder();
+const PASSWORD_SCHEME = "pbkdf2-sha256";
+const PASSWORD_ITERATIONS = 600_000;
 
 export function normalizeUsername(value: string) {
   return value.trim().toLocaleLowerCase("pt-BR").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9._-]/g, "");
@@ -14,22 +16,33 @@ export async function sha256(value: string) {
   return toBase64Url(new Uint8Array(digest));
 }
 
-export async function hashPassword(password: string, salt = randomToken(16)) {
+async function derivePassword(password:string,salt:string,iterations:number){
   if (password.length > 128) throw new Error("password_too_long");
   const key = await crypto.subtle.importKey("raw", encoder.encode(password), "PBKDF2", false, ["deriveBits"]);
-  const bits = await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt: encoder.encode(salt), iterations: 100_000 }, key, 256);
-  return { salt, hash: toBase64Url(new Uint8Array(bits)) };
+  const bits = await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt: encoder.encode(salt), iterations }, key, 256);
+  return toBase64Url(new Uint8Array(bits));
+}
+
+export async function hashPassword(password: string, salt = randomToken(16)) {
+  const derived=await derivePassword(password,salt,PASSWORD_ITERATIONS);
+  return { salt, hash: `${PASSWORD_SCHEME}$${PASSWORD_ITERATIONS}$${derived}` };
 }
 
 export async function verifyPasswordDetails(password: string, salt: string, expected: string) {
   if (password.length > 128) return false;
-  const result = await hashPassword(password, salt);
-  if (timingSafeEqual(result.hash, expected)) return { valid: true, needsUpgrade: false };
-  // Compatibilidade com credenciais criadas antes do aumento de custo.
-  const key = await crypto.subtle.importKey("raw", encoder.encode(password), "PBKDF2", false, ["deriveBits"]);
-  const legacyBits = await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt: encoder.encode(salt), iterations: 25_000 }, key, 256);
-  const valid = timingSafeEqual(toBase64Url(new Uint8Array(legacyBits)), expected);
-  return { valid, needsUpgrade: valid };
+  const encoded=expected.match(/^pbkdf2-sha256\$(\d+)\$([A-Za-z0-9_-]+)$/);
+  if(encoded){
+    const iterations=Number(encoded[1]);
+    if(!Number.isSafeInteger(iterations)||iterations<25_000||iterations>1_000_000)return{valid:false,needsUpgrade:false};
+    const valid=timingSafeEqual(await derivePassword(password,salt,iterations),encoded[2]);
+    return{valid,needsUpgrade:valid&&iterations<PASSWORD_ITERATIONS};
+  }
+  // Compatibilidade com hashes sem metadados criados nas versões de 100 mil e 25 mil iterações.
+  for(const iterations of [100_000,25_000]){
+    const valid=timingSafeEqual(await derivePassword(password,salt,iterations),expected);
+    if(valid)return{valid:true,needsUpgrade:true};
+  }
+  return{valid:false,needsUpgrade:false};
 }
 
 export async function verifyPassword(password: string, salt: string, expected: string) {

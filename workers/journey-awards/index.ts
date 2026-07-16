@@ -6,7 +6,12 @@ const journeyAwardsWorker = {
     env: Env,
     ctx: ExecutionContext,
   ): Promise<void> {
-    ctx.waitUntil(processClosedRoundAwards(env));
+    ctx.waitUntil(processClosedRoundAwards(env).then(result=>{
+      console.log(JSON.stringify({message:"journey_awards_completed",...result,executedAt:Date.now()}));
+    }).catch(error=>{
+      console.error(JSON.stringify({message:"journey_awards_failed",error:error instanceof Error?error.message:String(error),executedAt:Date.now()}));
+      throw error;
+    }));
   },
 
   async fetch(): Promise<Response> {

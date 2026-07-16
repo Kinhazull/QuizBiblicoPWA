@@ -1,0 +1,127 @@
+name: Reconcile production D1 migrations
+
+run-name: Reconcile production D1 migrations by ${{ github.actor }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Digite exatamente RECONCILIAR_MIGRATIONS_PRODUCAO
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: reconcile-production-d1
+  cancel-in-progress: false
+
+jobs:
+  reconcile:
+    name: Validate, back up and reconcile D1
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: production
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: c9804b247feba1dfe55516404b851d61
+    steps:
+      - name: Require exact production confirmation
+        shell: bash
+        env:
+          CONFIRMATION: ${{ inputs.confirmation }}
+        run: |
+          set -euo pipefail
+          if [ "$CONFIRMATION" != "RECONCILIAR_MIGRATIONS_PRODUCAO" ]; then
+            echo "::error::Confirmação inválida. Nenhuma operação foi executada."
+            exit 1
+          fi
+
+      - name: Confirm Cloudflare credential
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "::error::O secret CLOUDFLARE_API_TOKEN não está configurado."
+            exit 1
+          fi
+
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: main
+
+      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
+        with:
+          version: 11.7.0
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate legacy schema without writing
+        run: pnpm run db:reconcile-migrations
+
+      - name: Capture pre-change integrity snapshot
+        run: pnpm run db:reconcile-migrations:snapshot
+
+      - name: Export remote D1 backup
+        run: >-
+          pnpm exec wrangler d1 export quiz-biblico-db --remote
+          --config workers/journey-awards/wrangler.jsonc
+          --output=d1-production-backup.sql
+
+      - name: Encrypt confidential D1 backup
+        shell: bash
+        run: |
+          set -euo pipefail
+          openssl enc -aes-256-cbc -pbkdf2 -iter 200000 -salt \
+            -in d1-production-backup.sql \
+            -out d1-production-backup.sql.enc \
+            -pass env:CLOUDFLARE_API_TOKEN
+          shred -u d1-production-backup.sql
+          test -s d1-production-backup.sql.enc
+
+      - name: Store confidential backup artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: d1-production-backup-${{ github.run_id }}
+          path: |
+            d1-production-backup.sql.enc
+            d1-before.json
+          if-no-files-found: error
+          retention-days: 7
+          compression-level: 9
+
+      - name: Record verified legacy migration history
+        run: pnpm run db:reconcile-migrations:apply
+
+      - name: Confirm only migration 0021 remains pending
+        run: pnpm run db:reconcile-migrations:verify-pending
+
+      - name: Apply migration 0021 only
+        run: pnpm run worker:awards:migrate
+
+      - name: Validate final migration state
+        run: pnpm run db:reconcile-migrations:verify-final
+
+      - name: Confirm preservation of existing schema and rows
+        run: pnpm run db:reconcile-migrations:compare
+
+      - name: Publish safe execution summary
+        shell: bash
+        run: |
+          {
+            echo "## Reconciliação D1 concluída"
+            echo "- Histórico 0000–0020 reconciliado"
+            echo "- Migration 0021 aplicada"
+            echo "- Total validado: 22 migrations"
+            echo "- Tabela round_award_participant_processing validada"
+            echo "- Estruturas e contagens anteriores preservadas"
+            echo "- Nenhum deploy de Pages ou Worker executado"
+          } >> "$GITHUB_STEP_SUMMARY"

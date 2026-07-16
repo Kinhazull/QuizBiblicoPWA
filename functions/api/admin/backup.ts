@@ -20,7 +20,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
     const organizationId = admin.organizationId;
     const data = {
       format: "conte-os-feitos-backup",
-      schemaVersion: 18,
+      schemaVersion: 21,
       credentialsExcluded: true,
       exportedAt: Date.now(),
       organizationId,
@@ -48,6 +48,9 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
         batch_operations: await rows(env, "SELECT * FROM batch_operations WHERE organization_id=?1", organizationId),
         season_snapshots: await rows(env, "SELECT ss.* FROM season_snapshots ss JOIN seasons s ON s.id=ss.season_id WHERE s.organization_id=?1", organizationId),
         season_awards: await rows(env, "SELECT sa.* FROM season_awards sa JOIN seasons s ON s.id=sa.season_id WHERE s.organization_id=?1", organizationId),
+        round_award_processing: await rows(env, "SELECT p.* FROM round_award_processing p JOIN rounds r ON r.id=p.round_id WHERE r.organization_id=?1", organizationId),
+        round_badge_reconciliations: await rows(env, "SELECT b.* FROM round_badge_reconciliations b JOIN rounds r ON r.id=b.round_id WHERE r.organization_id=?1", organizationId),
+        round_award_participant_processing: await rows(env, "SELECT p.* FROM round_award_participant_processing p JOIN rounds r ON r.id=p.round_id WHERE r.organization_id=?1", organizationId),
       },
     };
 

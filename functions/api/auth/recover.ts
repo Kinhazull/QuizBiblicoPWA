@@ -7,7 +7,7 @@ export const onRequestPost=async({request,env}:{request:Request;env:AppEnv})=>{
   const body:any=await request.json().catch(()=>null),username=normalizeUsername(String(body?.username||'')),code=String(body?.code||'').trim().toUpperCase(),password=String(body?.password||'');
   if(!username||code.length<8||!strongEnough(password))return json({error:'invalid_fields'},400);
   const now=Date.now(),codeHash=await sha256(code);
-  const match:any=await env.DB.prepare(`SELECT rc.id codeId,u.id,u.organization_id organizationId FROM account_recovery_codes rc JOIN users u ON u.id=rc.user_id WHERE rc.code_hash=?1 AND rc.used_at IS NULL AND u.username=?2 AND u.status='active' AND rc.created_at>?3`).bind(codeHash,username,now-365*24*60*60*1000).first();
+  const match:any=await env.DB.prepare(`SELECT rc.id codeId,u.id,u.organization_id organizationId FROM account_recovery_codes rc JOIN users u ON u.id=rc.user_id WHERE rc.code_hash=?1 AND rc.used_at IS NULL AND u.username=?2 AND u.status='active' AND rc.created_at>?3`).bind(codeHash,username,now-90*24*60*60*1000).first();
   if(!match)return json({error:'invalid_recovery'},403);
   const hashed=await hashPassword(password);
   await env.DB.batch([

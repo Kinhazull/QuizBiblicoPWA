@@ -80,7 +80,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Validate standalone Worker
         run: pnpm run worker:awards:types:check && pnpm run worker:awards:check
-      - name: Prepare award processing table
-        run: pnpm run worker:awards:migrate
+      - name: Confirm production migration prerequisites
+        run: pnpm run db:reconcile-migrations:verify-final
       - name: Deploy standalone Worker and Cron Trigger
         run: pnpm run worker:awards:deploy

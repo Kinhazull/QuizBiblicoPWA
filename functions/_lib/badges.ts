@@ -16,7 +16,7 @@ export const BADGES:Badge[]=[
  ...series('mastery','Pontuação Consistente','highScoreRounds',[1,2,4,7,10,15,22,30,40,55],'💎','rodadas acima de 9.000 pontos'),
 ];
 export async function badgeStats(env:AppEnv,userId:string){
- const stats:any=await env.DB.prepare(`SELECT COUNT(DISTINCT CASE WHEN a.status='completed' AND a.mode='official' THEN a.round_id END) roundsPlayed,COUNT(CASE WHEN a.status='completed' AND a.mode='official' THEN 1 END) attempts,COALESCE(MAX(CASE WHEN a.mode='official' THEN a.score END),0) bestScore,COALESCE(MAX(CASE WHEN a.mode='official' THEN a.max_streak END),0) bestStreak,COALESCE(SUM(CASE WHEN a.status='completed' AND a.mode='official' THEN a.correct_answers ELSE 0 END),0) totalCorrect,COUNT(DISTINCT CASE WHEN a.status='completed' AND a.mode='official' AND a.correct_answers=10 THEN a.round_id END) perfectRounds,COUNT(CASE WHEN a.status='completed' AND a.mode='practice' THEN 1 END) practiceAttempts,COUNT(DISTINCT CASE WHEN a.status='completed' AND a.mode='official' AND a.score>=9000 THEN a.round_id END) highScoreRounds FROM attempts a JOIN rounds r ON r.id=a.round_id WHERE a.user_id=?1 AND r.status<>'cancelled'`).bind(userId).first();
+ const stats:any=await env.DB.prepare(`SELECT COUNT(DISTINCT CASE WHEN a.status='completed' AND a.mode='official' THEN a.round_id END) roundsPlayed,COUNT(CASE WHEN a.status='completed' AND a.mode='official' THEN 1 END) attempts,COALESCE(MAX(CASE WHEN a.status='completed' AND a.mode='official' THEN a.score END),0) bestScore,COALESCE(MAX(CASE WHEN a.status='completed' AND a.mode='official' THEN a.max_streak END),0) bestStreak,COALESCE(SUM(CASE WHEN a.status='completed' AND a.mode='official' THEN a.correct_answers ELSE 0 END),0) totalCorrect,COUNT(DISTINCT CASE WHEN a.status='completed' AND a.mode='official' AND a.correct_answers=10 THEN a.round_id END) perfectRounds,COUNT(CASE WHEN a.status='completed' AND a.mode='practice' THEN 1 END) practiceAttempts,COUNT(DISTINCT CASE WHEN a.status='completed' AND a.mode='official' AND a.score>=9000 THEN a.round_id END) highScoreRounds FROM attempts a JOIN rounds r ON r.id=a.round_id WHERE a.user_id=?1 AND r.status<>'cancelled'`).bind(userId).first();
  const fast:any=await env.DB.prepare(`SELECT COUNT(*) total FROM attempt_answers aa JOIN attempts a ON a.id=aa.attempt_id JOIN rounds r ON r.id=a.round_id WHERE a.user_id=?1 AND a.mode='official' AND a.status='completed' AND r.status<>'cancelled' AND aa.correct=1 AND aa.response_time_ms<=7000`).bind(userId).first();
  const podium:any=await env.DB.prepare(`WITH ${BEST_ATTEMPTS_CTE},ranked AS (SELECT b.round_id,b.user_id,RANK() OVER(PARTITION BY b.round_id ORDER BY b.score DESC,b.correct_answers DESC,b.total_time_ms ASC,b.completed_at ASC,b.id ASC) place FROM best_attempts b JOIN rounds r ON r.id=b.round_id WHERE r.status='closed' OR r.closes_at<=?2) SELECT COUNT(*) total FROM ranked WHERE user_id=?1 AND place<=3`).bind(userId,Date.now()).first();
  return{...stats,fastCorrect:Number(fast?.total||0),podiums:Number(podium?.total||0)}
@@ -28,4 +28,23 @@ export async function syncBadges(env:AppEnv,userId:string){
  }
  for(const badge of BADGES){if(!owned.has(badge.code)&&Number(stats[badge.metric]||0)>=badge.threshold)statements.push(env.DB.prepare("INSERT OR IGNORE INTO user_badges (user_id,badge_code,earned_at) VALUES (?1,?2,?3)").bind(userId,badge.code,now))}
  if(statements.length)await env.DB.batch(statements);return stats
+}
+
+export function queueBadgeSyncStatement(env:AppEnv,userId:string,reason:string,now=Date.now()){
+ return env.DB.prepare(`INSERT INTO audit_logs(id,organization_id,actor_user_id,action,entity_type,entity_id,details_json,created_at)
+   SELECT ?1,organization_id,?2,'badge.sync_requested','user',?2,?3,?4 FROM users WHERE id=?2`)
+   .bind(crypto.randomUUID(),userId,JSON.stringify({reason:reason.slice(0,80)}),now);
+}
+
+export async function flushBadgeSync(env:AppEnv,userId:string){
+ try{
+  await syncBadges(env,userId);
+  await env.DB.prepare(`INSERT INTO audit_logs(id,organization_id,actor_user_id,action,entity_type,entity_id,details_json,created_at)
+    SELECT ?1,organization_id,NULL,'badge.sync_completed','user',id,'{}',?2 FROM users WHERE id=?3`)
+    .bind(crypto.randomUUID(),Date.now(),userId).run();
+  return true;
+ }catch(error){
+  console.error(JSON.stringify({message:"badge_sync_deferred",userId,error:error instanceof Error?error.message:String(error)}));
+  return false;
+ }
 }
