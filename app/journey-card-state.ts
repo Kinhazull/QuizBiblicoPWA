@@ -10,6 +10,14 @@ export type JourneyCardData = {
 
 export type JourneyCardView = { eyebrow: string; title: string; detail: string; action: string; href: string; tone: string; meta?: string };
 
+function availableAttempts(count: number) {
+  return count === 1 ? "1 tentativa oficial disponível" : `${count} tentativas oficiais disponíveis`;
+}
+
+function improvementAttempts(count: number) {
+  return count === 1 ? "1 tentativa" : `${count} tentativas`;
+}
+
 export function getJourneyCardView(data: JourneyCardData | null, remaining: (target?: number) => string): JourneyCardView {
   if (!data) return { eyebrow: "JORNADA DA SEMANA", title: "Preparando sua jornada", detail: "Buscando as informações mais recentes.", action: "AGUARDE", href: "#", tone: "waiting" };
   const { current, next, recent, completion, practice } = data;
@@ -17,8 +25,8 @@ export function getJourneyCardView(data: JourneyCardData | null, remaining: (tar
     const attemptsLeft = Math.max(0, completion?.optionalAttemptsRemaining ?? current.attemptLimit ?? 2);
     const meta = `${current.secondsPerQuestion || 20}s por pergunta · termina em ${remaining(current.closesAt)}`;
     if (completion?.inProgress) return { eyebrow: "JORNADA EM ANDAMENTO", title: current.title, detail: "Sua tentativa está em andamento e foi preservada com segurança.", action: "CONTINUAR JORNADA", href: "/jogar", tone: "active", meta };
-    if (!completion?.completed) return { eyebrow: "JORNADA OFICIAL DISPONÍVEL", title: current.title, detail: `Você possui ${attemptsLeft} tentativa(s) oficial(is) disponível(is).`, action: "INICIAR JORNADA", href: "/jogar", tone: "available", meta };
-    if (attemptsLeft > 0) return { eyebrow: "RESULTADO REGISTRADO", title: current.title, detail: `Você ainda possui ${attemptsLeft} tentativa(s) para melhorar seu resultado nesta Jornada.`, action: "MELHORAR RESULTADO", href: "/jogar", tone: "recorded", meta };
+    if (!completion?.completed) return { eyebrow: "JORNADA OFICIAL DISPONÍVEL", title: current.title, detail: `Você possui ${availableAttempts(attemptsLeft)}.`, action: "INICIAR JORNADA", href: "/jogar", tone: "available", meta };
+    if (attemptsLeft > 0) return { eyebrow: "RESULTADO REGISTRADO", title: current.title, detail: `Você ainda possui ${improvementAttempts(attemptsLeft)} para melhorar seu resultado nesta Jornada.`, action: "MELHORAR RESULTADO", href: "/jogar", tone: "recorded", meta };
     if (current.practiceAllowed && practice?.inProgress) return { eyebrow: "JORNADA DE TREINO", title: current.title, detail: "Seu treino está em andamento e pode ser retomado.", action: "CONTINUAR TREINO", href: "/jogar?modo=treino", tone: "training", meta };
     if (current.practiceAllowed && practice?.completed) return { eyebrow: "JORNADA DE TREINO CONCLUÍDA", title: current.title, detail: "O treino não altera sua classificação oficial.", action: "JOGAR NOVAMENTE", href: "/jogar?modo=treino", tone: "training", meta };
     if (current.practiceAllowed) return { eyebrow: "JORNADA CONCLUÍDA", title: current.title, detail: `Melhor resultado: ${Number(completion?.bestScore || 0).toLocaleString("pt-BR")} pontos.`, action: "INICIAR TREINO", href: "/jogar?modo=treino", tone: "completed", meta };
