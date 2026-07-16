@@ -5,12 +5,12 @@ import { DatabaseSync } from "node:sqlite";
 
 test("all migrations are sequential and apply to an empty SQLite database", async () => {
   const files = (await readdir(new URL("../drizzle/", import.meta.url))).filter(file => file.endsWith(".sql")).sort();
-  assert.equal(files.length, 20);
+  assert.equal(files.length, 22);
   files.forEach((file, index) => assert.equal(file.slice(0, 4), String(index).padStart(4, "0")));
   const db = new DatabaseSync(":memory:");
   for (const file of files) db.exec(await readFile(new URL(`../drizzle/${file}`, import.meta.url), "utf8"));
   const tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table'").all().map(row => row.name);
-  for (const required of ["users", "rounds", "question_bank", "seasons", "announcements", "privacy_requests", "ai_question_suggestions", "batch_operations", "season_snapshots", "season_awards", "round_award_processing"]) assert.ok(tables.includes(required), `missing ${required}`);
+  for (const required of ["users", "rounds", "question_bank", "seasons", "announcements", "privacy_requests", "ai_question_suggestions", "batch_operations", "season_snapshots", "season_awards", "round_award_processing", "round_award_participant_processing"]) assert.ok(tables.includes(required), `missing ${required}`);
   const sessionColumns = db.prepare("PRAGMA table_info(sessions)").all().map(row => row.name);
   assert.ok(sessionColumns.includes("ip_hash"));
   assert.ok(sessionColumns.includes("user_agent"));
