@@ -13,6 +13,7 @@ Aplicativo de jornadas bíblicas semanais, com tentativas oficiais e de treino, 
 | Operação do Cron | [docs/OPERATIONS_JOURNEY_AWARDS.md](docs/OPERATIONS_JOURNEY_AWARDS.md) |
 | Testes | [docs/TESTING.md](docs/TESTING.md) |
 | Banco e migrations | [docs/D1_MIGRATION_RECONCILIATION.md](docs/D1_MIGRATION_RECONCILIATION.md) |
+| Limpeza pré-piloto | [docs/PILOT_DATA_RESET.md](docs/PILOT_DATA_RESET.md) |
 | Aprovação legal do piloto | [docs/LEGAL_RELEASE_CHECKLIST.md](docs/LEGAL_RELEASE_CHECKLIST.md) |
 | Linguagem oficial do produto | [docs/PRODUCT_LANGUAGE.md](docs/PRODUCT_LANGUAGE.md) |
 | Sugestões com IA | [docs/AI_SUGGESTIONS.md](docs/AI_SUGGESTIONS.md) |

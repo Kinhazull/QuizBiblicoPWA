@@ -1,0 +1,131 @@
+name: Reset production pilot data
+
+run-name: Reset production pilot data by ${{ github.actor }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Digite exatamente LIMPAR_DADOS_COMPETITIVOS_PRODUCAO
+        required: true
+        type: string
+      expected_users:
+        description: Total exato de contas que deve ser preservado
+        required: true
+        type: string
+      expected_questions:
+        description: Total exato de perguntas do acervo que deve ser preservado
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: reset-production-pilot-data
+  cancel-in-progress: false
+
+jobs:
+  reset:
+    name: Diagnose, back up and reset competitive data
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: production
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: c9804b247feba1dfe55516404b851d61
+      D1_DATABASE_ID: 33fc35a0-46cf-4756-b6be-89b07371256c
+      EXPECTED_USERS: ${{ inputs.expected_users }}
+      EXPECTED_QUESTIONS: ${{ inputs.expected_questions }}
+    steps:
+      - name: Require exact production confirmation
+        shell: bash
+        env:
+          CONFIRMATION: ${{ inputs.confirmation }}
+        run: |
+          set -euo pipefail
+          if [ "$CONFIRMATION" != "LIMPAR_DADOS_COMPETITIVOS_PRODUCAO" ]; then
+            echo "::error::Confirmação inválida. Nenhuma operação foi executada."
+            exit 1
+          fi
+          [[ "$EXPECTED_USERS" =~ ^[1-9][0-9]*$ ]] || { echo "::error::Total de contas inválido."; exit 1; }
+          [[ "$EXPECTED_QUESTIONS" =~ ^[1-9][0-9]*$ ]] || { echo "::error::Total de perguntas inválido."; exit 1; }
+
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: main
+
+      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
+        with:
+          version: 11.7.0
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Diagnose without writing
+        run: >-
+          node scripts/reset-pilot-production-data.mjs --dry-run
+          --expected-users "$EXPECTED_USERS"
+          --expected-questions "$EXPECTED_QUESTIONS"
+          --snapshot pilot-reset-dry-run.json
+
+      - name: Export remote D1 backup
+        run: >-
+          pnpm exec wrangler d1 export quiz-biblico-db --remote
+          --config workers/journey-awards/wrangler.jsonc
+          --output=d1-before-pilot-reset.sql
+
+      - name: Encrypt confidential backup
+        shell: bash
+        run: |
+          set -euo pipefail
+          openssl enc -aes-256-cbc -pbkdf2 -iter 200000 -salt \
+            -in d1-before-pilot-reset.sql \
+            -out d1-before-pilot-reset.sql.enc \
+            -pass env:CLOUDFLARE_API_TOKEN
+          shred -u d1-before-pilot-reset.sql
+          test -s d1-before-pilot-reset.sql.enc
+
+      - name: Store confidential pre-reset backup
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: d1-before-pilot-reset-${{ github.run_id }}
+          path: |
+            d1-before-pilot-reset.sql.enc
+            pilot-reset-dry-run.json
+          if-no-files-found: error
+          retention-days: 7
+          compression-level: 9
+
+      - name: Apply one transactional reset batch
+        run: >-
+          node scripts/reset-pilot-production-data.mjs --apply
+          --expected-users "$EXPECTED_USERS"
+          --expected-questions "$EXPECTED_QUESTIONS"
+          --snapshot pilot-reset-before-apply.json
+
+      - name: Verify final state independently
+        run: >-
+          node scripts/reset-pilot-production-data.mjs --verify
+          --expected-users "$EXPECTED_USERS"
+          --expected-questions "$EXPECTED_QUESTIONS"
+
+      - name: Publish execution summary
+        shell: bash
+        run: |
+          {
+            echo "## Limpeza competitiva concluída"
+            echo "- Contas preservadas: $EXPECTED_USERS"
+            echo "- Perguntas preservadas: $EXPECTED_QUESTIONS"
+            echo "- Organizações, grupos, credenciais, consentimentos, permissões e auditoria preservados"
+            echo "- Jornadas, tentativas, temporadas, Medalhas, notificações e dados derivados removidos"
+            echo "- Contadores de uso do acervo zerados"
+            echo "- Nenhum deploy ou migration executado"
+          } >> "$GITHUB_STEP_SUMMARY"
+

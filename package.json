@@ -28,6 +28,9 @@
     "db:reconcile-migrations:verify-final": "node scripts/reconcile-d1-migrations.mjs --verify-final",
     "db:reconcile-migrations:snapshot": "node scripts/reconcile-d1-migrations.mjs --snapshot d1-before.json",
     "db:reconcile-migrations:compare": "node scripts/reconcile-d1-migrations.mjs --compare-snapshot d1-before.json",
+    "db:reset-pilot:dry-run": "node scripts/reset-pilot-production-data.mjs --dry-run",
+    "db:reset-pilot:apply": "node scripts/reset-pilot-production-data.mjs --apply",
+    "db:reset-pilot:verify": "node scripts/reset-pilot-production-data.mjs --verify",
     "worker:awards:migrate": "wrangler d1 migrations apply quiz-biblico-db --remote --config workers/journey-awards/wrangler.jsonc",
     "worker:awards:deploy": "wrangler deploy --config workers/journey-awards/wrangler.jsonc"
   },
