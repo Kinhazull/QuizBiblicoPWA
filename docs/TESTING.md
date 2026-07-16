@@ -4,44 +4,44 @@
 
 - Node.js 22.13 ou superior
 - pnpm 11
-- Dependências instaladas com `pnpm install --frozen-lockfile`
+- `pnpm install --frozen-lockfile`
 
 Os testes nunca usam credenciais, D1 remoto ou dados de produção.
 
 ## Comandos
 
-- `pnpm run test:quick`: contratos e verificações rápidas existentes.
+- `pnpm run test:quick`: contratos e verificações rápidas.
 - `pnpm run test:unit`: funções puras e regras competitivas.
-- `pnpm run test:contracts`: contratos estáticos e comportamento do Service Worker.
-- `pnpm run test:integration`: handlers reais com `Request`, sessão e banco temporário.
-- `pnpm run test:e2e`: jornada de tentativa no nível da API, sem produção.
-- `pnpm run test:all`: unitários, contratos e integração sem repetir o build.
+- `pnpm run test:contracts`: segurança, PWA e Service Worker.
+- `pnpm run test:integration`: handlers reais com sessão e SQLite temporário migrado.
+- `pnpm run test:e2e`: Chromium desktop/mobile, axe e uma Jornada com handlers reais e banco temporário.
+- `pnpm run test:all`: unitários, contratos e integração, sem repetir o build.
 
-Execute `pnpm run lint` e `pnpm run build` separadamente antes da entrega.
+Execute também `pnpm run lint`, `pnpm run build` e `pnpm audit --audit-level=high`.
 
 ## Banco temporário
 
-Cada teste de integração cria um SQLite `:memory:` isolado usando o módulo `node:sqlite`. Todas as migrations de `drizzle/` são aplicadas em ordem lexical antes do cenário. Um adaptador pequeno implementa a interface D1 utilizada pelos handlers (`prepare`, `bind`, `first`, `all`, `run` e `batch`) sobre o SQLite real. Assim, constraints, transações, índices e consultas são efetivamente executados; não há banco falso permissivo.
+Cada teste cria um SQLite `:memory:` isolado usando `node:sqlite` e aplica todas as migrations em ordem lexical. O adaptador implementa a interface D1 usada pelos handlers. Constraints, índices, transações e consultas são executados; não existe banco falso permissivo.
 
-O banco é fechado ao final de cada teste. Testes concorrentes usam bancos distintos, e as requisições simultâneas dentro do cenário usam `Promise.all` contra o mesmo banco para comprovar idempotência e constraints.
+Testes concorrentes usam bancos distintos. Requisições simultâneas dentro do mesmo cenário usam `Promise.all` contra o mesmo banco e validam os efeitos persistidos.
 
-## Handlers, sessão e tempo
+## E2E real isolado
 
-Os testes importam os handlers de `functions/api` e os chamam com `Request`, `env.DB` e `params`, como no Worker. As sessões são persistidas na tabela `sessions`, com cookie opaco e hash real. `Date.now` é substituído somente dentro de casos determinísticos e restaurado em `finally`.
+O Playwright abre a aplicação local e despacha as requisições de API para os handlers reais no processo de teste. O cenário persiste login, cookie, dez respostas, conclusão, Ranking e logout no SQLite migrado. Não há URL de produção, rede externa ou credencial real.
 
-Para adicionar um cenário, use `tests/helpers/integration.mjs`, crie um banco por teste e valide tanto HTTP quanto as linhas persistidas. Não considere uma busca textual no fonte como comprovação comportamental.
+O teste de restauração cria outro banco migrado, importa o núcleo de um backup e executa `PRAGMA foreign_key_check`. Como credenciais não pertencem ao backup, usuários restaurados ficam suspensos e obrigados a redefinir a senha.
 
-## Tipos de teste
+## Tipos
 
-- **Estático/contrato:** detecta remoção acidental de cabeçalhos ou filtros, mas não prova persistência.
+- **Contrato:** detecta remoção acidental de proteções, mas não prova persistência.
 - **Unitário:** executa função pura sem banco.
-- **Integração:** executa handler e SQL real em banco temporário.
-- **Concorrência:** dispara handlers em paralelo e consulta efeitos persistidos.
-- **E2E de API:** percorre início, resposta, retomada e conclusão sem depender de navegador ou produção.
+- **Integração:** executa handler e SQL real.
+- **Concorrência:** dispara handlers em paralelo e consulta o banco.
+- **E2E:** usa navegador real, UI local, handlers reais e banco isolado.
 
 ## Limitações conhecidas
 
-- D1 remoto e a propagação real em múltiplos dispositivos continuam sendo validações pré-lançamento.
-- O Service Worker é exercitado em VM; instalação em navegadores reais permanece parte do teste manual da PWA.
-- A vulnerabilidade moderada transitiva atualmente reportada pelo `pnpm audit` é documentada e acompanhada. A CI bloqueia vulnerabilidades altas ou críticas com `--audit-level=high`; ela não é ocultada nem ignorada.
-- E2E visual com Playwright poderá ser acrescentado quando houver um servidor local Vinext/Workers estável na CI; a suíte atual já cobre a jornada no nível dos handlers.
+- D1 remoto e propagação em vários aparelhos continuam no checklist manual.
+- A instalação PWA deve ser confirmada em Android/iOS reais.
+- Lighthouse/Core Web Vitals em aparelho físico não são substituídos pela CI.
+- A CI bloqueia vulnerabilidades altas/críticas; vulnerabilidades transitivas moderadas permanecem documentadas e acompanhadas.

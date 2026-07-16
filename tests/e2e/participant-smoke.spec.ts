@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import AxeBuilder from "@axe-core/playwright";
 
 const participant = {
   id: "e2e-user",
@@ -37,6 +38,8 @@ test("login screen remains usable without an authenticated session", async ({ pa
   await expect(page.locator('input[name="password"]')).toBeVisible();
   await expect(page.locator(".auth-recovery-link")).toBeVisible();
   await expect(page.locator(".participant-bottom-nav")).toHaveCount(0);
+  const accessibility = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
+  expect(accessibility.violations).toEqual([]);
 });
 
 test("authenticated participant receives chrome and five-item navigation", async ({ page }) => {
@@ -48,4 +51,6 @@ test("authenticated participant receives chrome and five-item navigation", async
   await expect(page.locator(".notifications-action")).toBeVisible();
   await expect(page.locator(".settings-action")).toHaveCount(0);
   await expect(page.locator("body")).not.toHaveCSS("overflow-x", "scroll");
+  const accessibility = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
+  expect(accessibility.violations).toEqual([]);
 });

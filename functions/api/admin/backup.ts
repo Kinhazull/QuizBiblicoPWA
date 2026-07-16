@@ -20,7 +20,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
     const organizationId = admin.organizationId;
     const data = {
       format: "conte-os-feitos-backup",
-      schemaVersion: 21,
+      schemaVersion: 23,
       credentialsExcluded: true,
       exportedAt: Date.now(),
       organizationId,

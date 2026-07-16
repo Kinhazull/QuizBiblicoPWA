@@ -38,6 +38,7 @@
     "react-loading-skeleton": "3.5.0"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
     "@cloudflare/vite-plugin": "1.44.0",
     "@playwright/test": "^1.61.1",
     "@tailwindcss/postcss": "4.2.1",
@@ -49,6 +50,7 @@
     "drizzle-kit": "0.31.10",
     "eslint": "9.39.4",
     "eslint-config-next": "16.2.6",
+    "prettier": "^3.9.5",
     "react-server-dom-webpack": "19.2.6",
     "tailwindcss": "4.2.1",
     "typescript": "5.9.3",
