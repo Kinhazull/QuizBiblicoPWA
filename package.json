@@ -17,7 +17,10 @@
     "test:e2e": "node --experimental-loader ./tests/helpers/ts-loader.mjs --test tests/integration/attempts.integration.test.mjs",
     "test:all": "pnpm run test:unit && pnpm run test:contracts && pnpm run test:integration",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
-    "db:generate": "drizzle-kit generate"
+    "db:generate": "drizzle-kit generate",
+    "worker:awards:check": "wrangler deploy --dry-run --config workers/journey-awards/wrangler.jsonc",
+    "worker:awards:migrate": "wrangler d1 execute quiz-biblico-db --remote --yes --file drizzle/0019_round_award_processing.sql --config workers/journey-awards/wrangler.jsonc",
+    "worker:awards:deploy": "wrangler deploy --config workers/journey-awards/wrangler.jsonc"
   },
   "dependencies": {
     "drizzle-orm": "0.45.2",

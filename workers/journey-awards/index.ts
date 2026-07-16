@@ -4,7 +4,7 @@ interface Env {
   DB: D1Database;
 }
 
-export default {
+const journeyAwardsWorker = {
   async scheduled(
     _controller: ScheduledController,
     env: Env,
@@ -23,3 +23,5 @@ export default {
     });
   },
 };
+
+export default journeyAwardsWorker;

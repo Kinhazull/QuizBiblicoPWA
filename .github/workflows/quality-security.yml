@@ -27,3 +27,39 @@ jobs:
       - run: pnpm run test:quick
       - run: pnpm run test:integration
       - run: pnpm audit --audit-level=high
+
+  deploy-journey-awards:
+    name: Deploy journey awards Worker
+    needs: quality
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    concurrency:
+      group: journey-awards-production
+      cancel-in-progress: false
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: c9804b247feba1dfe55516404b851d61
+    steps:
+      - uses: actions/checkout@v4
+      - name: Confirm Cloudflare deployment credential
+        shell: bash
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "::error::Configure the GitHub Actions secret CLOUDFLARE_API_TOKEN before deploying the journey awards Worker."
+            exit 1
+          fi
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.7.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Validate standalone Worker
+        run: pnpm run worker:awards:check
+      - name: Prepare award processing table
+        run: pnpm run worker:awards:migrate
+      - name: Deploy standalone Worker and Cron Trigger
+        run: pnpm run worker:awards:deploy
