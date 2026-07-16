@@ -13,7 +13,7 @@ export default function JourneyCard({ data, remaining }: { data: JourneyCardData
       {showOfficialResult && <div className="journey-results"><article><span aria-hidden="true">🏆</span><div><small>Melhor resultado</small><strong>{Number(displayScore).toLocaleString("pt-BR")} <em>pontos</em></strong></div></article><article><span aria-hidden="true">★</span><div><small>Sua colocação</small><strong>{data?.ranking?.position ? `${data.ranking.position}º` : "—"} <em>{positionLabel}</em></strong></div></article></div>}
       {current && <div className="journey-timing"><span><b aria-hidden="true">◷</b><strong>{current.secondsPerQuestion || 20} segundos</strong><small>por pergunta</small></span><span><b aria-hidden="true">▣</b><strong>Encerra em</strong><small>{remaining(current.closesAt)}</small></span></div>}
       <p className="journey-context">💡 {completion?.completed && attempts > 0 && view.tone !== "training" ? <>Você ainda possui <b>{attempts === 1 ? "1 tentativa" : `${attempts} tentativas`}</b> para melhorar seu resultado nesta Jornada.</> : view.detail}</p>
-      {!current && view.meta && <small className="journey-card-meta">{view.meta}</small>}
+      {!current && view.meta && <div className="journey-card-meta" role="status"><span aria-hidden="true">✓</span><strong>{view.meta}</strong></div>}
     </section>
     <a className={`journey-card-action ${view.href === "#" ? "disabled" : ""}`} href={view.href} aria-disabled={view.href === "#"}>{view.action}<span aria-hidden="true">→</span></a>
   </div>;

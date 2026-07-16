@@ -11,4 +11,6 @@ test("card exibe tema, resultado, colocação, tempo e ação fora do painel",as
 
 test("card distingue disponível, andamento, resultado registrado e treino",async()=>{const[source,state]=await Promise.all([read("app/JourneyCard.tsx"),read("app/journey-card-state.ts")]);for(const label of ["JORNADA OFICIAL DISPONÍVEL","JORNADA EM ANDAMENTO","RESULTADO REGISTRADO","JORNADA DE TREINO"])assert.ok(state.includes(label),label);assert.match(source,/view\.tone !== "training"/);assert.match(source,/Resultado final/)});
 
+test("aviso de classificação final usa status integrado ao card",async()=>{const[source,css]=await Promise.all([read("app/JourneyCard.tsx"),read("app/globals.css")]);assert.match(source,/className="journey-card-meta" role="status"/);assert.match(css,/\.journey-card-meta\{display:flex;align-items:center/)});
+
 test("card não mistura resultado anterior e flexiona tentativas",async()=>{const[source,state]=await Promise.all([read("app/JourneyCard.tsx"),read("app/journey-card-state.ts")]);assert.match(source,/current && !completion\?\.completed \? "Ainda não classificado"/);assert.match(source,/Ainda não classificado/);assert.match(state,/1 tentativa oficial disponível/);assert.match(state,/tentativas oficiais disponíveis/)});
