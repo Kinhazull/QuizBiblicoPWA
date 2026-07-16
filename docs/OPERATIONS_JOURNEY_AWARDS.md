@@ -1,5 +1,7 @@
 # Runbook do processamento de Jornadas
 
+Para uma visão do fluxo completo entre Jornada aberta, Ranking provisório, encerramento e Medalhas, consulte [JOURNEY_LIFECYCLE.md](JOURNEY_LIFECYCLE.md).
+
 ## Funcionamento
 
 O Worker `quiz-biblico-journey-awards` executa a cada minuto. Cada invocação processa no máximo sete participantes, limite conservador para o orçamento gratuito de consultas do D1. O checkpoint `(round_id, user_id, job_type)` torna a retomada idempotente.

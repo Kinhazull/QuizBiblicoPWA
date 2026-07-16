@@ -19,6 +19,17 @@ Os testes nunca usam credenciais, D1 remoto ou dados de produção.
 
 Execute também `pnpm run lint`, `pnpm run build` e `pnpm audit --audit-level=high`.
 
+## Camadas de validação
+
+1. **Testes rápidos e unitários:** validação de perguntas, pontuação, migrations e regras puras.
+2. **Contratos:** segurança, PWA, Service Worker, navegação e proteções estruturais.
+3. **Integração:** handlers reais, sessões, concorrência e persistência em SQLite migrado.
+4. **Playwright:** interface desktop/mobile, acessibilidade com axe e Jornada completa com backend isolado.
+5. **Worker e Cron:** typecheck, dry-run do Worker e contratos de idempotência/checkpoints.
+6. **Smoke test de produção:** login, retomada, conclusão, Ranking, logout, Diagnóstico e Observability após o deploy.
+
+O checklist de publicação e o smoke test oficial estão em [RELEASE.md](../RELEASE.md). O ciclo competitivo validado está em [JOURNEY_LIFECYCLE.md](JOURNEY_LIFECYCLE.md).
+
 ## Banco temporário
 
 Cada teste cria um SQLite `:memory:` isolado usando `node:sqlite` e aplica todas as migrations em ordem lexical. O adaptador implementa a interface D1 usada pelos handlers. Constraints, índices, transações e consultas são executados; não existe banco falso permissivo.

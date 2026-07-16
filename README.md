@@ -2,6 +2,22 @@
 
 Aplicativo de jornadas bíblicas semanais, com tentativas oficiais e de treino, ranking, medalhas, acervo de perguntas e painel administrativo. A aplicação roda em Next.js/Vinext sobre Cloudflare Workers e usa Cloudflare D1.
 
+## Índice da documentação
+
+| Assunto | Documento |
+| --- | --- |
+| Arquitetura e componentes | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) |
+| Processo oficial de publicação | [RELEASE.md](RELEASE.md) |
+| Operação geral | [OPERATIONS.md](OPERATIONS.md) |
+| Ciclo da Jornada, Ranking e Medalhas | [docs/JOURNEY_LIFECYCLE.md](docs/JOURNEY_LIFECYCLE.md) |
+| Operação do Cron | [docs/OPERATIONS_JOURNEY_AWARDS.md](docs/OPERATIONS_JOURNEY_AWARDS.md) |
+| Testes | [docs/TESTING.md](docs/TESTING.md) |
+| Banco e migrations | [docs/D1_MIGRATION_RECONCILIATION.md](docs/D1_MIGRATION_RECONCILIATION.md) |
+| Aprovação legal do piloto | [docs/LEGAL_RELEASE_CHECKLIST.md](docs/LEGAL_RELEASE_CHECKLIST.md) |
+| Linguagem oficial do produto | [docs/PRODUCT_LANGUAGE.md](docs/PRODUCT_LANGUAGE.md) |
+| Sugestões com IA | [docs/AI_SUGGESTIONS.md](docs/AI_SUGGESTIONS.md) |
+| Backlog | [BACKLOG.md](BACKLOG.md) |
+
 ## Desenvolvimento
 
 Requer Node.js 22.13+ e pnpm 11.
@@ -25,6 +41,8 @@ pnpm run test:e2e
 ```
 
 Os testes de integração recriam um banco temporário e aplicam todas as migrations; não acessam produção. Consulte [docs/TESTING.md](docs/TESTING.md) para arquitetura, isolamento, concorrência e limitações.
+
+O Ranking exibido durante uma Jornada aberta é provisório. Depois do encerramento, o Worker processa os participantes de forma idempotente, fecha a Jornada, consolida o Ranking final e sincroniza Medalhas. Consulte [docs/JOURNEY_LIFECYCLE.md](docs/JOURNEY_LIFECYCLE.md).
 
 ## Dados e implantação
 

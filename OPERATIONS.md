@@ -1,5 +1,7 @@
 # Operação gratuita e durável
 
+O procedimento completo de publicação está em [RELEASE.md](RELEASE.md). A arquitetura está em [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) e o ciclo competitivo em [docs/JOURNEY_LIFECYCLE.md](docs/JOURNEY_LIFECYCLE.md).
+
 ## Antes de cada publicação
 
 1. Fazer backup D1 pelo painel administrativo e guardar o arquivo localmente.
