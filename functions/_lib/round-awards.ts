@@ -16,5 +16,14 @@ export async function processClosedRoundAwards(env: AppEnv, now = Date.now(), li
     await env.DB.batch([marker, close, audit]);
     rounds += 1; participants += users.results.length;
   }
-  return { rounds, participants };
+  const cancelled: any = await env.DB.prepare(`SELECT r.id FROM rounds r LEFT JOIN round_badge_reconciliations b ON b.round_id=r.id
+    WHERE r.status='cancelled' AND b.round_id IS NULL ORDER BY r.updated_at LIMIT ?1`).bind(limit).all();
+  let reconciledCancelled = 0;
+  for (const round of cancelled.results as any[]) {
+    const users: any = await env.DB.prepare("SELECT DISTINCT user_id FROM attempts WHERE round_id=?1").bind(round.id).all();
+    for (const row of users.results as any[]) await syncBadges(env, row.user_id);
+    await env.DB.prepare("INSERT OR IGNORE INTO round_badge_reconciliations(round_id,reconciled_at) VALUES(?1,?2)").bind(round.id, now).run();
+    reconciledCancelled += 1;
+  }
+  return { rounds, participants, reconciledCancelled };
 }

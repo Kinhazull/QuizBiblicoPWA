@@ -1,40 +1,14 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import "./admin-extra.css";
-import "./admin-quality.css";
 import "./medals.css";
 import "./status.css";
 import "./back-navigation.css";
-import "./import.css";
-import "./management.css";
 import "./profile.css";
-import "./members.css";
-import "./admin-nav.css";
-import "./admin-hub.css";
 import "./navigation-cleanup.css";
-import "./round-details.css";
-import "./reports.css";
 import "./journey.css";
 import "./notifications.css";
 import "./legal.css";
-import "./question-bank.css";
-import "./question-picker.css";
-import "./question-import.css";
-import "./question-pagination.css";
-import "./question-compose.css";
-import "./permissions.css";
-import "./review.css";
-import "./collaboration.css";
-import "./calendar.css";
-import "./round-rules.css";
-import "./analytics.css";
-import "./ai.css";
-import "./batch.css";
-import "./members-batch.css";
-import "./quality.css";
-import "./seasons.css";
 import "./brand-system.css";
-import "./member-alignment.css";
 import { AdminQuickNav } from "./AdminQuickNav";
 import { BackNavigation } from "./BackNavigation";
 import { LearningQuickNav } from "./LearningQuickNav";
@@ -50,7 +24,10 @@ export const metadata: Metadata = {
   applicationName: "Conte os Feitos",
   manifest: "/manifest.webmanifest",
   appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Conte os Feitos" },
-  icons: { icon: "/app-icon.svg", apple: "/app-icon.svg" },
+  icons: {
+    icon: [{ url: "/app-icon-192.png", sizes: "192x192", type: "image/png" }, { url: "/app-icon.svg", type: "image/svg+xml" }],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

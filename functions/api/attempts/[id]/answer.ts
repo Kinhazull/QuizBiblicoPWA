@@ -41,7 +41,7 @@ export const onRequestPost = async ({ request, env, params }: { request: Request
     const availableChoices = await env.DB.prepare("SELECT id FROM choices WHERE question_id=?1 ORDER BY id").bind(questionId).all();
     if (availableChoices.results.length !== 4) return json({ error: "invalid_round_content" }, 409);
 
-    const lastAnsweredAt = order ? Number((previous.results[order - 1] as any).answered_at) : Number(attempt.started_at), rawElapsed = Math.max(0, now - lastAnsweredAt), allowedMs = Number(attempt.seconds_per_question) * 1000, elapsed = Math.max(0, Math.min(rawElapsed, allowedMs)), serverTimedOut = rawElapsed > allowedMs + 1500;
+    const questionStartedAt = Number(attempt.current_question_started_at || attempt.started_at), rawElapsed = Math.max(0, now - questionStartedAt), allowedMs = Number(attempt.seconds_per_question) * 1000, elapsed = Math.max(0, Math.min(rawElapsed, allowedMs)), serverTimedOut = rawElapsed > allowedMs + 1500;
     let currentStreak = 0; for (let index = previous.results.length - 1; index >= 0 && (previous.results[index] as any).correct; index--) currentStreak++;
     let parsedRules: unknown = null; try { parsedRules = attempt.advanced_rules_json ? JSON.parse(attempt.advanced_rules_json) : null; } catch {}
     // A client timeout may only forfeit an answer; it can never improve its result.
@@ -54,7 +54,7 @@ export const onRequestPost = async ({ request, env, params }: { request: Request
       if (isLast) {
         finalResult = summarizeAnswers([...(previous.results as any[]), { correct, points, response_time_ms: elapsed }]);
         await env.DB.batch([answerStatement, env.DB.prepare("UPDATE attempts SET status='completed',score=?1,correct_answers=?2,total_time_ms=?3,max_streak=?4,completed_at=?5 WHERE id=?6 AND status='in_progress'").bind(finalResult.score, finalResult.correctAnswers, finalResult.totalTimeMs, finalResult.maxStreak, now, params.id), env.DB.prepare("INSERT INTO audit_logs(id,organization_id,actor_user_id,action,entity_type,entity_id,details_json,created_at) VALUES(?1,?2,?3,'attempt.completed','attempt',?4,?5,?6)").bind(crypto.randomUUID(), user.organizationId, user.id, params.id, JSON.stringify({ mode: attempt.mode, roundId: attempt.round_id, score: finalResult.score, correctAnswers: finalResult.correctAnswers }), now)]);
-      } else await answerStatement.run();
+      } else await env.DB.batch([answerStatement,env.DB.prepare("UPDATE attempts SET current_question_started_at=NULL WHERE id=?1 AND status='in_progress'").bind(params.id)]);
     } catch {
       const winner: any = await persistedAnswer(env, params.id, questionId);
       if (winner && winner.choiceId === choiceId) return json(await savedResponse(env, winner, params.id));

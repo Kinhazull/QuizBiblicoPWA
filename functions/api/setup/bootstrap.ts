@@ -1,5 +1,6 @@
 import { hashPassword, json, normalizeUsername, secureEqual, sha256 } from "../../_lib/security";
 import type { AppEnv } from "../../_lib/auth";
+import { strongEnough } from "../../_lib/abuse";
 
 export const onRequestPost = async ({ request, env }: { request: Request; env: AppEnv }) => {
   const provided=request.headers.get("x-bootstrap-secret")||"";if(!env.BOOTSTRAP_SECRET||!await secureEqual(provided,env.BOOTSTRAP_SECRET))return json({error:"forbidden"},403);
@@ -12,7 +13,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
   const username = normalizeUsername(String(body?.username || ""));
   const password = String(body?.password || "");
   const inviteCode = String(body?.inviteCode || "").trim().toUpperCase();
-  if (organizationName.length < 3 || displayName.length < 3 || username.length < 3 || password.length < 10 || inviteCode.length < 6) return json({ error: "invalid_fields" }, 400);
+  if (organizationName.length < 3 || displayName.length < 3 || username.length < 3 || !strongEnough(password) || inviteCode.length < 6) return json({ error: "invalid_fields" }, 400);
   const now = Date.now(); const orgId = crypto.randomUUID(); const groupId = crypto.randomUUID(); const userId = crypto.randomUUID();
   const credential = await hashPassword(password);
   await env.DB.batch([

@@ -17,16 +17,24 @@ export async function sha256(value: string) {
 export async function hashPassword(password: string, salt = randomToken(16)) {
   if (password.length > 128) throw new Error("password_too_long");
   const key = await crypto.subtle.importKey("raw", encoder.encode(password), "PBKDF2", false, ["deriveBits"]);
-  // Kept within the Workers Free CPU budget; login throttling provides the
-  // complementary protection against online password guessing.
-  const bits = await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt: encoder.encode(salt), iterations: 25_000 }, key, 256);
+  const bits = await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt: encoder.encode(salt), iterations: 100_000 }, key, 256);
   return { salt, hash: toBase64Url(new Uint8Array(bits)) };
 }
 
-export async function verifyPassword(password: string, salt: string, expected: string) {
+export async function verifyPasswordDetails(password: string, salt: string, expected: string) {
   if (password.length > 128) return false;
   const result = await hashPassword(password, salt);
-  return timingSafeEqual(result.hash, expected);
+  if (timingSafeEqual(result.hash, expected)) return { valid: true, needsUpgrade: false };
+  // Compatibilidade com credenciais criadas antes do aumento de custo.
+  const key = await crypto.subtle.importKey("raw", encoder.encode(password), "PBKDF2", false, ["deriveBits"]);
+  const legacyBits = await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt: encoder.encode(salt), iterations: 25_000 }, key, 256);
+  const valid = timingSafeEqual(toBase64Url(new Uint8Array(legacyBits)), expected);
+  return { valid, needsUpgrade: valid };
+}
+
+export async function verifyPassword(password: string, salt: string, expected: string) {
+  const result = await verifyPasswordDetails(password, salt, expected);
+  return typeof result === "boolean" ? result : result.valid;
 }
 
 function timingSafeEqual(a: string, b: string) {

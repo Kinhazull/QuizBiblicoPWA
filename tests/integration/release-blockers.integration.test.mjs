@@ -76,3 +76,5 @@ test("cancelled Journey keeps evidence but leaves rankings and reconciles badges
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM user_badges WHERE user_id='player'").get().total, 0);
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM attempts WHERE id='cancelled-result'").get().total, 1);
 });
+
+test("badge synchronization grants every eligible level in one pass",async t=>{const{ctx}=await setup(t);ctx.raw.prepare("INSERT INTO attempts(id,user_id,round_id,attempt_number,mode,status,shuffle_seed,score,correct_answers,total_time_ms,max_streak,started_at,completed_at,question_order_json) VALUES('many-badges','player','round-1',1,'official','completed','s',12000,10,10000,10,1,2,'[]')").run();await syncBadges(ctx.env,"player");const codes=ctx.raw.prepare("SELECT badge_code FROM user_badges WHERE user_id='player'").all().map(row=>row.badge_code);assert.ok(codes.includes("score_1"));assert.ok(codes.includes("score_7"));assert.ok(codes.includes("streak_9"))});

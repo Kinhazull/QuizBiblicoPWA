@@ -3,6 +3,7 @@ packages:
 
 overrides:
   postcss: 8.5.16
+  "esbuild@<=0.24.2": 0.25.0
 
 allowBuilds:
   esbuild: true

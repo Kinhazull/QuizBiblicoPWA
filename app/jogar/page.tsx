@@ -109,12 +109,15 @@ export default function PlayPage() {
   async function next() {
     if (!attempt || pending.current) return;
     if (index < attempt.questions.length - 1) {
+      const response = await fetch(`/api/attempts/${attempt.id}/advance`, { method: "POST" });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) { setError("Não foi possível abrir a próxima pergunta. Tente novamente."); return; }
       setIndex(value => value + 1);
       setSelected(null);
       setFeedback(null);
       setNetworkError(false);
-      setTime(attempt.secondsPerQuestion);
-      started.current = Date.now();
+      setTime(data.remainingSeconds ?? attempt.secondsPerQuestion);
+      started.current = Number(data.startedAt || Date.now());
       return;
     }
     await finish(attempt.id);

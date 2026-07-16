@@ -1,9 +1,5 @@
 import { processClosedRoundAwards } from "../../functions/_lib/round-awards";
 
-interface Env {
-  DB: D1Database;
-}
-
 const journeyAwardsWorker = {
   async scheduled(
     _controller: ScheduledController,

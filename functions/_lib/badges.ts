@@ -26,6 +26,6 @@ export async function syncBadges(env:AppEnv,userId:string){
  for(const badge of BADGES){
   if(owned.has(badge.code)&&Number(stats[badge.metric]||0)<badge.threshold){statements.push(env.DB.prepare("DELETE FROM user_badges WHERE user_id=?1 AND badge_code=?2").bind(userId,badge.code));owned.delete(badge.code)}
  }
- for(const category of [...new Set(BADGES.map(b=>b.category))]){const next=BADGES.filter(b=>b.category===category&&!owned.has(b.code)).find(b=>Number(stats[b.metric]||0)>=b.threshold);if(next)statements.push(env.DB.prepare("INSERT OR IGNORE INTO user_badges (user_id,badge_code,earned_at) VALUES (?1,?2,?3)").bind(userId,next.code,now))}
+ for(const badge of BADGES){if(!owned.has(badge.code)&&Number(stats[badge.metric]||0)>=badge.threshold)statements.push(env.DB.prepare("INSERT OR IGNORE INTO user_badges (user_id,badge_code,earned_at) VALUES (?1,?2,?3)").bind(userId,badge.code,now))}
  if(statements.length)await env.DB.batch(statements);return stats
 }

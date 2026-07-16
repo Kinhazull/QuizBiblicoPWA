@@ -29,7 +29,7 @@ export default function Home() {
     if (!user) return;
     fetch("/api/rounds/status").then(response => response.ok ? response.json() : null).then(setJourney);
     fetch("/api/badges").then(response => response.ok ? response.json() : null).then(data => data && setNewBadges(data.newBadges || []));
-    const timer = window.setInterval(() => setClock(Date.now()), 1000);
+    const timer = window.setInterval(() => setClock(Date.now()), 15_000);
     return () => clearInterval(timer);
   }, [user]);
 
