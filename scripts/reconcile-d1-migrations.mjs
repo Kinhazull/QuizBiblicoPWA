@@ -2,6 +2,7 @@ import { spawnSync } from "node:child_process";
 import { readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { validateMigration0021 } from "./lib/d1-migration-validator.mjs";
+import { assertSnapshotTableAllowlist, buildApplicationSchemaQuery } from "./lib/d1-snapshot-policy.mjs";
 
 const config = "workers/journey-awards/wrangler.jsonc";
 const database = "quiz-biblico-db";
@@ -173,14 +174,8 @@ function verifyFinal() {
 
 function createSnapshot(path) {
   validateLegacySchema();
-  const schemaObjects = rows(
-    "SELECT type, name, tbl_name, sql FROM sqlite_master " +
-    "WHERE name NOT LIKE 'sqlite_%' ORDER BY type, name",
-  );
-  const tableNames = schemaObjects
-    .filter((item) => item.type === "table" && item.name !== "d1_migrations")
-    .map((item) => String(item.name));
-  const rowCounts = Object.fromEntries(tableNames.map((table) => [
+  const schemaObjects = rows(buildApplicationSchemaQuery(requiredTables));
+  const rowCounts = Object.fromEntries(requiredTables.map((table) => [
     table,
     scalar(`SELECT COUNT(*) AS value FROM ${quoteIdentifier(table)}`, "value"),
   ]));
@@ -190,6 +185,7 @@ function createSnapshot(path) {
 
 function compareSnapshot(path) {
   const snapshot = JSON.parse(readFileSync(path, "utf8"));
+  assertSnapshotTableAllowlist(snapshot.rowCounts, requiredTables);
   for (const [table, before] of Object.entries(snapshot.rowCounts || {})) {
     const exists = scalar(
       `SELECT COUNT(*) AS value FROM sqlite_master WHERE type='table' AND name=${quoteValue(table)}`,
@@ -201,9 +197,8 @@ function compareSnapshot(path) {
       throw new Error(`Row count decreased in ${table}: before=${before}, after=${after}.`);
     }
   }
-  const currentSchema = new Map(rows(
-    "SELECT type, name, tbl_name, sql FROM sqlite_master WHERE name NOT LIKE 'sqlite_%' ORDER BY type, name",
-  ).map((item) => [`${item.type}:${item.name}`, item]));
+  const currentSchema = new Map(rows(buildApplicationSchemaQuery(requiredTables))
+    .map((item) => [`${item.type}:${item.name}`, item]));
   for (const object of snapshot.schemaObjects || []) {
     const current = currentSchema.get(`${object.type}:${object.name}`);
     if (!current || current.tbl_name !== object.tbl_name || current.sql !== object.sql) {
