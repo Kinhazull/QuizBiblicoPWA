@@ -1,6 +1,7 @@
 import { spawnSync } from "node:child_process";
 import { readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { validateMigration0021 } from "./lib/d1-migration-validator.mjs";
 
 const config = "workers/journey-awards/wrangler.jsonc";
 const database = "quiz-biblico-db";
@@ -84,15 +85,7 @@ function validateTargetMigration() {
   assertExactNames(migrationFiles, expectedFinalLedger, "Local migration files");
   const path = resolve("drizzle", targetMigration);
   const sql = readFileSync(path, "utf8");
-  const withoutComments = sql.replace(/--.*$/gm, " ").trim();
-  const forbidden = /\b(DROP|DELETE|UPDATE|ALTER|INSERT|REPLACE|TRUNCATE)\b/i;
-  if (forbidden.test(withoutComments)) {
-    throw new Error(`${targetMigration} contains a forbidden destructive or data-changing statement.`);
-  }
-  const statements = withoutComments.split(";").map((item) => item.trim()).filter(Boolean);
-  if (statements.length !== 2 || !statements[0].startsWith("CREATE TABLE ") || !statements[1].startsWith("CREATE INDEX ")) {
-    throw new Error(`${targetMigration} must contain exactly one CREATE TABLE and one CREATE INDEX statement.`);
-  }
+  validateMigration0021(sql, targetMigration);
 }
 
 function validateLegacySchema() {

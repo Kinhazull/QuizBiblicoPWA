@@ -71,7 +71,7 @@ test("reconciliação é manual, confirmada, precedida por backup e não faz dep
   assert.match(workflow, /db:reconcile-migrations:compare/);
   assert.doesNotMatch(workflow, /worker:awards:deploy/);
   assert.match(script, /Unsafe migration ledger state/);
-  assert.match(script, /forbidden destructive or data-changing statement/);
+  assert.match(script, /validateMigration0021\(sql, targetMigration\)/);
   assert.match(script, /assertExactNames\(ledgerNames\(\), expectedFinalLedger/);
   assert.match(docs, /Actions/);
 });
