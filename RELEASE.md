@@ -1,5 +1,7 @@
 # Processo oficial de release
 
+Versão piloto formal atual: **v1.0.0**, aprovada em **16/07/2026** para 5–10 usuários.
+
 Este é o procedimento único para promover uma versão do **Conte os Feitos**. A aprovação legal atual cobre somente o piloto controlado de 5–10 usuários.
 
 ```mermaid
@@ -58,4 +60,3 @@ flowchart TD
 - autorização de responsáveis por menores mantida externamente pela organização responsável.
 
 Uma abertura pública exige nova aprovação legal, operacional e de escopo.
-

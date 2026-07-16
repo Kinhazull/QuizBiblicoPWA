@@ -29,7 +29,7 @@ Responsável pela aprovação: **Lucas de Oliveira da Silva**
 
 Data: **16/07/2026**
 
-Versão aprovada: **documentos públicos 2026-07-13 · release 1.0 piloto**
+Versão aprovada: **documentos públicos 2026-07-13 · v1.0.0 piloto**
 
 Escopo desta aprovação:
 
@@ -37,5 +37,9 @@ Escopo desta aprovação:
 - [ ] Publicação aberta ao público
 
 O responsável declara revisados os Termos de Uso e a Política de Privacidade para o escopo acima. Esta aprovação não autoriza abertura irrestrita. A expansão do público exige uma nova aprovação, com data, versão e escopo próprios, preservando o histórico das revisões.
+
+Assinatura declaratória: **/s/ Lucas de Oliveira da Silva**
+
+Registro: aprovação expressa concedida pelo responsável nesta tarefa em **16/07/2026**, exclusivamente para o piloto controlado descrito acima.
 
 Este registro organiza a governança do projeto e não substitui orientação jurídica.
