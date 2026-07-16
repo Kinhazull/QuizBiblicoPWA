@@ -1,4 +1,4 @@
-import { hashPassword, json, normalizeUsername, randomToken, sessionCookie, sha256, verifyPasswordDetails } from "../../_lib/security";
+import { json, normalizeUsername, randomToken, sessionCookie, sha256, verifyPasswordDetails } from "../../_lib/security";
 import type { AppEnv } from "../../_lib/auth";
 import { enforceRateLimit, requestFingerprint } from "../../_lib/abuse";
 
@@ -31,11 +31,10 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
   if (user.status !== "active") return json({ error: "account_unavailable" }, 403);
   const token = randomToken();
   const expires = now + (persistent ? 30 : .5) * 24 * 60 * 60 * 1000;
-  const upgradedCredential = passwordCheck.needsUpgrade ? await hashPassword(password) : null;
   await env.DB.batch([
     env.DB.prepare(`DELETE FROM sessions WHERE expires_at <= ?1`).bind(now),
     env.DB.prepare(`INSERT INTO sessions (id,user_id,token_hash,persistent,expires_at,last_seen_at,created_at,user_agent,ip_hash) VALUES (?1,?2,?3,?4,?5,?6,?6,?7,?8)`).bind(crypto.randomUUID(),user.id,await sha256(token),persistent?1:0,expires,now,String(request.headers.get('user-agent')||'').slice(0,180),await requestFingerprint(request)),
-    upgradedCredential?env.DB.prepare(`UPDATE users SET last_login_at=?1,updated_at=?1,password_hash=?2,password_salt=?3 WHERE id=?4`).bind(now,upgradedCredential.hash,upgradedCredential.salt,user.id):env.DB.prepare(`UPDATE users SET last_login_at = ?1, updated_at = ?1 WHERE id = ?2`).bind(now, user.id),
+    env.DB.prepare(`UPDATE users SET last_login_at = ?1, updated_at = ?1 WHERE id = ?2`).bind(now, user.id),
     env.DB.prepare(`DELETE FROM login_security WHERE username_hash=?1`).bind(usernameHash),
   ]);
   return json({ ok: true, mustChangePassword: Boolean(user.must_change_password), user: { id: user.id, displayName: user.display_name, role: user.role, mustChangePassword: Boolean(user.must_change_password) } }, 200, { "set-cookie": sessionCookie(token, persistent) });

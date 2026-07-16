@@ -1,6 +1,8 @@
 const encoder = new TextEncoder();
 const PASSWORD_SCHEME = "pbkdf2-sha256";
-const PASSWORD_ITERATIONS = 600_000;
+// Keep derivation within the Workers Free per-request CPU budget. Credentials
+// are migrated only during explicit password creation/change flows.
+export const PASSWORD_ITERATIONS = 100_000;
 
 export function normalizeUsername(value: string) {
   return value.trim().toLocaleLowerCase("pt-BR").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9._-]/g, "");
@@ -35,12 +37,12 @@ export async function verifyPasswordDetails(password: string, salt: string, expe
     const iterations=Number(encoded[1]);
     if(!Number.isSafeInteger(iterations)||iterations<25_000||iterations>1_000_000)return{valid:false,needsUpgrade:false};
     const valid=timingSafeEqual(await derivePassword(password,salt,iterations),encoded[2]);
-    return{valid,needsUpgrade:valid&&iterations<PASSWORD_ITERATIONS};
+    return{valid,needsUpgrade:false};
   }
   // Compatibilidade com hashes sem metadados criados nas versões de 100 mil e 25 mil iterações.
   for(const iterations of [100_000,25_000]){
     const valid=timingSafeEqual(await derivePassword(password,salt,iterations),expected);
-    if(valid)return{valid:true,needsUpgrade:true};
+    if(valid)return{valid:true,needsUpgrade:false};
   }
   return{valid:false,needsUpgrade:false};
 }

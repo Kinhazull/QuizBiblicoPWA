@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:pages-functions": "wrangler pages functions build functions --outdir .pages-functions --project-directory . --build-output-directory out --output-routes-path out/_routes.json && node scripts/package-pages-functions.mjs",
     "start": "next start",
     "test": "pnpm run test:all",
     "test:quick": "node --test tests/*.test.mjs",

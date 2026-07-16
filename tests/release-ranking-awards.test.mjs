@@ -39,6 +39,9 @@ test("pipeline publica Pages e Worker somente após qualidade e nunca altera mig
   assert.match(workflow, /deploy-pages:/);
   assert.match(workflow, /needs: \[quality, browser-smoke, deploy-pages\]/);
   assert.match(workflow, /wrangler pages deploy out/);
+  assert.match(workflow, /build:pages-functions/);
+  assert.match(workflow, /out\/_worker\.js/);
+  assert.match(workflow, /\/api\/auth\/me returned HTTP/);
   assert.match(workflow, /production_deployments_enabled/);
   assert.match(workflow, /github\.event_name == 'push'/);
   assert.match(workflow, /secrets\.CLOUDFLARE_API_TOKEN/);
