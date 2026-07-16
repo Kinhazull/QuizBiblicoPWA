@@ -3,6 +3,7 @@ import { readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { validateMigration0021 } from "./lib/d1-migration-validator.mjs";
 import { assertSnapshotTableAllowlist, buildApplicationSchemaQuery } from "./lib/d1-snapshot-policy.mjs";
+import { buildAtomicBaselineInsert } from "./lib/d1-ledger-policy.mjs";
 
 const config = "workers/journey-awards/wrangler.jsonc";
 const database = "quiz-biblico-db";
@@ -140,9 +141,7 @@ function applyBaseline() {
   if (current.length !== 0) {
     throw new Error(`Refusing to reconcile a non-empty, incomplete ledger containing ${current.length} rows.`);
   }
-  const insert = `BEGIN;${baseline.map((name) =>
-    `INSERT INTO d1_migrations(name) VALUES(${quoteValue(name)})`).join(";")};COMMIT;`;
-  runWrangler(insert);
+  runWrangler(buildAtomicBaselineInsert(baseline));
   assertExactNames(ledgerNames(), baseline, "Reconciled baseline ledger");
   console.log(`Migration baseline reconciled safely: ${baseline.length} historical migrations recorded.`);
 }
