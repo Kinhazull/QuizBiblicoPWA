@@ -32,7 +32,10 @@ jobs:
         run: pnpm run build:pages-functions
       - name: Verify deployable Pages Functions artifact
         shell: bash
-        run: test -s out/_worker.js && test -s out/_routes.json
+        run: |
+          test -s .pages-functions/index.js
+          test -s out/_routes.json
+          test ! -e out/_worker.js
       - run: pnpm run test:quick
       - run: pnpm run test:integration
       - run: pnpm audit --audit-level=high
@@ -105,17 +108,35 @@ jobs:
       - name: Confirm production migration prerequisites
         run: pnpm run db:reconcile-migrations:verify-final
       - name: Deploy tested Pages artifact
-        run: pnpm exec wrangler pages deploy out --project-name="$PAGES_PROJECT" --branch=main --commit-hash="${{ github.sha }}" | tee pages-deploy.log
+        run: |
+          pnpm exec wrangler pages deploy out \
+            --project-name="$PAGES_PROJECT" \
+            --branch=main \
+            --commit-hash="${{ github.sha }}" \
+            --commit-dirty=false | tee pages-deploy.log
+          grep -q "Uploading Functions bundle" pages-deploy.log
       - name: Verify deployed Pages Functions
         shell: bash
         run: |
           set -euo pipefail
           deployment_url=$(grep -Eo 'https://[a-zA-Z0-9.-]+\.pages\.dev' pages-deploy.log | tail -1)
           test -n "$deployment_url"
-          status=$(curl --silent --show-error --output /tmp/auth-me.json --write-out '%{http_code}' "$deployment_url/api/auth/me")
+          echo "Verifying Pages Functions at $deployment_url"
+          status=""
+          for attempt in 1 2 3 4 5 6; do
+            status=$(curl --silent --show-error \
+              --output /tmp/auth-me.json \
+              --write-out '%{http_code}' \
+              "$deployment_url/api/auth/me")
+            if [ "$status" = "401" ]; then
+              break
+            fi
+            echo "Attempt $attempt returned HTTP $status; waiting for deployment propagation."
+            sleep 5
+          done
           if [ "$status" != "401" ]; then
-            echo "::error::Pages Functions smoke check failed: /api/auth/me returned HTTP $status (expected 401)."
-            cat /tmp/auth-me.json
+            echo "::error::Pages Functions smoke check failed at $deployment_url/api/auth/me: HTTP $status (expected 401)."
+            head -c 2000 /tmp/auth-me.json
             exit 1
           fi
 

@@ -8,7 +8,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "build:pages-functions": "wrangler pages functions build functions --outdir .pages-functions --project-directory . --build-output-directory out --output-routes-path out/_routes.json && node scripts/package-pages-functions.mjs",
+    "build:pages-functions": "node scripts/prepare-pages-functions.mjs && wrangler pages functions build functions --outdir .pages-functions --project-directory . --build-output-directory out --output-routes-path out/_routes.json",
     "start": "next start",
     "test": "pnpm run test:all",
     "test:quick": "node --test tests/*.test.mjs",
@@ -17,7 +17,7 @@
     "test:integration": "node --experimental-loader ./tests/helpers/ts-loader.mjs --test tests/integration/*.test.mjs",
     "test:e2e": "playwright test",
     "test:all": "pnpm run test:unit && pnpm run test:contracts && pnpm run test:integration",
-    "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
+    "lint": "eslint . --ignore-pattern dist --ignore-pattern .next --ignore-pattern .wrangler",
     "db:generate": "drizzle-kit generate",
     "worker:awards:types": "wrangler types workers/journey-awards/worker-configuration.d.ts --config workers/journey-awards/wrangler.jsonc",
     "worker:awards:types:check": "wrangler types workers/journey-awards/worker-configuration.d.ts --config workers/journey-awards/wrangler.jsonc --check",
