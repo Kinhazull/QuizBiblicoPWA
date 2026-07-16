@@ -63,6 +63,9 @@ export const onRequestDelete = async ({ request, env, params }: { request: Reque
   try {
     const admin: any = await requirePermission(request, env, "rounds.manage");
     const body: any = await request.json();
+    const round: any = await env.DB.prepare("SELECT r.id,s.status season_status FROM rounds r LEFT JOIN seasons s ON s.id=r.season_id WHERE r.id=?1 AND r.organization_id=?2").bind(params.id, admin.organizationId).first();
+    if (!round) return json({ error: "not_found" }, 404);
+    if (round.season_status === "closed") return json({ error: "closed_season_round_locked" }, 409);
     const credentials: any = await env.DB.prepare("SELECT password_hash,password_salt FROM users WHERE id=?1").bind(admin.id).first();
     if (!credentials || !await verifyPassword(String(body.password || ""), credentials.password_salt, credentials.password_hash)) return json({ error: "invalid_password" }, 403);
     const count: any = await env.DB.prepare("SELECT COUNT(*) total FROM attempts WHERE round_id=?1").bind(params.id).first();
