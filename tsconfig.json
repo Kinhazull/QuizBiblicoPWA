@@ -36,6 +36,7 @@
     "examples/**/*",
     "build/**/*",
     "worker/**/*",
+    "workers/**/*",
     "functions/**/*",
     "drizzle.config.ts"
   ]

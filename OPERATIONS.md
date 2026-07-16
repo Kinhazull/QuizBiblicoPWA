@@ -22,8 +22,9 @@
 ## Encerramento automático e medalhas
 
 - Antes de publicar esta versão, aplicar `drizzle/0019_round_award_processing.sql` no D1 de produção.
-- O Worker registra um Cron Trigger a cada cinco minutos (`*/5 * * * *`) pela configuração do Vite/Cloudflare.
-- Após a implantação, confirmar em **Workers & Pages → Triggers → Cron Triggers** que o agendamento está ativo.
+- O Worker separado `workers/journey-awards` registra um Cron Trigger a cada cinco minutos (`*/5 * * * *`) em seu próprio `wrangler.jsonc`.
+- Publicar a partir da raiz com `pnpm exec wrangler deploy --config workers/journey-awards/wrangler.jsonc`.
+- Após a implantação, abrir o Worker `quiz-biblico-journey-awards` e confirmar em **Settings → Triggers → Cron Triggers** que o agendamento está ativo.
 - O processamento é idempotente: cada Jornada encerrada recebe um marcador em `round_award_processing`; reexecuções não duplicam medalhas nem auditoria.
 
 ## Rotina mensal
