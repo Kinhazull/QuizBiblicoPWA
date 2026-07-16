@@ -14,8 +14,9 @@ Antes do piloto, o responsável deve aprovar e registrar:
 - versão final dos Termos e da Política de Privacidade;
 - procedimento para nova aceitação após mudança material.
 
-Responsável pela aprovação: **a preencher**  
-Data: **a preencher**  
+Responsável pela aprovação: **a preencher**
+
+Data: **a preencher**
 Versão aprovada: **a preencher**
 
 Enquanto estes campos estiverem pendentes, a revisão legal permanece uma barreira humana para o piloto, mesmo que a CI esteja verde.
