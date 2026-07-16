@@ -126,7 +126,7 @@ export const onRequestGet = async ({
       : { total: 0 };
     const awardBacklog: any = found.has("round_award_participant_processing")
       ? await env.DB.prepare(
-          `SELECT COUNT(*) total FROM (SELECT DISTINCT a.round_id,a.user_id FROM attempts a JOIN rounds r ON r.id=a.round_id LEFT JOIN round_award_participant_processing p ON p.round_id=a.round_id AND p.user_id=a.user_id AND p.job_type='close' WHERE r.organization_id=?1 AND r.status NOT IN ('draft','cancelled') AND r.closes_at<=?2 AND a.mode='official' AND a.status='completed' AND p.user_id IS NULL)`,
+          `SELECT COUNT(*) total FROM (SELECT DISTINCT a.round_id,a.user_id FROM attempts a JOIN rounds r ON r.id=a.round_id LEFT JOIN round_award_processing completed_round ON completed_round.round_id=r.id LEFT JOIN round_award_participant_processing p ON p.round_id=a.round_id AND p.user_id=a.user_id AND p.job_type='close' WHERE r.organization_id=?1 AND completed_round.round_id IS NULL AND r.status NOT IN ('draft','cancelled') AND r.closes_at<=?2 AND a.mode='official' AND a.status='completed' AND p.user_id IS NULL)`,
         )
           .bind(user.organizationId, now)
           .first()

@@ -13,17 +13,17 @@ O diagnóstico administrativo informa fila, participantes pendentes e estimativa
 3. Em Observability, procure `journey_awards_completed` sem `journey_awards_failed`.
 4. No aplicativo, abra Painel > Diagnóstico e confirme fila zero após o prazo estimado.
 
-## Alerta operacional (configuração única)
+## Alerta operacional
 
-No painel da Cloudflare, crie uma notificação para erros/exceções do Worker `quiz-biblico-journey-awards` e direcione-a ao canal realmente acompanhado pelo responsável. Essa associação é externa ao repositório e não pode ser publicada com segurança pela CI sem escolher destinatários. Valide o alerta em uma janela controlada antes do piloto e registre o responsável no checklist de release.
+O catálogo de Notifications da conta gratuita foi verificado em 16/07/2026 e não oferece alerta de exceção por Worker. Portanto, não há uma configuração de e-mail nativa omitida pelo administrador. Até existir um monitor automatizado independente, o responsável deve acompanhar o diagnóstico do aplicativo e a área Observability do Worker, procurando `journey_awards_failed`, erros de invocação e fila sem progresso por mais de 15 minutos. O canal operacional acompanhado é `lucas.o.silva0105@gmail.com`.
 
 ## Incidente
 
 1. Não apague checkpoints nem linhas de auditoria.
-2. Confirme binding `DB` e a migration atual no diagnóstico.
+2. Confirme o binding `DB` e a migration atual no diagnóstico.
 3. Examine a mensagem estruturada do erro, sem copiar dados pessoais.
 4. Corrija a causa e publique somente pelo workflow `Quality and security`.
 5. Aguarde o próximo minuto; o processamento retoma do checkpoint.
-6. Se a fila crescer por mais de 15 minutos sem progresso, trate como incidente de produção.
+6. Se uma fila real crescer por mais de 15 minutos sem progresso, trate como incidente de produção.
 
 Nunca execute manualmente a premiação em SQL e nunca marque participantes como processados sem passar pela regra da aplicação.
