@@ -17,6 +17,8 @@ O diagnóstico administrativo informa fila, participantes pendentes e estimativa
 
 O catálogo de Notifications da conta gratuita foi verificado em 16/07/2026 e não oferece alerta de exceção por Worker. Portanto, não há uma configuração de e-mail nativa omitida pelo administrador. Até existir um monitor automatizado independente, o responsável deve acompanhar o diagnóstico do aplicativo e a área Observability do Worker, procurando `journey_awards_failed`, erros de invocação e fila sem progresso por mais de 15 minutos. O canal operacional acompanhado é `lucas.o.silva0105@gmail.com`.
 
+Durante o piloto, faça essa conferência ao menos uma vez por dia e também após o encerramento de cada Jornada. O monitor externo por e-mail permanece no backlog futuro.
+
 ## Incidente
 
 1. Não apague checkpoints nem linhas de auditoria.

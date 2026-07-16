@@ -7,7 +7,8 @@ Este documento organiza a revisão humana; ele não substitui orientação jurí
 - Controlador/responsável pelos dados: **Lucas de Oliveira da Silva**
 - Canal para privacidade e exercício de direitos: **lucas.o.silva0105@gmail.com**
 - Participação de menores: **sim**
-- Regra operacional proposta: menores somente serão aprovados após autorização identificável de pelo menos um responsável legal, mantida fora do ranking público; não será coletada data de nascimento sem necessidade.
+- Regra operacional aprovada: menores somente serão aprovados após autorização identificável de pelo menos um responsável legal; não será coletada data de nascimento sem necessidade.
+- Guarda da evidência: **a evidência da autorização do responsável legal será mantida pela organização responsável pelo participante, em meio físico ou digital, fora do banco de dados do aplicativo**.
 - Retenção proposta: perfil enquanto a conta estiver ativa; suspensão imediata após pedido válido; anonimização em até 30 dias; registros técnicos e de segurança por até 12 meses; backups operacionais por até 30 dias; resultados históricos somente de forma anonimizada; evidências de consentimento pelo prazo necessário à comprovação.
 - Operadores técnicos atualmente utilizados: **Cloudflare** (Pages, Workers e D1) e **GitHub** (código e automação de implantação).
 
@@ -22,12 +23,19 @@ Este documento organiza a revisão humana; ele não substitui orientação jurí
 - versão final dos Termos e da Política de Privacidade;
 - procedimento para nova aceitação após mudança material.
 
-## Aprovação humana ainda necessária
+## Aprovação humana registrada
 
 Responsável pela aprovação: **Lucas de Oliveira da Silva**
 
-Data: **a preencher**
+Data: **16/07/2026**
 
-Versão aprovada: **a preencher**
+Versão aprovada: **documentos públicos 2026-07-13 · release 1.0 piloto**
 
-Antes de preencher data e versão, o responsável deve ler integralmente as páginas públicas de Termos e Privacidade, confirmar a regra de autorização dos menores e, preferencialmente, obter revisão jurídica. Enquanto esses campos estiverem pendentes, a revisão legal permanece uma barreira humana para o piloto, mesmo que a CI esteja verde.
+Escopo desta aprovação:
+
+- [x] Piloto controlado (5–10 usuários)
+- [ ] Publicação aberta ao público
+
+O responsável declara revisados os Termos de Uso e a Política de Privacidade para o escopo acima. Esta aprovação não autoriza abertura irrestrita. A expansão do público exige uma nova aprovação, com data, versão e escopo próprios, preservando o histórico das revisões.
+
+Este registro organiza a governança do projeto e não substitui orientação jurídica.

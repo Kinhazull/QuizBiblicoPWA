@@ -39,9 +39,9 @@ O teste de restauração cria outro banco migrado, importa o núcleo de um backu
 - **Concorrência:** dispara handlers em paralelo e consulta o banco.
 - **E2E:** usa navegador real, UI local, handlers reais e banco isolado.
 
-## Limitações conhecidas
+## Validações manuais do piloto
 
-- D1 remoto e propagação em vários aparelhos continuam no checklist manual.
-- A instalação PWA deve ser confirmada em Android/iOS reais.
-- Lighthouse/Core Web Vitals em aparelho físico não são substituídos pela CI.
-- A CI bloqueia vulnerabilidades altas/críticas; vulnerabilidades transitivas moderadas permanecem documentadas e acompanhadas.
+- D1 remoto, autenticação em múltiplos aparelhos e instalação PWA foram verificados manualmente durante a homologação.
+- Lighthouse/Core Web Vitals foram medidos e aprovados em aparelho real para o piloto em 16/07/2026; a CI não substitui novas medições após mudanças relevantes.
+- A restauração automatizada usa SQLite isolado. O exercício operacional em um D1 separado continua sendo uma etapa distinta do checklist de operação.
+- A CI bloqueia vulnerabilidades altas/críticas; a auditoria executada em 16/07/2026 não encontrou vulnerabilidades conhecidas.

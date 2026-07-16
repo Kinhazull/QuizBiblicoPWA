@@ -13,3 +13,5 @@
 | Período | Temporada |
 
 Na interface destinada ao participante, **Jornada** substitui “Rodada” quando os dois termos representam a competição semanal. Nomes internos de tabelas, APIs, tipos e classes podem continuar usando `round` ou `rodada` para preservar compatibilidade técnica.
+
+Documentos técnicos podem usar “rodada” ao citar tabelas, rotas, migrations ou nomes internos. Documentos operacionais e a interface voltada ao participante devem preferir “Jornada”.
