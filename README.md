@@ -27,4 +27,6 @@ Os testes de integração recriam um banco temporário e aplicam todas as migrat
 
 ## Dados e implantação
 
-Migrations ficam em `drizzle/`. Não aplique migrations nem publique automaticamente a partir de uma máquina de desenvolvimento. A CI valida push para `main` e pull requests sem segredos de produção.
+Migrations ficam em `drizzle/`. Não aplique migrations nem publique automaticamente a partir de uma máquina de desenvolvimento. A CI valida lint, build, testes, E2E e auditoria antes de implantar o artefato verificado do Pages e, depois, o Worker de premiações.
+
+Antes do primeiro uso desse fluxo, desative uma única vez o deploy Git nativo do Pages pelo workflow manual **Configure gated Pages deployment**. Consulte [docs/RELEASE_HARDENING_V1.md](docs/RELEASE_HARDENING_V1.md), [docs/D1_MIGRATION_RECONCILIATION.md](docs/D1_MIGRATION_RECONCILIATION.md) e [docs/OPERATIONS_JOURNEY_AWARDS.md](docs/OPERATIONS_JOURNEY_AWARDS.md).

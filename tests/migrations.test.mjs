@@ -5,7 +5,7 @@ import { DatabaseSync } from "node:sqlite";
 
 test("all migrations are sequential and apply to an empty SQLite database", async () => {
   const files = (await readdir(new URL("../drizzle/", import.meta.url))).filter(file => file.endsWith(".sql")).sort();
-  assert.equal(files.length, 22);
+  assert.equal(files.length, 23);
   files.forEach((file, index) => assert.equal(file.slice(0, 4), String(index).padStart(4, "0")));
   const db = new DatabaseSync(":memory:");
   for (const file of files) db.exec(await readFile(new URL(`../drizzle/${file}`, import.meta.url), "utf8"));

@@ -1,0 +1,43 @@
+name: Configure gated Pages deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Digite exatamente DESATIVAR_DEPLOY_AUTOMATICO_PAGES
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  configure:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: c9804b247feba1dfe55516404b851d61
+      PAGES_PROJECT: quizbiblicopwa
+    steps:
+      - name: Require exact confirmation and credential
+        shell: bash
+        env:
+          CONFIRMATION: ${{ inputs.confirmation }}
+        run: |
+          set -euo pipefail
+          test "$CONFIRMATION" = "DESATIVAR_DEPLOY_AUTOMATICO_PAGES"
+          test -n "$CLOUDFLARE_API_TOKEN"
+      - name: Disable production Git auto-deploy
+        shell: bash
+        run: |
+          set -euo pipefail
+          response=$(curl --fail --silent --show-error --request PATCH \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data '{"source":{"config":{"production_deployments_enabled":false}}}' \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/$PAGES_PROJECT")
+          test "$(jq -r '.success' <<<"$response")" = "true"
+          test "$(jq -r '.result.source.config.production_deployments_enabled' <<<"$response")" = "false"
+          echo "Pages Git auto-deploy desativado. A producao agora depende da Quality and security."

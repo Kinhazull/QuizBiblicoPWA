@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { readFile } from "node:fs/promises";
-import { validateMigration0021 } from "../scripts/lib/d1-migration-validator.mjs";
+import { validateMigration0021, validateMigration0022 } from "../scripts/lib/d1-migration-validator.mjs";
 
 const validMigration = await readFile(
   new URL("../drizzle/0021_award_job_checkpoints.sql", import.meta.url),
@@ -55,4 +55,17 @@ test("validator is pure and cannot make a remote call", async () => {
     "utf8",
   );
   assert.doesNotMatch(source, /child_process|wrangler|fetch\s*\(|D1|CLOUDFLARE/i);
+});
+
+test("accepts only the release hardening audit index in migration 0022", async () => {
+  const migration = await readFile(new URL("../drizzle/0022_release_hardening.sql", import.meta.url), "utf8");
+  assert.deepEqual(validateMigration0022(migration), {
+    index: "audit_action_entity_time_idx",
+    statements: 1,
+  });
+  assert.throws(() => validateMigration0022("DROP TABLE audit_logs;"), /only CREATE INDEX/);
+  assert.throws(
+    () => validateMigration0022("CREATE INDEX other_idx ON audit_logs(action);"),
+    /only CREATE INDEX audit_action_entity_time_idx/,
+  );
 });

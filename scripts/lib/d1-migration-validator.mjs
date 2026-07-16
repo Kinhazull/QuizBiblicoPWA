@@ -185,3 +185,41 @@ export function validateMigration0021(sql, filename = "0021_award_job_checkpoint
 
   return { table: ALLOWED_TABLE, index: ALLOWED_INDEX, statements: 2 };
 }
+
+const RELEASE_INDEX = "audit_action_entity_time_idx";
+const EXPECTED_RELEASE_INDEX = `
+CREATE INDEX audit_action_entity_time_idx
+  ON audit_logs(action, entity_id, created_at)
+`;
+
+export function validateMigration0022(sql, filename = "0022_release_hardening.sql") {
+  const statements = readStatements(sql, filename);
+  if (statements.length !== 1) {
+    const extra = statements[1] || statements[0] || { text: "UNKNOWN", line: 1 };
+    throw validationError(
+      commandFor(extra.text),
+      extra.line,
+      `exactly one allowlisted DDL statement is required; found ${statements.length}`,
+      filename,
+    );
+  }
+  const statement = statements[0];
+  const match = statement.text.match(/^\s*CREATE\s+INDEX\s+([A-Za-z_][A-Za-z0-9_]*)/i);
+  if (!match || match[1] !== RELEASE_INDEX) {
+    throw validationError(
+      commandFor(statement.text),
+      statement.line,
+      `only CREATE INDEX ${RELEASE_INDEX} is allowed`,
+      filename,
+    );
+  }
+  if (canonicalize(statement.text) !== canonicalize(EXPECTED_RELEASE_INDEX)) {
+    throw validationError(
+      `CREATE INDEX ${RELEASE_INDEX}`,
+      statement.line,
+      "index must target audit_logs(action, entity_id, created_at) in that order",
+      filename,
+    );
+  }
+  return { index: RELEASE_INDEX, statements: 1 };
+}

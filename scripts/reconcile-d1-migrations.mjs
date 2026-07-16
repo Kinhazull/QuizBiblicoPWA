@@ -1,13 +1,13 @@
 import { spawnSync } from "node:child_process";
 import { readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { validateMigration0021 } from "./lib/d1-migration-validator.mjs";
+import { validateMigration0021, validateMigration0022 } from "./lib/d1-migration-validator.mjs";
 import { assertSnapshotTableAllowlist, buildApplicationSchemaQuery } from "./lib/d1-snapshot-policy.mjs";
 import { buildAtomicBaselineInsert } from "./lib/d1-ledger-policy.mjs";
 
 const config = "workers/journey-awards/wrangler.jsonc";
 const database = "quiz-biblico-db";
-const targetMigration = "0021_award_job_checkpoints.sql";
+const targetMigration = "0022_release_hardening.sql";
 const baseline = [
   "0000_competition_foundation.sql", "0001_profile_preferences.sql", "0002_login_security.sql",
   "0003_persistent_badges.sql", "0004_notification_receipts.sql", "0005_attempt_continuity.sql",
@@ -16,6 +16,7 @@ const baseline = [
   "0012_security_privacy.sql", "0013_ai_question_suggestions.sql", "0014_batch_operations.sql",
   "0015_season_closure.sql", "0016_runtime_hardening.sql", "0017_approve_curated_base.sql",
   "0018_competitive_integrity.sql", "0019_round_award_processing.sql", "0020_attempt_question_clock.sql",
+  "0021_award_job_checkpoints.sql",
 ];
 const expectedFinalLedger = [...baseline, targetMigration];
 
@@ -25,7 +26,7 @@ const requiredTables = [
   "question_bank", "question_bank_choices", "user_permissions", "question_collaborators", "question_revisions",
   "round_collaborators", "seasons", "user_review_progress", "announcements", "account_recovery_codes",
   "abuse_counters", "privacy_requests", "ai_question_suggestions", "batch_operations", "season_snapshots",
-  "season_awards", "round_award_processing", "round_badge_reconciliations",
+  "season_awards", "round_award_processing", "round_badge_reconciliations", "round_award_participant_processing",
 ];
 const requiredColumns = {
   users: ["nickname", "use_nickname_in_ranking", "profile_public", "bio", "favorite_book", "favorite_verse"],
@@ -40,7 +41,7 @@ const requiredColumns = {
 };
 const requiredIndexes = [
   "choices_question_position_uq", "attempt_answers_order_uq", "attempts_user_round_mode_number_uq",
-  "questions_round_source_uq", "round_award_processing_time_idx",
+  "questions_round_source_uq", "round_award_processing_time_idx", "round_award_participant_pending_idx",
 ];
 
 function runWrangler(command) {
@@ -85,9 +86,8 @@ function validateTargetMigration() {
     .filter((name) => /^\d{4}_.+\.sql$/.test(name))
     .sort();
   assertExactNames(migrationFiles, expectedFinalLedger, "Local migration files");
-  const path = resolve("drizzle", targetMigration);
-  const sql = readFileSync(path, "utf8");
-  validateMigration0021(sql, targetMigration);
+  validateMigration0021(readFileSync(resolve("drizzle", "0021_award_job_checkpoints.sql"), "utf8"));
+  validateMigration0022(readFileSync(resolve("drizzle", targetMigration), "utf8"), targetMigration);
 }
 
 function validateLegacySchema() {
@@ -123,7 +123,7 @@ function dryRun() {
   }
   if (ledger.length === baseline.length) {
     assertExactNames(ledger, baseline, "Existing baseline ledger");
-    console.log("Legacy schema and migration baseline are already consistent. Migration 0021 is ready for validation.");
+    console.log("Schema and migration history are consistent. Migration 0022 is ready for validation.");
     return;
   }
   throw new Error(`Unsafe migration ledger state: expected 0 or ${baseline.length} rows before reconciliation, found ${ledger.length}.`);
@@ -168,7 +168,12 @@ function verifyFinal() {
   if (table !== 1 || index !== 1) {
     throw new Error(`Migration 0021 objects are missing (table=${table}, index=${index}).`);
   }
-  console.log("Final state verified: 22 migrations, no pending migration, checkpoint table and index present.");
+  const auditIndex = scalar(
+    "SELECT COUNT(*) AS value FROM sqlite_master WHERE type='index' AND name='audit_action_entity_time_idx'",
+    "value",
+  );
+  if (auditIndex !== 1) throw new Error("Migration 0022 audit queue index is missing.");
+  console.log("Final state verified: 23 migrations, no pending migration, checkpoint objects and audit queue index present.");
 }
 
 function createSnapshot(path) {

@@ -101,10 +101,10 @@ jobs:
       - name: Record verified legacy migration history
         run: pnpm run db:reconcile-migrations:apply
 
-      - name: Confirm only migration 0021 remains pending
+      - name: Confirm only migration 0022 remains pending
         run: pnpm run db:reconcile-migrations:verify-pending
 
-      - name: Apply migration 0021 only
+      - name: Apply migration 0022 only
         run: pnpm run worker:awards:migrate
 
       - name: Validate final migration state
@@ -119,9 +119,10 @@ jobs:
           {
             echo "## Reconciliação D1 concluída"
             echo "- Histórico 0000–0020 reconciliado"
-            echo "- Migration 0021 aplicada"
-            echo "- Total validado: 22 migrations"
+            echo "- Migration 0022 aplicada"
+            echo "- Total validado: 23 migrations"
             echo "- Tabela round_award_participant_processing validada"
+            echo "- Indice audit_action_entity_time_idx validado"
             echo "- Estruturas e contagens anteriores preservadas"
             echo "- Nenhum deploy de Pages ou Worker executado"
           } >> "$GITHUB_STEP_SUMMARY"

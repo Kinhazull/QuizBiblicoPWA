@@ -31,6 +31,14 @@ jobs:
       - run: pnpm run test:quick
       - run: pnpm run test:integration
       - run: pnpm audit --audit-level=high
+      - name: Store verified Pages build
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: pages-build-${{ github.sha }}
+          path: out
+          if-no-files-found: error
+          retention-days: 2
 
   browser-smoke:
     needs: quality
@@ -49,9 +57,54 @@ jobs:
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm run test:e2e
 
+  deploy-pages:
+    name: Deploy verified Pages build
+    needs: [quality, browser-smoke]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    concurrency:
+      group: pages-production
+      cancel-in-progress: false
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: c9804b247feba1dfe55516404b851d61
+      PAGES_PROJECT: quizbiblicopwa
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
+        with:
+          version: 11.7.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: pages-build-${{ github.sha }}
+          path: out
+      - name: Require Git auto-deploy to be disabled
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN"
+          enabled=$(curl --fail --silent --show-error \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/$PAGES_PROJECT" \
+            | jq -r '.result.source.config.production_deployments_enabled // false')
+          if [ "$enabled" != "false" ]; then
+            echo "::error::Git auto-deploy ainda esta ativo. Execute uma vez o workflow Configure gated Pages deployment."
+            exit 1
+          fi
+      - name: Confirm production migration prerequisites
+        run: pnpm run db:reconcile-migrations:verify-final
+      - name: Deploy tested Pages artifact
+        run: pnpm exec wrangler pages deploy out --project-name="$PAGES_PROJECT" --branch=main --commit-hash="${{ github.sha }}"
+
   deploy-journey-awards:
     name: Deploy journey awards Worker
-    needs: [quality, browser-smoke]
+    needs: [quality, browser-smoke, deploy-pages]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 10
