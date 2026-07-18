@@ -4,6 +4,28 @@
 
 Os arquivos gráficos de produto ficam em `assets/`. A pasta `public/` continua contendo apenas os arquivos efetivamente consumidos pela aplicação. Nesta etapa nenhum arquivo existente é movido ou substituído.
 
+## Kit Oficial de Branding v001
+
+Arquivos oficiais:
+
+- `brand-identity-v001.png`
+- `branding-kit-v001.png`
+
+O Branding Kit define o uso oficial da identidade visual em:
+
+- Logo
+- App Icon
+- Splash Screen
+- Loading Screen
+- Login
+- Favicon
+- Interface
+- Plataformas
+- Google Play
+- PWA
+
+Todas as novas implementações deverão seguir este documento.
+
 ## Ciclo de um asset
 
 1. Guardar o original editável em `source/` quando aplicável.
