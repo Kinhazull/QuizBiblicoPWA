@@ -25,6 +25,13 @@ Os usos são referências iniciais. Contraste e estados interativos deverão ser
 
 Esses tokens registram a identidade aprovada, mas ainda não alteram CSS, fontes carregadas ou componentes existentes.
 
+## UI Kit Oficial
+
+Versão: v001
+
+Referência:
+`assets/ui/approved/v001/ui-kit-v001.png`
+
 ## Finalidade
 
 Este documento será a fonte de referência para os padrões de interface compartilhados pela plataforma. O Quiz Bíblico atual permanece como módulo funcional e nenhuma regra descrita aqui altera sua implementação automaticamente.
