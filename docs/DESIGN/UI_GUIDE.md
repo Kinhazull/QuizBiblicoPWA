@@ -26,4 +26,8 @@ Referência visual:
 
 `assets/ui/approved/v001/ui-kit-v001.png`
 
+Referência da Home da plataforma:
+
+`assets/ui/approved/v001/screens/home-v001.png`
+
 Todas as novas telas deverão reutilizar estes componentes.

@@ -13,6 +13,13 @@ export const participantNavigation: NavigationItem[] = [
   { label: "Perfil", href: "/perfil", icon: "user" },
 ];
 
+export const platformHomeNavigation: NavigationItem[] = [
+  { label: "Home", href: "/", icon: "home" },
+  { label: "Jogos", href: "/#jogos", icon: "questions" },
+  { label: "Recompensas", href: "/#recompensas", icon: "medal" },
+  { label: "Perfil", href: "/perfil", icon: "user" },
+];
+
 export const adminNavigation: NavigationGroup[] = [
   { label: "Visão geral", icon: "home", items: [
     { label: "Painel", href: "/admin", icon: "home", description: "Resumo da operação e pendências." },

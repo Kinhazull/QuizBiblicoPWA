@@ -42,12 +42,13 @@ test("login screen remains usable without an authenticated session", async ({ pa
   expect(accessibility.violations).toEqual([]);
 });
 
-test("authenticated participant receives chrome and five-item navigation", async ({ page }) => {
+test("authenticated participant receives platform chrome and four-item navigation", async ({ page }) => {
   await mockPublicApi(page, true);
   await page.goto("/");
   const navigation = page.locator(".participant-bottom-nav");
   await expect(navigation).toBeVisible();
-  await expect(navigation.locator("a")).toHaveCount(5);
+  await expect(navigation.locator("a")).toHaveCount(4);
+  await expect(navigation.locator("a").allTextContents()).resolves.toEqual(["Home", "Jogos", "Recompensas", "Perfil"]);
   await expect(page.locator(".notifications-action")).toBeVisible();
   await expect(page.locator(".settings-action")).toHaveCount(0);
   await expect(page.locator("body")).not.toHaveCSS("overflow-x", "scroll");
