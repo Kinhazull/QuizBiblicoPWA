@@ -1,5 +1,19 @@
 # Backlog — Conte os Feitos
 
+O roadmap estrutural da plataforma está em [docs/PRODUCT/ROADMAP.md](docs/PRODUCT/ROADMAP.md). Este arquivo mantém itens operacionais e melhorias que não substituem a ordem oficial dos Módulos 0–10.
+
+## Plataforma modular — decisões já alocadas
+
+- Módulo 1: identidade visual da plataforma.
+- Módulo 2: shell, catálogo, Home modular e integração preservada do Quiz.
+- Módulo 3: núcleo de progressão, Conquistas, moedas, recompensas e desbloqueáveis validados no servidor.
+- Módulo 4: primeiro ciclo de retenção.
+- Módulos 5–8: Wordle Bíblico, Jogo das 3 Pistas, Linha do Tempo e Associação de Temas.
+- Módulo 9: Colecionáveis e Temporadas futuras voltadas a desbloqueáveis.
+- Módulo 10: polimento e preparação para Google Play.
+
+Novos módulos não devem reutilizar `rounds` ou `attempts` sem decisão formal registrada em `docs/PRODUCT/DECISION_LOG.md`.
+
 ## Piloto v1.0 — itens operacionais
 
 - Executar o roteiro de `OPERATIONS.md` antes de cada publicação.

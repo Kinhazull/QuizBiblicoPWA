@@ -1,6 +1,8 @@
-# Conte os Feitos — Quiz Bíblico PWA
+# Conte os Feitos — Jogos e Desafios Bíblicos
 
-Aplicativo de jornadas bíblicas semanais, com tentativas oficiais e de treino, ranking, medalhas, acervo de perguntas e painel administrativo. A aplicação roda em Next.js/Vinext sobre Cloudflare Workers e usa Cloudflare D1.
+**Conte os Feitos** é uma plataforma cristã modular em evolução. O produto reúne Jogos e Desafios Bíblicos, e o **Quiz Bíblico** é seu primeiro módulo funcional, com Jornadas, tentativas oficiais e de treino, Ranking, Medalhas, acervo de perguntas e painel administrativo.
+
+A versão `v1.0.0` da `main` permanece como referência estável do piloto controlado. A modularização é desenvolvida em branches próprias e deve preservar integralmente o domínio competitivo do Quiz.
 
 ## Índice da documentação
 
@@ -16,6 +18,10 @@ Aplicativo de jornadas bíblicas semanais, com tentativas oficiais e de treino, 
 | Limpeza pré-piloto | [docs/PILOT_DATA_RESET.md](docs/PILOT_DATA_RESET.md) |
 | Aprovação legal do piloto | [docs/LEGAL_RELEASE_CHECKLIST.md](docs/LEGAL_RELEASE_CHECKLIST.md) |
 | Linguagem oficial do produto | [docs/PRODUCT_LANGUAGE.md](docs/PRODUCT_LANGUAGE.md) |
+| Fundação e visão modular | [docs/PRODUCT/README.md](docs/PRODUCT/README.md) |
+| Roadmap oficial | [docs/PRODUCT/ROADMAP.md](docs/PRODUCT/ROADMAP.md) |
+| Decisões de produto | [docs/PRODUCT/DECISION_LOG.md](docs/PRODUCT/DECISION_LOG.md) |
+| Colaboração com IA | [docs/PRODUCT/AI_COLLABORATION.md](docs/PRODUCT/AI_COLLABORATION.md) |
 | Sugestões com IA | [docs/AI_SUGGESTIONS.md](docs/AI_SUGGESTIONS.md) |
 | Backlog | [BACKLOG.md](BACKLOG.md) |
 
@@ -56,3 +62,7 @@ Antes do primeiro uso desse fluxo, desative uma única vez o deploy Git nativo d
 O schema de produção está reconciliado até `0022_release_hardening.sql` (23 migrations), o deploy Git nativo do Pages está desativado e o fluxo oficial é `Quality and security`: qualidade → E2E → Pages → Worker. O Cron de premiações executa a cada minuto no Worker separado `quiz-biblico-journey-awards`.
 
 A aprovação legal atual cobre somente um **piloto controlado de 5–10 usuários**. Consulte [docs/LEGAL_RELEASE_CHECKLIST.md](docs/LEGAL_RELEASE_CHECKLIST.md). A abertura ao público exige nova aprovação de escopo.
+
+## Evolução modular
+
+O roadmap de Módulos 0–10 está documentado em [docs/PRODUCT/ROADMAP.md](docs/PRODUCT/ROADMAP.md). Jornada e Medalhas continuam pertencendo ao Quiz. Novos jogos terão regras e persistência próprias; `rounds` e `attempts` não serão reutilizados sem decisão arquitetural formal.

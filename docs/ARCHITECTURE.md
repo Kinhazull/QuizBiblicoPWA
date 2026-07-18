@@ -1,5 +1,7 @@
 # Arquitetura do Conte os Feitos
 
+O Conte os Feitos evolui para uma plataforma modular de Jogos e Desafios Bíblicos. O desenho abaixo representa a arquitetura estável `v1.0.0`, na qual o Quiz Bíblico é o primeiro módulo funcional.
+
 ## Visão geral
 
 ```mermaid
@@ -30,7 +32,30 @@ flowchart LR
 - O pipeline normal não aplica migrations.
 - Sugestões com IA permanecem desativadas no piloto v1.0.
 
+## Direção modular
+
+```mermaid
+flowchart TD
+  S["Shell da plataforma\nmarca, sessão e navegação"] --> H["Home e catálogo de módulos"]
+  H --> Q["Quiz Bíblico\nprimeiro módulo"]
+  H --> N["Novos jogos\ndomínios independentes"]
+  Q --> J["Jornadas, Tentativas, Ranking e Medalhas"]
+  N --> P["Regras e persistência próprias"]
+  J --> D[(D1)]
+  P --> D
+```
+
+- O shell reutiliza autenticação, perfil, notificações, identidade e navegação.
+- Jornada pertence exclusivamente ao Quiz Bíblico.
+- Medalhas permanecem premiações competitivas das Jornadas.
+- Conquistas serão objetivos gerais da plataforma.
+- Novos módulos não reutilizam `rounds` e `attempts` sem decisão formal registrada.
+- Pontuação, progressão, moedas, recompensas e desbloqueáveis persistentes são validados no servidor.
+- O Service Worker continua armazenando apenas assets públicos e fallback offline, nunca APIs autenticadas ou conteúdo privado.
+- A subdivisão técnica de shell, catálogo, Home modular e integração do Quiz pertence ao Módulo 2 do roadmap oficial.
+
+Consulte [PRODUCT/README.md](PRODUCT/README.md), [PRODUCT/ROADMAP.md](PRODUCT/ROADMAP.md) e [PRODUCT/DECISION_LOG.md](PRODUCT/DECISION_LOG.md).
+
 ## Fluxo de deploy
 
 Consulte [RELEASE.md](../RELEASE.md). Para incidentes do Worker, consulte [OPERATIONS_JOURNEY_AWARDS.md](OPERATIONS_JOURNEY_AWARDS.md).
-
