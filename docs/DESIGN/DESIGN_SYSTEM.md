@@ -1,5 +1,30 @@
 # Design System — Conte os Feitos
 
+## Design Tokens v001
+
+### Cores
+
+| Token de design | Valor | Uso de referência |
+| --- | --- | --- |
+| `primary-dark` | `#234E9A` | superfícies e elementos de marca com maior contraste |
+| `primary` | `#3A7BD5` | ações e destaques principais |
+| `support-green` | `#6CC08A` | apoio, estados positivos e elementos complementares |
+| `highlight-gold` | `#F4B400` | ênfase, luz e destaques especiais |
+| `light-background` | `#F7F5F0` | fundos claros e superfícies neutras |
+| `dark-text` | `#0F172A` | texto principal em superfícies claras |
+
+Os usos são referências iniciais. Contraste e estados interativos deverão ser validados no Módulo 1 antes de aplicação na interface.
+
+### Tipografia
+
+- **Família principal:** Poppins.
+- **Peso de títulos:** 700.
+- **Peso de subtítulos:** 600.
+- **Peso de texto:** 400.
+- **Peso de apoio:** 300.
+
+Esses tokens registram a identidade aprovada, mas ainda não alteram CSS, fontes carregadas ou componentes existentes.
+
 ## Finalidade
 
 Este documento será a fonte de referência para os padrões de interface compartilhados pela plataforma. O Quiz Bíblico atual permanece como módulo funcional e nenhuma regra descrita aqui altera sua implementação automaticamente.

@@ -2,29 +2,45 @@
 
 ## Identidade
 
-- **Marca:** Conte os Feitos.
+- **Nome:** Conte os Feitos.
+- **Assinatura:** Compartilhe o que Deus fez na sua vida.
+- **Símbolo:** balão de conversa formando a letra C com uma estrela/luz.
 - **Produto:** Jogos e Desafios Bíblicos.
 - **Primeiro módulo:** Quiz Bíblico.
 
 O Conte os Feitos deve ser percebido como uma plataforma cristã, bíblica, jovem e confiável. A comunicação deve incentivar aprendizado e participação sem banalizar o conteúdo bíblico.
 
-## Direção visual existente
+## Identidade Oficial v001
 
-- roxo escuro como base;
-- verde-limão como destaque principal;
-- branco para contraste e leitura;
-- cartões arredondados;
-- tipografia forte;
-- elementos luminosos e orbitais usados com moderação.
+Status: **APROVADA**
 
-Esses elementos constituem a base atual e serão formalizados no Módulo 1. Valores exatos ainda devem ser consolidados a partir dos tokens existentes antes de criar novas variações.
+Asset oficial: `assets/branding/approved/v001/brand-identity-v001.png`
+
+### Paleta
+
+| Token | Cor |
+| --- | --- |
+| Primary Dark | `#234E9A` |
+| Primary | `#3A7BD5` |
+| Support Green | `#6CC08A` |
+| Highlight Gold | `#F4B400` |
+| Light Background | `#F7F5F0` |
+| Dark Text | `#0F172A` |
+
+### Tipografia
+
+- **Família principal:** Poppins.
+- **Títulos:** 700.
+- **Subtítulos:** 600.
+- **Texto:** 400.
+- **Apoio:** 300.
 
 ## Uso da marca
 
 - preservar legibilidade e proporções do logotipo;
 - não distorcer, inclinar ou recolorir sem versão aprovada;
 - manter área de respiro ao redor da marca;
-- usar arquivos de `assets/branding/logos/approved/` em materiais finais;
+- usar os arquivos da versão vigente em `assets/branding/approved/` nos materiais finais;
 - manter originais editáveis em `source/` e versões substituídas em `archived/`;
 - não tratar arte sugerida, referência ou mockup como asset aprovado.
 
