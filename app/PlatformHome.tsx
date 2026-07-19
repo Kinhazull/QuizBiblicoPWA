@@ -9,7 +9,16 @@ type PlatformHomeProps = {
   displayName: string;
   journey: JourneyCardData | null;
   badges: PlatformBadgeData | null;
+  progress: PlatformProgressData | null;
   remaining: (target?: number) => string;
+};
+
+export type PlatformProgressData = {
+  level: number;
+  totalXp: number;
+  coins: number;
+  curveVersion: string;
+  levelProgress: { currentXp: number; targetXp: number; percent: number };
 };
 
 function firstName(displayName: string) {
@@ -27,12 +36,13 @@ function recentAchievements(data: PlatformBadgeData | null) {
   return (data?.earned || []).slice(0, 4).map(item => ({ ...item, ...definitions.get(item.code) }));
 }
 
-export function PlatformHome({ displayName, journey, badges, remaining }: PlatformHomeProps) {
+export function PlatformHome({ displayName, journey, badges, progress, remaining }: PlatformHomeProps) {
   const view = getJourneyCardView(journey, remaining);
   const quizProgress = progressFor(journey);
   const achievements = recentAchievements(badges);
   const missionCurrent = journey?.completion?.completed ? 1 : PLATFORM_HOME_PREVIEW.mission.current;
-  const xpPercent = Math.min(100, Math.round(PLATFORM_HOME_PREVIEW.currentXp / PLATFORM_HOME_PREVIEW.targetXp * 100));
+  const platformProgress = progress || PLATFORM_HOME_PREVIEW.progress;
+  const xpPercent = platformProgress.levelProgress.percent;
 
   return <main className="platform-home">
     <div className="platform-ambient platform-ambient-one" aria-hidden="true" />
@@ -48,10 +58,10 @@ export function PlatformHome({ displayName, journey, badges, remaining }: Platfo
         <div className="platform-player-copy">
           <h1 id="platform-greeting">Fala, {firstName(displayName)}! <span aria-hidden="true">👋</span></h1>
           <p>Que bom ter você por aqui!</p>
-          <div className="platform-level-line"><span>Nível {PLATFORM_HOME_PREVIEW.level}</span><div className="platform-progress"><i style={{ width: `${xpPercent}%` }} /></div><small>{PLATFORM_HOME_PREVIEW.currentXp.toLocaleString("pt-BR")} / {PLATFORM_HOME_PREVIEW.targetXp.toLocaleString("pt-BR")} XP</small></div>
+          <div className="platform-level-line"><span>Nível {platformProgress.level}</span><div className="platform-progress"><i style={{ width: `${xpPercent}%` }} /></div><small>{platformProgress.levelProgress.currentXp.toLocaleString("pt-BR")} / {platformProgress.levelProgress.targetXp.toLocaleString("pt-BR")} XP</small></div>
         </div>
         <div className="platform-currencies" aria-label="Recursos da plataforma em prévia visual">
-          <span><b aria-hidden="true">🪙</b><strong>{PLATFORM_HOME_PREVIEW.coins}</strong><small>Moedas</small></span>
+          <span><b aria-hidden="true">🪙</b><strong>{platformProgress.coins.toLocaleString("pt-BR")}</strong><small>Moedas</small></span>
           <span><b aria-hidden="true">💎</b><strong>{PLATFORM_HOME_PREVIEW.gems}</strong><small>Gemas</small></span>
         </div>
       </section>
@@ -93,7 +103,7 @@ export function PlatformHome({ displayName, journey, badges, remaining }: Platfo
         {achievements.length > 0 ? <div className="platform-achievement-grid">{achievements.map(item => <article key={item.code}><b aria-hidden="true">{item.icon || "⭐"}</b><div><strong>{item.name}</strong><small>Medalha do Quiz Bíblico</small></div></article>)}</div> : <div className="platform-empty-achievements"><span aria-hidden="true">✦</span><div><strong>Suas conquistas aparecerão aqui</strong><small>Participe das Jornadas do Quiz Bíblico para desbloquear medalhas.</small></div></div>}
       </section>
 
-      <p className="platform-preview-note">Nível, XP, moedas, gemas, missão e baú são uma prévia visual e ainda não são persistidos.</p>
+      <p className="platform-preview-note">Gemas, missão e baú são uma prévia visual e ainda não são persistidos.</p>
     </div>
   </main>;
 }

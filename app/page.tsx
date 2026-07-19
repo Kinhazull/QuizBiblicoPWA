@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "./AuthProvider";
-import { PlatformHome, type PlatformBadgeData } from "./PlatformHome";
+import { PlatformHome, type PlatformBadgeData, type PlatformProgressData } from "./PlatformHome";
 import type { JourneyCardData } from "./journey-card-state";
 
 const LEGAL_VERSION = "2026-07-13";
@@ -15,6 +15,7 @@ export default function Home() {
   const [journey, setJourney] = useState<JourneyCardData | null>(null);
   const [clock, setClock] = useState(Date.now());
   const [badges, setBadges] = useState<PlatformBadgeData | null>(null);
+  const [progress, setProgress] = useState<PlatformProgressData | null>(null);
 
   useEffect(() => {
     const invite = new URLSearchParams(location.search).get("convite");
@@ -28,8 +29,10 @@ export default function Home() {
 
   useEffect(() => {
     if (!user) return;
+    setProgress(null);
     fetch("/api/rounds/status").then(response => response.ok ? response.json() : null).then(setJourney);
     fetch("/api/badges").then(response => response.ok ? response.json() : null).then(data => data && setBadges(data));
+    fetch("/api/platform/progress", { cache: "no-store" }).then(response => response.ok ? response.json() : null).then(data => data?.progress && setProgress(data.progress));
     const timer = window.setInterval(() => setClock(Date.now()), 15_000);
     return () => clearInterval(timer);
   }, [user]);
@@ -78,5 +81,5 @@ export default function Home() {
 
   if (!user) return <main className="shell auth-screen"><div className="ambient one"/><div className="ambient two"/><section className="auth-card"><header className="brand"><span className="brand-dot">✦</span> CONTE OS FEITOS</header><p className="eyebrow">JORNADA BÍBLICA</p><h1>{authMode === "login" ? <>Que bom ter você<br/><em>de volta</em></> : <>Entre para a<br/><em>jornada</em></>}</h1><p className="intro">{authMode === "login" ? "Acesse sua conta para jogar a rodada da semana e acompanhar sua jornada." : "Use o código do seu grupo. Seu cadastro será analisado por um líder."}</p><form onSubmit={submitAuth}>{authMode === "register" && <label>Seu nome<input name="displayName" autoComplete="name" required minLength={3} placeholder="Nome e sobrenome"/></label>}{authMode === "register" && <label>Código do grupo<input name="inviteCode" autoCapitalize="characters" required placeholder="Ex.: FAROL-2026" defaultValue={new URLSearchParams(location.search).get("convite") || ""}/></label>}<label>Nome de usuário<input name="username" autoCapitalize="none" autoComplete="username" required minLength={3} placeholder="Como você vai entrar"/></label><label>Senha<input name="password" type="password" autoComplete={authMode === "login" ? "current-password" : "new-password"} required minLength={10} placeholder="Mínimo de 10 caracteres"/></label>{authMode === "login" && <label className="remember"><input name="persistent" type="checkbox"/> Permanecer conectado neste aparelho</label>}{authMode === "register" && <label className="legal-consent"><input name="legalAccepted" type="checkbox" required/><span>Li e aceito os <a href="/termos" target="_blank" rel="noreferrer">Termos de Uso</a> e a <a href="/privacidade" target="_blank" rel="noreferrer">Política de Privacidade</a>.</span></label>}{authError && <p className="auth-message" role="status" aria-live="polite">{authError}</p>}<button className="primary" disabled={authBusy}>{authBusy ? "AGUARDE..." : authMode === "login" ? "ENTRAR" : "CRIAR MINHA CONTA"}<span>→</span></button></form><button className="auth-switch" onClick={() => { setAuthMode(authMode === "login" ? "register" : "login"); setAuthError(""); }}>{authMode === "login" ? "Ainda não tenho conta" : "Já tenho uma conta"}</button><nav className="legal-links" aria-label="Documentos legais"><a href="/termos">Termos de Uso</a><a href="/privacidade">Privacidade</a></nav></section></main>;
 
-  return <PlatformHome displayName={user.displayName} journey={journey} badges={badges} remaining={remaining} />;
+  return <PlatformHome displayName={user.displayName} journey={journey} badges={badges} progress={progress} remaining={remaining} />;
 }

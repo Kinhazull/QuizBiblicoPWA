@@ -3,7 +3,7 @@ import type { AppEnv } from "../../_lib/auth";
 import { json } from "../../_lib/security";
 import { QUESTION_COUNT } from "../../_lib/questions";
 
-const SCHEMA_TARGET = "0022_release_hardening";
+const SCHEMA_TARGET = "0023_platform_user_progress";
 const AWARD_PARTICIPANTS_PER_RUN = 7;
 const required = [
   "organizations",
@@ -35,6 +35,9 @@ const required = [
   "round_award_processing",
   "round_badge_reconciliations",
   "round_award_participant_processing",
+  "user_platform_progress",
+  "platform_xp_ledger",
+  "platform_coin_ledger",
 ];
 const expected: Record<string, string[]> = {
   sessions: ["user_agent", "ip_hash"],
@@ -169,9 +172,9 @@ export const onRequestGet = async ({
       },
       {
         name: "migrationLedger",
-        ok: migrationRows === null || migrationRows >= 23,
+        ok: migrationRows === null || migrationRows >= 24,
         total: migrationRows,
-        expected: 23,
+        expected: 24,
       },
       {
         name: "aiConfiguration",
@@ -205,6 +208,9 @@ export const onRequestGet = async ({
         "rounds_window_idx",
         "round_award_participant_pending_idx",
         "audit_action_entity_time_idx",
+        "user_platform_progress_org_user_idx",
+        "platform_xp_ledger_user_time_idx",
+        "platform_coin_ledger_user_time_idx",
       ],
       indexes = new Set(
         (
@@ -228,7 +234,7 @@ export const onRequestGet = async ({
       recommendations.push(
         "Execute as migrations D1 pendentes antes de publicar.",
       );
-    if (migrationRows !== null && migrationRows < 23)
+    if (migrationRows !== null && migrationRows < 24)
       recommendations.push(
         "O histórico de migrations do D1 não corresponde ao schema esperado; execute a reconciliação segura.",
       );
@@ -267,7 +273,7 @@ export const onRequestGet = async ({
         found: required.length - missing.length,
         missing,
       },
-      migrationLedger: { rows: migrationRows, expected: 23 },
+      migrationLedger: { rows: migrationRows, expected: 24 },
       missingColumns,
       missingIndexes,
       checks,

@@ -16,6 +16,9 @@ export const protectedTables = [
 ];
 
 export const purgeTables = [
+  "platform_xp_ledger",
+  "platform_coin_ledger",
+  "user_platform_progress",
   "attempt_answers",
   "round_award_participant_processing",
   "round_award_processing",
@@ -81,4 +84,3 @@ export function assertResetPolicy(statements = buildResetBatch()) {
   }
   return true;
 }
-

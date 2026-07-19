@@ -20,7 +20,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
     const organizationId = admin.organizationId;
     const data = {
       format: "conte-os-feitos-backup",
-      schemaVersion: 23,
+      schemaVersion: 24,
       credentialsExcluded: true,
       exportedAt: Date.now(),
       organizationId,
@@ -51,6 +51,9 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
         round_award_processing: await rows(env, "SELECT p.* FROM round_award_processing p JOIN rounds r ON r.id=p.round_id WHERE r.organization_id=?1", organizationId),
         round_badge_reconciliations: await rows(env, "SELECT b.* FROM round_badge_reconciliations b JOIN rounds r ON r.id=b.round_id WHERE r.organization_id=?1", organizationId),
         round_award_participant_processing: await rows(env, "SELECT p.* FROM round_award_participant_processing p JOIN rounds r ON r.id=p.round_id WHERE r.organization_id=?1", organizationId),
+        user_platform_progress: await rows(env, "SELECT * FROM user_platform_progress WHERE organization_id=?1", organizationId),
+        platform_xp_ledger: await rows(env, "SELECT * FROM platform_xp_ledger WHERE organization_id=?1", organizationId),
+        platform_coin_ledger: await rows(env, "SELECT * FROM platform_coin_ledger WHERE organization_id=?1", organizationId),
       },
     };
 
