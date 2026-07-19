@@ -33,11 +33,12 @@ Requer Node.js 22.13+ e pnpm 11.
 pnpm install --frozen-lockfile
 pnpm run dev
 pnpm run dev:full
+pnpm run dev:lan
 pnpm run lint
 pnpm run build
 ```
 
-`pnpm run dev` abre somente o frontend Next.js. Para testar login, Pages Functions e D1 sem acessar produção, use `pnpm run dev:full` e consulte [docs/LOCAL_DEVELOPMENT.md](docs/LOCAL_DEVELOPMENT.md).
+`pnpm run dev` abre somente o frontend Next.js. Para testar login, Pages Functions e D1 sem acessar produção, use `pnpm run dev:full`. Para abrir o mesmo ambiente local em um celular conectado à mesma rede Wi-Fi, use `pnpm run dev:lan`. Consulte [docs/LOCAL_DEVELOPMENT.md](docs/LOCAL_DEVELOPMENT.md).
 
 ## Qualidade
 

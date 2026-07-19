@@ -9,6 +9,7 @@
     "dev": "next dev",
     "db:local:setup": "node scripts/setup-local-preview.mjs",
     "dev:full": "pnpm run build && pnpm run db:local:setup && wrangler pages dev out --d1 DB=00000000-0000-4000-8000-000000000002 --compatibility-date 2026-07-15 --compatibility-flag nodejs_compat --persist-to .wrangler/local-state --ip 127.0.0.1 --port 8788",
+    "dev:lan": "pnpm run build && pnpm run db:local:setup && node scripts/print-local-lan-addresses.mjs && wrangler pages dev out --d1 DB=00000000-0000-4000-8000-000000000002 --compatibility-date 2026-07-15 --compatibility-flag nodejs_compat --persist-to .wrangler/local-state --binding LOCAL_LAN_DEVELOPMENT=true --ip 0.0.0.0 --port 8788",
     "build": "next build",
     "build:pages-functions": "node scripts/prepare-pages-functions.mjs && wrangler pages functions build functions --outdir .pages-functions --project-directory . --build-output-directory out --output-routes-path out/_routes.json",
     "start": "next start",
