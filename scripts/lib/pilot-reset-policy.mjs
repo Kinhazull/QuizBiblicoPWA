@@ -14,9 +14,12 @@ export const protectedTables = [
   "audit_logs",
   "d1_migrations",
   "platform_achievement_definitions",
+  "platform_mission_definitions",
 ];
 
 export const purgeTables = [
+  "user_platform_mission_progress_events",
+  "user_platform_missions",
   "user_platform_achievements",
   "platform_xp_ledger",
   "platform_coin_ledger",

@@ -10,7 +10,22 @@ type PlatformHomeProps = {
   journey: JourneyCardData | null;
   badges: PlatformBadgeData | null;
   progress: PlatformProgressData | null;
+  mission: PlatformMissionData | null;
+  missionLoaded: boolean;
   remaining: (target?: number) => string;
+};
+
+export type PlatformMissionData = {
+  id: string;
+  name: string;
+  description: string;
+  icon: string | null;
+  state: "active" | "completed" | "claimed" | "expired";
+  progress: number;
+  target: number;
+  progressUnit: string;
+  expiresAt: number;
+  reward: { xp: number; coins: number; label: string };
 };
 
 export type PlatformProgressData = {
@@ -36,11 +51,10 @@ function recentAchievements(data: PlatformBadgeData | null) {
   return (data?.earned || []).slice(0, 4).map(item => ({ ...item, ...definitions.get(item.code) }));
 }
 
-export function PlatformHome({ displayName, journey, badges, progress, remaining }: PlatformHomeProps) {
+export function PlatformHome({ displayName, journey, badges, progress, mission, missionLoaded, remaining }: PlatformHomeProps) {
   const view = getJourneyCardView(journey, remaining);
   const quizProgress = progressFor(journey);
   const achievements = recentAchievements(badges);
-  const missionCurrent = journey?.completion?.completed ? 1 : PLATFORM_HOME_PREVIEW.mission.current;
   const platformProgress = progress || PLATFORM_HOME_PREVIEW.progress;
   const xpPercent = platformProgress.levelProgress.percent;
 
@@ -81,9 +95,9 @@ export function PlatformHome({ displayName, journey, badges, progress, remaining
       </section>
 
       <section className="platform-mission-card" aria-labelledby="mission-title">
-        <div className="platform-mission-icon" aria-hidden="true">🎯</div>
-        <div><p>Missão do dia</p><h2 id="mission-title">{PLATFORM_HOME_PREVIEW.mission.title}</h2><span>{missionCurrent}/{PLATFORM_HOME_PREVIEW.mission.target} partida</span></div>
-        <aside><small>Recompensa</small><strong>{PLATFORM_HOME_PREVIEW.mission.rewardLabel}</strong><span>Recurso em breve</span></aside>
+        <div className="platform-mission-icon" aria-hidden="true">{mission?.icon || "🎯"}</div>
+        <div><p>Missão do dia</p><h2 id="mission-title">{!missionLoaded ? "Carregando missão..." : mission?.name || "Novas missões em breve"}</h2><span>{mission ? `${mission.progress}/${mission.target} ${mission.progressUnit}` : "Nenhuma missão diária disponível"}</span></div>
+        <aside><small>Recompensa</small><strong>{mission?.reward.label || "—"}</strong><span>{mission?.state === "claimed" ? "Resgatada" : mission?.state === "completed" ? "Pronta para resgate" : mission ? `Expira em ${remaining(mission.expiresAt)}` : "Aguarde o próximo catálogo"}</span></aside>
       </section>
 
       <section className="platform-section platform-games" id="jogos" aria-labelledby="games-title">
@@ -103,7 +117,7 @@ export function PlatformHome({ displayName, journey, badges, progress, remaining
         {achievements.length > 0 ? <div className="platform-achievement-grid">{achievements.map(item => <article key={item.code}><b aria-hidden="true">{item.icon || "⭐"}</b><div><strong>{item.name}</strong><small>Medalha do Quiz Bíblico</small></div></article>)}</div> : <div className="platform-empty-achievements"><span aria-hidden="true">✦</span><div><strong>Suas conquistas aparecerão aqui</strong><small>Participe das Jornadas do Quiz Bíblico para desbloquear medalhas.</small></div></div>}
       </section>
 
-      <p className="platform-preview-note">Gemas, missão e baú são uma prévia visual e ainda não são persistidos.</p>
+      <p className="platform-preview-note">Gemas e baú são uma prévia visual. A missão diária é carregada pelo Core Platform.</p>
     </div>
   </main>;
 }

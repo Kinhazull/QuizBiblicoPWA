@@ -7,12 +7,6 @@ export const PLATFORM_HOME_PREVIEW = {
     levelProgress: { currentXp: 0, targetXp: 100, percent: 0 },
   },
   gems: 0,
-  mission: {
-    title: "Complete uma Jornada no Quiz Bíblico",
-    current: 0,
-    target: 1,
-    rewardLabel: "+50 XP",
-  },
   dailyChest: { available: true, label: "1/1" },
 } as const;
 

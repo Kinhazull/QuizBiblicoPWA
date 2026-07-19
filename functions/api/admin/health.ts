@@ -3,7 +3,7 @@ import type { AppEnv } from "../../_lib/auth";
 import { json } from "../../_lib/security";
 import { QUESTION_COUNT } from "../../_lib/questions";
 
-const SCHEMA_TARGET = "0024_platform_achievements";
+const SCHEMA_TARGET = "0025_platform_missions";
 const AWARD_PARTICIPANTS_PER_RUN = 7;
 const required = [
   "organizations",
@@ -40,6 +40,9 @@ const required = [
   "platform_coin_ledger",
   "platform_achievement_definitions",
   "user_platform_achievements",
+  "platform_mission_definitions",
+  "user_platform_missions",
+  "user_platform_mission_progress_events",
 ];
 const expected: Record<string, string[]> = {
   sessions: ["user_agent", "ip_hash"],
@@ -174,9 +177,9 @@ export const onRequestGet = async ({
       },
       {
         name: "migrationLedger",
-        ok: migrationRows === null || migrationRows >= 25,
+        ok: migrationRows === null || migrationRows >= 26,
         total: migrationRows,
-        expected: 25,
+        expected: 26,
       },
       {
         name: "aiConfiguration",
@@ -216,6 +219,10 @@ export const onRequestGet = async ({
         "platform_achievement_definitions_catalog_idx",
         "user_platform_achievements_user_time_idx",
         "user_platform_achievements_org_user_idx",
+        "platform_mission_definitions_catalog_idx",
+        "user_platform_missions_current_idx",
+        "user_platform_missions_expiration_idx",
+        "user_platform_mission_events_assignment_idx",
       ],
       indexes = new Set(
         (
@@ -239,7 +246,7 @@ export const onRequestGet = async ({
       recommendations.push(
         "Execute as migrations D1 pendentes antes de publicar.",
       );
-    if (migrationRows !== null && migrationRows < 25)
+    if (migrationRows !== null && migrationRows < 26)
       recommendations.push(
         "O histórico de migrations do D1 não corresponde ao schema esperado; execute a reconciliação segura.",
       );
@@ -278,7 +285,7 @@ export const onRequestGet = async ({
         found: required.length - missing.length,
         missing,
       },
-      migrationLedger: { rows: migrationRows, expected: 25 },
+      migrationLedger: { rows: migrationRows, expected: 26 },
       missingColumns,
       missingIndexes,
       checks,
