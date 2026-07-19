@@ -59,7 +59,7 @@ test("backup authenticates password and excludes credentials, sessions and token
   const wrong=await backup({request:createAuthenticatedRequest("https://test/api/admin/backup",{token:adminToken,method:"POST",body:{password:"errada"}}),env:ctx.env});assert.equal(wrong.status,403);
   const response=await backup({request:createAuthenticatedRequest("https://test/api/admin/backup",{token:adminToken,method:"POST",body:{password}}),env:ctx.env});
   assert.equal(response.status,200);assert.match(response.headers.get("cache-control"),/no-store/);assert.equal(response.headers.get("x-content-type-options"),"nosniff");
-  const text=await response.text(),data=JSON.parse(text);assert.equal(data.schemaVersion,24);assert.equal(data.credentialsExcluded,true);assert.equal(data.tables.sessions,undefined);
+  const text=await response.text(),data=JSON.parse(text);assert.equal(data.schemaVersion,25);assert.equal(data.credentialsExcluded,true);assert.equal(data.tables.sessions,undefined);
   assert.ok(!/password_hash|password_salt|token-admin|quiz_session|test-salt/.test(text));
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) n FROM audit_logs WHERE action='backup.exported'").get().n,1);
 });

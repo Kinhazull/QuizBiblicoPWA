@@ -20,7 +20,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
     const organizationId = admin.organizationId;
     const data = {
       format: "conte-os-feitos-backup",
-      schemaVersion: 24,
+      schemaVersion: 25,
       credentialsExcluded: true,
       exportedAt: Date.now(),
       organizationId,
@@ -54,6 +54,8 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
         user_platform_progress: await rows(env, "SELECT * FROM user_platform_progress WHERE organization_id=?1", organizationId),
         platform_xp_ledger: await rows(env, "SELECT * FROM platform_xp_ledger WHERE organization_id=?1", organizationId),
         platform_coin_ledger: await rows(env, "SELECT * FROM platform_coin_ledger WHERE organization_id=?1", organizationId),
+        platform_achievement_definitions: await rows(env, "SELECT * FROM platform_achievement_definitions"),
+        user_platform_achievements: await rows(env, "SELECT * FROM user_platform_achievements WHERE organization_id=?1", organizationId),
       },
     };
 
