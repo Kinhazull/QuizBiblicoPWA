@@ -62,7 +62,7 @@ async function snapshot() {
 function validateExpected(state) {
   if (state.users !== expectedUsers) throw new Error(`User count mismatch: expected ${expectedUsers}, found ${state.users}.`);
   if (state.questions !== expectedQuestions) throw new Error(`Question count mismatch: expected ${expectedQuestions}, found ${state.questions}.`);
-  if (state.protectedCounts.d1_migrations !== 26) throw new Error(`Migration ledger mismatch: expected 26, found ${state.protectedCounts.d1_migrations}.`);
+  if (state.protectedCounts.d1_migrations !== 27) throw new Error(`Migration ledger mismatch: expected 27, found ${state.protectedCounts.d1_migrations}.`);
 }
 function resetWorkRemaining(state) {
   return Object.values(state.purgeCounts).reduce((total, value) => total + value, 0)

@@ -3,7 +3,7 @@ import type { AppEnv } from "../../_lib/auth";
 import { json } from "../../_lib/security";
 import { QUESTION_COUNT } from "../../_lib/questions";
 
-const SCHEMA_TARGET = "0025_platform_missions";
+const SCHEMA_TARGET = "0026_platform_event_engine";
 const AWARD_PARTICIPANTS_PER_RUN = 7;
 const required = [
   "organizations",
@@ -43,6 +43,8 @@ const required = [
   "platform_mission_definitions",
   "user_platform_missions",
   "user_platform_mission_progress_events",
+  "core_platform_events",
+  "core_platform_event_processing",
 ];
 const expected: Record<string, string[]> = {
   sessions: ["user_agent", "ip_hash"],
@@ -148,6 +150,9 @@ export const onRequestGet = async ({
           )?.total || 0,
         )
       : null;
+    const eventFailures: any = found.has("core_platform_event_processing")
+      ? await env.DB.prepare("SELECT COUNT(*) total FROM core_platform_event_processing p JOIN core_platform_events e ON e.event_id=p.event_id WHERE e.organization_id=?1 AND (p.state IN ('retryable_failed','dead_letter') OR (p.state='processing' AND p.lease_until<?2))").bind(user.organizationId, now).first()
+      : { total: 0 };
     const awardPending =
         Number(awardBacklog.total || 0) + Number(queued.total || 0),
       awardEstimatedMinutes = Math.ceil(
@@ -177,9 +182,14 @@ export const onRequestGet = async ({
       },
       {
         name: "migrationLedger",
-        ok: migrationRows === null || migrationRows >= 26,
+        ok: migrationRows === null || migrationRows >= 27,
         total: migrationRows,
-        expected: 26,
+        expected: 27,
+      },
+      {
+        name: "eventEngine",
+        ok: Number(eventFailures.total || 0) === 0,
+        total: Number(eventFailures.total || 0),
       },
       {
         name: "aiConfiguration",
@@ -223,6 +233,10 @@ export const onRequestGet = async ({
         "user_platform_missions_current_idx",
         "user_platform_missions_expiration_idx",
         "user_platform_mission_events_assignment_idx",
+        "core_platform_events_org_time_idx",
+        "core_platform_events_status_time_idx",
+        "core_platform_events_user_time_idx",
+        "core_platform_event_processing_retry_idx",
       ],
       indexes = new Set(
         (
@@ -246,7 +260,7 @@ export const onRequestGet = async ({
       recommendations.push(
         "Execute as migrations D1 pendentes antes de publicar.",
       );
-    if (migrationRows !== null && migrationRows < 26)
+    if (migrationRows !== null && migrationRows < 27)
       recommendations.push(
         "O histórico de migrations do D1 não corresponde ao schema esperado; execute a reconciliação segura.",
       );
@@ -276,6 +290,10 @@ export const onRequestGet = async ({
       recommendations.push(
         "O binding Workers AI chamado AI não está configurado.",
       );
+    if (Number(eventFailures.total || 0) > 0)
+      recommendations.push(
+        "Existem eventos da plataforma com processamento pendente ou falho; revise os checkpoints antes de integrar novos produtores.",
+      );
     return json({
       status,
       checkedAt: now,
@@ -285,7 +303,7 @@ export const onRequestGet = async ({
         found: required.length - missing.length,
         missing,
       },
-      migrationLedger: { rows: migrationRows, expected: 26 },
+      migrationLedger: { rows: migrationRows, expected: 27 },
       missingColumns,
       missingIndexes,
       checks,

@@ -20,7 +20,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
     const organizationId = admin.organizationId;
     const data = {
       format: "conte-os-feitos-backup",
-      schemaVersion: 26,
+      schemaVersion: 27,
       credentialsExcluded: true,
       exportedAt: Date.now(),
       organizationId,
@@ -59,6 +59,8 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
         platform_mission_definitions: await rows(env, "SELECT * FROM platform_mission_definitions"),
         user_platform_missions: await rows(env, "SELECT * FROM user_platform_missions WHERE organization_id=?1", organizationId),
         user_platform_mission_progress_events: await rows(env, "SELECT * FROM user_platform_mission_progress_events WHERE organization_id=?1", organizationId),
+        core_platform_events: await rows(env, "SELECT * FROM core_platform_events WHERE organization_id=?1", organizationId),
+        core_platform_event_processing: await rows(env, "SELECT p.* FROM core_platform_event_processing p JOIN core_platform_events e ON e.event_id=p.event_id WHERE e.organization_id=?1", organizationId),
       },
     };
 

@@ -9,6 +9,7 @@ if(mode==="execute"&&(!backup||!existsSync(backup)))throw new Error("A execuçã
 const db=new DatabaseSync(dbPath);db.exec("PRAGMA foreign_keys=ON");
 const admin=db.prepare("SELECT id,role,status FROM users WHERE id=? AND organization_id=?").get(adminId,organizationId);if(!admin||admin.role!=="admin")throw new Error("A conta preservada precisa ser o administrador da organização.");
 const specs=[
+ ["core_platform_event_processing","event_id IN (SELECT event_id FROM core_platform_events WHERE organization_id=?)"],["core_platform_events","organization_id=?"],
  ["user_platform_mission_progress_events","organization_id=?"],["user_platform_missions","organization_id=?"],
  ["attempt_answers","attempt_id IN (SELECT a.id FROM attempts a JOIN users u ON u.id=a.user_id WHERE u.organization_id=?)"],
  ["attempts","user_id IN (SELECT id FROM users WHERE organization_id=?)"],["notification_receipts","user_id IN (SELECT id FROM users WHERE organization_id=?)"],["user_badges","user_id IN (SELECT id FROM users WHERE organization_id=?)"],

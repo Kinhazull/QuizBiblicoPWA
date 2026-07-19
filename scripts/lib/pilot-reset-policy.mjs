@@ -18,6 +18,8 @@ export const protectedTables = [
 ];
 
 export const purgeTables = [
+  "core_platform_event_processing",
+  "core_platform_events",
   "user_platform_mission_progress_events",
   "user_platform_missions",
   "user_platform_achievements",
