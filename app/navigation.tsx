@@ -15,7 +15,7 @@ export const participantNavigation: NavigationItem[] = [
 
 export const platformHomeNavigation: NavigationItem[] = [
   { label: "Home", href: "/", icon: "home" },
-  { label: "Jogos", href: "/#jogos", icon: "questions" },
+  { label: "Jogos", href: "/jogos", icon: "questions" },
   { label: "Recompensas", href: "/#recompensas", icon: "medal" },
   { label: "Perfil", href: "/perfil", icon: "user" },
 ];

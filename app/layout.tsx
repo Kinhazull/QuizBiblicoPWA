@@ -11,6 +11,7 @@ import "./legal.css";
 import "./brand-system.css";
 import "./quality.css";
 import "./platform-home.css";
+import "./games.css";
 import { AdminQuickNav } from "./AdminQuickNav";
 import { BackNavigation } from "./BackNavigation";
 import { LearningQuickNav } from "./LearningQuickNav";
