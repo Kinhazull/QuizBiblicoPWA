@@ -18,8 +18,13 @@ export const protectedTables = [
 ];
 
 export const purgeTables = [
+  "platform_statistics_event_checkpoints",
   "core_platform_event_processing",
   "core_platform_events",
+  "user_platform_game_difficulty_statistics",
+  "user_platform_statistics_active_days",
+  "user_platform_game_statistics",
+  "user_platform_statistics",
   "user_platform_mission_progress_events",
   "user_platform_missions",
   "user_platform_achievements",

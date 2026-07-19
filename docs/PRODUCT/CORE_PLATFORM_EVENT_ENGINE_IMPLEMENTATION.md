@@ -44,6 +44,8 @@ O dispatcher:
 
 Não há fila externa, Worker adicional, endpoint público, timer ou processamento remoto nesta etapa.
 
+O primeiro consumidor oficial foi registrado na vertical do Statistics Service. `publishOfficialCoreEvent` aplica o registro central sem conectar qualquer produtor real; `publishCoreEvent` permanece disponível para testes isolados e evolução interna compatível.
+
 ## Garantias e limites
 
 - servidor permanece como única origem de eventos;

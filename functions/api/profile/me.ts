@@ -3,6 +3,7 @@ import { json } from "../../_lib/security";
 import { BEST_ATTEMPTS_CTE } from "../../_lib/ranking";
 import { getUserProgress } from "../../_lib/platform-progress";
 import { getAchievementSummary } from "../../_lib/platform-achievements";
+import { getUserStatistics } from "../../_lib/platform-statistics";
 
 export const onRequestGet=async({request,env}:{request:Request;env:AppEnv})=>{try{
   const user:any=await requireUser(request,env);
@@ -11,7 +12,8 @@ export const onRequestGet=async({request,env}:{request:Request;env:AppEnv})=>{tr
   const podiums:any=await env.DB.prepare(`WITH ${BEST_ATTEMPTS_CTE},ranked AS (SELECT round_id,user_id,RANK() OVER(PARTITION BY round_id ORDER BY score DESC,correct_answers DESC,total_time_ms ASC,completed_at ASC,id ASC) place FROM best_attempts) SELECT COUNT(*) total FROM ranked WHERE user_id=?1 AND place<=3`).bind(user.id).first();
   const progress=await getUserProgress(env,user.id,user.organizationId);
   const achievements=await getAchievementSummary(env,user.id,user.organizationId);
-  return json({user:{...user,...preferences},stats:{...stats,podiums:Number(podiums?.total||0)},progress,achievements});
+  const platformStatistics=await getUserStatistics(env,user.id,user.organizationId);
+  return json({user:{...user,...preferences},stats:{...stats,podiums:Number(podiums?.total||0)},progress,achievements,platformStatistics});
 }catch(response){if(response instanceof Response)return response;throw response;}};
 
 export const onRequestPatch=async({request,env}:{request:Request;env:AppEnv})=>{try{

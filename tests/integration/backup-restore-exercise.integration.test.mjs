@@ -18,7 +18,7 @@ test("confidential backup core restores into an isolated migrated database with 
   }
   const counts = restoreCoreBackupForExercise(target.raw, {
     format: "conte-os-feitos-backup",
-    schemaVersion: 27,
+    schemaVersion: 28,
     credentialsExcluded: true,
     tables,
   });

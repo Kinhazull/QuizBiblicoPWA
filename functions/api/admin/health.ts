@@ -3,7 +3,7 @@ import type { AppEnv } from "../../_lib/auth";
 import { json } from "../../_lib/security";
 import { QUESTION_COUNT } from "../../_lib/questions";
 
-const SCHEMA_TARGET = "0026_platform_event_engine";
+const SCHEMA_TARGET = "0027_platform_statistics";
 const AWARD_PARTICIPANTS_PER_RUN = 7;
 const required = [
   "organizations",
@@ -45,6 +45,11 @@ const required = [
   "user_platform_mission_progress_events",
   "core_platform_events",
   "core_platform_event_processing",
+  "user_platform_statistics",
+  "user_platform_game_statistics",
+  "user_platform_statistics_active_days",
+  "user_platform_game_difficulty_statistics",
+  "platform_statistics_event_checkpoints",
 ];
 const expected: Record<string, string[]> = {
   sessions: ["user_agent", "ip_hash"],
@@ -153,6 +158,9 @@ export const onRequestGet = async ({
     const eventFailures: any = found.has("core_platform_event_processing")
       ? await env.DB.prepare("SELECT COUNT(*) total FROM core_platform_event_processing p JOIN core_platform_events e ON e.event_id=p.event_id WHERE e.organization_id=?1 AND (p.state IN ('retryable_failed','dead_letter') OR (p.state='processing' AND p.lease_until<?2))").bind(user.organizationId, now).first()
       : { total: 0 };
+    const statisticsFailures: any = found.has("platform_statistics_event_checkpoints")
+      ? await env.DB.prepare("SELECT COUNT(*) total FROM platform_statistics_event_checkpoints WHERE organization_id=?1 AND state<>'completed'").bind(user.organizationId).first()
+      : { total: 0 };
     const awardPending =
         Number(awardBacklog.total || 0) + Number(queued.total || 0),
       awardEstimatedMinutes = Math.ceil(
@@ -182,14 +190,19 @@ export const onRequestGet = async ({
       },
       {
         name: "migrationLedger",
-        ok: migrationRows === null || migrationRows >= 27,
+        ok: migrationRows === null || migrationRows >= 28,
         total: migrationRows,
-        expected: 27,
+        expected: 28,
       },
       {
         name: "eventEngine",
         ok: Number(eventFailures.total || 0) === 0,
         total: Number(eventFailures.total || 0),
+      },
+      {
+        name: "statisticsProjection",
+        ok: Number(statisticsFailures.total || 0) === 0,
+        total: Number(statisticsFailures.total || 0),
       },
       {
         name: "aiConfiguration",
@@ -237,6 +250,11 @@ export const onRequestGet = async ({
         "core_platform_events_status_time_idx",
         "core_platform_events_user_time_idx",
         "core_platform_event_processing_retry_idx",
+        "user_platform_statistics_org_activity_idx",
+        "user_platform_game_statistics_org_game_idx",
+        "user_platform_statistics_active_days_user_idx",
+        "user_platform_game_difficulty_statistics_lookup_idx",
+        "platform_statistics_event_checkpoints_user_idx",
       ],
       indexes = new Set(
         (
@@ -260,7 +278,7 @@ export const onRequestGet = async ({
       recommendations.push(
         "Execute as migrations D1 pendentes antes de publicar.",
       );
-    if (migrationRows !== null && migrationRows < 27)
+    if (migrationRows !== null && migrationRows < 28)
       recommendations.push(
         "O histórico de migrations do D1 não corresponde ao schema esperado; execute a reconciliação segura.",
       );
@@ -294,6 +312,10 @@ export const onRequestGet = async ({
       recommendations.push(
         "Existem eventos da plataforma com processamento pendente ou falho; revise os checkpoints antes de integrar novos produtores.",
       );
+    if (Number(statisticsFailures.total || 0) > 0)
+      recommendations.push(
+        "Existem projeções estatísticas com checkpoint incompleto; reprocesse os eventos antes de integrar produtores reais.",
+      );
     return json({
       status,
       checkedAt: now,
@@ -303,7 +325,7 @@ export const onRequestGet = async ({
         found: required.length - missing.length,
         missing,
       },
-      migrationLedger: { rows: migrationRows, expected: 27 },
+      migrationLedger: { rows: migrationRows, expected: 28 },
       missingColumns,
       missingIndexes,
       checks,
