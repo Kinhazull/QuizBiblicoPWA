@@ -2,7 +2,7 @@
 
 ## Escopo
 
-Esta vertical implementa projeções globais e por jogo do Core Platform a partir do ledger oficial do Event Engine. Nenhum jogo — inclusive o Quiz Bíblico — foi integrado como produtor nesta sprint. `rounds`, `attempts`, Ranking, Medalhas e tabelas legadas do Quiz não são consultados pelo serviço.
+Esta vertical implementa projeções globais e por jogo do Core Platform a partir do ledger oficial do Event Engine. Desde a Sprint 3.4, o Quiz Bíblico é o primeiro produtor conectado por outbox ao evento `GAME_FINISHED`. `rounds`, `attempts`, Ranking, Medalhas e tabelas legadas do Quiz não são consultados pelo serviço.
 
 ## Eventos consumidos
 
@@ -15,7 +15,7 @@ O consumidor oficial `platform-statistics`, versão `1`, processa somente contra
 
 `GAME_FINISHED` é o evento canônico escolhido também para o Quiz. `QUIZ_FINISHED` foi removido do catálogo antes da existência de produtores reais, eliminando a possibilidade de dupla emissão.
 
-O registro central de consumidores fica em `platform-event-consumers.ts`. Produtores futuros devem usar `publishOfficialCoreEvent`, que mantém a API interna do Event Engine e aplica a lista oficial. Não existe endpoint público para publicar eventos ou incrementar estatísticas.
+O registro central de consumidores fica em `platform-event-consumers.ts`. O dispatcher do Quiz e produtores futuros usam `publishOfficialCoreEvent`, que mantém a API interna do Event Engine e aplica a lista oficial. Não existe endpoint público para publicar eventos ou incrementar estatísticas.
 
 ## Projeções criadas
 
@@ -65,14 +65,20 @@ O contrato genérico versão 1 não fornece duração nem dificuldade. Por isso,
 
 Backup, exportação de privacidade, diagnóstico estrutural, limpeza local e reset controlado do piloto reconhecem as novas tabelas. O backup passa a declarar schema `28`.
 
-## Limites atuais e integração futura do Quiz
+## Integração operacional do Quiz
 
-- não há produtor real conectado;
+Uma conclusão oficial elegível persiste o resultado e a outbox atomicamente. `POST /api/admin/operations/quiz-outbox` exige papel administrativo, ignora seletores enviados pelo cliente e processa somente a organização da sessão. O lote padrão é 10; `QUIZ_OUTBOX_BATCH_LIMIT` permite configurá-lo entre 1 e 25.
+
+O dispatcher usa o envelope persistido, o runtime oficial e o registro central de consumidores. A projeção mantém idempotência por `(event_id, consumer_version)`. Reentregas, concorrência e lease expirado não duplicam sessões nem melhor pontuação.
+
+## Limites atuais
+
 - não há estatísticas públicas nem comparação entre usuários;
 - não existe endpoint cliente de mutação;
 - não há cálculo a partir de tabelas legadas;
 - não há duração ou dificuldade até um contrato genérico versionado fornecer esses campos;
-- a futura integração do Quiz deve filtrar modos e estados no servidor antes de emitir o evento genérico escolhido;
 - treino, partidas inválidas, abandonadas ou incompletas não podem emitir `GAME_FINISHED` como sessão válida.
+- não existe agendamento automático do dispatcher nesta etapa;
+- Progress, Reward, Missions, Achievements e Notifications não consomem eventos do Quiz.
 
 Nenhuma migration remota, deploy ou alteração de produção foi executada nesta implementação.

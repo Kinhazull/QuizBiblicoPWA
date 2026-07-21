@@ -5,7 +5,7 @@ import {
   sanitizeCoreEventError,
   type CorePlatformEvent,
 } from "../platform-event-engine";
-import { acceptCoreEventWithoutConsumers } from "../platform-event-runtime";
+import { publishOfficialCoreEvent } from "../platform-event-runtime";
 
 type OutboxRow = {
   eventId: string;
@@ -92,13 +92,14 @@ async function markFailure(env: AppEnv, eventId: string, leaseToken: string, now
 
 export async function dispatchQuizOutbox(
   env: AppEnv,
-  options: { now?: number; limit?: number } = {},
+  options: { now?: number; limit?: number; organizationId?: string } = {},
 ): Promise<QuizOutboxDispatchSummary> {
   const now = options.now ?? Date.now();
   const limit = Math.max(1, Math.min(100, Math.trunc(options.limit ?? 25)));
+  const organizationId = options.organizationId || null;
   const due = await env.DB.prepare(`SELECT event_id eventId
     FROM quiz_core_event_outbox
-    WHERE attempt_count<?1 AND (
+    WHERE attempt_count<?1 AND (?4 IS NULL OR organization_id=?4) AND (
       delivery_state='pending'
       OR (delivery_state='retryable_failed' AND COALESCE(next_attempt_at,0)<=?2)
       OR (delivery_state='processing' AND COALESCE(lease_until,0)<=?2)
@@ -106,6 +107,7 @@ export async function dispatchQuizOutbox(
       CORE_EVENT_DELIVERY_POLICY.maxAttempts,
       now,
       limit,
+      organizationId,
     ).all<{ eventId: string }>();
 
   const summary: QuizOutboxDispatchSummary = {
@@ -132,7 +134,8 @@ export async function dispatchQuizOutbox(
           leaseToken,
         ).first<OutboxRow>();
       if (!row) continue;
-      await acceptCoreEventWithoutConsumers(env, parseStoredEvent(row), now);
+      const publication = await publishOfficialCoreEvent(env, parseStoredEvent(row), now);
+      if (publication.status !== "completed") throw new Error("core_event_delivery_incomplete");
       const delivered = await env.DB.prepare(`UPDATE quiz_core_event_outbox
         SET delivery_state='delivered',processed_at=?1,lease_token=NULL,lease_until=NULL,
           next_attempt_at=NULL,last_error_code=NULL,updated_at=?1

@@ -56,7 +56,7 @@ O primeiro consumidor oficial foi registrado na vertical do Statistics Service. 
 - os ledgers de XP/moedas, missão e conquista mantêm sua idempotência de domínio;
 - a conclusão do recibo ocorre depois do efeito do consumidor. Portanto, consumidores futuros **devem** manter sua própria chave idempotente, pois uma interrupção entre efeito e recibo pode causar nova entrega;
 - não há ordem global. Dependências continuam expressas por eventos derivados e `causationId`;
-- não há produtor conectado nesta sprint; o ledger permanece vazio até uma integração formal.
+- o Quiz é o primeiro produtor conectado por outbox; outros jogos permanecem desconectados até integração formal.
 
 ## Operação
 
@@ -76,15 +76,16 @@ A estratégia oficial é outbox transacional no D1. A Sprint 3.2 criou `quiz_cor
 
 A Sprint 3.3 adicionou o dispatcher da outbox. Registros `pending`, `retryable_failed` vencidos ou `processing` com lease expirado são reivindicados por atualização condicional, recebem lease de 30 segundos e são entregues exclusivamente ao Event Engine. A política é compartilhada com o motor: cinco tentativas, backoff exponencial de 5 segundos limitado a 5 minutos e `dead_letter` na quinta falha. O erro persistido é um código sanitizado.
 
-O Event Engine ainda recebe uma lista vazia de consumidores nesta etapa. Assim, ele valida e persiste `GAME_FINISHED` de forma idempotente, sem acionar Progress, Statistics, Missions, Achievements ou Notifications.
+Na Sprint 3.4, o dispatcher passou a publicar por `publishOfficialCoreEvent`. O registro central seleciona `platform-statistics` versão 1 para `GAME_FINISHED`; nenhum consumidor é informado pelo dispatcher. A outbox somente vira `delivered` quando o retorno do Event Engine é `completed`.
 
-Antes de ativar os efeitos do Core ainda é necessário:
+O acionamento operacional é um POST administrativo, com rate limit, auditoria, lote conservador e isolamento pela organização obtida da sessão. Não existe agendamento automático. Progress, Reward, Missions, Achievements e Notifications continuam desconectados.
 
-1. registrar consumidores reais e suas chaves idempotentes de domínio;
+Antes de ampliar os efeitos do Core ainda é necessário:
+
+1. registrar cada novo consumidor somente em sua sprint aprovada;
 2. definir política operacional de retenção de itens entregues e dead letter;
-3. adicionar reprocessamento administrativo auditado;
-4. conectar a execução agendada do dispatcher somente após decisão operacional explícita;
-5. aprovar a ativação dos consumidores da integração específica do Quiz.
+3. adicionar reprocessamento administrativo específico de dead letter;
+4. conectar execução agendada somente após decisão operacional explícita.
 
 ## Testes comportamentais
 
