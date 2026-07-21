@@ -54,6 +54,7 @@ test("official final answer persists Quiz result and normalized outbox atomicall
   assert.equal(attempt.status, "completed");
   assert.equal(outbox.delivery_state, "pending");
   assert.equal(outbox.attempt_count, 0);
+  assert.equal(outbox.event_version, 2);
 
   const expected = adaptQuizResultToGameFinished({
     contractVersion: 1,
@@ -73,6 +74,10 @@ test("official final answer persists Quiz result and normalized outbox atomicall
   });
   assert.deepEqual(JSON.parse(outbox.envelope_json), expected);
   assert.deepEqual(JSON.parse(outbox.payload_json), expected.payload);
+  assert.equal(expected.payload.attemptId, "attempt-1");
+  assert.equal(expected.payload.completedAt, BASE + 1_000);
+  assert.equal(expected.payload.correctAnswers, 10);
+  assert.equal(expected.payload.questionsAnswered, 10);
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM core_platform_events").get().total, 0);
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM user_platform_progress").get().total, 0);
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM user_platform_statistics").get().total, 0);

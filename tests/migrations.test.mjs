@@ -24,5 +24,7 @@ test("all migrations are sequential and apply to an empty SQLite database", asyn
   assert.ok(outboxColumns.includes("lease_token"));
   assert.ok(outboxColumns.includes("lease_until"));
   assert.ok(db.prepare("PRAGMA index_list('quiz_core_event_outbox')").all().some(row => row.name === "quiz_core_event_outbox_claim_idx"));
+  const outboxSql = db.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='quiz_core_event_outbox'").get().sql;
+  assert.match(outboxSql, /event_version IN \(1, 2\)/);
   db.close();
 });

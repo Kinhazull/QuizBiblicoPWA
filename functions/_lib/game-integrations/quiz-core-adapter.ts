@@ -5,8 +5,9 @@ export const QUIZ_CORE_INTEGRATION = {
   gameId: "quiz-biblico",
   service: "quiz-attempt-service",
   eventType: "GAME_FINISHED",
-  eventVersion: 1,
+  eventVersion: 2,
   resultContractVersion: 1,
+  gameVersion: "1.0.0",
 } as const;
 
 export type QuizOfficialCompletedResult = {
@@ -29,11 +30,17 @@ export type QuizOfficialCompletedResult = {
 export type QuizGameFinishedPayload = {
   status: "completed";
   score: number;
+  mode: "official";
+  correctAnswers: number;
+  questionsAnswered: number;
+  completedAt: number;
+  attemptId: string;
+  gameVersion: typeof QUIZ_CORE_INTEGRATION.gameVersion;
 };
 
 export type QuizGameFinishedEvent = CorePlatformEvent<QuizGameFinishedPayload> & {
   eventType: "GAME_FINISHED";
-  version: 1;
+  version: 2;
   source: {
     kind: "game";
     service: "quiz-attempt-service";
@@ -81,7 +88,16 @@ export function adaptQuizResultToGameFinished(result: QuizOfficialCompletedResul
     throw new Error("invalid_quiz_result_metrics");
   }
 
-  const payload: QuizGameFinishedPayload = { status: "completed", score: result.score };
+  const payload: QuizGameFinishedPayload = {
+    status: "completed",
+    score: result.score,
+    mode: result.mode,
+    correctAnswers: result.correctAnswers,
+    questionsAnswered: result.questionsAnswered,
+    completedAt: result.finishedAt,
+    attemptId: result.attemptId,
+    gameVersion: QUIZ_CORE_INTEGRATION.gameVersion,
+  };
   validateCoreEventProducer("GAME_FINISHED", "game", QUIZ_CORE_INTEGRATION.service, QUIZ_CORE_INTEGRATION.gameId);
   validateCoreEventPayload("GAME_FINISHED", QUIZ_CORE_INTEGRATION.eventVersion, payload);
 
@@ -98,7 +114,7 @@ export function adaptQuizResultToGameFinished(result: QuizOfficialCompletedResul
       sourceId: result.attemptId,
     },
     payload,
-    version: 1,
+    version: QUIZ_CORE_INTEGRATION.eventVersion,
     correlationId: result.attemptId,
   };
 }

@@ -51,7 +51,7 @@ XP, nível, moedas e Conquistas permanecem nos serviços proprietários e não s
 - última atividade;
 - tempo total, média de tempo e dificuldade mais usada estruturalmente reservados.
 
-O contrato genérico versão 1 não fornece duração nem dificuldade. Por isso, essas métricas permanecem `0` ou `null`; o serviço não estima valores. Uma futura versão de evento deverá ser aprovada antes de preenchê-las.
+O contrato genérico versão 1 não fornece duração nem dificuldade. O v2 acrescenta métricas de conclusão do Quiz, mas o Statistics Consumer mantém nesta sprint sua lógica anterior e continua sem estimar duração ou dificuldade. Ambos os contratos são aceitos; novas projeções dos campos v2 exigem decisão própria e versão compatível do consumidor.
 
 ## Consulta e Perfil
 

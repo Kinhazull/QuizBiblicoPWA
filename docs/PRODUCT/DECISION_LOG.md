@@ -56,5 +56,5 @@ O Conte os Feitos iniciou como Quiz Bíblico PWA e concluiu o piloto técnico `v
 ### Consequências
 
 - A integração do Quiz deverá implementar a outbox e testes atômicos antes de publicar eventos.
-- `GAME_FINISHED` versão `1` permanece mínimo; modo, duração e dificuldade exigirão contrato versionado aprovado.
+- `GAME_FINISHED` versão `1` permanece aceito como contrato legado mínimo. A Sprint 3.5A aprovou a versão `2` para novos eventos do Quiz com modo, acertos, total de perguntas, conclusão, tentativa e versão do jogo; duração e dificuldade continuam fora do contrato.
 - Notification Service, integração real de Mission/Achievement e recompensas acionadas por jogos continuam fora desta sprint.

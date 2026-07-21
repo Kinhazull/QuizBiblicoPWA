@@ -195,6 +195,13 @@ Todo evento segue `CorePlatformEvent` definido em `CORE_PLATFORM_EVENT_ENGINE.md
 
 `GAME_FINISHED` é o único evento canônico de término para todos os jogos, inclusive o Quiz. Eventos específicos de conclusão não são permitidos sem uma nova decisão arquitetural que substitua explicitamente esta regra.
 
+### Versões de `GAME_FINISHED`
+
+- **v1 (legado compatível):** `{ status, score? }`. Continua aceito pelo Event Engine, pela outbox, pelo dispatcher e pelo Statistics Consumer.
+- **v2 (atual para novos resultados do Quiz):** `{ status, score, mode, correctAnswers, questionsAnswered, completedAt, attemptId, gameVersion }`.
+
+No v2, `correctAnswers` não pode superar `questionsAnswered`, `questionsAnswered` deve ser positivo, `completedAt` deve coincidir com `occurredAt` e `attemptId` deve coincidir com `source.sourceId`. O adaptador do Quiz produz somente v2 para fatos novos. Registros v1 permanecem imutáveis e não são convertidos ou enriquecidos retroativamente.
+
 ## Estratégia obrigatória do produtor
 
 Todo backend de jogo deverá gravar o resultado final e uma entrada de outbox no mesmo limite atômico do D1. A entrada usará uma chave determinística derivada de `gameId + sessionId + fato`, preservará o envelope canônico e permanecerá pendente até confirmação durável do Event Engine.

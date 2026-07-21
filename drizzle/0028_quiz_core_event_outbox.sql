@@ -1,7 +1,7 @@
 CREATE TABLE quiz_core_event_outbox (
   event_id TEXT PRIMARY KEY NOT NULL,
   event_type TEXT NOT NULL CHECK (event_type = 'GAME_FINISHED'),
-  event_version INTEGER NOT NULL CHECK (event_version = 1),
+  event_version INTEGER NOT NULL CHECK (event_version IN (1, 2)),
   organization_id TEXT NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
   user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   game_id TEXT NOT NULL CHECK (game_id = 'quiz-biblico'),

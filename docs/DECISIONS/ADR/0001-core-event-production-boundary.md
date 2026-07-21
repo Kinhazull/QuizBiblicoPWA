@@ -25,6 +25,8 @@ O dispatcher oficial usa claim condicional com lease de 30 segundos, no máximo 
 
 O Statistics Service versão 1 é o primeiro consumidor oficial de `GAME_FINISHED`. O dispatcher publica pelo runtime oficial, e somente o registro central decide os consumidores aplicáveis. A outbox só é confirmada como `delivered` quando o Event Engine conclui todos os consumidores selecionados.
 
+`GAME_FINISHED` v1 continua aceito para eventos já persistidos. A partir da Sprint 3.5A, o adaptador do Quiz produz v2 para fatos novos e a mesma outbox transporta as duas versões sem reescrever fatos antigos. A identidade determinística do evento permanece inalterada.
+
 A execução operacional está disponível por um endpoint POST administrativo, limitado à organização da sessão, com lote padrão de 10 e máximo configurável de 25. Não existe agendamento automático nesta etapa. Progress, Reward, Missions, Achievements e Notifications permanecem desconectados.
 
 ## Consequências

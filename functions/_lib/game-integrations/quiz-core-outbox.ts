@@ -3,7 +3,7 @@ import { adaptQuizResultToGameFinished, type QuizOfficialCompletedResult } from 
 
 /**
  * Builds the insert that must share the Quiz completion DB.batch.
- * Delivery is intentionally outside this module and remains disabled.
+ * Delivery remains outside this module and is performed by the official dispatcher.
  */
 export function quizGameFinishedOutboxStatement(env: AppEnv, result: QuizOfficialCompletedResult) {
   const event = adaptQuizResultToGameFinished(result);

@@ -9,13 +9,16 @@ export type CoreEventType = (typeof CORE_EVENT_TYPES)[number];
 export type CoreEventSourceKind = "auth" | "game" | "platform" | "integration";
 
 type FieldRule = "string" | "boolean" | "positiveInteger" | "nonNegativeInteger";
-type EventDefinition = {
-  version: 1;
+type EventSchema = {
   sourceKind: CoreEventSourceKind;
   services: readonly string[];
   fields: Readonly<Record<string, FieldRule>>;
   optional?: readonly string[];
   enums?: Readonly<Record<string, readonly string[]>>;
+};
+type EventDefinition = EventSchema & {
+  version: number;
+  versions?: Readonly<Record<number, EventSchema>>;
 };
 
 const authServices = ["auth-service"] as const;
@@ -26,7 +29,46 @@ export const CORE_EVENT_CATALOG: Readonly<Record<CoreEventType, EventDefinition>
   USER_LOGGED_IN: { version: 1, sourceKind: "auth", services: authServices, fields: { persistent: "boolean" } },
   DAILY_LOGIN: { version: 1, sourceKind: "auth", services: authServices, fields: { windowKey: "string" } },
   GAME_STARTED: { version: 1, sourceKind: "game", services: gameServices, fields: { sessionType: "string" } },
-  GAME_FINISHED: { version: 1, sourceKind: "game", services: gameServices, fields: { status: "string", score: "nonNegativeInteger" }, optional: ["score"], enums: { status: ["completed"] } },
+  GAME_FINISHED: {
+    version: 2,
+    sourceKind: "game",
+    services: gameServices,
+    fields: {
+      status: "string",
+      score: "nonNegativeInteger",
+      mode: "string",
+      correctAnswers: "nonNegativeInteger",
+      questionsAnswered: "positiveInteger",
+      completedAt: "nonNegativeInteger",
+      attemptId: "string",
+      gameVersion: "string",
+    },
+    enums: { status: ["completed"] },
+    versions: {
+      1: {
+        sourceKind: "game",
+        services: gameServices,
+        fields: { status: "string", score: "nonNegativeInteger" },
+        optional: ["score"],
+        enums: { status: ["completed"] },
+      },
+      2: {
+        sourceKind: "game",
+        services: gameServices,
+        fields: {
+          status: "string",
+          score: "nonNegativeInteger",
+          mode: "string",
+          correctAnswers: "nonNegativeInteger",
+          questionsAnswered: "positiveInteger",
+          completedAt: "nonNegativeInteger",
+          attemptId: "string",
+          gameVersion: "string",
+        },
+        enums: { status: ["completed"] },
+      },
+    },
+  },
   QUESTION_ANSWERED: { version: 1, sourceKind: "game", services: gameServices, fields: { correct: "boolean" } },
   XP_GRANTED: { version: 1, sourceKind: "platform", services: ["platform-progress"], fields: { amount: "positiveInteger", reason: "string" } },
   LEVEL_UP: { version: 1, sourceKind: "platform", services: ["platform-progress"], fields: { fromLevel: "positiveInteger", toLevel: "positiveInteger" } },
@@ -46,13 +88,15 @@ function validString(value: unknown) {
 
 export function validateCoreEventPayload(eventType: CoreEventType, version: number, payload: unknown) {
   const definition = CORE_EVENT_CATALOG[eventType];
-  if (!definition || version !== definition.version) throw new Error("unsupported_event_contract");
+  if (!definition) throw new Error("unsupported_event_contract");
+  const schema = definition.versions?.[version] || (version === definition.version ? definition : null);
+  if (!schema) throw new Error("unsupported_event_contract");
   if (!payload || typeof payload !== "object" || Array.isArray(payload)) throw new Error("invalid_event_payload");
   const record = payload as Record<string, unknown>;
-  const allowed = new Set(Object.keys(definition.fields));
+  const allowed = new Set(Object.keys(schema.fields));
   if (Object.keys(record).some(key => !allowed.has(key))) throw new Error("unexpected_event_payload_field");
-  const optional = new Set(definition.optional || []);
-  for (const [field, rule] of Object.entries(definition.fields)) {
+  const optional = new Set(schema.optional || []);
+  for (const [field, rule] of Object.entries(schema.fields)) {
     const value = record[field];
     if (value === undefined && optional.has(field)) continue;
     const valid = rule === "string" ? validString(value)
@@ -60,8 +104,11 @@ export function validateCoreEventPayload(eventType: CoreEventType, version: numb
       : rule === "positiveInteger" ? Number.isSafeInteger(value) && Number(value) > 0
       : Number.isSafeInteger(value) && Number(value) >= 0;
     if (!valid) throw new Error(`invalid_event_payload_${field}`);
-    const values = definition.enums?.[field];
+    const values = schema.enums?.[field];
     if (values && !values.includes(String(value))) throw new Error(`invalid_event_payload_${field}`);
+  }
+  if (eventType === "GAME_FINISHED" && version === 2 && Number(record.correctAnswers) > Number(record.questionsAnswered)) {
+    throw new Error("invalid_event_payload_correctAnswers");
   }
   if (eventType === "LEVEL_UP" && Number(record.toLevel) <= Number(record.fromLevel)) throw new Error("invalid_event_level_transition");
   return definition;

@@ -96,7 +96,7 @@ Esses eventos comuns carregam `source.gameId`. Seu payload deve usar somente mé
 
 ### Evento canônico de conclusão do Quiz
 
-`GAME_FINISHED` é o único evento canônico de conclusão, inclusive para o Quiz Bíblico. `QUIZ_FINISHED` foi retirado do catálogo antes da existência de produtores reais. O adaptador futuro do Quiz emitirá exatamente um `GAME_FINISHED` por tentativa elegível, depois da persistência final e por meio da outbox. Modo oficial/treino e demais métricas somente entrarão por nova versão compatível do payload; isso não altera as regras internas do Quiz.
+`GAME_FINISHED` é o único evento canônico de conclusão, inclusive para o Quiz Bíblico. `QUIZ_FINISHED` foi retirado do catálogo antes da existência de produtores reais. O adaptador do Quiz emite exatamente um `GAME_FINISHED` por tentativa elegível, depois da persistência final e por meio da outbox. O contrato v1 mínimo permanece aceito; o v2 acrescenta modo, acertos, total de perguntas, conclusão, tentativa e versão do jogo sem reinterpretar eventos antigos.
 
 ### Eventos futuros
 
@@ -470,7 +470,7 @@ flowchart TD
 1. a execução inicial é síncrona e usa D1, sem Queue ou infraestrutura distribuída;
 2. o ledger persistente e os recibos por consumidor possuem lease, falha recuperável e dead letter estrutural;
 3. payload e envelope possuem limites explícitos; retry operacional usa backoff e dead letter; retenção continua pendente antes de grande volume;
-4. o catálogo inicial usa schemas versão 1 e rejeita campos desconhecidos;
+4. o catálogo aceita somente versões explicitamente registradas e rejeita campos desconhecidos; `GAME_FINISHED` preserva v1 e usa v2 para novos eventos do Quiz;
 5. cada tipo autoriza classe e serviço produtor específicos;
 6. o diagnóstico administrativo informa falhas e leases vencidos sem expor payload;
 7. o MVP não integra o Quiz, autenticação ou outro produtor;

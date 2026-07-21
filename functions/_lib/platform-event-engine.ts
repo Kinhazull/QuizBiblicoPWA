@@ -62,6 +62,10 @@ async function validateEvent(env: AppEnv, event: CorePlatformEvent, now: number)
   if (!Number.isSafeInteger(event.occurredAt) || event.occurredAt < 0 || event.occurredAt > now + 5 * 60_000) throw new Error("invalid_event_timestamp");
   validateCoreEventProducer(event.eventType, event.source.kind, event.source.service, event.source.gameId);
   validateCoreEventPayload(event.eventType, event.version, event.payload);
+  if (event.eventType === "GAME_FINISHED" && event.version === 2) {
+    if (event.payload.completedAt !== event.occurredAt) throw new Error("event_completion_timestamp_conflict");
+    if (event.payload.attemptId !== event.source.sourceId) throw new Error("event_attempt_source_conflict");
+  }
   if (new TextEncoder().encode(JSON.stringify(event.payload)).length > MAX_PAYLOAD_BYTES || new TextEncoder().encode(JSON.stringify(event)).length > MAX_EVENT_BYTES) throw new Error("event_payload_too_large");
   const user = await env.DB.prepare("SELECT id FROM users WHERE id=?1 AND organization_id=?2 AND status='active'").bind(event.userId, event.organizationId).first();
   if (!user) throw new Error("event_user_unavailable");

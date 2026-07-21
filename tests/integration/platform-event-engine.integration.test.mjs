@@ -21,6 +21,23 @@ function event(overrides = {}) {
   };
 }
 
+function eventV2(overrides = {}) {
+  return event({
+    version: 2,
+    payload: {
+      status: "completed",
+      score: 800,
+      mode: "official",
+      correctAnswers: 8,
+      questionsAnswered: 10,
+      completedAt: NOW,
+      attemptId: "attempt-1",
+      gameVersion: "1.0.0",
+    },
+    ...overrides,
+  });
+}
+
 function consumer(id, handle, eventTypes = ["GAME_FINISHED"]) {
   return { id, handlerVersion: 1, eventTypes, handle };
 }
@@ -47,6 +64,24 @@ test("a valid server event is persisted and dispatched to independent consumers"
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM core_platform_events").get().total, 1);
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM core_platform_event_processing WHERE state='completed'").get().total, 2);
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM audit_logs WHERE action LIKE 'event.%'").get().total, 2);
+});
+
+test("Event Engine accepts both GAME_FINISHED v1 and v2 with immutable envelope relations", async t => {
+  const ctx = setup(t);
+  const legacy = event({ eventId: "legacy-finished", source: { kind: "game", service: "quiz-attempt-service", gameId: "quiz-biblico", sourceId: "legacy-attempt" } });
+  const current = eventV2();
+  assert.equal((await publishCoreEvent(ctx.env, legacy, [], NOW)).status, "completed");
+  assert.equal((await publishCoreEvent(ctx.env, current, [], NOW)).status, "completed");
+  assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM core_platform_events WHERE event_type='GAME_FINISHED'").get().total, 2);
+  assert.deepEqual(ctx.raw.prepare("SELECT event_version version FROM core_platform_events ORDER BY event_version").all().map(row => row.version), [1, 2]);
+  await assert.rejects(
+    () => publishCoreEvent(ctx.env, eventV2({ payload: { ...current.payload, completedAt: NOW - 1 } }), [], NOW),
+    /event_completion_timestamp_conflict/,
+  );
+  await assert.rejects(
+    () => publishCoreEvent(ctx.env, eventV2({ payload: { ...current.payload, attemptId: "another-attempt" } }), [], NOW),
+    /event_attempt_source_conflict/,
+  );
 });
 
 test("repeated and concurrent delivery converges to one event and one consumer effect", async t => {

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { readFile } from "node:fs/promises";
 import { adaptQuizResultToGameFinished, QUIZ_CORE_INTEGRATION } from "../../functions/_lib/game-integrations/quiz-core-adapter.ts";
+import { validateCoreEventPayload } from "../../functions/_lib/platform-event-catalog.ts";
 
 const validResult = (overrides = {}) => ({
   contractVersion: 1,
@@ -21,7 +22,7 @@ const validResult = (overrides = {}) => ({
   ...overrides,
 });
 
-test("normalizes a completed official Quiz result to GAME_FINISHED v1", () => {
+test("normalizes a completed official Quiz result to GAME_FINISHED v2", () => {
   const event = adaptQuizResultToGameFinished(validResult());
   assert.deepEqual(event, {
     eventId: "quiz:attempt:attempt-1:finished",
@@ -35,11 +36,38 @@ test("normalizes a completed official Quiz result to GAME_FINISHED v1", () => {
       gameId: "quiz-biblico",
       sourceId: "attempt-1",
     },
-    payload: { status: "completed", score: 7_880 },
-    version: 1,
+    payload: {
+      status: "completed",
+      score: 7_880,
+      mode: "official",
+      correctAnswers: 8,
+      questionsAnswered: 10,
+      completedAt: 21_000,
+      attemptId: "attempt-1",
+      gameVersion: "1.0.0",
+    },
+    version: 2,
     correlationId: "attempt-1",
   });
   assert.equal(QUIZ_CORE_INTEGRATION.eventType, "GAME_FINISHED");
+  assert.equal(QUIZ_CORE_INTEGRATION.eventVersion, 2);
+});
+
+test("catalog accepts legacy v1 and exact v2 while rejecting mixed contracts", () => {
+  assert.doesNotThrow(() => validateCoreEventPayload("GAME_FINISHED", 1, { status: "completed", score: 100 }));
+  assert.doesNotThrow(() => validateCoreEventPayload("GAME_FINISHED", 2, adaptQuizResultToGameFinished(validResult()).payload));
+  assert.throws(
+    () => validateCoreEventPayload("GAME_FINISHED", 1, adaptQuizResultToGameFinished(validResult()).payload),
+    /unexpected_event_payload_field/,
+  );
+  assert.throws(
+    () => validateCoreEventPayload("GAME_FINISHED", 2, { status: "completed", score: 100 }),
+    /invalid_event_payload_mode/,
+  );
+  assert.throws(
+    () => validateCoreEventPayload("GAME_FINISHED", 2, { ...adaptQuizResultToGameFinished(validResult()).payload, correctAnswers: 11 }),
+    /invalid_event_payload_correctAnswers/,
+  );
 });
 
 test("produces a deterministic identity for repeated adaptation", () => {

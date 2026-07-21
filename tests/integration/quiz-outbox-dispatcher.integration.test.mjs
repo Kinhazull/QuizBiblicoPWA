@@ -44,6 +44,20 @@ function event(attemptId = "attempt-1") {
   });
 }
 
+function legacyEvent(attemptId = "legacy-attempt") {
+  return {
+    eventId: `quiz:attempt:${attemptId}:finished`,
+    eventType: "GAME_FINISHED",
+    occurredAt: NOW,
+    organizationId: "org-1",
+    userId: "player",
+    source: { kind: "game", service: "quiz-attempt-service", gameId: "quiz-biblico", sourceId: attemptId },
+    payload: { status: "completed", score: 700 },
+    version: 1,
+    correlationId: attemptId,
+  };
+}
+
 function insertOutbox(ctx, value = event()) {
   ctx.raw.prepare(`INSERT INTO quiz_core_event_outbox(
     event_id,event_type,event_version,organization_id,user_id,game_id,
@@ -90,6 +104,17 @@ test("successful delivery runs only Statistics and updates global and game proje
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM platform_statistics_event_checkpoints WHERE state='completed'").get().total, 1);
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM platform_xp_ledger").get().total, 0);
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM platform_coin_ledger").get().total, 0);
+});
+
+test("dispatcher preserves delivery compatibility for stored v1 and new v2 envelopes", async t => {
+  const ctx = setup(t);
+  insertOutbox(ctx, legacyEvent());
+  insertOutbox(ctx, event("current-attempt"));
+  const result = await dispatchQuizOutbox(ctx.env, { now: NOW, limit: 2 });
+  assert.equal(result.delivered, 2);
+  assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM quiz_core_event_outbox WHERE delivery_state='delivered'").get().total, 2);
+  assert.deepEqual(ctx.raw.prepare("SELECT event_version version FROM core_platform_events ORDER BY event_version").all().map(row => row.version), [1, 2]);
+  assert.equal(ctx.raw.prepare("SELECT sessions_completed total FROM user_platform_game_statistics WHERE user_id='player' AND game_id='quiz-biblico'").get().total, 2);
 });
 
 test("transient Statistics failure schedules retry and resumes when it becomes due", async t => {
