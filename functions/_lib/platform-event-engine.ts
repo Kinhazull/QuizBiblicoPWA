@@ -29,6 +29,13 @@ const MAX_CONSUMER_ATTEMPTS = 5;
 const BASE_RETRY_DELAY_MS = 5_000;
 const MAX_RETRY_DELAY_MS = 5 * 60_000;
 
+export const CORE_EVENT_DELIVERY_POLICY = Object.freeze({
+  leaseMs: LEASE_MS,
+  maxAttempts: MAX_CONSUMER_ATTEMPTS,
+  baseRetryDelayMs: BASE_RETRY_DELAY_MS,
+  maxRetryDelayMs: MAX_RETRY_DELAY_MS,
+});
+
 function assertToken(value: string, error: string, max = 160) {
   if (!value || value.length > max || !TOKEN.test(value)) throw new Error(error);
 }
@@ -90,12 +97,12 @@ async function claimConsumer(env: AppEnv, eventId: string, consumer: CoreEventCo
   return { claimed: row?.state === "processing" && Number((recovered as any)?.meta?.changes || 0) === 1, state: row?.state || "unknown", leaseToken };
 }
 
-function safeErrorCode(error: unknown) {
+export function sanitizeCoreEventError(error: unknown) {
   const message = error instanceof Error ? error.message : "consumer_failed";
   return TOKEN.test(message) && message.length <= 100 ? message : "consumer_failed";
 }
 
-function retryDelay(attemptCount: number) {
+export function coreEventRetryDelay(attemptCount: number) {
   return Math.min(BASE_RETRY_DELAY_MS * (2 ** Math.max(0, attemptCount - 1)), MAX_RETRY_DELAY_MS);
 }
 
@@ -143,8 +150,8 @@ export async function publishCoreEvent(env: AppEnv, event: CorePlatformEvent, co
       await env.DB.prepare(`UPDATE core_platform_event_processing SET state=?1,lease_token=NULL,lease_until=NULL,next_attempt_at=?2,last_error_code=?3,updated_at=?4
         WHERE event_id=?5 AND consumer_id=?6 AND handler_version=?7 AND lease_token=?8`).bind(
         terminal ? "dead_letter" : "retryable_failed",
-        terminal ? null : failedAt + retryDelay(attempts),
-        safeErrorCode(error),
+        terminal ? null : failedAt + coreEventRetryDelay(attempts),
+        sanitizeCoreEventError(error),
         failedAt,
         event.eventId,
         consumer.id,

@@ -17,11 +17,13 @@ Resultados de jogos e efeitos do Core pertencem a limites distintos. Confirmar u
 - `GAME_FINISHED` é o único fato canônico de conclusão, inclusive para o Quiz.
 - O item de outbox é confirmado por checkpoint; não é removido antes da entrega durável.
 
-## Estado após a Sprint 3.2
+## Estado após a Sprint 3.3
 
 O contrato e os guardrails estão aprovados. A tabela `quiz_core_event_outbox` e sua inserção no mesmo `DB.batch` da conclusão oficial do Quiz foram implementadas. O item nasce em estado `pending`, com identidade determinística e envelope produzido pelo adaptador oficial.
 
-A entrega permanece desativada: não existe dispatcher da outbox nesta sprint, nenhum evento é publicado no Event Engine e nenhum consumidor do Core é executado.
+O dispatcher oficial usa claim condicional com lease de 30 segundos, no máximo cinco tentativas e o mesmo backoff exponencial do Event Engine. Ele entrega o envelope exclusivamente ao runtime oficial e confirma a outbox somente depois da aceitação idempotente do evento.
+
+Nesta fundação, a lista de consumidores é deliberadamente vazia. Portanto, o Event Engine persiste e valida o evento, mas Progress, Statistics, Missions, Achievements e Notifications não são executados.
 
 ## Consequências
 

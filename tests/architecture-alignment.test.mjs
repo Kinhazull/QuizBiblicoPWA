@@ -32,7 +32,7 @@ test("Statistics checkpoint identity includes the consumer version", () => {
 });
 
 test("Core migrations remain additive and operational retry is bounded", () => {
-  for (let number = 23; number <= 27; number += 1) {
+  for (let number = 23; number <= 29; number += 1) {
     const name = readdirSync(new URL("drizzle/", root)).find(file => file.startsWith(`00${number}_`));
     const sql = read(`drizzle/${name}`);
     assert.doesNotMatch(sql.replace(/--.*$/gm, ""), /^\s*(?:DROP|DELETE|TRUNCATE)\b/im, name);
@@ -43,6 +43,10 @@ test("Core migrations remain additive and operational retry is bounded", () => {
   assert.match(engine, /MAX_CONSUMER_ATTEMPTS = 5/);
   assert.match(engine, /retryCoreEventDeliveries/);
   assert.match(engine, /dead_letter/);
+  const dispatcher = read("functions/_lib/game-integrations/quiz-outbox-dispatcher.ts");
+  assert.match(dispatcher, /CORE_EVENT_DELIVERY_POLICY/);
+  assert.match(dispatcher, /acceptCoreEventWithoutConsumers/);
+  assert.doesNotMatch(dispatcher, /CORE_PLATFORM_EVENT_CONSUMERS|publishOfficialCoreEvent/);
 });
 
 test("production code reaches the low-level dispatcher only through the official runtime", () => {
