@@ -72,15 +72,15 @@ A API interna do motor permanece estável quando a execução migrar para outbox
 
 ### Limite do produtor
 
-A estratégia oficial é outbox transacional no D1: resultado e evento pendente serão persistidos atomicamente. A implementação concreta ficou deliberadamente reservada para a integração do Quiz, pois precisa participar da transação de finalização da tentativa. Sem essa outbox, nenhum produtor real será habilitado.
+A estratégia oficial é outbox transacional no D1. A Sprint 3.2 criou `quiz_core_event_outbox` e passou a inserir o `GAME_FINISHED` normalizado no mesmo `DB.batch` que conclui uma tentativa oficial do Quiz. A entrega permanece deliberadamente desativada: nenhum dispatcher, publicação no Event Engine ou consumidor é chamado por esse fluxo.
 
 Antes de conectar um produtor real ainda é necessário:
 
-1. definir o limite transacional/outbox do fluxo produtor;
+1. implementar o dispatcher que leia a outbox sem alterar o resultado do Quiz;
 2. registrar consumidores reais e suas chaves idempotentes de domínio;
-3. definir política de retenção e dead letter;
+3. definir política operacional de retenção e dead letter;
 4. adicionar reprocessamento administrativo auditado;
-5. aprovar a integração específica do jogo ou serviço.
+5. aprovar a ativação da entrega da integração específica do Quiz.
 
 ## Testes comportamentais
 

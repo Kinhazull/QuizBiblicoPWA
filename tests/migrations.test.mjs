@@ -5,12 +5,12 @@ import { DatabaseSync } from "node:sqlite";
 
 test("all migrations are sequential and apply to an empty SQLite database", async () => {
   const files = (await readdir(new URL("../drizzle/", import.meta.url))).filter(file => file.endsWith(".sql")).sort();
-  assert.equal(files.length, 28);
+  assert.equal(files.length, 29);
   files.forEach((file, index) => assert.equal(file.slice(0, 4), String(index).padStart(4, "0")));
   const db = new DatabaseSync(":memory:");
   for (const file of files) db.exec(await readFile(new URL(`../drizzle/${file}`, import.meta.url), "utf8"));
   const tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table'").all().map(row => row.name);
-  for (const required of ["users", "rounds", "question_bank", "seasons", "announcements", "privacy_requests", "ai_question_suggestions", "batch_operations", "season_snapshots", "season_awards", "round_award_processing", "round_award_participant_processing", "user_platform_progress", "platform_xp_ledger", "platform_coin_ledger", "platform_achievement_definitions", "user_platform_achievements", "platform_mission_definitions", "user_platform_missions", "user_platform_mission_progress_events", "core_platform_events", "core_platform_event_processing", "user_platform_statistics", "user_platform_game_statistics", "user_platform_statistics_active_days", "user_platform_game_difficulty_statistics", "platform_statistics_event_checkpoints"]) assert.ok(tables.includes(required), `missing ${required}`);
+  for (const required of ["users", "rounds", "question_bank", "seasons", "announcements", "privacy_requests", "ai_question_suggestions", "batch_operations", "season_snapshots", "season_awards", "round_award_processing", "round_award_participant_processing", "user_platform_progress", "platform_xp_ledger", "platform_coin_ledger", "platform_achievement_definitions", "user_platform_achievements", "platform_mission_definitions", "user_platform_missions", "user_platform_mission_progress_events", "core_platform_events", "core_platform_event_processing", "user_platform_statistics", "user_platform_game_statistics", "user_platform_statistics_active_days", "user_platform_game_difficulty_statistics", "platform_statistics_event_checkpoints", "quiz_core_event_outbox"]) assert.ok(tables.includes(required), `missing ${required}`);
   const sessionColumns = db.prepare("PRAGMA table_info(sessions)").all().map(row => row.name);
   assert.ok(sessionColumns.includes("ip_hash"));
   assert.ok(sessionColumns.includes("user_agent"));
