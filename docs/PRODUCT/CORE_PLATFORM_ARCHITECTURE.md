@@ -1,6 +1,6 @@
 # Core Platform Architecture
 
-Status: **Proposta para aprovação**
+Status: **Aprovado e alinhado à implementação em 21/07/2026**
 
 Este documento define a arquitetura dos sistemas compartilhados da plataforma **Conte os Feitos** antes de qualquer implementação. O servidor permanece como fonte da verdade para XP, progressão, moedas, recompensas, missões, conquistas e demais desbloqueáveis persistentes.
 
@@ -26,10 +26,10 @@ Os jogos se comunicam com o Core por eventos de domínio emitidos exclusivamente
 - `eventType`: tipo e versão do evento;
 - `occurredAt`: instante confiável definido pelo servidor;
 - `userId` e `organizationId` obtidos da sessão ou do registro persistido;
-- `gameId`: identificador do jogo no catálogo oficial;
-- `sourceId`: identificador da partida, tentativa ou ação de origem;
+- `source.gameId`: identificador do jogo no catálogo oficial quando a origem for um jogo;
+- `source.sourceId`: identificador da partida, tentativa ou ação persistida de origem;
 - `payload`: somente os dados necessários ao processamento;
-- `schemaVersion`: versão do contrato.
+- `version`: versão inteira positiva do contrato.
 
 O Core registra o processamento do `eventId`. Um evento repetido deve retornar o resultado persistido anteriormente, sem duplicar XP, moedas, progresso, conquistas ou notificações.
 
@@ -46,7 +46,7 @@ O Core registra o processamento do `eventId`. Um evento repetido deve retornar o
 
 ### Entradas
 
-- evento de jogo validado, como `game.completed.v1`;
+- evento de jogo validado, como `GAME_FINISHED` versão `1`;
 - regra de XP identificada e versionada;
 - usuário, organização, jogo e origem confiáveis;
 - ajuste administrativo autorizado, com motivo e auditoria.
@@ -56,7 +56,7 @@ O Core registra o processamento do `eventId`. Um evento repetido deve retornar o
 - quantidade de XP concedida;
 - saldo total atualizado;
 - registro imutável no livro-razão;
-- evento `xp.granted.v1` ou `xp.adjusted.v1`;
+- evento `XP_GRANTED` ou futuro evento de ajuste, sempre com versão separada;
 - indicação de possível mudança de nível.
 
 O XP Service não define sozinho a pontuação interna de um jogo. Pontuação competitiva e XP da plataforma são conceitos separados.
@@ -84,7 +84,7 @@ O XP Service não define sozinho a pontuação interna de um jogo. Pontuação c
 - resumo das recompensas concedidas;
 - saldos atualizados de XP e moedas;
 - registros individuais no livro-razão correspondente;
-- eventos `reward.granted.v1` e, futuramente, `collectible.unlocked.v1`;
+- evento `REWARD_GRANTED` e, futuramente, evento explícito de colecionável;
 - solicitação de notificação quando houver algo relevante ao usuário.
 
 Recompensas futuras devem ser adicionadas como tipos explícitos. Não devem ser armazenadas em um campo genérico sem validação de esquema.
@@ -99,7 +99,7 @@ Conquistas representam objetivos gerais da plataforma e não substituem as medal
 - confirma requisitos usando dados persistidos e serviços oficiais;
 - registra cada conquista uma única vez por usuário e escopo;
 - pode solicitar recompensas associadas ao Reward Service;
-- emite `achievement.unlocked.v1` somente após persistência.
+- prepara `ACHIEVEMENT_UNLOCKED` somente após persistência; a publicação ocorrerá pelo consumidor oficial.
 
 ### Consulta
 
@@ -147,7 +147,6 @@ Conquistas representam objetivos gerais da plataforma e não substituem as medal
 - jogos iniciados e concluídos;
 - dias ativos e sequência de atividade;
 - tempo agregado de participação, quando confiável e necessário;
-- XP e conquistas obtidos;
 - distribuição por jogo sem misturar regras competitivas específicas.
 
 ### Estatísticas por jogo
@@ -157,7 +156,7 @@ Conquistas representam objetivos gerais da plataforma e não substituem as medal
 - filtros consistentes para treino, partidas inválidas, abandonadas ou incompletas;
 - agregações atualizadas por eventos idempotentes ou recalculadas a partir da fonte oficial.
 
-O Statistics Service não deve se tornar uma segunda fonte de verdade para resultados. Seus dados são projeções reconstruíveis a partir dos registros oficiais de cada jogo e do Core.
+O Statistics Service não deve se tornar uma segunda fonte de verdade para resultados, XP ou Conquistas. Seus dados são projeções reconstruíveis a partir dos eventos oficiais; XP, nível e Conquistas permanecem nos serviços responsáveis.
 
 ## 6. Notification Service
 
@@ -173,10 +172,10 @@ O Statistics Service não deve se tornar uma segunda fonte de verdade para resul
 
 Pode consumir, entre outros:
 
-- `reward.granted.v1`;
-- `achievement.unlocked.v1`;
-- `mission.completed.v1`;
-- `level.changed.v1`;
+- `REWARD_GRANTED`;
+- `ACHIEVEMENT_UNLOCKED`;
+- `MISSION_COMPLETED`;
+- `LEVEL_UP`;
 - anúncio de novo jogo publicado;
 - eventos operacionais autorizados já existentes.
 

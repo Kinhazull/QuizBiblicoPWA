@@ -13,7 +13,7 @@ O consumidor oficial `platform-statistics`, versão `1`, processa somente contra
 - `GAME_FINISHED`;
 - `QUESTION_ANSWERED`.
 
-`QUIZ_FINISHED` não é consumido. A futura integração do Quiz deverá ser aprovada formalmente e escolher um único contrato de conclusão, sem dupla emissão.
+`GAME_FINISHED` é o evento canônico escolhido também para o Quiz. `QUIZ_FINISHED` foi removido do catálogo antes da existência de produtores reais, eliminando a possibilidade de dupla emissão.
 
 O registro central de consumidores fica em `platform-event-consumers.ts`. Produtores futuros devem usar `publishOfficialCoreEvent`, que mantém a API interna do Event Engine e aplica a lista oficial. Não existe endpoint público para publicar eventos ou incrementar estatísticas.
 
@@ -25,7 +25,7 @@ A migration aditiva `0027_platform_statistics.sql` cria:
 - `user_platform_game_statistics`: métricas comuns por `gameId`;
 - `user_platform_statistics_active_days`: dias civis de atividade no fuso da organização;
 - `user_platform_game_difficulty_statistics`: estrutura reservada para dificuldade por jogo;
-- `platform_statistics_event_checkpoints`: idempotência própria do consumidor.
+- `platform_statistics_event_checkpoints`: idempotência própria por `(event_id, consumer_version)`, permitindo evolução explícita do handler sem colisão de chave.
 
 O checkpoint e os incrementos são gravados em um único `DB.batch` atômico. Se o Event Engine entregar novamente o mesmo evento, os contadores não são incrementados outra vez. Métricas derivadas são recalculadas após o batch, permitindo reparar uma interrupção sem repetir o efeito principal.
 

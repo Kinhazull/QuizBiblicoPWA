@@ -48,6 +48,18 @@ test("daily assignment ignores weekly catalog entries and isolates user and orga
   await assert.rejects(() => recordMissionProgress(ctx.env, { assignmentId: own.id, userId: "other", organizationId: "org-2", eventId: "cross-org", amount: 1 }), /mission_not_found/);
 });
 
+test("mission expiry caused by a read is limited to the authenticated tenant", async t => {
+  const { ctx } = await setup(t);
+  seedDefinition(ctx);
+  const now = Date.UTC(2026, 6, 19, 12);
+  const own = await getCurrentDailyMission(ctx.env, "player", "org-1", now);
+  const other = await getCurrentDailyMission(ctx.env, "other", "org-2", now);
+  ctx.raw.prepare("UPDATE user_platform_missions SET expires_at=? WHERE id IN (?,?)").run(now - 1, own.id, other.id);
+  await getCurrentDailyMission(ctx.env, "player", "org-1", now);
+  assert.equal(ctx.raw.prepare("SELECT state FROM user_platform_missions WHERE id=?").get(own.id).state, "expired");
+  assert.equal(ctx.raw.prepare("SELECT state FROM user_platform_missions WHERE id=?").get(other.id).state, "active");
+});
+
 test("progress is idempotent, completes once and does not accept progress after completion", async t => {
   const { ctx } = await setup(t);
   seedDefinition(ctx);

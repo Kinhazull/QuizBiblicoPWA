@@ -31,6 +31,10 @@ A Release v1.0 deve:
 - Perfil do participante e acesso administrativo condicionado à permissão.
 - PWA instalável, com fallback offline informativo e sem cache de dados privados.
 - Compatibilidade mobile-first e ausência de overflow horizontal nas larguras suportadas.
+- Fundação persistente do Core Platform para progresso global (XP, nível e moedas), Conquistas, Missões diárias e Estatísticas.
+- Event Engine interno, idempotente e sem endpoint público de publicação.
+- Interfaces de leitura autenticadas para Home e Perfil, com estados vazios seguros enquanto nenhum jogo estiver integrado.
+- Nenhuma concessão de progresso ou recompensa pelo cliente; mutações futuras ocorrerão somente por consumidores oficiais.
 
 ### Quiz Bíblico
 
@@ -57,15 +61,17 @@ A Release v1.0 deve:
 
 Os itens abaixo não fazem parte da Release v1.0:
 
-- lógica persistente de nível, XP, moedas e gemas;
-- funcionamento real de missão diária e baú diário;
-- recompensas gerais da plataforma e economia virtual;
+- integração do Quiz ou de outro jogo com a progressão global do Core;
+- gemas e economia virtual além do ledger interno de moedas;
+- avanço e recompensa de Missões por eventos reais de jogo;
+- funcionamento real do baú diário;
+- catálogo amplo de recompensas, itens e economia virtual;
 - botão funcional de aviso de lançamento de novos jogos;
 - Wordle Bíblico jogável;
 - Jogo das 3 Pistas jogável;
 - Linha do Tempo;
 - Associação de Temas;
-- conquistas gerais separadas das medalhas competitivas do Quiz;
+- critérios de Conquistas acionados por jogos reais, pop-ups e recompensas associadas;
 - colecionáveis e desbloqueáveis de temporadas da plataforma;
 - campanhas, eventos e desafios gerais entre diferentes jogos;
 - recursos sociais amplos;
@@ -100,8 +106,8 @@ Mudanças que ampliem materialmente este escopo exigem decisão explícita antes
 
 Prioridades previstas após a estabilização da v1.0:
 
-1. Implementar o núcleo real de progressão da plataforma.
-2. Implementar o primeiro ciclo de retenção, incluindo missões e recompensas persistentes.
+1. Integrar o Quiz ao Core Platform por adaptador, outbox e evento canônico aprovados.
+2. Ativar o primeiro ciclo de retenção, incluindo progresso de missões e recompensas por eventos reais.
 3. Publicar o Wordle Bíblico.
 4. Publicar o Jogo das 3 Pistas.
 5. Desenvolver Linha do Tempo após sua mudança formal de status no catálogo.

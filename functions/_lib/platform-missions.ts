@@ -70,13 +70,14 @@ async function readAssignment(env: AppEnv, id: string, userId: string, organizat
     WHERE m.id=?1 AND m.user_id=?2 AND m.organization_id=?3`).bind(id, userId, organizationId).first<MissionRow>();
 }
 
-export async function expireMissions(env: AppEnv, now = Date.now()) {
-  return env.DB.prepare("UPDATE user_platform_missions SET state='expired' WHERE state='active' AND expires_at<=?1").bind(now).run();
+export async function expireMissions(env: AppEnv, userId: string, organizationId: string, now = Date.now()) {
+  return env.DB.prepare(`UPDATE user_platform_missions SET state='expired'
+    WHERE user_id=?1 AND organization_id=?2 AND state='active' AND expires_at<=?3`).bind(userId, organizationId, now).run();
 }
 
 export async function getCurrentDailyMission(env: AppEnv, userId: string, organizationId: string, now = Date.now()) {
   const user = await activeUser(env, userId, organizationId);
-  await expireMissions(env, now);
+  await expireMissions(env, userId, organizationId, now);
   const window = dailyWindow(now, user.timezone || "America/Sao_Paulo");
   const existing = await env.DB.prepare(`SELECT m.id FROM user_platform_missions m
     WHERE m.user_id=?1 AND m.organization_id=?2 AND m.cadence='daily' AND m.window_key=?3
@@ -110,7 +111,7 @@ export async function recordMissionProgress(env: AppEnv, input: { assignmentId: 
   if (!Number.isSafeInteger(input.amount) || input.amount <= 0 || input.amount > 1_000_000) throw new Error("invalid_mission_progress");
   await activeUser(env, input.userId, input.organizationId);
   const now = input.now ?? Date.now();
-  await expireMissions(env, now);
+  await expireMissions(env, input.userId, input.organizationId, now);
   const before = await readAssignment(env, assignmentId, input.userId, input.organizationId);
   if (!before) throw new Error("mission_not_found");
   if (before.state !== "active") return view(before);

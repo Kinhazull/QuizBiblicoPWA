@@ -27,13 +27,13 @@ Uma missão diária usa a data civil da organização como `window_key` e expira
 - `recordMissionProgress`: aceita somente eventos internos validados, incrementa uma vez por `eventId` e conclui ao atingir a meta;
 - `completeMission`: aplica a transição de conclusão de forma idempotente;
 - `claimMissionReward`: concede XP e moedas pelos ledgers oficiais com chaves idempotentes e então registra o resgate;
-- `expireMissions`: encerra missões ativas vencidas.
+- `expireMissions`: encerra missões ativas vencidas somente para o usuário e a organização informados.
 
 O contrato de recompensa inicial admite somente XP e moedas inteiros não negativos. Recompensas futuras exigirão tipos explícitos e validação própria.
 
 ## API e Home
 
-`GET /api/platform/missions/current` exige sessão, usa `Cache-Control: no-store, private` e retorna somente a missão diária do usuário autenticado. Não existe endpoint público para progresso, conclusão ou resgate.
+`GET /api/platform/missions/current` exige sessão, usa `Cache-Control: no-store, private` e retorna somente a missão diária do usuário autenticado. É um GET idempotente com materialização controlada: pode expirar e atribuir a missão do próprio usuário, mas nunca altera registros de outra organização. Não existe endpoint público para progresso, conclusão ou resgate.
 
 A Home consome esse endpoint. Ela não deriva missão de Jornada, tentativa ou Medalha do Quiz e não simula progresso quando o catálogo está vazio.
 

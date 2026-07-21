@@ -26,7 +26,8 @@ test("statistics projections are separate from legacy Quiz tables and progress b
   assert.doesNotMatch(service, /\b(?:rounds|attempts|user_badges)\b/);
   assert.doesNotMatch(migration, /\b(?:xp|coins|achievement)\b/i);
   assert.match(migration, /PRIMARY KEY\(user_id, organization_id, game_id\)/);
-  assert.match(migration, /event_id TEXT PRIMARY KEY/);
+  assert.match(migration, /event_id TEXT NOT NULL/);
+  assert.match(migration, /PRIMARY KEY\(event_id, consumer_version\)/);
   assert.match(service, /DB\.batch/);
 });
 

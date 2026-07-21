@@ -1,6 +1,6 @@
 export const CORE_EVENT_TYPES = [
   "USER_REGISTERED", "USER_LOGGED_IN", "DAILY_LOGIN",
-  "GAME_STARTED", "GAME_FINISHED", "QUESTION_ANSWERED", "QUIZ_FINISHED",
+  "GAME_STARTED", "GAME_FINISHED", "QUESTION_ANSWERED",
   "XP_GRANTED", "LEVEL_UP", "ACHIEVEMENT_UNLOCKED",
   "MISSION_PROGRESS", "MISSION_COMPLETED", "MISSION_REWARD_CLAIMED", "REWARD_GRANTED",
 ] as const;
@@ -28,7 +28,6 @@ export const CORE_EVENT_CATALOG: Readonly<Record<CoreEventType, EventDefinition>
   GAME_STARTED: { version: 1, sourceKind: "game", services: gameServices, fields: { sessionType: "string" } },
   GAME_FINISHED: { version: 1, sourceKind: "game", services: gameServices, fields: { status: "string", score: "nonNegativeInteger" }, optional: ["score"], enums: { status: ["completed"] } },
   QUESTION_ANSWERED: { version: 1, sourceKind: "game", services: gameServices, fields: { correct: "boolean" } },
-  QUIZ_FINISHED: { version: 1, sourceKind: "game", services: gameServices, fields: { mode: "string", status: "string", correctAnswers: "nonNegativeInteger", questionCount: "positiveInteger" }, enums: { mode: ["official", "practice"], status: ["completed"] } },
   XP_GRANTED: { version: 1, sourceKind: "platform", services: ["platform-progress"], fields: { amount: "positiveInteger", reason: "string" } },
   LEVEL_UP: { version: 1, sourceKind: "platform", services: ["platform-progress"], fields: { fromLevel: "positiveInteger", toLevel: "positiveInteger" } },
   ACHIEVEMENT_UNLOCKED: { version: 1, sourceKind: "platform", services: ["platform-achievements"], fields: { achievementCode: "string", scopeKey: "string" } },
@@ -65,12 +64,12 @@ export function validateCoreEventPayload(eventType: CoreEventType, version: numb
     if (values && !values.includes(String(value))) throw new Error(`invalid_event_payload_${field}`);
   }
   if (eventType === "LEVEL_UP" && Number(record.toLevel) <= Number(record.fromLevel)) throw new Error("invalid_event_level_transition");
-  if (eventType === "QUIZ_FINISHED" && Number(record.correctAnswers) > Number(record.questionCount)) throw new Error("invalid_event_quiz_result");
   return definition;
 }
 
 export function validateCoreEventProducer(eventType: CoreEventType, kind: CoreEventSourceKind, service: string, gameId?: string) {
   const definition = CORE_EVENT_CATALOG[eventType];
+  if (!definition) throw new Error("unsupported_event_contract");
   if (definition.sourceKind !== kind || !definition.services.includes(service)) throw new Error("unauthorized_event_producer");
   if (!validString(service) || !tokenPattern.test(service)) throw new Error("invalid_event_source");
   if (kind === "game" && (!gameId || !PUBLISHED_GAME_IDS.has(gameId))) throw new Error("invalid_event_game");

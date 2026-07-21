@@ -64,13 +64,14 @@ CREATE INDEX user_platform_game_difficulty_statistics_lookup_idx
   ON user_platform_game_difficulty_statistics(user_id, organization_id, game_id, sessions_completed DESC, difficulty_key);
 
 CREATE TABLE platform_statistics_event_checkpoints (
-  event_id TEXT PRIMARY KEY NOT NULL REFERENCES core_platform_events(event_id) ON DELETE CASCADE,
+  event_id TEXT NOT NULL REFERENCES core_platform_events(event_id) ON DELETE CASCADE,
   user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   organization_id TEXT NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
   consumer_version INTEGER NOT NULL CHECK (consumer_version >= 1),
   state TEXT NOT NULL CHECK (state IN ('processing','completed')),
   created_at INTEGER NOT NULL,
-  applied_at INTEGER
+  applied_at INTEGER,
+  PRIMARY KEY(event_id, consumer_version)
 );
 
 CREATE INDEX platform_statistics_event_checkpoints_user_idx

@@ -30,7 +30,7 @@ Uma nova versão pode substituir a definição ativa sem invalidar um desbloquei
 - `getAchievementSummary`: retorna total, desbloqueadas e pendentes;
 - `unlockAchievement`: valida usuário, organização, definição e escopo, persistindo de forma idempotente.
 
-O serviço retorna o contrato `achievement.unlocked.v1` somente quando uma nova linha foi persistida. Não existe barramento de eventos nesta etapa; o contrato retornado prepara uma futura integração explícita.
+O serviço prepara o envelope canônico `ACHIEVEMENT_UNLOCKED` versão `1` somente quando uma nova linha foi persistida. Não o publica nesta etapa; a publicação futura ocorrerá exclusivamente por consumidor oficial, preservando `causationId` e evitando contratos paralelos.
 
 Critérios secretos, nome real e ícone ficam ocultos na consulta até o desbloqueio.
 

@@ -1,6 +1,6 @@
 # Core Platform Event Engine
 
-Status: **Proposta arquitetural para aprovação**
+Status: **Aprovado e alinhado à implementação em 21/07/2026**
 
 Este documento define o futuro **Event Engine** do Core Platform do **Conte os Feitos**. Ele especifica contratos, responsabilidades, produtores, consumidores, idempotência e recuperação antes de qualquer implementação.
 
@@ -65,7 +65,7 @@ O Event Engine **não**:
 
 O catálogo usa nomes estáveis em `UPPER_SNAKE_CASE`. A versão do esquema fica no campo obrigatório `version`, não no nome. Novos significados exigem novo tipo; mudanças compatíveis no envelope ou payload exigem nova versão.
 
-Contratos já retornados internamente por serviços, como `achievement.unlocked.v1`, são considerados **contratos legados preparatórios**, ainda não publicados no Event Engine. Na integração futura, um adaptador explícito poderá convertê-los para `ACHIEVEMENT_UNLOCKED` versão `1`; não haverá dupla emissão nem renomeação silenciosa.
+Todos os contratos internos usam a mesma nomenclatura canônica. Conquistas preparam `ACHIEVEMENT_UNLOCKED` versão `1`; não existe contrato paralelo em minúsculas.
 
 ### Eventos da plataforma
 
@@ -94,13 +94,9 @@ Contratos já retornados internamente por serviços, como `achievement.unlocked.
 
 Esses eventos comuns carregam `source.gameId`. Seu payload deve usar somente métricas normalizadas necessárias ao Core; dados específicos permanecem no domínio do jogo.
 
-### Eventos específicos do Quiz Bíblico
+### Evento canônico de conclusão do Quiz
 
-| Evento | Fato representado | Observação |
-| --- | --- | --- |
-| `QUIZ_FINISHED` | Tentativa válida do Quiz foi finalizada pelo servidor | Especialização de `GAME_FINISHED`; não altera Medalhas automaticamente |
-
-O Quiz pode emitir `GAME_FINISHED` **ou** `QUIZ_FINISHED` conforme o contrato aprovado para o consumidor. Não deve emitir ambos para representar o mesmo efeito sem uma regra de deduplicação explícita. Jornadas de treino e oficiais devem ser identificadas no payload validado, mas continuam obedecendo às regras internas existentes do Quiz.
+`GAME_FINISHED` é o único evento canônico de conclusão, inclusive para o Quiz Bíblico. `QUIZ_FINISHED` foi retirado do catálogo antes da existência de produtores reais. O adaptador futuro do Quiz emitirá exatamente um `GAME_FINISHED` por tentativa elegível, depois da persistência final e por meio da outbox. Modo oficial/treino e demais métricas somente entrarão por nova versão compatível do payload; isso não altera as regras internas do Quiz.
 
 ### Eventos futuros
 
@@ -124,7 +120,7 @@ type CorePlatformEvent<TPayload> = {
   eventType: EventType;
   occurredAt: number;
   organizationId: string;
-  userId: string | null;
+  userId: string;
   source: {
     kind: "auth" | "game" | "platform" | "integration";
     service: string;
@@ -146,7 +142,7 @@ type CorePlatformEvent<TPayload> = {
 | `eventType` | Valor existente no catálogo oficial. |
 | `occurredAt` | Epoch em milissegundos definido pelo servidor produtor após persistir o fato. |
 | `organizationId` | Organização obtida de fonte confiável, nunca aceita livremente do cliente. |
-| `userId` | Usuário afetado; pode ser `null` apenas para evento organizacional explicitamente permitido. |
+| `userId` | Usuário ativo afetado. Eventos organizacionais sem usuário não fazem parte do contrato v1. |
 | `source` | Identifica classe, serviço, jogo e registro persistido de origem. |
 | `payload` | Objeto validado pela versão do evento, mínimo e sem segredos desnecessários. |
 | `version` | Inteiro positivo que seleciona o esquema do payload. |
@@ -173,21 +169,19 @@ type CorePlatformEvent<TPayload> = {
 ```json
 {
   "eventId": "quiz:attempt:attempt_123:finished",
-  "eventType": "QUIZ_FINISHED",
+  "eventType": "GAME_FINISHED",
   "occurredAt": 1784476800000,
   "organizationId": "org_123",
   "userId": "user_123",
   "source": {
     "kind": "game",
-    "service": "quiz-attempt-service",
+    "service": "quiz-service",
     "gameId": "quiz-biblico",
     "sourceId": "attempt_123"
   },
   "payload": {
-    "mode": "official",
     "status": "completed",
-    "correctAnswers": 8,
-    "questionCount": 10
+    "score": 11680
   },
   "version": 1,
   "correlationId": "attempt_123"
@@ -337,10 +331,10 @@ A implementação deverá preferir um padrão de **outbox transacional**: o fato
 
 ### Reprocessamento
 
-- falhas transitórias usam tentativas com atraso progressivo e limite;
+- falhas transitórias usam até cinco tentativas, com backoff exponencial iniciado em cinco segundos e limitado a cinco minutos;
 - lease vencido permite retomada por outra execução;
 - reprocessamento reutiliza o mesmo `eventId`;
-- falhas permanentes por esquema, autorização ou regra inválida vão para `dead_letter`;
+- a quinta falha move o recibo para `dead_letter`; contratos inválidos são rejeitados antes da persistência;
 - reprocessamento manual exige permissão administrativa, motivo e auditoria;
 - payload não deve ser editado para “fazer passar”; correção exige evento compensatório ou nova versão formal.
 
@@ -475,12 +469,12 @@ flowchart TD
 
 1. a execução inicial é síncrona e usa D1, sem Queue ou infraestrutura distribuída;
 2. o ledger persistente e os recibos por consumidor possuem lease, falha recuperável e dead letter estrutural;
-3. payload e envelope possuem limites explícitos; retenção e backoff operacional continuam pendentes antes de produtores reais;
+3. payload e envelope possuem limites explícitos; retry operacional usa backoff e dead letter; retenção continua pendente antes de grande volume;
 4. o catálogo inicial usa schemas versão 1 e rejeita campos desconhecidos;
 5. cada tipo autoriza classe e serviço produtor específicos;
 6. o diagnóstico administrativo informa falhas e leases vencidos sem expor payload;
 7. o MVP não integra o Quiz, autenticação ou outro produtor;
-8. reprocessamento administrativo e compensação permanecem fora do MVP;
+8. a rotina interna de retry é operacional e idempotente; reprocessamento administrativo manual e compensação permanecem fora do MVP;
 9. a implementação privilegia poucas escritas indexadas e não cria polling ou processamento em segundo plano.
 
 Os detalhes executáveis e limites estão registrados em

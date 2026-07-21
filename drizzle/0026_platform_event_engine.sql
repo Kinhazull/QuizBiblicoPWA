@@ -31,6 +31,7 @@ CREATE TABLE core_platform_event_processing (
   attempt_count INTEGER NOT NULL DEFAULT 1 CHECK (attempt_count >= 1),
   lease_token TEXT,
   lease_until INTEGER,
+  next_attempt_at INTEGER,
   processed_at INTEGER,
   last_error_code TEXT,
   created_at INTEGER NOT NULL,
@@ -39,4 +40,4 @@ CREATE TABLE core_platform_event_processing (
   CHECK ((state='processing' AND lease_token IS NOT NULL AND lease_until IS NOT NULL) OR state<>'processing')
 );
 
-CREATE INDEX core_platform_event_processing_retry_idx ON core_platform_event_processing(state, lease_until, updated_at);
+CREATE INDEX core_platform_event_processing_retry_idx ON core_platform_event_processing(state, next_attempt_at, lease_until, updated_at);

@@ -6,7 +6,7 @@ Migration: `0026_platform_event_engine.sql`
 
 ## Objetivo entregue
 
-O MVP implementa o contrato aprovado em `CORE_PLATFORM_EVENT_ENGINE.md` sem integrar prematuramente o Quiz ou expor uma API de publicação ao navegador. Produtores futuros usarão a função interna `publishCoreEvent`; consumidores são objetos independentes registrados pelo chamador e recebem somente eventos aos quais se inscreveram.
+O MVP implementa o contrato aprovado em `CORE_PLATFORM_EVENT_ENGINE.md` sem integrar prematuramente o Quiz ou expor uma API de publicação ao navegador. Produtores futuros usarão exclusivamente `publishOfficialCoreEvent`; a função de baixo nível permanece interna ao motor e aos testes de isolamento.
 
 ## Componentes
 
@@ -28,7 +28,7 @@ O único `gameId` autorizado neste MVP é `quiz-biblico`. Isso não ativa emiss�
 (event_id, consumer_id, handler_version)
 ```
 
-Cada consumidor possui estado próprio. O processamento usa lease curto, escrita condicional e retomada de `retryable_failed` ou lease vencido. Uma falha não desfaz o fato produtor nem repete consumidores já concluídos.
+Cada consumidor possui estado próprio. O processamento usa lease curto, escrita condicional e retomada de `retryable_failed` ou lease vencido. `retryOfficialCoreEvents` busca entregas vencidas em lote limitado, respeita backoff exponencial e move a quinta falha para `dead_letter`. Uma falha não desfaz o fato produtor nem repete consumidores já concluídos.
 
 ### Dispatcher síncrono
 
@@ -44,7 +44,7 @@ O dispatcher:
 
 Não há fila externa, Worker adicional, endpoint público, timer ou processamento remoto nesta etapa.
 
-O primeiro consumidor oficial foi registrado na vertical do Statistics Service. `publishOfficialCoreEvent` aplica o registro central sem conectar qualquer produtor real; `publishCoreEvent` permanece disponível para testes isolados e evolução interna compatível.
+O primeiro consumidor oficial foi registrado na vertical do Statistics Service. `publishOfficialCoreEvent` aplica o registro central sem conectar qualquer produtor real. Mutações futuras de Progress, Reward, Achievement, Mission e Statistics somente poderão ser acionadas por consumidores desse registro, nunca diretamente por um adaptador de jogo.
 
 ## Garantias e limites
 
@@ -68,7 +68,11 @@ O primeiro consumidor oficial foi registrado na vertical do Statistics Service. 
 
 ## Evolução compatível
 
-A API interna `publishCoreEvent(env, event, consumers)` permanece válida quando a execução migrar para uma fila baseada em D1 ou outra infraestrutura. A futura camada assíncrona deverá ler o mesmo envelope e produzir os mesmos recibos, sem mudar produtores ou consumidores.
+A API interna do motor permanece estável quando a execução migrar para outbox ou outra infraestrutura. A futura camada deverá ler o mesmo envelope e produzir os mesmos recibos, sem mudar consumidores. O adaptador do Quiz não poderá depender da função de baixo nível.
+
+### Limite do produtor
+
+A estratégia oficial é outbox transacional no D1: resultado e evento pendente serão persistidos atomicamente. A implementação concreta ficou deliberadamente reservada para a integração do Quiz, pois precisa participar da transação de finalização da tentativa. Sem essa outbox, nenhum produtor real será habilitado.
 
 Antes de conectar um produtor real ainda é necessário:
 

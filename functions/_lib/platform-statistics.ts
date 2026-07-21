@@ -82,24 +82,24 @@ async function applyStatisticsEvent(event: StatisticsEvent, env: AppEnv) {
   }
   statements.push(
     env.DB.prepare(`INSERT INTO platform_statistics_event_checkpoints(event_id,user_id,organization_id,consumer_version,state,created_at)
-      VALUES(?1,?2,?3,?4,'processing',?5) ON CONFLICT(event_id) DO NOTHING`).bind(
+      VALUES(?1,?2,?3,?4,'processing',?5) ON CONFLICT(event_id,consumer_version) DO NOTHING`).bind(
       event.eventId, event.userId, event.organizationId, CONSUMER_VERSION, now,
     ),
     env.DB.prepare(`INSERT INTO user_platform_statistics_active_days(user_id,organization_id,day_key,first_activity_at,last_activity_at)
       SELECT ?1,?2,?3,?4,?4 WHERE EXISTS(
-        SELECT 1 FROM platform_statistics_event_checkpoints WHERE event_id=?5 AND state='processing'
+        SELECT 1 FROM platform_statistics_event_checkpoints WHERE event_id=?5 AND consumer_version=?6 AND state='processing'
       ) ON CONFLICT(user_id,organization_id,day_key) DO UPDATE SET
         first_activity_at=MIN(first_activity_at,excluded.first_activity_at),
         last_activity_at=MAX(last_activity_at,excluded.last_activity_at)`).bind(
-      event.userId, event.organizationId, dayKey, event.occurredAt, event.eventId,
+      event.userId, event.organizationId, dayKey, event.occurredAt, event.eventId, CONSUMER_VERSION,
     ),
     env.DB.prepare(`UPDATE user_platform_statistics SET
       sessions_completed=sessions_completed+?1,
       last_activity_at=CASE WHEN last_activity_at IS NULL OR last_activity_at<?2 THEN ?2 ELSE last_activity_at END,
       updated_at=?3
       WHERE user_id=?4 AND organization_id=?5 AND EXISTS(
-        SELECT 1 FROM platform_statistics_event_checkpoints WHERE event_id=?6 AND state='processing'
-      )`).bind(event.eventType === "GAME_FINISHED" ? 1 : 0, event.occurredAt, now, event.userId, event.organizationId, event.eventId),
+        SELECT 1 FROM platform_statistics_event_checkpoints WHERE event_id=?6 AND consumer_version=?7 AND state='processing'
+      )`).bind(event.eventType === "GAME_FINISHED" ? 1 : 0, event.occurredAt, now, event.userId, event.organizationId, event.eventId, CONSUMER_VERSION),
   );
   if (gameId) {
     statements.push(env.DB.prepare(`UPDATE user_platform_game_statistics SET
@@ -112,7 +112,7 @@ async function applyStatisticsEvent(event: StatisticsEvent, env: AppEnv) {
       last_activity_at=CASE WHEN last_activity_at IS NULL OR last_activity_at<?7 THEN ?7 ELSE last_activity_at END,
       updated_at=?8
       WHERE user_id=?9 AND organization_id=?10 AND game_id=?11 AND EXISTS(
-        SELECT 1 FROM platform_statistics_event_checkpoints WHERE event_id=?12 AND state='processing'
+        SELECT 1 FROM platform_statistics_event_checkpoints WHERE event_id=?12 AND consumer_version=?13 AND state='processing'
       )`).bind(
       event.eventType === "GAME_STARTED" ? 1 : 0,
       event.eventType === "GAME_FINISHED" ? 1 : 0,
@@ -126,10 +126,11 @@ async function applyStatisticsEvent(event: StatisticsEvent, env: AppEnv) {
       event.organizationId,
       gameId,
       event.eventId,
+      CONSUMER_VERSION,
     ));
   }
   statements.push(env.DB.prepare(`UPDATE platform_statistics_event_checkpoints SET state='completed',applied_at=?1
-    WHERE event_id=?2 AND state='processing'`).bind(now, event.eventId));
+    WHERE event_id=?2 AND consumer_version=?3 AND state='processing'`).bind(now, event.eventId, CONSUMER_VERSION));
 
   await env.DB.batch(statements);
   await refreshDerivedStatistics(env, event.userId, event.organizationId, now);

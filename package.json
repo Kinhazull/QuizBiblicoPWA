@@ -16,7 +16,7 @@
     "test": "pnpm run test:all",
     "test:quick": "node --test tests/*.test.mjs",
     "test:unit": "node --test tests/competitive-integrity.test.mjs tests/runtime-integrity.test.mjs",
-    "test:contracts": "node --test tests/security-contracts.test.mjs tests/pwa-accessibility.test.mjs tests/service-worker-behavior.test.mjs",
+    "test:contracts": "node --test tests/security-contracts.test.mjs tests/pwa-accessibility.test.mjs tests/service-worker-behavior.test.mjs tests/architecture-alignment.test.mjs",
     "test:integration": "node --experimental-loader ./tests/helpers/ts-loader.mjs --test tests/integration/*.test.mjs",
     "test:e2e": "playwright test",
     "test:all": "pnpm run test:unit && pnpm run test:contracts && pnpm run test:integration",

@@ -115,6 +115,15 @@ export async function unlockAchievement(env: AppEnv, input: UnlockInput) {
     unlocked,
     achievement: { code: definition.code, version: Number(definition.version), name: definition.name, scopeType: definition.scopeType, gameId: definition.gameId || null },
     record: persisted,
-    domainEvent: unlocked ? { type: "achievement.unlocked.v1", eventId: sourceEventId, userId: input.userId, organizationId: input.organizationId, achievementCode: code, scopeKey, occurredAt: now } : null,
+    domainEvent: unlocked ? {
+      eventType: "ACHIEVEMENT_UNLOCKED",
+      version: 1,
+      occurredAt: now,
+      organizationId: input.organizationId,
+      userId: input.userId,
+      source: { kind: "platform", service: "platform-achievements", sourceId: persisted.id },
+      payload: { achievementCode: code, scopeKey },
+      causationId: sourceEventId,
+    } : null,
   };
 }

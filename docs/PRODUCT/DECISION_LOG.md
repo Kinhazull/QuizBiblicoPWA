@@ -36,3 +36,25 @@ O Conte os Feitos iniciou como Quiz Bíblico PWA e concluiu o piloto técnico `v
 - Referência: `v1.0.0`, commit `92b7249`.
 - Branch de preparação: `feature/platform-foundation`.
 - Baseline: instalação congelada, lint, build e suíte `test:all` aprovados antes das alterações documentais.
+
+## 2026-07-21 — Architecture Alignment antes da integração do Quiz
+
+**Status:** aceita.
+
+### Decisões
+
+1. `GAME_FINISHED` é o único evento canônico de conclusão de jogo, inclusive para o Quiz; `QUIZ_FINISHED` foi retirado antes de qualquer produtor real.
+2. O Quiz futuro persistirá resultado e outbox no mesmo limite atômico. Sem outbox/checkpoint durável, a emissão não será ativada.
+3. Adaptadores de jogos publicam apenas pelo runtime oficial e nunca chamam diretamente serviços mutáveis do Core.
+4. Consumidores oficiais são a única fronteira autorizada para progresso, recompensas, Conquistas, Missões e Estatísticas derivados de jogos.
+5. O Event Engine executa no máximo cinco tentativas, com backoff exponencial e `dead_letter`; a rotina interna de retomada não exige republicação externa.
+6. Checkpoints de Statistics são identificados por evento e versão do consumidor.
+7. A materialização diária por GET de Missão é aceita como operação idempotente, mas toda expiração é isolada por usuário e organização.
+8. `platform-progress.ts` representa temporariamente XP Service, ledger de moedas e User Progress em um modular monolith. Reward permanece uma fronteira conceitual; novos tipos de recompensa exigem extração ou nova ADR.
+9. As migrations `0023`–`0027` continuam aditivas e ainda não publicadas. A fundação persistente passa a fazer parte do escopo técnico da plataforma v1.0, mas não autoriza integração do Quiz nesta sprint.
+
+### Consequências
+
+- A integração do Quiz deverá implementar a outbox e testes atômicos antes de publicar eventos.
+- `GAME_FINISHED` versão `1` permanece mínimo; modo, duração e dificuldade exigirão contrato versionado aprovado.
+- Notification Service, integração real de Mission/Achievement e recompensas acionadas por jogos continuam fora desta sprint.

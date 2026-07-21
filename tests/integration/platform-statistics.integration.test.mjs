@@ -100,15 +100,24 @@ test("repeated and concurrent delivery never duplicates statistics", async t => 
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM platform_statistics_event_checkpoints").get().total, 1);
 });
 
-test("Quiz-specific events are not consumed before formal Quiz integration", async t => {
+test("the retired Quiz-specific completion event is rejected before persistence", async t => {
   const { ctx } = await setup(t);
-  const result = await publishOfficialCoreEvent(ctx.env, gameEvent("QUIZ_FINISHED", "quiz:finish:not-integrated", DAY_ONE, {
+  await assert.rejects(() => publishOfficialCoreEvent(ctx.env, gameEvent("QUIZ_FINISHED", "quiz:finish:not-integrated", DAY_ONE, {
     mode: "official", status: "completed", correctAnswers: 8, questionCount: 10,
-  }), DAY_ONE + 1000);
-  assert.equal(result.status, "completed");
-  assert.deepEqual(result.consumers, []);
+  }), DAY_ONE + 1000), /unsupported_event_contract/);
+  assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM core_platform_events").get().total, 0);
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM user_platform_statistics").get().total, 0);
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM platform_statistics_event_checkpoints").get().total, 0);
+});
+
+test("statistics checkpoints preserve independent consumer versions", async t => {
+  const { ctx } = await setup(t);
+  const event = gameEvent("GAME_FINISHED", "game:finish:versioned", DAY_ONE, { status: "completed", score: 300 }, "session-versioned");
+  await publishOfficialCoreEvent(ctx.env, event, DAY_ONE + 1000);
+  ctx.raw.prepare(`INSERT INTO platform_statistics_event_checkpoints(event_id,user_id,organization_id,consumer_version,state,created_at,applied_at)
+    VALUES(?,?,?,?, 'completed',?,?)`).run(event.eventId, "player", "org-1", 2, DAY_ONE + 2000, DAY_ONE + 2000);
+  const versions = ctx.raw.prepare("SELECT consumer_version version FROM platform_statistics_event_checkpoints WHERE event_id=? ORDER BY consumer_version").all(event.eventId);
+  assert.deepEqual(versions.map(row => row.version), [1, 2]);
 });
 
 test("statistics projections can be rebuilt after a post-projection receipt failure", async t => {
