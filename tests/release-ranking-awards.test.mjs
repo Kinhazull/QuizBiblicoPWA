@@ -81,6 +81,12 @@ test("reconciliação é manual, confirmada, precedida por backup e não faz dep
   assert.match(script, /Unsafe migration ledger state/);
   assert.match(script, /validateMigration0021/);
   assert.match(script, /validateMigration0022/);
+  assert.match(script, /0023_platform_user_progress\.sql/);
+  assert.match(script, /0030_achievement_statistics_projections\.sql/);
+  assert.match(script, /foundationMigrations/);
+  assert.match(script, /expectedFinalLedger\.length/);
+  assert.match(script, /quiz_core_event_outbox_claim_idx/);
+  assert.match(script, /distinct_official_play_days_utc/);
   assert.match(script, /assertExactNames\(ledgerNames\(\), expectedFinalLedger/);
   assert.match(docs, /Actions/);
 });
