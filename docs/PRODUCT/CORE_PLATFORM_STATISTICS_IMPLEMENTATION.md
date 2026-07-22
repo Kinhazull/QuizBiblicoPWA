@@ -51,7 +51,7 @@ XP, nível, moedas e Conquistas permanecem nos serviços proprietários e não s
 - última atividade;
 - tempo total, média de tempo e dificuldade mais usada estruturalmente reservados.
 
-O contrato genérico versão 1 não fornece duração nem dificuldade. O v2 acrescenta métricas de conclusão do Quiz, mas o Statistics Consumer mantém nesta sprint sua lógica anterior e continua sem estimar duração ou dificuldade. Ambos os contratos são aceitos; novas projeções dos campos v2 exigem decisão própria e versão compatível do consumidor.
+O contrato genérico versão 1 não fornece duração nem dificuldade. O v2 acrescenta métricas oficiais de conclusão do Quiz; o Statistics Consumer usa acertos, perguntas e `completedAt` nas projeções aprovadas, mas continua sem estimar duração ou dificuldade. Ambos os contratos são aceitos sem fabricar dados ausentes em v1.
 
 ## Consulta e Perfil
 
@@ -92,6 +92,6 @@ Backup, exportação de privacidade, diagnóstico estrutural, limpeza local e re
 - não há duração ou dificuldade até um contrato genérico versionado fornecer esses campos;
 - treino, partidas inválidas, abandonadas ou incompletas não podem emitir `GAME_FINISHED` como sessão válida.
 - não existe agendamento automático do dispatcher nesta etapa;
-- Progress, Reward, Missions, Achievements e Notifications não consomem eventos do Quiz.
+- Notification ainda não consome eventos do Quiz; Progress/Reward, Achievement e Mission já operam como consumidores internos oficialmente registrados.
 
 Nenhuma migration remota, deploy ou alteração de produção foi executada nesta implementação.

@@ -71,6 +71,7 @@ test("progress is idempotent, completes once and does not accept progress after 
   const completed = await recordMissionProgress(ctx.env, { ...input, eventId: "activity-2", now: now + 2000 });
   assert.equal(completed.progress, 2);
   assert.equal(completed.state, "completed");
+  assert.equal(ctx.raw.prepare("SELECT completed_at completedAt FROM user_platform_missions WHERE id=?").get(mission.id).completedAt, now + 2000);
   const ignored = await recordMissionProgress(ctx.env, { ...input, eventId: "activity-3", now: now + 3000 });
   assert.equal(ignored.progress, 2);
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM user_platform_mission_progress_events").get().total, 2);

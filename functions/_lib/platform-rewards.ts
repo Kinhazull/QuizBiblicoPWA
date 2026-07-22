@@ -1,20 +1,10 @@
 import type { CoreEventConsumer, CorePlatformEvent } from "./platform-event-engine";
+import type { GameFinishedV2Payload } from "./platform-event-catalog";
 import { grantPlatformReward } from "./platform-progress";
 
 export const REWARD_PROGRESS_CONSUMER_ID = "reward-progress";
 export const REWARD_PROGRESS_CONSUMER_VERSION = 1;
 const DAILY_BONUS_XP = 10;
-
-type GameFinishedV2Payload = {
-  status: string;
-  score: number;
-  mode: string;
-  correctAnswers: number;
-  questionsAnswered: number;
-  completedAt: number;
-  attemptId: string;
-  gameVersion: string;
-};
 
 export function calculateGameFinishedReward(payload: GameFinishedV2Payload) {
   if (payload.status !== "completed" || payload.mode !== "official") return null;

@@ -8,6 +8,18 @@ export const CORE_EVENT_TYPES = [
 export type CoreEventType = (typeof CORE_EVENT_TYPES)[number];
 export type CoreEventSourceKind = "auth" | "game" | "platform" | "integration";
 
+/** Canonical payload emitted by new, server-validated game completions. */
+export type GameFinishedV2Payload = {
+  status: "completed";
+  score: number;
+  mode: string;
+  correctAnswers: number;
+  questionsAnswered: number;
+  completedAt: number;
+  attemptId: string;
+  gameVersion: string;
+};
+
 type FieldRule = "string" | "boolean" | "positiveInteger" | "nonNegativeInteger";
 type EventSchema = {
   sourceKind: CoreEventSourceKind;

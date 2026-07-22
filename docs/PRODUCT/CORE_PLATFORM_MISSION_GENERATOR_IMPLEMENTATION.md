@@ -28,9 +28,9 @@ O serviço não consulta histórico por conta própria. Uma futura camada de apl
 
 `platform-mission-catalog.ts` é a representação estruturada das 20 entradas aprovadas em `MISSION_CATALOG.md`. Um contrato futuro deverá continuar verificando a equivalência integral entre documentação e runtime sempre que o catálogo evoluir.
 
-## Limites para a próxima sprint
+## Limites desta sprint no momento da entrega
 
-- ainda não existe Mission Consumer;
+- o Mission Consumer ainda não existia nesta entrega; ele foi implementado posteriormente na Sprint 3.7D;
 - nenhuma missão é gravada em `user_platform_missions` pelo Generator;
 - não existe Scheduler;
 - não existe integração com o Quiz ou outro jogo;

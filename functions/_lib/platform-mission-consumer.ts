@@ -1,21 +1,11 @@
 import type { AppEnv } from "./auth";
 import type { CoreEventConsumer, CorePlatformEvent } from "./platform-event-engine";
+import type { GameFinishedV2Payload } from "./platform-event-catalog";
 import { PLATFORM_MISSION_CATALOG, type PlatformMissionCatalogEntry } from "./platform-mission-catalog";
 import { recordMissionProgress } from "./platform-missions";
 
 export const MISSION_CONSUMER_ID = "platform-missions";
 export const MISSION_CONSUMER_VERSION = 1;
-
-/** READY_TO_CLAIM is persisted as `completed` until the additive mission schema evolves. */
-export const READY_TO_CLAIM_PERSISTED_STATE = "completed" as const;
-
-type GameFinishedV2Payload = {
-  status: string;
-  mode: string;
-  correctAnswers: number;
-  questionsAnswered: number;
-  completedAt: number;
-};
 
 type ActiveMissionRow = {
   id: string;

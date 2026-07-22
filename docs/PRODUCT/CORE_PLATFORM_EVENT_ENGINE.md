@@ -305,6 +305,8 @@ Outros exemplos:
 
 Statistics, Mission e Achievement podem avaliar `GAME_FINISHED` independentemente quando não há dependência declarada entre seus resultados. A falha de um não desfaz o resultado do jogo nem bloqueia necessariamente os demais.
 
+No registro v1 atual há uma dependência declarada específica: Achievement consulta as projeções produzidas por Statistics e o saldo atualizado por Reward. Por isso, a ordem oficial para `GAME_FINISHED` é `platform-statistics` → `reward-progress` → `platform-achievements` → `platform-missions`. Achievement confirma os recibos concluídos das versões esperadas antes de avaliar; caso um pré-requisito falhe, sua própria entrega permanece recuperável. O retry preserva essa ordem para entregas vencidas do mesmo evento. Mission v1 deriva somente métricas do envelope e não depende dos efeitos anteriores.
+
 ### Garantia proposta
 
 - não existe ordem global;

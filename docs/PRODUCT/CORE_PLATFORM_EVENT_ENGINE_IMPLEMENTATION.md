@@ -44,7 +44,9 @@ O dispatcher:
 
 Não há fila externa, Worker adicional, endpoint público, timer ou processamento remoto nesta etapa.
 
-O primeiro consumidor oficial foi registrado na vertical do Statistics Service. `publishOfficialCoreEvent` aplica o registro central sem conectar qualquer produtor real. Mutações futuras de Progress, Reward, Achievement, Mission e Statistics somente poderão ser acionadas por consumidores desse registro, nunca diretamente por um adaptador de jogo.
+O registro oficial atual executa `platform-statistics`, `reward-progress`, `platform-achievements` e `platform-missions`, todos na versão de handler `1`. `publishOfficialCoreEvent` aplica exclusivamente esse registro central. Adaptadores de jogo não recebem consumidores arbitrários e não gravam diretamente em Progress, Reward, Achievement, Mission ou Statistics.
+
+Para `GAME_FINISHED` v2, a ordem do registro é uma dependência explícita: Statistics materializa projeções, Reward aplica o progresso da partida, Achievement avalia essas duas fontes e Mission aplica somente critérios derivados diretamente do evento. Antes de avaliar, Achievement confirma os recibos concluídos das versões esperadas de Statistics e Reward; uma falha anterior o mantém em retry em vez de consolidar uma avaliação incompleta.
 
 ## Garantias e limites
 
@@ -76,15 +78,15 @@ A estratégia oficial é outbox transacional no D1. A Sprint 3.2 criou `quiz_cor
 
 A Sprint 3.3 adicionou o dispatcher da outbox. Registros `pending`, `retryable_failed` vencidos ou `processing` com lease expirado são reivindicados por atualização condicional, recebem lease de 30 segundos e são entregues exclusivamente ao Event Engine. A política é compartilhada com o motor: cinco tentativas, backoff exponencial de 5 segundos limitado a 5 minutos e `dead_letter` na quinta falha. O erro persistido é um código sanitizado.
 
-Na Sprint 3.4, o dispatcher passou a publicar por `publishOfficialCoreEvent`. O registro central seleciona `platform-statistics` versão 1 para `GAME_FINISHED`; nenhum consumidor é informado pelo dispatcher. A outbox somente vira `delivered` quando o retorno do Event Engine é `completed`.
+Na Sprint 3.4, o dispatcher passou a publicar por `publishOfficialCoreEvent`. O dispatcher nunca informa consumidores; o registro central controla a seleção e suas versões. A outbox somente vira `delivered` quando o retorno agregado do Event Engine é `completed`.
 
-Na Sprint 3.5A, `GAME_FINISHED` ganhou o contrato v2. Novos resultados oficiais do Quiz carregam `mode`, `correctAnswers`, `questionsAnswered`, `completedAt`, `attemptId` e `gameVersion`, além de `status` e `score`. O catálogo mantém validação exata e compatibilidade integral com v1. A outbox inédita aceita ambas as versões, o dispatcher preserva a versão armazenada e o Statistics Consumer continua operando sem mudança de lógica.
+Na Sprint 3.5A, `GAME_FINISHED` ganhou o contrato v2. Novos resultados oficiais do Quiz carregam `mode`, `correctAnswers`, `questionsAnswered`, `completedAt`, `attemptId` e `gameVersion`, além de `status` e `score`. O catálogo mantém validação exata e compatibilidade integral com v1. A outbox aceita ambas as versões e o dispatcher preserva a versão armazenada. Statistics usa os campos v2 nas projeções oficiais e preserva as métricas legadas para v1.
 
-O acionamento operacional é um POST administrativo, com rate limit, auditoria, lote conservador e isolamento pela organização obtida da sessão. Não existe agendamento automático. Statistics e Reward/Progress estão conectados; Missions, Achievements e Notifications continuam desconectados.
+O acionamento operacional é um POST administrativo, com rate limit, auditoria, lote conservador e isolamento pela organização obtida da sessão. Não existe agendamento automático. Statistics, Reward/Progress, Achievement e Mission estão conectados; Notification permanece desconectado.
 
 Antes de ampliar os efeitos do Core ainda é necessário:
 
-1. registrar cada novo consumidor somente em sua sprint aprovada;
+1. registrar qualquer novo consumidor somente em sua sprint aprovada;
 2. definir política operacional de retenção de itens entregues e dead letter;
 3. adicionar reprocessamento administrativo específico de dead letter;
 4. conectar execução agendada somente após decisão operacional explícita.

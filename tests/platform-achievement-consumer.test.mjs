@@ -17,9 +17,9 @@ test("the structured runtime catalog mirrors every official catalog v1 identity"
   assert.match(catalog, /achievementMetricValue/);
 });
 
-test("official consumer order is Statistics then Reward then Achievements", async () => {
+test("official consumer order is Statistics, Reward, Achievements and Missions", async () => {
   const registry = await read("functions/_lib/platform-event-consumers.ts");
-  assert.match(registry, /platformStatisticsConsumer,[\s\S]*platformRewardConsumer,[\s\S]*platformAchievementConsumer/);
+  assert.match(registry, /platformStatisticsConsumer,[\s\S]*platformRewardConsumer,[\s\S]*platformAchievementConsumer,[\s\S]*platformMissionConsumer/);
 });
 
 test("Achievement consumer uses only Core services and never Quiz persistence", async () => {
@@ -27,6 +27,7 @@ test("Achievement consumer uses only Core services and never Quiz persistence", 
   assert.match(consumer, /getUserStatistics/);
   assert.match(consumer, /getUserProgress/);
   assert.match(consumer, /unlockAchievementWithReward/);
+  assert.match(consumer, /achievement_prerequisite_pending/);
   assert.doesNotMatch(consumer, /\b(?:attempts|rounds|questions|answers)\b/);
 });
 

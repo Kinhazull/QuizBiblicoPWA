@@ -2,7 +2,7 @@
 
 ## Escopo
 
-Esta vertical implementa catálogo versionado, atribuição diária, progresso idempotente, conclusão, expiração, resgate interno e consulta autenticada de Missões do Core Platform. Nenhum jogo — inclusive o Quiz Bíblico — emite progresso nesta etapa.
+Esta vertical começou com catálogo versionado, atribuição diária, progresso idempotente, conclusão, expiração, resgate interno e consulta autenticada de Missões do Core Platform. Desde a Sprint 3.7D, o Quiz Bíblico alimenta o progresso elegível exclusivamente pelo Mission Consumer descrito abaixo.
 
 ## Catálogo e períodos
 
@@ -24,7 +24,7 @@ Uma missão diária usa a data civil da organização como `window_key` e expira
 `functions/_lib/platform-missions.ts` oferece:
 
 - `getCurrentDailyMission`: expira registros vencidos e atribui, de modo idempotente, a missão diária quando necessário;
-- `recordMissionProgress`: aceita somente eventos internos validados, incrementa uma vez por `eventId` e conclui ao atingir a meta;
+- `recordMissionProgress`: aceita somente eventos internos validados, incrementa uma vez por `eventId` e conclui no mesmo `DB.batch` ao atingir a meta;
 - `completeMission`: aplica a transição de conclusão de forma idempotente;
 - `claimMissionReward`: concede XP e moedas pelos ledgers oficiais com chaves idempotentes e então registra o resgate;
 - `expireMissions`: encerra missões ativas vencidas somente para o usuário e a organização informados.
@@ -49,12 +49,12 @@ A migration aditiva `0025_platform_missions.sql` cria três tabelas e quatro ín
 
 O consumidor deriva diretamente do evento apenas partidas oficiais concluídas, perguntas respondidas, acertos e partidas perfeitas. Missões de XP, nível e dias ativos aguardam seus produtores autoritativos e não recebem progresso estimado. Filtros por jogo são respeitados pelo `gameFilter` do catálogo.
 
-Cada par atribuição/evento é protegido pela unicidade já existente em `user_platform_mission_progress_events`; o Event Engine adiciona o checkpoint por consumidor e versão. Replays, retries e concorrência não duplicam progresso. Ao atingir a meta, o estado arquitetural `READY_TO_CLAIM` permanece persistido como `completed`, conforme o mapeamento compatível aprovado. Nenhuma recompensa é concedida e nenhum claim ou geração ocorre no consumidor.
+Cada par atribuição/evento é protegido pela unicidade já existente em `user_platform_mission_progress_events`; o Event Engine adiciona o checkpoint por consumidor e versão. Incremento, marcação do evento aplicado e transição para `completed` compartilham um único `DB.batch`. Replays, retries, falhas e concorrência não duplicam progresso nem deixam uma meta atingida em estado ativo. Ao atingir a meta, o estado arquitetural `READY_TO_CLAIM` permanece persistido como `completed`, conforme o mapeamento compatível aprovado. Nenhuma recompensa é concedida e nenhum claim ou geração ocorre no consumidor.
 
 ## Mission Claim — Sprint 3.7E
 
 O claim reutiliza o Progress Service para conceder XP e moedas. A transição `completed → claimed`, a criação dos ledgers determinísticos, a aplicação dos saldos e a marcação dos ledgers ocorrem no mesmo `DB.batch`. Assim, uma falha não deixa recompensa e estado divergentes.
 
-Repetições retornam a missão já resgatada; as identidades `mission-xp` e `mission-coins` derivam do ID imutável da atribuição e impedem recompensa duplicada. Missões ativas, expiradas, inexistentes ou pertencentes a outro tenant não podem ser resgatadas. O claim não gera missões, não altera progresso de missão e não executa o Mission Consumer.
+Repetições retornam a missão já resgatada; as identidades `mission-xp` e `mission-coins` derivam do ID imutável da atribuição e impedem recompensa duplicada. Recompensas sem XP e moedas continuam resgatáveis sem criar lançamentos vazios. Missões ativas, expiradas, inexistentes ou pertencentes a outro tenant não podem ser resgatadas. O claim não gera missões, não altera progresso de missão e não executa o Mission Consumer.
 
 Nenhuma migration remota, deploy, integração de jogo, notificação, animação ou pop-up foi executado nesta implementação.

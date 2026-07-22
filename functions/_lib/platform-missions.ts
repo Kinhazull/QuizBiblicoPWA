@@ -99,10 +99,15 @@ export async function getCurrentDailyMission(env: AppEnv, userId: string, organi
 }
 
 export async function completeMission(env: AppEnv, assignmentId: string, userId: string, organizationId: string, now = Date.now()) {
-  await env.DB.prepare("UPDATE user_platform_missions SET state='completed',completed_at=COALESCE(completed_at,?1) WHERE id=?2 AND user_id=?3 AND organization_id=?4 AND state='active' AND progress>=target AND expires_at>?1").bind(now, assignmentId, userId, organizationId).run();
+  await missionCompletionStatement(env, assignmentId, userId, organizationId, now).run();
   const row = await readAssignment(env, assignmentId, userId, organizationId);
   if (!row) throw new Error("mission_not_found");
   return view(row);
+}
+
+function missionCompletionStatement(env: AppEnv, assignmentId: string, userId: string, organizationId: string, now: number) {
+  return env.DB.prepare("UPDATE user_platform_missions SET state='completed',completed_at=COALESCE(completed_at,?1) WHERE id=?2 AND user_id=?3 AND organization_id=?4 AND state='active' AND progress>=target AND expires_at>?1")
+    .bind(now, assignmentId, userId, organizationId);
 }
 
 export async function recordMissionProgress(env: AppEnv, input: { assignmentId: string; userId: string; organizationId: string; eventId: string; amount: number; now?: number }) {
@@ -123,8 +128,11 @@ export async function recordMissionProgress(env: AppEnv, input: { assignmentId: 
       WHERE id=?3 AND user_id=?4 AND organization_id=?5 AND state='active' AND expires_at>?2
       AND EXISTS(SELECT 1 FROM user_platform_mission_progress_events e WHERE e.assignment_id=?3 AND e.event_id=?6 AND e.applied_at IS NULL)`).bind(input.amount, now, assignmentId, input.userId, input.organizationId, eventId),
     env.DB.prepare("UPDATE user_platform_mission_progress_events SET applied_at=?1 WHERE assignment_id=?2 AND event_id=?3 AND applied_at IS NULL").bind(now, assignmentId, eventId),
+    missionCompletionStatement(env, assignmentId, input.userId, input.organizationId, now),
   ]);
-  return completeMission(env, assignmentId, input.userId, input.organizationId, now);
+  const updated = await readAssignment(env, assignmentId, input.userId, input.organizationId);
+  if (!updated) throw new Error("mission_not_found");
+  return view(updated);
 }
 
 export async function claimMissionReward(env: AppEnv, assignmentIdValue: string, userId: string, organizationId: string, now = Date.now()) {

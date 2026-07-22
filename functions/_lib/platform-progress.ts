@@ -249,8 +249,7 @@ export async function grantPlatformAchievementReward(env: AppEnv, input: Platfor
 /** Applies one Mission claim and its Progress-owned rewards in the same D1 batch. */
 export async function grantPlatformMissionReward(env: AppEnv, input: PlatformMissionRewardInput) {
   if (!Number.isSafeInteger(input.xpAmount) || input.xpAmount < 0 || input.xpAmount > MAX_GRANT
-    || !Number.isSafeInteger(input.coinAmount) || input.coinAmount < 0 || input.coinAmount > MAX_GRANT
-    || input.xpAmount + input.coinAmount < 1) {
+    || !Number.isSafeInteger(input.coinAmount) || input.coinAmount < 0 || input.coinAmount > MAX_GRANT) {
     throw new Error("invalid_mission_reward");
   }
   const xpEventId = await compactEventId("mission-xp", input.identity);

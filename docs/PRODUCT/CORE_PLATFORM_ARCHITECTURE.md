@@ -46,7 +46,7 @@ O Core registra o processamento do `eventId`. Um evento repetido deve retornar o
 
 ### Entradas
 
-- evento de jogo validado, como `GAME_FINISHED` versão `1`;
+- evento de jogo validado, como `GAME_FINISHED` versão `2` para novos fatos (v1 permanece somente para compatibilidade histórica);
 - regra de XP identificada e versionada;
 - usuário, organização, jogo e origem confiáveis;
 - ajuste administrativo autorizado, com motivo e auditoria.

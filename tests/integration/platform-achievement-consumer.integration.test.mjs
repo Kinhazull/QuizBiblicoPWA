@@ -100,7 +100,7 @@ test("replay and concurrent delivery keep one unlock and one deterministic rewar
     publishOfficialCoreEvent(ctx.env, value, NOW),
     publishOfficialCoreEvent(ctx.env, value, NOW),
   ]);
-  await publishOfficialCoreEvent(ctx.env, value, NOW + 1);
+  await withFrozenTime(NOW + 5_000, () => retryOfficialCoreEvents(ctx.env, { now: NOW + 5_000 }));
   assert.deepEqual(unlocked(ctx), ["first_steps"]);
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM platform_xp_ledger WHERE source_type='platform_achievement'").get().total, 1);
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM platform_coin_ledger WHERE source_type='platform_achievement'").get().total, 1);
@@ -118,6 +118,22 @@ test("a failed achievement reward transaction leaves no partial unlock and retri
   assert.equal(retried.completed, 1);
   assert.deepEqual(unlocked(ctx), ["first_steps"]);
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM platform_xp_ledger WHERE source_type='platform_achievement'").get().total, 1);
+});
+
+test("Achievement waits for failed Statistics prerequisite and reevaluates after retry", async t => {
+  const ctx = setup(t);
+  ctx.raw.exec("CREATE TRIGGER reject_statistics_update BEFORE UPDATE ON user_platform_statistics BEGIN SELECT RAISE(ABORT, 'statistics_unavailable'); END");
+  const first = await withFrozenTime(NOW, () => publishOfficialCoreEvent(ctx.env, event("prerequisite"), NOW));
+  assert.equal(first.status, "partial_failed");
+  assert.deepEqual(unlocked(ctx), []);
+  assert.deepEqual({ ...ctx.raw.prepare("SELECT state,last_error_code errorCode FROM core_platform_event_processing WHERE event_id='game-finished-prerequisite' AND consumer_id='platform-achievements'").get() }, {
+    state: "retryable_failed", errorCode: "achievement_prerequisite_pending",
+  });
+  ctx.raw.exec("DROP TRIGGER reject_statistics_update");
+  const retried = await withFrozenTime(NOW + 5_000, () => retryOfficialCoreEvents(ctx.env, { now: NOW + 5_000 }));
+  assert.equal(retried.scanned, 2);
+  assert.equal(retried.completed, 1);
+  assert.deepEqual(unlocked(ctx), ["first_steps"]);
 });
 
 test("Quiz outbox dispatch reaches all registered Core consumers end to end", async t => {

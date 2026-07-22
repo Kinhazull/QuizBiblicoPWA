@@ -93,6 +93,15 @@ test("successful claim persists CLAIMED state and claimed timestamp exactly once
   });
 });
 
+test("rewardless mission can be claimed without creating empty ledger entries", async t => {
+  const { ctx } = await setup(t);
+  const id = assign(ctx, { xp: 0, coins: 0 });
+  const claimed = await claimMissionReward(ctx.env, id, "player", "org-1", NOW + 1000);
+  assert.equal(claimed.state, "claimed");
+  assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM platform_xp_ledger").get().total, 0);
+  assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM platform_coin_ledger").get().total, 0);
+});
+
 test("unauthenticated claim is rejected without changing mission state", async t => {
   const { ctx } = await setup(t);
   const id = assign(ctx);

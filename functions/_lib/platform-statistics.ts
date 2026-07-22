@@ -1,8 +1,8 @@
 import type { AppEnv } from "./auth";
 import type { CoreEventConsumer, CorePlatformEvent } from "./platform-event-engine";
 
-const CONSUMER_ID = "platform-statistics";
-const CONSUMER_VERSION = 1;
+export const STATISTICS_CONSUMER_ID = "platform-statistics";
+export const STATISTICS_CONSUMER_VERSION = 1;
 const SUPPORTED_EVENTS = ["DAILY_LOGIN", "GAME_STARTED", "GAME_FINISHED", "QUESTION_ANSWERED"] as const;
 
 type StatisticsEvent = CorePlatformEvent<Record<string, unknown>>;
@@ -94,7 +94,7 @@ async function applyStatisticsEvent(event: StatisticsEvent, env: AppEnv) {
   statements.push(
     env.DB.prepare(`INSERT INTO platform_statistics_event_checkpoints(event_id,user_id,organization_id,consumer_version,state,created_at)
       VALUES(?1,?2,?3,?4,'processing',?5) ON CONFLICT(event_id,consumer_version) DO NOTHING`).bind(
-      event.eventId, event.userId, event.organizationId, CONSUMER_VERSION, now,
+      event.eventId, event.userId, event.organizationId, STATISTICS_CONSUMER_VERSION, now,
     ),
     env.DB.prepare(`INSERT INTO user_platform_statistics_active_days(user_id,organization_id,day_key,first_activity_at,last_activity_at)
       SELECT ?1,?2,?3,?4,?4 WHERE EXISTS(
@@ -102,7 +102,7 @@ async function applyStatisticsEvent(event: StatisticsEvent, env: AppEnv) {
       ) ON CONFLICT(user_id,organization_id,day_key) DO UPDATE SET
         first_activity_at=MIN(first_activity_at,excluded.first_activity_at),
         last_activity_at=MAX(last_activity_at,excluded.last_activity_at)`).bind(
-      event.userId, event.organizationId, dayKey, event.occurredAt, event.eventId, CONSUMER_VERSION,
+      event.userId, event.organizationId, dayKey, event.occurredAt, event.eventId, STATISTICS_CONSUMER_VERSION,
     ),
   );
   if (officialCompletion) {
@@ -113,7 +113,7 @@ async function applyStatisticsEvent(event: StatisticsEvent, env: AppEnv) {
       ) ON CONFLICT(user_id,organization_id,day_key) DO UPDATE SET
         first_completion_at=MIN(first_completion_at,excluded.first_completion_at),
         last_completion_at=MAX(last_completion_at,excluded.last_completion_at)`)
-      .bind(event.userId, event.organizationId, officialDayUtc, completedAt, event.eventId, CONSUMER_VERSION));
+      .bind(event.userId, event.organizationId, officialDayUtc, completedAt, event.eventId, STATISTICS_CONSUMER_VERSION));
   }
   statements.push(
     env.DB.prepare(`UPDATE user_platform_statistics SET
@@ -127,7 +127,7 @@ async function applyStatisticsEvent(event: StatisticsEvent, env: AppEnv) {
         SELECT 1 FROM platform_statistics_event_checkpoints WHERE event_id=?9 AND consumer_version=?10 AND state='processing'
       )`).bind(event.eventType === "GAME_FINISHED" ? 1 : 0, officialCompletion ? 1 : 0,
       officialQuestions, perfect ? 1 : 0, event.occurredAt, now, event.userId, event.organizationId,
-      event.eventId, CONSUMER_VERSION),
+      event.eventId, STATISTICS_CONSUMER_VERSION),
   );
   if (gameId) {
     statements.push(env.DB.prepare(`UPDATE user_platform_game_statistics SET
@@ -154,19 +154,19 @@ async function applyStatisticsEvent(event: StatisticsEvent, env: AppEnv) {
       event.organizationId,
       gameId,
       event.eventId,
-      CONSUMER_VERSION,
+      STATISTICS_CONSUMER_VERSION,
     ));
   }
   statements.push(env.DB.prepare(`UPDATE platform_statistics_event_checkpoints SET state='completed',applied_at=?1
-    WHERE event_id=?2 AND consumer_version=?3 AND state='processing'`).bind(now, event.eventId, CONSUMER_VERSION));
+    WHERE event_id=?2 AND consumer_version=?3 AND state='processing'`).bind(now, event.eventId, STATISTICS_CONSUMER_VERSION));
 
   await env.DB.batch(statements);
   await refreshDerivedStatistics(env, event.userId, event.organizationId, now);
 }
 
 export const platformStatisticsConsumer: CoreEventConsumer = {
-  id: CONSUMER_ID,
-  handlerVersion: CONSUMER_VERSION,
+  id: STATISTICS_CONSUMER_ID,
+  handlerVersion: STATISTICS_CONSUMER_VERSION,
   eventTypes: SUPPORTED_EVENTS,
   handle: applyStatisticsEvent,
 };
@@ -236,7 +236,7 @@ export async function rebuildUserStatistics(env: AppEnv, userId: string, organiz
         OR EXISTS(SELECT 1 FROM platform_statistics_event_checkpoints c
           WHERE c.event_id=e.event_id AND c.consumer_version=?4 AND c.state='completed')
       )
-    ORDER BY e.occurred_at,e.event_id`).bind(userId, organizationId, CONSUMER_ID, CONSUMER_VERSION).all<any>();
+    ORDER BY e.occurred_at,e.event_id`).bind(userId, organizationId, STATISTICS_CONSUMER_ID, STATISTICS_CONSUMER_VERSION).all<any>();
   await env.DB.batch([
     env.DB.prepare("DELETE FROM platform_statistics_event_checkpoints WHERE user_id=?1 AND organization_id=?2").bind(userId, organizationId),
     env.DB.prepare("DELETE FROM user_platform_game_difficulty_statistics WHERE user_id=?1 AND organization_id=?2").bind(userId, organizationId),

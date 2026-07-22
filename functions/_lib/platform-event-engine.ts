@@ -184,14 +184,21 @@ export async function retryCoreEventDeliveries(
       e.organization_id organizationId,e.user_id userId,e.source_kind sourceKind,e.source_service sourceService,
       e.source_game_id sourceGameId,e.source_id sourceId,e.payload_json payloadJson,
       e.correlation_id correlationId,e.causation_id causationId,
-      p.consumer_id consumerId,p.handler_version handlerVersion
+      p.consumer_id consumerId,p.handler_version handlerVersion,p.updated_at updatedAt
     FROM core_platform_events e JOIN core_platform_event_processing p ON p.event_id=e.event_id
     WHERE ((p.state='retryable_failed' AND COALESCE(p.next_attempt_at,0)<=?1)
        OR (p.state='processing' AND p.lease_until<=?1))
-    ORDER BY p.updated_at,e.event_id,p.consumer_id LIMIT ?2`).bind(now, limit).all<any>();
+    ORDER BY p.updated_at,e.event_id,p.consumer_id LIMIT 100`).bind(now).all<any>();
+  const consumerOrder = new Map(consumers.map((consumer, index) => [`${consumer.id}:${consumer.handlerVersion}`, index]));
+  const ordered = [...(due.results || [])].sort((left, right) =>
+    Number(left.updatedAt) - Number(right.updatedAt)
+      || String(left.eventId).localeCompare(String(right.eventId))
+      || (consumerOrder.get(`${left.consumerId}:${Number(left.handlerVersion)}`) ?? Number.MAX_SAFE_INTEGER)
+        - (consumerOrder.get(`${right.consumerId}:${Number(right.handlerVersion)}`) ?? Number.MAX_SAFE_INTEGER),
+  ).slice(0, limit);
   let completed = 0;
   let partialFailed = 0;
-  for (const row of due.results || []) {
+  for (const row of ordered) {
     const consumer = consumers.find(item => item.id === row.consumerId && item.handlerVersion === Number(row.handlerVersion));
     if (!consumer) {
       await env.DB.prepare(`UPDATE core_platform_event_processing SET state='dead_letter',lease_token=NULL,lease_until=NULL,next_attempt_at=NULL,
@@ -206,7 +213,7 @@ export async function retryCoreEventDeliveries(
     if (result.status === "completed") completed += 1;
     else partialFailed += 1;
   }
-  return { scanned: due.results.length, completed, partialFailed };
+  return { scanned: ordered.length, completed, partialFailed };
 }
 
 export function getCoreEventContract(eventType: CoreEventType) {
