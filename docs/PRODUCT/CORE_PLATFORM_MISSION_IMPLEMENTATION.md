@@ -41,4 +41,12 @@ A Home consome esse endpoint. Ela não deriva missão de Jornada, tentativa ou M
 
 A migration aditiva `0025_platform_missions.sql` cria três tabelas e quatro índices. Backup, exportação de privacidade, diagnóstico estrutural e limpeza controlada do piloto reconhecem os novos registros. Definições do catálogo são preservadas pela limpeza; atribuições e eventos de teste são removidos.
 
+## Mission Consumer — Sprint 3.7D
+
+`platform-mission-consumer.ts` é o consumidor oficial de `GAME_FINISHED` v2. Ele localiza apenas atribuições ativas do mesmo usuário e organização, resolve suas regras pelo catálogo oficial e registra incrementos através de `recordMissionProgress`.
+
+O consumidor deriva diretamente do evento apenas partidas oficiais concluídas, perguntas respondidas, acertos e partidas perfeitas. Missões de XP, nível e dias ativos aguardam seus produtores autoritativos e não recebem progresso estimado. Filtros por jogo são respeitados pelo `gameFilter` do catálogo.
+
+Cada par atribuição/evento é protegido pela unicidade já existente em `user_platform_mission_progress_events`; o Event Engine adiciona o checkpoint por consumidor e versão. Replays, retries e concorrência não duplicam progresso. Ao atingir a meta, o estado arquitetural `READY_TO_CLAIM` permanece persistido como `completed`, conforme o mapeamento compatível aprovado. Nenhuma recompensa é concedida e nenhum claim ou geração ocorre no consumidor.
+
 Nenhuma migration remota, deploy, integração de jogo, notificação, animação ou pop-up foi executado nesta implementação.

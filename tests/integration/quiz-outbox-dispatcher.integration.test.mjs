@@ -84,7 +84,7 @@ function outbox(ctx) {
     lease_token leaseToken,lease_until leaseUntil FROM quiz_core_event_outbox`).get();
 }
 
-test("successful delivery runs Statistics, Reward and Achievement consumers", async t => {
+test("successful delivery runs Statistics, Reward, Achievement and Mission consumers", async t => {
   const ctx = setup(t);
   insertOutbox(ctx);
   const result = await dispatchQuizOutbox(ctx.env, { now: NOW });
@@ -96,6 +96,7 @@ test("successful delivery runs Statistics, Reward and Achievement consumers", as
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM core_platform_events WHERE event_id=?").get(event().eventId).total, 1);
   assert.deepEqual(ctx.raw.prepare("SELECT consumer_id consumerId,state FROM core_platform_event_processing ORDER BY consumer_id").all().map(row => ({ ...row })), [
     { consumerId: "platform-achievements", state: "completed" },
+    { consumerId: "platform-missions", state: "completed" },
     { consumerId: "platform-statistics", state: "completed" },
     { consumerId: "reward-progress", state: "completed" },
   ]);
