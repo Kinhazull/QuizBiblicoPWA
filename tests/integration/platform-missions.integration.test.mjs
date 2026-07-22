@@ -76,7 +76,7 @@ test("progress is idempotent, completes once and does not accept progress after 
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM user_platform_mission_progress_events").get().total, 2);
 });
 
-test("reward claim grants XP and coins once and the client has no mutation endpoint", async t => {
+test("reward claim grants XP and coins once through deterministic ledgers", async t => {
   const { ctx } = await setup(t);
   seedDefinition(ctx, { target: 1 });
   const now = Date.UTC(2026, 6, 19, 12), mission = await getCurrentDailyMission(ctx.env, "player", "org-1", now);

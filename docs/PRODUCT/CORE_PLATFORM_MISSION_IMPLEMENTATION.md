@@ -33,7 +33,9 @@ O contrato de recompensa inicial admite somente XP e moedas inteiros não negati
 
 ## API e Home
 
-`GET /api/platform/missions/current` exige sessão, usa `Cache-Control: no-store, private` e retorna somente a missão diária do usuário autenticado. É um GET idempotente com materialização controlada: pode expirar e atribuir a missão do próprio usuário, mas nunca altera registros de outra organização. Não existe endpoint público para progresso, conclusão ou resgate.
+`GET /api/platform/missions/current` exige sessão, usa `Cache-Control: no-store, private` e retorna somente a missão diária do usuário autenticado. É um GET idempotente com materialização controlada: pode expirar e atribuir a missão do próprio usuário, mas nunca altera registros de outra organização.
+
+`POST /api/platform/missions/:id/claim` é a única mutação de missão exposta ao participante. A identidade do usuário e da organização vem exclusivamente da sessão, e apenas uma missão no estado arquitetural `READY_TO_CLAIM` (persistido como `completed`) pode ser resgatada. Progresso e conclusão continuam sem endpoint público.
 
 A Home consome esse endpoint. Ela não deriva missão de Jornada, tentativa ou Medalha do Quiz e não simula progresso quando o catálogo está vazio.
 
@@ -48,5 +50,11 @@ A migration aditiva `0025_platform_missions.sql` cria três tabelas e quatro ín
 O consumidor deriva diretamente do evento apenas partidas oficiais concluídas, perguntas respondidas, acertos e partidas perfeitas. Missões de XP, nível e dias ativos aguardam seus produtores autoritativos e não recebem progresso estimado. Filtros por jogo são respeitados pelo `gameFilter` do catálogo.
 
 Cada par atribuição/evento é protegido pela unicidade já existente em `user_platform_mission_progress_events`; o Event Engine adiciona o checkpoint por consumidor e versão. Replays, retries e concorrência não duplicam progresso. Ao atingir a meta, o estado arquitetural `READY_TO_CLAIM` permanece persistido como `completed`, conforme o mapeamento compatível aprovado. Nenhuma recompensa é concedida e nenhum claim ou geração ocorre no consumidor.
+
+## Mission Claim — Sprint 3.7E
+
+O claim reutiliza o Progress Service para conceder XP e moedas. A transição `completed → claimed`, a criação dos ledgers determinísticos, a aplicação dos saldos e a marcação dos ledgers ocorrem no mesmo `DB.batch`. Assim, uma falha não deixa recompensa e estado divergentes.
+
+Repetições retornam a missão já resgatada; as identidades `mission-xp` e `mission-coins` derivam do ID imutável da atribuição e impedem recompensa duplicada. Missões ativas, expiradas, inexistentes ou pertencentes a outro tenant não podem ser resgatadas. O claim não gera missões, não altera progresso de missão e não executa o Mission Consumer.
 
 Nenhuma migration remota, deploy, integração de jogo, notificação, animação ou pop-up foi executado nesta implementação.

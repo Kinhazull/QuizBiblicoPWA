@@ -61,9 +61,14 @@ test("production code reaches the low-level dispatcher only through the official
   assert.match(read("docs/DECISIONS/ADR/0001-core-event-production-boundary.md"), /outbox/i);
 });
 
-test("no public Core mutation endpoint is introduced", () => {
+test("no arbitrary public Core mutation endpoint is introduced", () => {
   const apiFiles = filesBelow("functions/api/");
   const forbidden = /\b(?:grantXp|grantCoins|unlockAchievement|recordMissionProgress|claimMissionReward|publishCoreEvent|publishOfficialCoreEvent)\b/;
-  const violations = apiFiles.filter(path => forbidden.test(readFileSync(path, "utf8")));
+  const allowedClaim = "functions/api/platform/missions/[id]/claim.ts";
+  const violations = apiFiles.filter(path => !path.replaceAll("\\", "/").endsWith(allowedClaim) && forbidden.test(readFileSync(path, "utf8")));
   assert.deepEqual(violations, []);
+  const claim = read("functions/api/platform/missions/[id]/claim.ts");
+  assert.match(claim, /requireUser/);
+  assert.match(claim, /claimMissionReward/);
+  assert.doesNotMatch(claim, /grantXp|grantCoins|recordMissionProgress|request\.json/);
 });

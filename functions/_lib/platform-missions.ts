@@ -1,5 +1,5 @@
 import type { AppEnv } from "./auth";
-import { grantCoins, grantXp } from "./platform-progress";
+import { grantPlatformMissionReward } from "./platform-progress";
 
 export type MissionState = "active" | "completed" | "claimed" | "expired";
 export type MissionCadence = "daily" | "weekly";
@@ -135,8 +135,15 @@ export async function claimMissionReward(env: AppEnv, assignmentIdValue: string,
   if (row.state === "claimed") return view(row);
   if (row.state !== "completed") throw new Error("mission_not_claimable");
   const parsedReward = reward(row.rewardJson);
-  if (parsedReward.xp) await grantXp(env, { userId, organizationId, eventId: `mission:${assignmentId}:xp`, amount: parsedReward.xp, reason: "mission_reward", sourceType: "mission", sourceId: assignmentId });
-  if (parsedReward.coins) await grantCoins(env, { userId, organizationId, eventId: `mission:${assignmentId}:coins`, amount: parsedReward.coins, reason: "mission_reward", sourceType: "mission", sourceId: assignmentId });
-  await env.DB.prepare("UPDATE user_platform_missions SET state='claimed',claimed_at=COALESCE(claimed_at,?1) WHERE id=?2 AND user_id=?3 AND organization_id=?4 AND state='completed'").bind(now, assignmentId, userId, organizationId).run();
+  await grantPlatformMissionReward(env, {
+    identity: `mission:${assignmentId}:claim`,
+    claimStatement: env.DB.prepare("UPDATE user_platform_missions SET state='claimed',claimed_at=COALESCE(claimed_at,?1) WHERE id=?2 AND user_id=?3 AND organization_id=?4 AND state='completed'").bind(now, assignmentId, userId, organizationId),
+    userId,
+    organizationId,
+    assignmentId,
+    missionCode: row.code,
+    xpAmount: parsedReward.xp,
+    coinAmount: parsedReward.coins,
+  });
   return view((await readAssignment(env, assignmentId, userId, organizationId))!);
 }

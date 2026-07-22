@@ -120,7 +120,7 @@ test("a failed achievement reward transaction leaves no partial unlock and retri
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM platform_xp_ledger WHERE source_type='platform_achievement'").get().total, 1);
 });
 
-test("Quiz outbox dispatch reaches Statistics, Achievement and Progress end to end", async t => {
+test("Quiz outbox dispatch reaches all registered Core consumers end to end", async t => {
   const ctx = setup(t);
   const value = adaptQuizResultToGameFinished({
     contractVersion: 1, attemptId: "attempt-e2e", roundId: "round-1", organizationId: "org-1", userId: "player",
@@ -141,6 +141,7 @@ test("Quiz outbox dispatch reaches Statistics, Achievement and Progress end to e
   assert.deepEqual(progress(ctx), { totalXp: 96, coins: 13 });
   assert.deepEqual(ctx.raw.prepare("SELECT consumer_id id,state FROM core_platform_event_processing ORDER BY consumer_id").all().map(row => ({ ...row })), [
     { id: "platform-achievements", state: "completed" },
+    { id: "platform-missions", state: "completed" },
     { id: "platform-statistics", state: "completed" },
     { id: "reward-progress", state: "completed" },
   ]);
