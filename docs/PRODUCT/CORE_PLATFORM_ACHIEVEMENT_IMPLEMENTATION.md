@@ -47,3 +47,13 @@ Não existe endpoint público de desbloqueio. Jogos futuros deverão chamar o se
 A migration `0024_platform_achievements.sql` é aditiva. Backup, diagnóstico estrutural e limpeza de dados do piloto reconhecem as novas tabelas. Definições do catálogo são preservadas na limpeza; desbloqueios de teste são removidos.
 
 Nenhuma migration remota, deploy, integração de jogo, notificação, pop-up, animação ou recompensa foi executada nesta implementação.
+
+## Achievement Consumer — Sprint 3.6B
+
+O catálogo aprovado ganhou uma representação estruturada única em `platform-achievement-catalog.ts`. Ela contém as 14 identidades, critérios, raridades, visibilidades e recompensas do catálogo v1. O Achievement Service sincroniza apenas definições ausentes e recusa de forma segura qualquer definição v1 incompatível; não existe uma segunda lista de regras no consumidor.
+
+O consumidor oficial `platform-achievements`, versão `1`, recebe `GAME_FINISHED` após `platform-statistics` e `reward-progress`. Eventos v1, treino e conclusões inelegíveis são concluídos sem retry e sem efeito. Para v2 oficial, o consumidor consulta somente Statistics e Progress, avalia o catálogo e ignora códigos já desbloqueados. Nenhuma tabela do Quiz é consultada.
+
+Cada desbloqueio é preparado pelo Achievement Service. O Progress Service combina esse statement com os ledgers determinísticos de XP e moedas e a atualização dos saldos em um único `DB.batch`. A unicidade de `user_platform_achievements` e dos event IDs dos ledgers garante replay, retry e concorrência seguros. Se qualquer gravação falhar, desbloqueio, XP e moedas são revertidos juntos.
+
+Conquistas `hidden` usam os mesmos critérios e recompensas; sua apresentação continua oculta na API até o desbloqueio. Não foram adicionadas APIs públicas, tabelas, migrations, notificações ou alterações no Quiz.

@@ -1,11 +1,15 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createTestDatabase, seedOrganization, seedUser, withFrozenTime } from "../helpers/integration.mjs";
-import { publishOfficialCoreEvent, retryOfficialCoreEvents } from "../../functions/_lib/platform-event-runtime.ts";
-import { calculateGameFinishedReward } from "../../functions/_lib/platform-rewards.ts";
+import { publishCoreEvent, retryCoreEventDeliveries } from "../../functions/_lib/platform-event-engine.ts";
+import { calculateGameFinishedReward, platformRewardConsumer } from "../../functions/_lib/platform-rewards.ts";
+import { platformStatisticsConsumer } from "../../functions/_lib/platform-statistics.ts";
 
 const DAY_ONE = Date.UTC(2026, 6, 21, 10);
 const DAY_TWO = Date.UTC(2026, 6, 22, 10);
+const REWARD_TEST_CONSUMERS = [platformStatisticsConsumer, platformRewardConsumer];
+const publishRewardEvent = (env, value, now) => publishCoreEvent(env, value, REWARD_TEST_CONSUMERS, now);
+const retryRewardEvents = (env, options) => retryCoreEventDeliveries(env, REWARD_TEST_CONSUMERS, options);
 
 function setup(t) {
   const ctx = createTestDatabase();
@@ -47,14 +51,14 @@ test("reward policy calculates minimum, intermediate and maximum grants", () => 
 test("v2 official reward is persisted once and level remains derived by Progress Service", async t => {
   const ctx = setup(t);
   const value = event("perfect", { correct: 10 });
-  await withFrozenTime(DAY_ONE, () => publishOfficialCoreEvent(ctx.env, value, DAY_ONE));
-  await withFrozenTime(DAY_ONE + 1, () => publishOfficialCoreEvent(ctx.env, value, DAY_ONE + 1));
+  await withFrozenTime(DAY_ONE, () => publishRewardEvent(ctx.env, value, DAY_ONE));
+  await withFrozenTime(DAY_ONE + 1, () => publishRewardEvent(ctx.env, value, DAY_ONE + 1));
   assert.deepEqual({ ...progress(ctx) }, { totalXp: 60, coins: 5 });
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM platform_xp_ledger").get().total, 2);
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM platform_coin_ledger").get().total, 1);
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM core_platform_event_processing WHERE consumer_id='reward-progress' AND state='completed'").get().total, 1);
 
-  await withFrozenTime(DAY_TWO, () => publishOfficialCoreEvent(ctx.env, event("perfect-next", { correct: 10, completedAt: DAY_TWO }), DAY_TWO));
+  await withFrozenTime(DAY_TWO, () => publishRewardEvent(ctx.env, event("perfect-next", { correct: 10, completedAt: DAY_TWO }), DAY_TWO));
   assert.deepEqual({ ...progress(ctx) }, { totalXp: 120, coins: 10 });
   assert.equal(Math.floor(Math.sqrt(progress(ctx).totalXp / 100)) + 1, 2);
 });
@@ -62,8 +66,8 @@ test("v2 official reward is persisted once and level remains derived by Progress
 test("only one concurrent first-game UTC bonus is granted per user and organization", async t => {
   const ctx = setup(t);
   await withFrozenTime(DAY_ONE, () => Promise.all([
-    publishOfficialCoreEvent(ctx.env, event("parallel-a"), DAY_ONE),
-    publishOfficialCoreEvent(ctx.env, event("parallel-b"), DAY_ONE),
+    publishRewardEvent(ctx.env, event("parallel-a"), DAY_ONE),
+    publishRewardEvent(ctx.env, event("parallel-b"), DAY_ONE),
   ]));
   assert.deepEqual({ ...progress(ctx) }, { totalXp: 50, coins: 4 });
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM platform_xp_ledger WHERE reason='Primeira partida oficial do dia'").get().total, 1);
@@ -72,8 +76,8 @@ test("only one concurrent first-game UTC bonus is granted per user and organizat
 
 test("v1 and practice are auditable completed receipts but grant no reward", async t => {
   const ctx = setup(t);
-  await publishOfficialCoreEvent(ctx.env, event("legacy", { version: 1 }), DAY_ONE);
-  await publishOfficialCoreEvent(ctx.env, event("practice", { mode: "practice" }), DAY_ONE);
+  await publishRewardEvent(ctx.env, event("legacy", { version: 1 }), DAY_ONE);
+  await publishRewardEvent(ctx.env, event("practice", { mode: "practice" }), DAY_ONE);
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM platform_xp_ledger").get().total, 0);
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM platform_coin_ledger").get().total, 0);
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM core_platform_event_processing WHERE consumer_id='reward-progress' AND state='completed'").get().total, 2);
@@ -81,25 +85,25 @@ test("v1 and practice are auditable completed receipts but grant no reward", asy
 
 test("invalid v2 metrics and incompatible replay fail safely before rewards", async t => {
   const ctx = setup(t);
-  await assert.rejects(() => publishOfficialCoreEvent(ctx.env, event("zero", { total: 0 }), DAY_ONE), /invalid_event_payload_questionsAnswered/);
-  await assert.rejects(() => publishOfficialCoreEvent(ctx.env, event("overflow", { correct: 11 }), DAY_ONE), /invalid_event_payload_correctAnswers/);
+  await assert.rejects(() => publishRewardEvent(ctx.env, event("zero", { total: 0 }), DAY_ONE), /invalid_event_payload_questionsAnswered/);
+  await assert.rejects(() => publishRewardEvent(ctx.env, event("overflow", { correct: 11 }), DAY_ONE), /invalid_event_payload_correctAnswers/);
   const original = event("immutable", { correct: 4 });
-  await publishOfficialCoreEvent(ctx.env, original, DAY_ONE);
-  await assert.rejects(() => publishOfficialCoreEvent(ctx.env, { ...original, payload: { ...original.payload, correctAnswers: 5 } }, DAY_ONE), /event_id_conflict/);
+  await publishRewardEvent(ctx.env, original, DAY_ONE);
+  await assert.rejects(() => publishRewardEvent(ctx.env, { ...original, payload: { ...original.payload, correctAnswers: 5 } }, DAY_ONE), /event_id_conflict/);
   assert.deepEqual({ ...progress(ctx) }, { totalXp: 38, coins: 2 });
 });
 
 test("a failed atomic reward is retryable and never leaves partial XP or coins", async t => {
   const ctx = setup(t);
   ctx.raw.exec("CREATE TRIGGER reject_reward_coins BEFORE INSERT ON platform_coin_ledger BEGIN SELECT RAISE(ABORT,'reward_storage_unavailable'); END");
-  const result = await withFrozenTime(DAY_ONE, () => publishOfficialCoreEvent(ctx.env, event("retry", { correct: 8 }), DAY_ONE));
+  const result = await withFrozenTime(DAY_ONE, () => publishRewardEvent(ctx.env, event("retry", { correct: 8 }), DAY_ONE));
   assert.equal(result.status, "partial_failed");
   assert.equal(ctx.raw.prepare("SELECT state FROM core_platform_event_processing WHERE consumer_id='reward-progress'").get().state, "retryable_failed");
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM platform_xp_ledger").get().total, 0);
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM platform_coin_ledger").get().total, 0);
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM user_platform_progress").get().total, 0);
   ctx.raw.exec("DROP TRIGGER reject_reward_coins");
-  const retried = await withFrozenTime(DAY_ONE + 5_000, () => retryOfficialCoreEvents(ctx.env, { now: DAY_ONE + 5_000 }));
+  const retried = await withFrozenTime(DAY_ONE + 5_000, () => retryRewardEvents(ctx.env, { now: DAY_ONE + 5_000 }));
   assert.equal(retried.completed, 1);
   assert.deepEqual({ ...progress(ctx) }, { totalXp: 46, coins: 3 });
 });
@@ -109,11 +113,11 @@ test("a receipt failure after Progress application resumes without duplicating r
   ctx.raw.exec(`CREATE TRIGGER reject_reward_receipt BEFORE UPDATE OF state ON core_platform_event_processing
     WHEN OLD.consumer_id='reward-progress' AND NEW.state='completed'
     BEGIN SELECT RAISE(ABORT,'receipt_unavailable'); END`);
-  await withFrozenTime(DAY_ONE, () => publishOfficialCoreEvent(ctx.env, event("receipt", { correct: 7 }), DAY_ONE));
+  await withFrozenTime(DAY_ONE, () => publishRewardEvent(ctx.env, event("receipt", { correct: 7 }), DAY_ONE));
   assert.deepEqual({ ...progress(ctx) }, { totalXp: 44, coins: 3 });
   assert.equal(ctx.raw.prepare("SELECT state FROM core_platform_event_processing WHERE consumer_id='reward-progress'").get().state, "retryable_failed");
   ctx.raw.exec("DROP TRIGGER reject_reward_receipt");
-  await withFrozenTime(DAY_ONE + 5_000, () => retryOfficialCoreEvents(ctx.env, { now: DAY_ONE + 5_000 }));
+  await withFrozenTime(DAY_ONE + 5_000, () => retryRewardEvents(ctx.env, { now: DAY_ONE + 5_000 }));
   assert.deepEqual({ ...progress(ctx) }, { totalXp: 44, coins: 3 });
   assert.equal(ctx.raw.prepare("SELECT state FROM core_platform_event_processing WHERE consumer_id='reward-progress'").get().state, "completed");
 });
@@ -121,9 +125,9 @@ test("a receipt failure after Progress application resumes without duplicating r
 test("persistent Progress failure reaches dead letter without partial balance", async t => {
   const ctx = setup(t);
   ctx.raw.exec("CREATE TRIGGER reject_reward_coins_forever BEFORE INSERT ON platform_coin_ledger BEGIN SELECT RAISE(ABORT,'reward_storage_unavailable'); END");
-  await withFrozenTime(DAY_ONE, () => publishOfficialCoreEvent(ctx.env, event("dead-letter"), DAY_ONE));
+  await withFrozenTime(DAY_ONE, () => publishRewardEvent(ctx.env, event("dead-letter"), DAY_ONE));
   for (const elapsed of [5_000, 15_000, 35_000, 75_000]) {
-    await withFrozenTime(DAY_ONE + elapsed, () => retryOfficialCoreEvents(ctx.env, { now: DAY_ONE + elapsed }));
+    await withFrozenTime(DAY_ONE + elapsed, () => retryRewardEvents(ctx.env, { now: DAY_ONE + elapsed }));
   }
   const receipt = ctx.raw.prepare("SELECT state,attempt_count attemptCount,last_error_code errorCode FROM core_platform_event_processing WHERE consumer_id='reward-progress'").get();
   assert.deepEqual({ ...receipt }, { state: "dead_letter", attemptCount: 5, errorCode: "reward_storage_unavailable" });
@@ -132,9 +136,9 @@ test("persistent Progress failure reaches dead letter without partial balance", 
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM platform_coin_ledger").get().total, 0);
 });
 
-test("reward processing never activates Missions, Achievements or Notifications", async t => {
+test("isolated Reward consumer never activates Missions, Achievements or Notifications", async t => {
   const ctx = setup(t);
-  await publishOfficialCoreEvent(ctx.env, event("isolated", { correct: 9 }), DAY_ONE);
+  await publishRewardEvent(ctx.env, event("isolated", { correct: 9 }), DAY_ONE);
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM user_platform_missions").get().total, 0);
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM user_platform_achievements").get().total, 0);
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM notification_receipts").get().total, 0);

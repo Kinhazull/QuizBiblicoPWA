@@ -84,7 +84,7 @@ function outbox(ctx) {
     lease_token leaseToken,lease_until leaseUntil FROM quiz_core_event_outbox`).get();
 }
 
-test("successful delivery runs Statistics and Reward consumers", async t => {
+test("successful delivery runs Statistics, Reward and Achievement consumers", async t => {
   const ctx = setup(t);
   insertOutbox(ctx);
   const result = await dispatchQuizOutbox(ctx.env, { now: NOW });
@@ -95,6 +95,7 @@ test("successful delivery runs Statistics and Reward consumers", async t => {
   });
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM core_platform_events WHERE event_id=?").get(event().eventId).total, 1);
   assert.deepEqual(ctx.raw.prepare("SELECT consumer_id consumerId,state FROM core_platform_event_processing ORDER BY consumer_id").all().map(row => ({ ...row })), [
+    { consumerId: "platform-achievements", state: "completed" },
     { consumerId: "platform-statistics", state: "completed" },
     { consumerId: "reward-progress", state: "completed" },
   ]);
@@ -103,8 +104,8 @@ test("successful delivery runs Statistics and Reward consumers", async t => {
   assert.equal(game.total, 1);
   assert.equal(game.bestScore, 800);
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM platform_statistics_event_checkpoints WHERE state='completed'").get().total, 1);
-  assert.equal(ctx.raw.prepare("SELECT total_xp FROM user_platform_progress WHERE user_id='player'").get().total_xp, 46);
-  assert.equal(ctx.raw.prepare("SELECT coins FROM user_platform_progress WHERE user_id='player'").get().coins, 3);
+  assert.equal(ctx.raw.prepare("SELECT total_xp FROM user_platform_progress WHERE user_id='player'").get().total_xp, 96);
+  assert.equal(ctx.raw.prepare("SELECT coins FROM user_platform_progress WHERE user_id='player'").get().coins, 13);
 });
 
 test("dispatcher preserves delivery compatibility for stored v1 and new v2 envelopes", async t => {
@@ -116,7 +117,7 @@ test("dispatcher preserves delivery compatibility for stored v1 and new v2 envel
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM quiz_core_event_outbox WHERE delivery_state='delivered'").get().total, 2);
   assert.deepEqual(ctx.raw.prepare("SELECT event_version version FROM core_platform_events ORDER BY event_version").all().map(row => row.version), [1, 2]);
   assert.equal(ctx.raw.prepare("SELECT sessions_completed total FROM user_platform_game_statistics WHERE user_id='player' AND game_id='quiz-biblico'").get().total, 2);
-  assert.equal(ctx.raw.prepare("SELECT total_xp FROM user_platform_progress WHERE user_id='player'").get().total_xp, 46);
+  assert.equal(ctx.raw.prepare("SELECT total_xp FROM user_platform_progress WHERE user_id='player'").get().total_xp, 96);
 });
 
 test("transient Statistics failure schedules retry and resumes when it becomes due", async t => {
@@ -231,7 +232,7 @@ test("operational endpoint is authenticated, tenant-scoped and ignores caller pa
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM audit_logs WHERE action='platform.quiz_outbox_dispatched'").get().total, 1);
 });
 
-test("official Quiz completion flows through the protected operation into Statistics and Reward", async t => {
+test("official Quiz completion flows through the protected operation into Statistics, Reward and Achievements", async t => {
   const ctx = createTestDatabase();
   t.after(ctx.close);
   seedOrganization(ctx);
@@ -268,9 +269,9 @@ test("official Quiz completion flows through the protected operation into Statis
   assert.equal(ctx.raw.prepare("SELECT delivery_state FROM quiz_core_event_outbox").get().delivery_state, "delivered");
   assert.equal(ctx.raw.prepare("SELECT sessions_completed FROM user_platform_statistics WHERE user_id='player'").get().sessions_completed, 1);
   assert.equal(ctx.raw.prepare("SELECT sessions_completed FROM user_platform_game_statistics WHERE user_id='player'").get().sessions_completed, 1);
-  assert.equal(ctx.raw.prepare("SELECT total_xp FROM user_platform_progress WHERE user_id='player'").get().total_xp, 60);
-  assert.equal(ctx.raw.prepare("SELECT coins FROM user_platform_progress WHERE user_id='player'").get().coins, 5);
+  assert.equal(ctx.raw.prepare("SELECT total_xp FROM user_platform_progress WHERE user_id='player'").get().total_xp, 160);
+  assert.equal(ctx.raw.prepare("SELECT coins FROM user_platform_progress WHERE user_id='player'").get().coins, 25);
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM user_platform_missions").get().total, 0);
-  assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM user_platform_achievements").get().total, 0);
+  assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM user_platform_achievements").get().total, 2);
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM notification_receipts").get().total, 0);
 });

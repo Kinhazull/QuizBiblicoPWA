@@ -1,4 +1,6 @@
 import type { AppEnv } from "./auth";
+import { CORE_PLATFORM_ACHIEVEMENTS } from "./platform-achievement-catalog";
+import { grantPlatformAchievementReward } from "./platform-progress";
 
 export type AchievementScope = "global" | "game";
 
@@ -24,6 +26,11 @@ type UnlockInput = {
   scopeKey?: string;
 };
 
+type RewardedUnlockInput = UnlockInput & {
+  xpAmount?: never;
+  coinAmount?: never;
+};
+
 function safeJson(value: unknown) {
   try { return JSON.parse(String(value || "{}")); } catch { return {}; }
 }
@@ -32,6 +39,52 @@ function validateToken(value: string, error: string, max = 120) {
   const normalized = value.trim();
   if (!normalized || normalized.length > max || !/^[a-zA-Z0-9._:-]+$/.test(normalized)) throw new Error(error);
   return normalized;
+}
+
+function catalogCriterionJson(item: (typeof CORE_PLATFORM_ACHIEVEMENTS)[number]) {
+  return JSON.stringify({
+    metric: item.criterion.metric,
+    operator: item.criterion.operator,
+    target: item.criterion.target,
+    category: item.category,
+    rarity: item.rarity,
+    visibility: item.visibility,
+    reward: item.reward,
+  });
+}
+
+export async function ensureAchievementCatalogDefinitions(env: AppEnv) {
+  const now = Date.now();
+  const readCatalog = () => env.DB.prepare(
+    "SELECT code,version,name,description,criterion_json criterionJson,secret,scope_type scopeType,game_id gameId,status FROM platform_achievement_definitions WHERE version=?1",
+  ).bind(1).all<any>();
+  let persisted = await readCatalog();
+  const existingCodes = new Set((persisted.results || []).map(row => String(row.code)));
+  const missing = CORE_PLATFORM_ACHIEVEMENTS.filter(item => !existingCodes.has(item.achievementId));
+  if (missing.length) await env.DB.batch(missing.map(item => env.DB.prepare(
+    `INSERT INTO platform_achievement_definitions(
+      id,code,version,name,description,icon,scope_type,game_id,criterion_json,secret,status,created_at,updated_at)
+      VALUES(?1,?2,?3,?4,?5,NULL,'global',NULL,?6,?7,'active',?8,?8)
+      ON CONFLICT(code,version) DO NOTHING`,
+  ).bind(
+    `achievement:${item.achievementId}:v${item.catalogVersion}`,
+    item.achievementId,
+    item.catalogVersion,
+    item.name,
+    item.description,
+    catalogCriterionJson(item),
+    item.visibility === "hidden" ? 1 : 0,
+    now,
+  )));
+  if (missing.length) persisted = await readCatalog();
+  const byCode = new Map((persisted.results || []).map(row => [String(row.code), row]));
+  for (const item of CORE_PLATFORM_ACHIEVEMENTS) {
+    const row = byCode.get(item.achievementId);
+    if (!row || Number(row.version) !== item.catalogVersion || row.name !== item.name
+      || row.description !== item.description || row.criterionJson !== catalogCriterionJson(item)
+      || Boolean(row.secret) !== (item.visibility === "hidden") || row.scopeType !== "global"
+      || row.gameId !== null || row.status !== "active") throw new Error("achievement_catalog_conflict");
+  }
 }
 
 export async function listAchievements(env: AppEnv, userId: string, organizationId: string): Promise<AchievementView[]> {
@@ -126,4 +179,39 @@ export async function unlockAchievement(env: AppEnv, input: UnlockInput) {
       causationId: sourceEventId,
     } : null,
   };
+}
+
+export async function unlockAchievementWithReward(env: AppEnv, input: RewardedUnlockInput) {
+  const code = validateToken(input.achievementCode, "invalid_achievement_code", 80);
+  const sourceEventId = validateToken(input.sourceEventId, "invalid_achievement_event");
+  const catalog = CORE_PLATFORM_ACHIEVEMENTS.find(item => item.achievementId === code);
+  if (!catalog) throw new Error("achievement_not_in_official_catalog");
+  const user = await env.DB.prepare(
+    "SELECT id FROM users WHERE id=?1 AND organization_id=?2 AND status='active'",
+  ).bind(input.userId, input.organizationId).first();
+  if (!user) throw new Error("achievement_user_unavailable");
+  const definition = await env.DB.prepare(
+    `SELECT id,code,version,scope_type scopeType,game_id gameId FROM platform_achievement_definitions
+      WHERE code=?1 AND version=?2 AND status='active' LIMIT 1`,
+  ).bind(code, catalog.catalogVersion).first<any>();
+  if (!definition) throw new Error("achievement_catalog_not_seeded");
+  const scopeKey = input.scopeKey ? validateToken(input.scopeKey, "invalid_achievement_scope") : "global";
+  if (definition.scopeType !== "global" || definition.gameId || scopeKey !== "global") throw new Error("invalid_achievement_scope");
+  const unlockId = crypto.randomUUID();
+  const unlockedAt = Date.now();
+  const unlockStatement = env.DB.prepare(
+    `INSERT INTO user_platform_achievements(id,user_id,organization_id,definition_id,achievement_code,scope_key,source_event_id,unlocked_at)
+      VALUES(?1,?2,?3,?4,?5,'global',?6,?7)
+      ON CONFLICT(user_id,achievement_code,scope_key) DO NOTHING`,
+  ).bind(unlockId, input.userId, input.organizationId, definition.id, code, sourceEventId, unlockedAt);
+  return grantPlatformAchievementReward(env, {
+    identity: `${input.organizationId}:${input.userId}:${code}:global`,
+    unlockId,
+    unlockStatement,
+    userId: input.userId,
+    organizationId: input.organizationId,
+    achievementCode: code,
+    xpAmount: catalog.reward.xp,
+    coinAmount: catalog.reward.coins,
+  });
 }
