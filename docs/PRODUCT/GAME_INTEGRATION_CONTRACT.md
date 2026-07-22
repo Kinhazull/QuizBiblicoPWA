@@ -202,6 +202,10 @@ Todo evento segue `CorePlatformEvent` definido em `CORE_PLATFORM_EVENT_ENGINE.md
 
 No v2, `correctAnswers` não pode superar `questionsAnswered`, `questionsAnswered` deve ser positivo, `completedAt` deve coincidir com `occurredAt` e `attemptId` deve coincidir com `source.sourceId`. O adaptador do Quiz produz somente v2 para fatos novos. Registros v1 permanecem imutáveis e não são convertidos ou enriquecidos retroativamente.
 
+### Consumo de recompensa
+
+O consumidor `reward-progress` versão `1` aceita somente `GAME_FINISHED` v2 oficial. O contrato v1 continua válido para compatibilidade e Statistics, mas Reward o encerra sem efeito e sem retry porque ele não contém métricas suficientes para comprovar elegibilidade. Treino também é encerrado sem recompensa. Toda mutação de XP, moedas e nível ocorre exclusivamente pelo Progress Service.
+
 ## Estratégia obrigatória do produtor
 
 Todo backend de jogo deverá gravar o resultado final e uma entrada de outbox no mesmo limite atômico do D1. A entrada usará uma chave determinística derivada de `gameId + sessionId + fato`, preservará o envelope canônico e permanecerá pendente até confirmação durável do Event Engine.

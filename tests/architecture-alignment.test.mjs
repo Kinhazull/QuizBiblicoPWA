@@ -48,6 +48,7 @@ test("Core migrations remain additive and operational retry is bounded", () => {
   assert.match(dispatcher, /publishOfficialCoreEvent/);
   assert.doesNotMatch(dispatcher, /CORE_PLATFORM_EVENT_CONSUMERS|publishCoreEvent/);
   assert.match(read("functions/_lib/platform-event-consumers.ts"), /platformStatisticsConsumer/);
+  assert.match(read("functions/_lib/platform-event-consumers.ts"), /platformRewardConsumer/);
 });
 
 test("production code reaches the low-level dispatcher only through the official runtime", () => {

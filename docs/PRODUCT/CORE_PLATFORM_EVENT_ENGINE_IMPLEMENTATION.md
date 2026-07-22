@@ -80,7 +80,7 @@ Na Sprint 3.4, o dispatcher passou a publicar por `publishOfficialCoreEvent`. O 
 
 Na Sprint 3.5A, `GAME_FINISHED` ganhou o contrato v2. Novos resultados oficiais do Quiz carregam `mode`, `correctAnswers`, `questionsAnswered`, `completedAt`, `attemptId` e `gameVersion`, além de `status` e `score`. O catálogo mantém validação exata e compatibilidade integral com v1. A outbox inédita aceita ambas as versões, o dispatcher preserva a versão armazenada e o Statistics Consumer continua operando sem mudança de lógica.
 
-O acionamento operacional é um POST administrativo, com rate limit, auditoria, lote conservador e isolamento pela organização obtida da sessão. Não existe agendamento automático. Progress, Reward, Missions, Achievements e Notifications continuam desconectados.
+O acionamento operacional é um POST administrativo, com rate limit, auditoria, lote conservador e isolamento pela organização obtida da sessão. Não existe agendamento automático. Statistics e Reward/Progress estão conectados; Missions, Achievements e Notifications continuam desconectados.
 
 Antes de ampliar os efeitos do Core ainda é necessário:
 

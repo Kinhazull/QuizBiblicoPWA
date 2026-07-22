@@ -34,7 +34,7 @@ Backup, diagnóstico estrutural e limpeza segura de dados do piloto reconhecem a
 
 ## Limites desta etapa
 
-- Nenhum jogo emite eventos de progressão.
+- O Quiz concede progresso somente pelo consumidor oficial `reward-progress`; nenhum cliente ou adaptador grava saldos diretamente.
 - Missões, gemas, baú e recompensas não foram implementados.
 - Não existe interface administrativa de ajuste manual.
 - A nomenclatura `PLATFORM_MASTER_PLAN` não existe no repositório; a aderência ao plano mestre foi verificada contra `docs/PRODUCT/ROADMAP.md`, além dos três documentos de arquitetura solicitados.
