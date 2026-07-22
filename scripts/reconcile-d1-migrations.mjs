@@ -1,5 +1,6 @@
 import { spawnSync } from "node:child_process";
 import { readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import { resolve } from "node:path";
 import { validateMigration0021, validateMigration0022 } from "./lib/d1-migration-validator.mjs";
 import { assertSnapshotTableAllowlist, buildApplicationSchemaQuery } from "./lib/d1-snapshot-policy.mjs";
@@ -7,6 +8,8 @@ import { buildAtomicBaselineInsert } from "./lib/d1-ledger-policy.mjs";
 
 const config = "workers/journey-awards/wrangler.jsonc";
 const database = "quiz-biblico-db";
+const require = createRequire(import.meta.url);
+const wranglerCli = require.resolve("wrangler");
 const targetMigration = "0022_release_hardening.sql";
 const baseline = [
   "0000_competition_foundation.sql", "0001_profile_preferences.sql", "0002_login_security.sql",
@@ -18,7 +21,17 @@ const baseline = [
   "0018_competitive_integrity.sql", "0019_round_award_processing.sql", "0020_attempt_question_clock.sql",
   "0021_award_job_checkpoints.sql",
 ];
-const expectedFinalLedger = [...baseline, targetMigration];
+const foundationMigrations = [
+  "0023_platform_user_progress.sql",
+  "0024_platform_achievements.sql",
+  "0025_platform_missions.sql",
+  "0026_platform_event_engine.sql",
+  "0027_platform_statistics.sql",
+  "0028_quiz_core_event_outbox.sql",
+  "0029_quiz_core_event_outbox_leases.sql",
+  "0030_achievement_statistics_projections.sql",
+];
+const expectedFinalLedger = [...baseline, targetMigration, ...foundationMigrations];
 
 const requiredTables = [
   "organizations", "groups", "users", "invitations", "sessions", "rounds", "questions", "choices", "attempts",
@@ -27,6 +40,12 @@ const requiredTables = [
   "round_collaborators", "seasons", "user_review_progress", "announcements", "account_recovery_codes",
   "abuse_counters", "privacy_requests", "ai_question_suggestions", "batch_operations", "season_snapshots",
   "season_awards", "round_award_processing", "round_badge_reconciliations", "round_award_participant_processing",
+  "user_platform_progress", "platform_xp_ledger", "platform_coin_ledger", "platform_achievement_definitions",
+  "user_platform_achievements", "platform_mission_definitions", "user_platform_missions",
+  "user_platform_mission_progress_events", "core_platform_events", "core_platform_event_processing",
+  "user_platform_statistics", "user_platform_game_statistics", "user_platform_game_difficulty_statistics",
+  "user_platform_statistics_active_days", "platform_statistics_event_checkpoints", "quiz_core_event_outbox",
+  "user_platform_statistics_official_days_utc",
 ];
 const requiredColumns = {
   users: ["nickname", "use_nickname_in_ranking", "profile_public", "bio", "favorite_book", "favorite_verse"],
@@ -38,20 +57,33 @@ const requiredColumns = {
   rounds: ["season_id", "round_type", "featured", "advanced_rules_json"],
   seasons: ["closed_at", "snapshot_created_at"],
   legal_consents: ["organization_id", "document_type", "ip_hash", "user_agent"],
+  user_platform_progress: ["total_xp", "coins", "organization_id"],
+  core_platform_event_processing: ["consumer_id", "handler_version", "state", "attempt_count"],
+  user_platform_statistics: [
+    "official_games_completed", "official_questions_answered", "perfect_games", "distinct_official_play_days_utc",
+  ],
+  quiz_core_event_outbox: [
+    "event_version", "delivery_state", "attempt_count", "next_attempt_at", "lease_token", "lease_until",
+  ],
 };
 const requiredIndexes = [
   "choices_question_position_uq", "attempt_answers_order_uq", "attempts_user_round_mode_number_uq",
   "questions_round_source_uq", "round_award_processing_time_idx", "round_award_participant_pending_idx",
+  "user_platform_progress_org_user_idx", "platform_xp_ledger_user_time_idx", "platform_coin_ledger_user_time_idx",
+  "platform_achievement_definitions_catalog_idx", "user_platform_achievements_org_user_idx",
+  "platform_mission_definitions_catalog_idx", "user_platform_missions_current_idx",
+  "core_platform_event_processing_retry_idx", "user_platform_statistics_org_activity_idx",
+  "platform_statistics_event_checkpoints_user_idx", "quiz_core_event_outbox_delivery_idx",
+  "quiz_core_event_outbox_claim_idx", "user_platform_statistics_official_days_utc_user_idx",
 ];
 
 function runWrangler(command) {
-  const executable = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
-  const result = spawnSync(executable, [
-    "exec", "wrangler", "d1", "execute", database, "--remote", "--config", config,
+  const result = spawnSync(process.execPath, [
+    wranglerCli, "d1", "execute", database, "--remote", "--config", config,
     "--json", "--command", command,
   ], { encoding: "utf8", env: process.env });
   if (result.status !== 0) {
-    throw new Error((result.stderr || result.stdout || "Wrangler D1 failed").trim());
+    throw new Error((result.error?.message || result.stderr || result.stdout || "Wrangler D1 failed").trim());
   }
   const parsed = JSON.parse(result.stdout);
   if (!Array.isArray(parsed) || !parsed.every((item) => item.success)) {
@@ -126,7 +158,15 @@ function dryRun() {
     console.log("Schema and migration history are consistent. Migration 0022 is ready for validation.");
     return;
   }
-  throw new Error(`Unsafe migration ledger state: expected 0 or ${baseline.length} rows before reconciliation, found ${ledger.length}.`);
+  if (ledger.length === expectedFinalLedger.length) {
+    assertExactNames(ledger, expectedFinalLedger, "Final migration ledger");
+    console.log(`Schema and migration history are consistent. All ${expectedFinalLedger.length} migrations are applied.`);
+    return;
+  }
+  throw new Error(
+    `Unsafe migration ledger state: expected 0, ${baseline.length}, or ${expectedFinalLedger.length} rows, ` +
+    `found ${ledger.length}.`,
+  );
 }
 
 function applyBaseline() {
@@ -173,7 +213,10 @@ function verifyFinal() {
     "value",
   );
   if (auditIndex !== 1) throw new Error("Migration 0022 audit queue index is missing.");
-  console.log("Final state verified: 23 migrations, no pending migration, checkpoint objects and audit queue index present.");
+  console.log(
+    `Final state verified: ${expectedFinalLedger.length} migrations, no pending migration, ` +
+    "legacy release objects and Foundation consumer dependencies present.",
+  );
 }
 
 function createSnapshot(path) {

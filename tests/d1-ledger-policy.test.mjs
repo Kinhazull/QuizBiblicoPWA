@@ -32,6 +32,8 @@ test("operational reconciler cannot emit explicit SQL transactions", async () =>
   );
   assert.match(source, /runWrangler\(buildAtomicBaselineInsert\(baseline\)\)/);
   assert.doesNotMatch(source, /`BEGIN;|COMMIT;`|SAVEPOINT/);
+  assert.match(source, /require\.resolve\("wrangler"\)/);
+  assert.match(source, /spawnSync\(process\.execPath/);
 });
 
 test("ledger policy is pure and cannot call Wrangler or D1", async () => {
