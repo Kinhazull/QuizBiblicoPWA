@@ -64,6 +64,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
         user_platform_statistics: await rows(env, "SELECT * FROM user_platform_statistics WHERE organization_id=?1", organizationId),
         user_platform_game_statistics: await rows(env, "SELECT * FROM user_platform_game_statistics WHERE organization_id=?1", organizationId),
         user_platform_statistics_active_days: await rows(env, "SELECT * FROM user_platform_statistics_active_days WHERE organization_id=?1", organizationId),
+        user_platform_statistics_official_days_utc: await rows(env, "SELECT * FROM user_platform_statistics_official_days_utc WHERE organization_id=?1", organizationId),
         user_platform_game_difficulty_statistics: await rows(env, "SELECT * FROM user_platform_game_difficulty_statistics WHERE organization_id=?1", organizationId),
         platform_statistics_event_checkpoints: await rows(env, "SELECT * FROM platform_statistics_event_checkpoints WHERE organization_id=?1", organizationId),
       },

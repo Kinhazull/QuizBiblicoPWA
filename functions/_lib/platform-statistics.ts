@@ -40,19 +40,23 @@ function requireGameId(event: StatisticsEvent) {
 }
 
 async function refreshDerivedStatistics(env: AppEnv, userId: string, organizationId: string, now: number) {
-  const days = await env.DB.prepare(
+  const [days, officialDays] = await Promise.all([env.DB.prepare(
     "SELECT day_key dayKey FROM user_platform_statistics_active_days WHERE user_id=?1 AND organization_id=?2 ORDER BY day_key",
-  ).bind(userId, organizationId).all<any>();
+  ).bind(userId, organizationId).all<any>(), env.DB.prepare(
+    "SELECT COUNT(*) total FROM user_platform_statistics_official_days_utc WHERE user_id=?1 AND organization_id=?2",
+  ).bind(userId, organizationId).first<any>()]);
   const values = streaks((days.results || []).map(row => String(row.dayKey)));
   await env.DB.prepare(`UPDATE user_platform_statistics SET
       games_used=(SELECT COUNT(*) FROM user_platform_game_statistics WHERE user_id=?1 AND organization_id=?2),
-      active_days=?3,current_daily_streak=?4,best_daily_streak=MAX(best_daily_streak,?5),updated_at=?6
+      active_days=?3,current_daily_streak=?4,best_daily_streak=MAX(best_daily_streak,?5),
+      distinct_official_play_days_utc=?6,updated_at=?7
     WHERE user_id=?1 AND organization_id=?2`).bind(
     userId,
     organizationId,
     days.results.length,
     values.current,
     values.best,
+    Number(officialDays?.total || 0),
     now,
   ).run();
 }
@@ -71,6 +75,13 @@ async function applyStatisticsEvent(event: StatisticsEvent, env: AppEnv) {
     ? Number(event.payload.score)
     : null;
   const correct = event.eventType === "QUESTION_ANSWERED" ? event.payload.correct === true : false;
+  const officialCompletion = event.eventType === "GAME_FINISHED" && event.version === 2
+    && event.payload.status === "completed" && event.payload.mode === "official";
+  const officialQuestions = officialCompletion ? Number(event.payload.questionsAnswered) : 0;
+  const perfect = officialCompletion && officialQuestions > 0
+    && Number(event.payload.correctAnswers) === officialQuestions;
+  const completedAt = officialCompletion ? Number(event.payload.completedAt) : null;
+  const officialDayUtc = completedAt === null ? null : new Date(completedAt).toISOString().slice(0, 10);
 
   const statements = [
     env.DB.prepare(`INSERT INTO user_platform_statistics(user_id,organization_id,created_at,updated_at)
@@ -93,13 +104,30 @@ async function applyStatisticsEvent(event: StatisticsEvent, env: AppEnv) {
         last_activity_at=MAX(last_activity_at,excluded.last_activity_at)`).bind(
       event.userId, event.organizationId, dayKey, event.occurredAt, event.eventId, CONSUMER_VERSION,
     ),
+  );
+  if (officialCompletion) {
+    statements.push(env.DB.prepare(`INSERT INTO user_platform_statistics_official_days_utc(
+      user_id,organization_id,day_key,first_completion_at,last_completion_at)
+      SELECT ?1,?2,?3,?4,?4 WHERE EXISTS(
+        SELECT 1 FROM platform_statistics_event_checkpoints WHERE event_id=?5 AND consumer_version=?6 AND state='processing'
+      ) ON CONFLICT(user_id,organization_id,day_key) DO UPDATE SET
+        first_completion_at=MIN(first_completion_at,excluded.first_completion_at),
+        last_completion_at=MAX(last_completion_at,excluded.last_completion_at)`)
+      .bind(event.userId, event.organizationId, officialDayUtc, completedAt, event.eventId, CONSUMER_VERSION));
+  }
+  statements.push(
     env.DB.prepare(`UPDATE user_platform_statistics SET
       sessions_completed=sessions_completed+?1,
-      last_activity_at=CASE WHEN last_activity_at IS NULL OR last_activity_at<?2 THEN ?2 ELSE last_activity_at END,
-      updated_at=?3
-      WHERE user_id=?4 AND organization_id=?5 AND EXISTS(
-        SELECT 1 FROM platform_statistics_event_checkpoints WHERE event_id=?6 AND consumer_version=?7 AND state='processing'
-      )`).bind(event.eventType === "GAME_FINISHED" ? 1 : 0, event.occurredAt, now, event.userId, event.organizationId, event.eventId, CONSUMER_VERSION),
+      official_games_completed=official_games_completed+?2,
+      official_questions_answered=official_questions_answered+?3,
+      perfect_games=perfect_games+?4,
+      last_activity_at=CASE WHEN last_activity_at IS NULL OR last_activity_at<?5 THEN ?5 ELSE last_activity_at END,
+      updated_at=?6
+      WHERE user_id=?7 AND organization_id=?8 AND EXISTS(
+        SELECT 1 FROM platform_statistics_event_checkpoints WHERE event_id=?9 AND consumer_version=?10 AND state='processing'
+      )`).bind(event.eventType === "GAME_FINISHED" ? 1 : 0, officialCompletion ? 1 : 0,
+      officialQuestions, perfect ? 1 : 0, event.occurredAt, now, event.userId, event.organizationId,
+      event.eventId, CONSUMER_VERSION),
   );
   if (gameId) {
     statements.push(env.DB.prepare(`UPDATE user_platform_game_statistics SET
@@ -147,7 +175,9 @@ export async function getUserStatistics(env: AppEnv, userId: string, organizatio
   const [globalRow, games] = await Promise.all([
     env.DB.prepare(`SELECT sessions_completed sessionsCompleted,games_used gamesUsed,total_play_time_ms totalPlayTimeMs,
       timed_sessions timedSessions,last_activity_at lastActivityAt,active_days activeDays,
-      current_daily_streak currentDailyStreak,best_daily_streak bestDailyStreak
+      current_daily_streak currentDailyStreak,best_daily_streak bestDailyStreak,
+      official_games_completed officialGamesCompleted,official_questions_answered questionsAnswered,
+      perfect_games perfectGames,distinct_official_play_days_utc distinctOfficialPlayDaysUtc
       FROM user_platform_statistics WHERE user_id=?1 AND organization_id=?2`).bind(userId, organizationId).first<any>(),
     env.DB.prepare(`SELECT g.game_id gameId,g.sessions_started sessionsStarted,g.sessions_completed sessionsCompleted,
       g.questions_answered questionsAnswered,g.correct_answers correctAnswers,g.incorrect_answers incorrectAnswers,
@@ -167,6 +197,10 @@ export async function getUserStatistics(env: AppEnv, userId: string, organizatio
       activeDays: Number(globalValues.activeDays || 0),
       currentDailyStreak: Number(globalValues.currentDailyStreak || 0),
       bestDailyStreak: Number(globalValues.bestDailyStreak || 0),
+      officialGamesCompleted: Number(globalValues.officialGamesCompleted || 0),
+      questionsAnswered: Number(globalValues.questionsAnswered || 0),
+      perfectGames: Number(globalValues.perfectGames || 0),
+      distinctOfficialPlayDaysUtc: Number(globalValues.distinctOfficialPlayDaysUtc || 0),
     },
     games: (games.results || []).map((row: any) => ({
       gameId: row.gameId,
@@ -207,6 +241,7 @@ export async function rebuildUserStatistics(env: AppEnv, userId: string, organiz
     env.DB.prepare("DELETE FROM platform_statistics_event_checkpoints WHERE user_id=?1 AND organization_id=?2").bind(userId, organizationId),
     env.DB.prepare("DELETE FROM user_platform_game_difficulty_statistics WHERE user_id=?1 AND organization_id=?2").bind(userId, organizationId),
     env.DB.prepare("DELETE FROM user_platform_statistics_active_days WHERE user_id=?1 AND organization_id=?2").bind(userId, organizationId),
+    env.DB.prepare("DELETE FROM user_platform_statistics_official_days_utc WHERE user_id=?1 AND organization_id=?2").bind(userId, organizationId),
     env.DB.prepare("DELETE FROM user_platform_game_statistics WHERE user_id=?1 AND organization_id=?2").bind(userId, organizationId),
     env.DB.prepare("DELETE FROM user_platform_statistics WHERE user_id=?1 AND organization_id=?2").bind(userId, organizationId),
   ]);

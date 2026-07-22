@@ -11,7 +11,7 @@ const admin=db.prepare("SELECT id,role,status FROM users WHERE id=? AND organiza
 const specs=[
  ["platform_statistics_event_checkpoints","organization_id=?"],
  ["core_platform_event_processing","event_id IN (SELECT event_id FROM core_platform_events WHERE organization_id=?)"],["core_platform_events","organization_id=?"],
- ["user_platform_game_difficulty_statistics","organization_id=?"],["user_platform_statistics_active_days","organization_id=?"],["user_platform_game_statistics","organization_id=?"],["user_platform_statistics","organization_id=?"],
+  ["user_platform_game_difficulty_statistics","organization_id=?"],["user_platform_statistics_active_days","organization_id=?"],["user_platform_statistics_official_days_utc","organization_id=?"],["user_platform_game_statistics","organization_id=?"],["user_platform_statistics","organization_id=?"],
  ["user_platform_mission_progress_events","organization_id=?"],["user_platform_missions","organization_id=?"],
  ["user_platform_achievements","organization_id=?"],["platform_xp_ledger","organization_id=?"],["platform_coin_ledger","organization_id=?"],["user_platform_progress","organization_id=?"],
  ["attempt_answers","attempt_id IN (SELECT a.id FROM attempts a JOIN users u ON u.id=a.user_id WHERE u.organization_id=?)"],

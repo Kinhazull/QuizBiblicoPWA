@@ -23,6 +23,7 @@ export const purgeTables = [
   "core_platform_events",
   "user_platform_game_difficulty_statistics",
   "user_platform_statistics_active_days",
+  "user_platform_statistics_official_days_utc",
   "user_platform_game_statistics",
   "user_platform_statistics",
   "user_platform_mission_progress_events",

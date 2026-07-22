@@ -5,7 +5,7 @@ import { getUserStatistics } from "../../_lib/platform-statistics";
 export const onRequestGet = async ({ request, env }: { request: Request; env: AppEnv }) => {
   try {
     const user: any = await requireUser(request, env);
-    const [profile, attempts, badges, achievements, missions, events, activeDays, gameDifficulties, consents] = await Promise.all([
+    const [profile, attempts, badges, achievements, missions, events, activeDays, officialPlayDaysUtc, gameDifficulties, consents] = await Promise.all([
       env.DB.prepare("SELECT username,display_name,nickname,bio,favorite_book,favorite_verse,role,status,created_at,last_login_at FROM users WHERE id=?1").bind(user.id).first(),
       env.DB.prepare("SELECT a.round_id roundId,r.title,a.attempt_number attemptNumber,a.mode,a.status,a.score,a.correct_answers correctAnswers,a.total_time_ms totalTimeMs,a.started_at startedAt,a.completed_at completedAt FROM attempts a JOIN rounds r ON r.id=a.round_id WHERE a.user_id=?1 ORDER BY a.started_at DESC").bind(user.id).all(),
       env.DB.prepare("SELECT badge_code code,earned_at earnedAt FROM user_badges WHERE user_id=?1").bind(user.id).all(),
@@ -13,11 +13,12 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: Ap
       env.DB.prepare("SELECT mission_code code,cadence,scope_key scopeKey,window_key windowKey,target,progress,state,assigned_at assignedAt,expires_at expiresAt,completed_at completedAt,claimed_at claimedAt FROM user_platform_missions WHERE user_id=?1 AND organization_id=?2 ORDER BY assigned_at DESC").bind(user.id, user.organizationId).all(),
       env.DB.prepare("SELECT event_id eventId,event_type eventType,event_version version,occurred_at occurredAt,source_kind sourceKind,source_service sourceService,source_game_id sourceGameId,source_id sourceId,payload_json payload,status FROM core_platform_events WHERE user_id=?1 AND organization_id=?2 ORDER BY occurred_at DESC").bind(user.id, user.organizationId).all(),
       env.DB.prepare("SELECT day_key dayKey,first_activity_at firstActivityAt,last_activity_at lastActivityAt FROM user_platform_statistics_active_days WHERE user_id=?1 AND organization_id=?2 ORDER BY day_key DESC").bind(user.id, user.organizationId).all(),
+      env.DB.prepare("SELECT day_key dayKey,first_completion_at firstCompletionAt,last_completion_at lastCompletionAt FROM user_platform_statistics_official_days_utc WHERE user_id=?1 AND organization_id=?2 ORDER BY day_key DESC").bind(user.id, user.organizationId).all(),
       env.DB.prepare("SELECT game_id gameId,difficulty_key difficulty,sessions_completed sessionsCompleted FROM user_platform_game_difficulty_statistics WHERE user_id=?1 AND organization_id=?2 ORDER BY game_id,sessions_completed DESC,difficulty_key").bind(user.id, user.organizationId).all(),
       env.DB.prepare("SELECT terms_version termsVersion,privacy_version privacyVersion,accepted_at acceptedAt FROM legal_consents WHERE user_id=?1").bind(user.id).all(),
     ]);
     const platformStatistics = await getUserStatistics(env, user.id, user.organizationId);
-    return json({ exportedAt: Date.now(), profile, attempts: attempts.results, badges: badges.results, achievements: achievements.results, missions: missions.results, platformStatistics: { ...platformStatistics, activeDayHistory: activeDays.results, gameDifficultyHistory: gameDifficulties.results }, platformEvents: events.results, consents: consents.results });
+    return json({ exportedAt: Date.now(), profile, attempts: attempts.results, badges: badges.results, achievements: achievements.results, missions: missions.results, platformStatistics: { ...platformStatistics, activeDayHistory: activeDays.results, officialPlayDayUtcHistory: officialPlayDaysUtc.results, gameDifficultyHistory: gameDifficulties.results }, platformEvents: events.results, consents: consents.results });
   } catch (response) {
     if (response instanceof Response) return response;
     throw response;

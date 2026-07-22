@@ -48,6 +48,7 @@ const required = [
   "user_platform_statistics",
   "user_platform_game_statistics",
   "user_platform_statistics_active_days",
+  "user_platform_statistics_official_days_utc",
   "user_platform_game_difficulty_statistics",
   "platform_statistics_event_checkpoints",
 ];
@@ -253,6 +254,7 @@ export const onRequestGet = async ({
         "user_platform_statistics_org_activity_idx",
         "user_platform_game_statistics_org_game_idx",
         "user_platform_statistics_active_days_user_idx",
+        "user_platform_statistics_official_days_utc_user_idx",
         "user_platform_game_difficulty_statistics_lookup_idx",
         "platform_statistics_event_checkpoints_user_idx",
       ],

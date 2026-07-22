@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createTestDatabase, seedOrganization, seedUser, createSession, createAuthenticatedRequest, responseJson } from "../helpers/integration.mjs";
-import { publishOfficialCoreEvent } from "../../functions/_lib/platform-event-runtime.ts";
+import { publishOfficialCoreEvent, retryOfficialCoreEvents } from "../../functions/_lib/platform-event-runtime.ts";
 import { rebuildUserStatistics } from "../../functions/_lib/platform-statistics.ts";
 import { onRequestGet as readStatistics } from "../../functions/api/platform/statistics.ts";
 import { onRequestGet as readProfile } from "../../functions/api/profile/me.ts";
@@ -24,6 +24,17 @@ function gameEvent(eventType, eventId, occurredAt, payload, sourceId = eventId) 
   };
 }
 
+function completedGameV2(eventId, completedAt, { correctAnswers = 8, questionsAnswered = 10, mode = "official" } = {}) {
+  const attemptId = `attempt-${eventId}`;
+  return {
+    ...gameEvent("GAME_FINISHED", eventId, completedAt, {
+      status: "completed", score: correctAnswers * 100, mode, correctAnswers,
+      questionsAnswered, completedAt, attemptId, gameVersion: "quiz-v1",
+    }, attemptId),
+    version: 2,
+  };
+}
+
 async function setup(t) {
   const ctx = createTestDatabase();
   t.after(ctx.close);
@@ -41,7 +52,7 @@ test("statistics endpoint returns a safe authenticated empty state", async t => 
   const response = await readStatistics({ request: createAuthenticatedRequest("https://test/api/platform/statistics", { token }), env: ctx.env });
   assert.equal(response.status, 200);
   assert.deepEqual(await responseJson(response), {
-    global: { sessionsCompleted: 0, gamesUsed: 0, totalPlayTimeMs: 0, lastActivityAt: null, activeDays: 0, currentDailyStreak: 0, bestDailyStreak: 0 },
+    global: { sessionsCompleted: 0, gamesUsed: 0, totalPlayTimeMs: 0, lastActivityAt: null, activeDays: 0, currentDailyStreak: 0, bestDailyStreak: 0, officialGamesCompleted: 0, questionsAnswered: 0, perfectGames: 0, distinctOfficialPlayDaysUtc: 0 },
     games: [],
   });
   assert.equal(response.headers.get("cache-control"), "no-store, private");
@@ -66,7 +77,7 @@ test("official generic events create isolated global and per-game projections", 
 
   const response = await readStatistics({ request: createAuthenticatedRequest("https://test/api/platform/statistics", { token }), env: ctx.env });
   const data = await responseJson(response);
-  assert.deepEqual(data.global, { sessionsCompleted: 1, gamesUsed: 1, totalPlayTimeMs: 0, lastActivityAt: DAY_TWO + 1000, activeDays: 2, currentDailyStreak: 2, bestDailyStreak: 2 });
+  assert.deepEqual(data.global, { sessionsCompleted: 1, gamesUsed: 1, totalPlayTimeMs: 0, lastActivityAt: DAY_TWO + 1000, activeDays: 2, currentDailyStreak: 2, bestDailyStreak: 2, officialGamesCompleted: 0, questionsAnswered: 0, perfectGames: 0, distinctOfficialPlayDaysUtc: 0 });
   assert.deepEqual(data.games, [{
     gameId: "quiz-biblico", sessionsStarted: 1, sessionsCompleted: 1, questionsAnswered: 2,
     correctAnswers: 1, incorrectAnswers: 1, accuracy: 50, bestScore: 450,
@@ -89,15 +100,35 @@ test("official generic events create isolated global and per-game projections", 
 
 test("repeated and concurrent delivery never duplicates statistics", async t => {
   const { ctx } = await setup(t);
-  const event = gameEvent("GAME_FINISHED", "game:finish:concurrent", DAY_ONE, { status: "completed", score: 300 }, "session-concurrent");
+  const event = completedGameV2("game:finish:concurrent", DAY_ONE, { correctAnswers: 10 });
   await Promise.all([
     publishOfficialCoreEvent(ctx.env, event, DAY_ONE + 1000),
     publishOfficialCoreEvent(ctx.env, event, DAY_ONE + 1000),
     publishOfficialCoreEvent(ctx.env, event, DAY_ONE + 1000),
   ]);
   assert.equal(ctx.raw.prepare("SELECT sessions_completed total FROM user_platform_statistics WHERE user_id='player'").get().total, 1);
+  assert.deepEqual({ ...ctx.raw.prepare("SELECT official_games_completed games,official_questions_answered questions,perfect_games perfect,distinct_official_play_days_utc days FROM user_platform_statistics WHERE user_id='player'").get() }, { games: 1, questions: 10, perfect: 1, days: 1 });
   assert.equal(ctx.raw.prepare("SELECT sessions_completed total FROM user_platform_game_statistics WHERE user_id='player'").get().total, 1);
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM platform_statistics_event_checkpoints").get().total, 1);
+});
+
+test("GAME_FINISHED v2 projects only official completions, payload questions, perfect games and distinct UTC days", async t => {
+  const { ctx, token } = await setup(t);
+  const events = [
+    completedGameV2("game:finish:official-1", Date.UTC(2026, 6, 21, 1), { correctAnswers: 10 }),
+    completedGameV2("game:finish:official-2", Date.UTC(2026, 6, 21, 23), { correctAnswers: 7 }),
+    completedGameV2("game:finish:official-3", Date.UTC(2026, 6, 22, 0), { correctAnswers: 9 }),
+    completedGameV2("game:finish:practice", Date.UTC(2026, 6, 23, 0), { correctAnswers: 10, mode: "practice" }),
+  ];
+  for (const event of events) await publishOfficialCoreEvent(ctx.env, event, event.occurredAt + 1);
+  const data = await responseJson(await readStatistics({ request: createAuthenticatedRequest("https://test/api/platform/statistics", { token }), env: ctx.env }));
+  assert.deepEqual({
+    officialGamesCompleted: data.global.officialGamesCompleted,
+    questionsAnswered: data.global.questionsAnswered,
+    perfectGames: data.global.perfectGames,
+    distinctOfficialPlayDaysUtc: data.global.distinctOfficialPlayDaysUtc,
+  }, { officialGamesCompleted: 3, questionsAnswered: 30, perfectGames: 1, distinctOfficialPlayDaysUtc: 2 });
+  assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM user_platform_statistics_official_days_utc WHERE user_id='player'").get().total, 2);
 });
 
 test("the retired Quiz-specific completion event is rejected before persistence", async t => {
@@ -122,7 +153,7 @@ test("statistics checkpoints preserve independent consumer versions", async t =>
 
 test("statistics projections can be rebuilt after a post-projection receipt failure", async t => {
   const { ctx } = await setup(t);
-  const event = gameEvent("GAME_FINISHED", "game:finish:rebuild", DAY_ONE, { status: "completed", score: 600 }, "session-rebuild");
+  const event = completedGameV2("game:finish:rebuild", DAY_ONE, { correctAnswers: 6 });
   await publishOfficialCoreEvent(ctx.env, event, DAY_ONE + 1000);
   ctx.raw.prepare(`UPDATE core_platform_event_processing
     SET state='retryable_failed',last_error_code='simulated_post_projection_failure'
@@ -132,7 +163,23 @@ test("statistics projections can be rebuilt after a post-projection receipt fail
   const rebuilt = await rebuildUserStatistics(ctx.env, "player", "org-1");
   assert.equal(rebuilt.global.sessionsCompleted, 1);
   assert.equal(rebuilt.global.gamesUsed, 1);
+  assert.equal(rebuilt.global.officialGamesCompleted, 1);
+  assert.equal(rebuilt.global.questionsAnswered, 10);
+  assert.equal(rebuilt.global.distinctOfficialPlayDaysUtc, 1);
   assert.equal(rebuilt.games[0].sessionsCompleted, 1);
   assert.equal(rebuilt.games[0].bestScore, 600);
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM platform_statistics_event_checkpoints").get().total, 1);
+});
+
+test("a retry after a transient Statistics failure applies official projections once", async t => {
+  const { ctx } = await setup(t);
+  const event = completedGameV2("game:finish:retry", DAY_ONE, { correctAnswers: 10 });
+  ctx.raw.prepare("UPDATE organizations SET timezone='Invalid/Timezone' WHERE id='org-1'").run();
+  const first = await publishOfficialCoreEvent(ctx.env, event, DAY_ONE + 1);
+  assert.equal(first.status, "partial_failed");
+  assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM user_platform_statistics WHERE user_id='player'").get().total, 0);
+  ctx.raw.prepare("UPDATE organizations SET timezone='America/Sao_Paulo' WHERE id='org-1'").run();
+  const retried = await retryOfficialCoreEvents(ctx.env, { now: DAY_ONE + 60_000 });
+  assert.equal(retried.completed, 1);
+  assert.deepEqual({ ...ctx.raw.prepare("SELECT official_games_completed games,official_questions_answered questions,perfect_games perfect,distinct_official_play_days_utc days FROM user_platform_statistics WHERE user_id='player'").get() }, { games: 1, questions: 10, perfect: 1, days: 1 });
 });

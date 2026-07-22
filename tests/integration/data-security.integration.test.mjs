@@ -60,7 +60,7 @@ test("backup authenticates password and excludes credentials, sessions and token
   const response=await backup({request:createAuthenticatedRequest("https://test/api/admin/backup",{token:adminToken,method:"POST",body:{password}}),env:ctx.env});
   assert.equal(response.status,200);assert.match(response.headers.get("cache-control"),/no-store/);assert.equal(response.headers.get("x-content-type-options"),"nosniff");
   const text=await response.text(),data=JSON.parse(text);assert.equal(data.schemaVersion,28);assert.equal(data.credentialsExcluded,true);assert.equal(data.tables.sessions,undefined);
-  for(const table of ["user_platform_statistics","user_platform_game_statistics","user_platform_statistics_active_days","user_platform_game_difficulty_statistics","platform_statistics_event_checkpoints"])assert.ok(Array.isArray(data.tables[table]),table);
+  for(const table of ["user_platform_statistics","user_platform_game_statistics","user_platform_statistics_active_days","user_platform_statistics_official_days_utc","user_platform_game_difficulty_statistics","platform_statistics_event_checkpoints"])assert.ok(Array.isArray(data.tables[table]),table);
   assert.ok(!/password_hash|password_salt|token-admin|quiz_session|test-salt/.test(text));
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) n FROM audit_logs WHERE action='backup.exported'").get().n,1);
 });

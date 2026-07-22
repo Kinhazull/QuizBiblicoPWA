@@ -71,6 +71,19 @@ Uma conclusão oficial elegível persiste o resultado e a outbox atomicamente. `
 
 O dispatcher usa o envelope persistido, o runtime oficial e o registro central de consumidores. A projeção mantém idempotência por `(event_id, consumer_version)`. Reentregas, concorrência e lease expirado não duplicam sessões nem melhor pontuação.
 
+## Projeções oficiais para Conquistas
+
+A migration aditiva `0030_achievement_statistics_projections.sql` acrescenta projeções explícitas para o catálogo oficial sem reinterpretar os contadores legados:
+
+- `officialGamesCompleted`: somente `GAME_FINISHED` v2 com `status=completed` e `mode=official`;
+- `questionsAnswered`: soma exclusivamente `GAME_FINISHED.questionsAnswered` dessas conclusões oficiais;
+- `perfectGames`: `questionsAnswered > 0` e `correctAnswers == questionsAnswered`;
+- `distinctOfficialPlayDaysUtc`: dias UTC distintos derivados exclusivamente de `completedAt`.
+
+A tabela `user_platform_statistics_official_days_utc` materializa a unicidade por usuário, organização e dia UTC. A chave primária, o checkpoint e o `DB.batch` preservam idempotência em replay, retry e concorrência. O rebuild remove e recria também essa projeção a partir do ledger. Eventos v1 permanecem aceitos e preservam as métricas legadas, mas não fabricam valores ausentes no contrato antigo.
+
+Backup, exportação de privacidade, diagnóstico estrutural, limpeza local e reset controlado reconhecem a nova tabela. A API adiciona os quatro campos ao resumo global sem renomear ou remover campos públicos existentes.
+
 ## Limites atuais
 
 - não há estatísticas públicas nem comparação entre usuários;
