@@ -23,6 +23,10 @@ test("pilot reset removes competition data and preserves accounts, legal records
     VALUES('attempt','user','round',1,'official','completed','seed',100,1,1000,1,0,1)`).run();
   db.prepare(`INSERT INTO attempt_answers(attempt_id,question_id,choice_id,question_order,choice_order_json,correct,response_time_ms,points,answered_at)
     VALUES('attempt','question','choice',0,'["choice"]',1,1000,100,1)`).run();
+  db.prepare("INSERT INTO user_platform_statistics(user_id,organization_id,sessions_completed,games_used,last_activity_at,active_days,current_daily_streak,best_daily_streak,created_at,updated_at) VALUES('user','org',1,1,1,1,1,1,0,1)").run();
+  db.prepare("INSERT INTO user_platform_game_statistics(user_id,organization_id,game_id,sessions_completed,last_activity_at,created_at,updated_at) VALUES('user','org','quiz-biblico',1,1,0,1)").run();
+  db.prepare("INSERT INTO user_platform_statistics_active_days(user_id,organization_id,day_key,first_activity_at,last_activity_at) VALUES('user','org','2026-07-19',1,1)").run();
+  db.prepare("INSERT INTO user_platform_game_difficulty_statistics(user_id,organization_id,game_id,difficulty_key,sessions_completed,updated_at) VALUES('user','org','quiz-biblico','medium',1,1)").run();
 
   const statements = buildResetBatch();
   assert.equal(assertResetPolicy(statements), true);
@@ -42,6 +46,7 @@ test("pilot reset removes competition data and preserves accounts, legal records
   assert.equal(db.prepare("SELECT COUNT(*) total FROM rounds").get().total, 0);
   assert.equal(db.prepare("SELECT COUNT(*) total FROM attempts").get().total, 0);
   assert.equal(db.prepare("SELECT COUNT(*) total FROM attempt_answers").get().total, 0);
+  assert.equal(db.prepare("SELECT COUNT(*) total FROM user_platform_statistics").get().total, 0);
+  assert.equal(db.prepare("SELECT COUNT(*) total FROM user_platform_game_statistics").get().total, 0);
   assert.equal(db.prepare("SELECT COUNT(*) total FROM audit_logs WHERE action='production.pilot_data_reset'").get().total, 1);
 });
-

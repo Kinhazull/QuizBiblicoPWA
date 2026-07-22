@@ -20,7 +20,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
     const organizationId = admin.organizationId;
     const data = {
       format: "conte-os-feitos-backup",
-      schemaVersion: 23,
+      schemaVersion: 28,
       credentialsExcluded: true,
       exportedAt: Date.now(),
       organizationId,
@@ -51,6 +51,22 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
         round_award_processing: await rows(env, "SELECT p.* FROM round_award_processing p JOIN rounds r ON r.id=p.round_id WHERE r.organization_id=?1", organizationId),
         round_badge_reconciliations: await rows(env, "SELECT b.* FROM round_badge_reconciliations b JOIN rounds r ON r.id=b.round_id WHERE r.organization_id=?1", organizationId),
         round_award_participant_processing: await rows(env, "SELECT p.* FROM round_award_participant_processing p JOIN rounds r ON r.id=p.round_id WHERE r.organization_id=?1", organizationId),
+        user_platform_progress: await rows(env, "SELECT * FROM user_platform_progress WHERE organization_id=?1", organizationId),
+        platform_xp_ledger: await rows(env, "SELECT * FROM platform_xp_ledger WHERE organization_id=?1", organizationId),
+        platform_coin_ledger: await rows(env, "SELECT * FROM platform_coin_ledger WHERE organization_id=?1", organizationId),
+        platform_achievement_definitions: await rows(env, "SELECT * FROM platform_achievement_definitions"),
+        user_platform_achievements: await rows(env, "SELECT * FROM user_platform_achievements WHERE organization_id=?1", organizationId),
+        platform_mission_definitions: await rows(env, "SELECT * FROM platform_mission_definitions"),
+        user_platform_missions: await rows(env, "SELECT * FROM user_platform_missions WHERE organization_id=?1", organizationId),
+        user_platform_mission_progress_events: await rows(env, "SELECT * FROM user_platform_mission_progress_events WHERE organization_id=?1", organizationId),
+        core_platform_events: await rows(env, "SELECT * FROM core_platform_events WHERE organization_id=?1", organizationId),
+        core_platform_event_processing: await rows(env, "SELECT p.* FROM core_platform_event_processing p JOIN core_platform_events e ON e.event_id=p.event_id WHERE e.organization_id=?1", organizationId),
+        user_platform_statistics: await rows(env, "SELECT * FROM user_platform_statistics WHERE organization_id=?1", organizationId),
+        user_platform_game_statistics: await rows(env, "SELECT * FROM user_platform_game_statistics WHERE organization_id=?1", organizationId),
+        user_platform_statistics_active_days: await rows(env, "SELECT * FROM user_platform_statistics_active_days WHERE organization_id=?1", organizationId),
+        user_platform_statistics_official_days_utc: await rows(env, "SELECT * FROM user_platform_statistics_official_days_utc WHERE organization_id=?1", organizationId),
+        user_platform_game_difficulty_statistics: await rows(env, "SELECT * FROM user_platform_game_difficulty_statistics WHERE organization_id=?1", organizationId),
+        platform_statistics_event_checkpoints: await rows(env, "SELECT * FROM platform_statistics_event_checkpoints WHERE organization_id=?1", organizationId),
       },
     };
 

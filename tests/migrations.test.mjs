@@ -5,12 +5,12 @@ import { DatabaseSync } from "node:sqlite";
 
 test("all migrations are sequential and apply to an empty SQLite database", async () => {
   const files = (await readdir(new URL("../drizzle/", import.meta.url))).filter(file => file.endsWith(".sql")).sort();
-  assert.equal(files.length, 23);
+  assert.equal(files.length, 31);
   files.forEach((file, index) => assert.equal(file.slice(0, 4), String(index).padStart(4, "0")));
   const db = new DatabaseSync(":memory:");
   for (const file of files) db.exec(await readFile(new URL(`../drizzle/${file}`, import.meta.url), "utf8"));
   const tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table'").all().map(row => row.name);
-  for (const required of ["users", "rounds", "question_bank", "seasons", "announcements", "privacy_requests", "ai_question_suggestions", "batch_operations", "season_snapshots", "season_awards", "round_award_processing", "round_award_participant_processing"]) assert.ok(tables.includes(required), `missing ${required}`);
+  for (const required of ["users", "rounds", "question_bank", "seasons", "announcements", "privacy_requests", "ai_question_suggestions", "batch_operations", "season_snapshots", "season_awards", "round_award_processing", "round_award_participant_processing", "user_platform_progress", "platform_xp_ledger", "platform_coin_ledger", "platform_achievement_definitions", "user_platform_achievements", "platform_mission_definitions", "user_platform_missions", "user_platform_mission_progress_events", "core_platform_events", "core_platform_event_processing", "user_platform_statistics", "user_platform_game_statistics", "user_platform_statistics_active_days", "user_platform_statistics_official_days_utc", "user_platform_game_difficulty_statistics", "platform_statistics_event_checkpoints", "quiz_core_event_outbox"]) assert.ok(tables.includes(required), `missing ${required}`);
   const sessionColumns = db.prepare("PRAGMA table_info(sessions)").all().map(row => row.name);
   assert.ok(sessionColumns.includes("ip_hash"));
   assert.ok(sessionColumns.includes("user_agent"));
@@ -20,5 +20,11 @@ test("all migrations are sequential and apply to an empty SQLite database", asyn
   assert.ok(attemptIndexes.includes("attempts_user_round_mode_number_uq"));
   assert.ok(db.prepare("PRAGMA table_info(choices)").all().some(row => row.name === "position"));
   assert.ok(db.prepare("PRAGMA index_list('attempt_answers')").all().some(row => row.name === "attempt_answers_order_uq"));
+  const outboxColumns = db.prepare("PRAGMA table_info(quiz_core_event_outbox)").all().map(row => row.name);
+  assert.ok(outboxColumns.includes("lease_token"));
+  assert.ok(outboxColumns.includes("lease_until"));
+  assert.ok(db.prepare("PRAGMA index_list('quiz_core_event_outbox')").all().some(row => row.name === "quiz_core_event_outbox_claim_idx"));
+  const outboxSql = db.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='quiz_core_event_outbox'").get().sql;
+  assert.match(outboxSql, /event_version IN \(1, 2\)/);
   db.close();
 });

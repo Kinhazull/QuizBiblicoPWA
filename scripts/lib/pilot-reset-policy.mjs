@@ -13,9 +13,25 @@ export const protectedTables = [
   "question_collaborators",
   "audit_logs",
   "d1_migrations",
+  "platform_achievement_definitions",
+  "platform_mission_definitions",
 ];
 
 export const purgeTables = [
+  "platform_statistics_event_checkpoints",
+  "core_platform_event_processing",
+  "core_platform_events",
+  "user_platform_game_difficulty_statistics",
+  "user_platform_statistics_active_days",
+  "user_platform_statistics_official_days_utc",
+  "user_platform_game_statistics",
+  "user_platform_statistics",
+  "user_platform_mission_progress_events",
+  "user_platform_missions",
+  "user_platform_achievements",
+  "platform_xp_ledger",
+  "platform_coin_ledger",
+  "user_platform_progress",
   "attempt_answers",
   "round_award_participant_processing",
   "round_award_processing",
@@ -81,4 +97,3 @@ export function assertResetPolicy(statements = buildResetBatch()) {
   }
   return true;
 }
-

@@ -38,7 +38,7 @@ async function installRealApi(page: Page, env: any) {
       headers: original.headers(),
       body: ["GET", "HEAD"].includes(original.method())
         ? undefined
-        : original.postDataBuffer(),
+        : original.postData() || undefined,
     });
     const id = url.pathname.match(/^\/api\/attempts\/([^/]+)\//)?.[1];
     let response: Response;
@@ -87,7 +87,11 @@ async function installRealApi(page: Page, env: any) {
 
 test("browser completes a real handler and SQLite journey, ranking and logout flow", async ({
   page,
-}) => {
+}, testInfo) => {
+  test.skip(
+    testInfo.project.name !== "chromium",
+    "The real-backend contract runs once; responsive behavior is covered by participant-smoke.",
+  );
   test.setTimeout(120_000);
   const context = createTestDatabase();
   try {
@@ -133,11 +137,11 @@ test("browser completes a real handler and SQLite journey, ranking and logout fl
     await page.getByRole("button", { name: /sair da conta/i }).click();
     await expect(page.locator('input[name="username"]')).toBeVisible();
     expect(
-      context.raw.prepare("SELECT COUNT(*) total FROM sessions").get().total,
+      context.raw.prepare("SELECT COUNT(*) total FROM sessions").get()?.total,
     ).toBe(0);
     expect(
       context.raw.prepare("SELECT COUNT(*) total FROM attempt_answers").get()
-        .total,
+        ?.total,
     ).toBe(10);
   } finally {
     context.close();

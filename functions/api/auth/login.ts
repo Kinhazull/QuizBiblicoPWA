@@ -37,5 +37,6 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
     env.DB.prepare(`UPDATE users SET last_login_at = ?1, updated_at = ?1 WHERE id = ?2`).bind(now, user.id),
     env.DB.prepare(`DELETE FROM login_security WHERE username_hash=?1`).bind(usernameHash),
   ]);
-  return json({ ok: true, mustChangePassword: Boolean(user.must_change_password), user: { id: user.id, displayName: user.display_name, role: user.role, mustChangePassword: Boolean(user.must_change_password) } }, 200, { "set-cookie": sessionCookie(token, persistent) });
+  const secureCookie = String(env.LOCAL_LAN_DEVELOPMENT) !== "true";
+  return json({ ok: true, mustChangePassword: Boolean(user.must_change_password), user: { id: user.id, displayName: user.display_name, role: user.role, mustChangePassword: Boolean(user.must_change_password) } }, 200, { "set-cookie": sessionCookie(token, persistent, secureCookie) });
 };

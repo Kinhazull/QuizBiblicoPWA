@@ -17,3 +17,7 @@ body:has(.journey-page) .global-back,body:has(.ranking-page) .global-back,body:h
 .admin-shell.journey-page,.admin-shell.ranking-page,.admin-shell.medals-page{padding-top:70px!important}.journey-page>.admin-title,.ranking-page>.admin-title,.medals-page>.admin-title{padding-top:0}@media(max-width:700px){.admin-shell.journey-page,.admin-shell.ranking-page,.admin-shell.medals-page{padding-top:56px!important}}
 
 body:has(.notification-page) .global-back{display:block!important}.admin-shell.notification-page{padding-top:70px!important}.notification-page>.admin-title{padding-top:0}@media(max-width:700px){.admin-shell.notification-page{padding-top:56px!important}}
+
+/* Limites seguros da Home da plataforma e da navegação em viewports estreitas. */
+html,body{max-width:100%;overflow-x:hidden}
+@media(max-width:430px){.participant-bottom-nav{right:0;left:0;bottom:0;width:100%;max-width:100vw;transform:none;padding-right:max(5px,env(safe-area-inset-right));padding-left:max(5px,env(safe-area-inset-left))}.participant-bottom-nav a{min-width:0}.participant-bottom-nav a span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}

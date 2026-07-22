@@ -71,13 +71,13 @@ export function json(data: unknown, status = 200, headers: HeadersInit = {}) {
   return new Response(JSON.stringify(data), { status, headers: { "content-type": "application/json; charset=utf-8", ...headers } });
 }
 
-export function sessionCookie(token: string, persistent: boolean) {
+export function sessionCookie(token: string, persistent: boolean, secure = true) {
   const maxAge = persistent ? 60 * 60 * 24 * 30 : 60 * 60 * 12;
-  return `quiz_session=${token}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${maxAge}`;
+  return `quiz_session=${token}; Path=/; HttpOnly; ${secure ? "Secure; " : ""}SameSite=Lax; Max-Age=${maxAge}`;
 }
 
-export function clearSessionCookie() {
-  return "quiz_session=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0";
+export function clearSessionCookie(secure = true) {
+  return `quiz_session=; Path=/; HttpOnly; ${secure ? "Secure; " : ""}SameSite=Lax; Max-Age=0`;
 }
 
 export function readCookie(request: Request, name: string) {

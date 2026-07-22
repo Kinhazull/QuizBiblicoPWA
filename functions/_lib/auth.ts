@@ -1,6 +1,6 @@
 import { readCookie, sha256 } from "./security";
 
-export type AppEnv = { DB: D1Database; BOOTSTRAP_SECRET?: string; AI?: { run(model:string,input:Record<string,unknown>):Promise<any> } };
+export type AppEnv = { DB: D1Database; BOOTSTRAP_SECRET?: string; LOCAL_LAN_DEVELOPMENT?: string; QUIZ_OUTBOX_BATCH_LIMIT?: string; AI?: { run(model:string,input:Record<string,unknown>):Promise<any> } };
 
 export async function currentUser(request: Request, env: AppEnv) {
   const token = readCookie(request, "quiz_session");

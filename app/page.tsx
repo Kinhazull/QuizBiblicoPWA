@@ -2,18 +2,22 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "./AuthProvider";
-import JourneyCard from "./JourneyCard";
+import { PlatformHome, type PlatformBadgeData, type PlatformMissionData, type PlatformProgressData } from "./PlatformHome";
+import type { JourneyCardData } from "./journey-card-state";
 
 const LEGAL_VERSION = "2026-07-13";
 
 export default function Home() {
-  const { user, loading: authLoading, unreadNotifications, setAuthenticatedUser } = useAuth();
+  const { user, loading: authLoading, setAuthenticatedUser } = useAuth();
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
   const [authError, setAuthError] = useState("");
   const [authBusy, setAuthBusy] = useState(false);
-  const [journey, setJourney] = useState<any>(null);
+  const [journey, setJourney] = useState<JourneyCardData | null>(null);
   const [clock, setClock] = useState(Date.now());
-  const [newBadges, setNewBadges] = useState<any[]>([]);
+  const [badges, setBadges] = useState<PlatformBadgeData | null>(null);
+  const [progress, setProgress] = useState<PlatformProgressData | null>(null);
+  const [mission, setMission] = useState<PlatformMissionData | null>(null);
+  const [missionLoaded, setMissionLoaded] = useState(false);
 
   useEffect(() => {
     const invite = new URLSearchParams(location.search).get("convite");
@@ -27,8 +31,13 @@ export default function Home() {
 
   useEffect(() => {
     if (!user) return;
+    setProgress(null);
+    setMission(null);
+    setMissionLoaded(false);
     fetch("/api/rounds/status").then(response => response.ok ? response.json() : null).then(setJourney);
-    fetch("/api/badges").then(response => response.ok ? response.json() : null).then(data => data && setNewBadges(data.newBadges || []));
+    fetch("/api/badges").then(response => response.ok ? response.json() : null).then(data => data && setBadges(data));
+    fetch("/api/platform/progress", { cache: "no-store" }).then(response => response.ok ? response.json() : null).then(data => data?.progress && setProgress(data.progress));
+    fetch("/api/platform/missions/current", { cache: "no-store" }).then(response => response.ok ? response.json() : null).then(data => setMission(data?.mission || null)).finally(() => setMissionLoaded(true));
     const timer = window.setInterval(() => setClock(Date.now()), 15_000);
     return () => clearInterval(timer);
   }, [user]);
@@ -77,5 +86,5 @@ export default function Home() {
 
   if (!user) return <main className="shell auth-screen"><div className="ambient one"/><div className="ambient two"/><section className="auth-card"><header className="brand"><span className="brand-dot">✦</span> CONTE OS FEITOS</header><p className="eyebrow">JORNADA BÍBLICA</p><h1>{authMode === "login" ? <>Que bom ter você<br/><em>de volta</em></> : <>Entre para a<br/><em>jornada</em></>}</h1><p className="intro">{authMode === "login" ? "Acesse sua conta para jogar a rodada da semana e acompanhar sua jornada." : "Use o código do seu grupo. Seu cadastro será analisado por um líder."}</p><form onSubmit={submitAuth}>{authMode === "register" && <label>Seu nome<input name="displayName" autoComplete="name" required minLength={3} placeholder="Nome e sobrenome"/></label>}{authMode === "register" && <label>Código do grupo<input name="inviteCode" autoCapitalize="characters" required placeholder="Ex.: FAROL-2026" defaultValue={new URLSearchParams(location.search).get("convite") || ""}/></label>}<label>Nome de usuário<input name="username" autoCapitalize="none" autoComplete="username" required minLength={3} placeholder="Como você vai entrar"/></label><label>Senha<input name="password" type="password" autoComplete={authMode === "login" ? "current-password" : "new-password"} required minLength={10} placeholder="Mínimo de 10 caracteres"/></label>{authMode === "login" && <label className="remember"><input name="persistent" type="checkbox"/> Permanecer conectado neste aparelho</label>}{authMode === "register" && <label className="legal-consent"><input name="legalAccepted" type="checkbox" required/><span>Li e aceito os <a href="/termos" target="_blank" rel="noreferrer">Termos de Uso</a> e a <a href="/privacidade" target="_blank" rel="noreferrer">Política de Privacidade</a>.</span></label>}{authError && <p className="auth-message" role="status" aria-live="polite">{authError}</p>}<button className="primary" disabled={authBusy}>{authBusy ? "AGUARDE..." : authMode === "login" ? "ENTRAR" : "CRIAR MINHA CONTA"}<span>→</span></button></form><button className="auth-switch" onClick={() => { setAuthMode(authMode === "login" ? "register" : "login"); setAuthError(""); }}>{authMode === "login" ? "Ainda não tenho conta" : "Já tenho uma conta"}</button><nav className="legal-links" aria-label="Documentos legais"><a href="/termos">Termos de Uso</a><a href="/privacidade">Privacidade</a></nav></section></main>;
 
-  return <main className="shell start-screen"><div className="ambient one"/><div className="ambient two"/><header className="brand"><span className="brand-dot">✦</span> CONTE OS FEITOS</header><p className="welcome">Olá, {user.displayName}</p>{newBadges.length > 0 && <aside className="badge-notice"><b>🎖️</b><span><strong>{newBadges.length === 1 ? "Nova medalha conquistada!" : `${newBadges.length} novas medalhas conquistadas!`}</strong><small>{newBadges.map(item => item.name).join(" · ")}</small></span><a href="/medalhas">VER</a></aside>}<section className="hero-card"><div className="orbit"><span>📖</span><i/><b/></div><p className="eyebrow">QUIZ BÍBLICO</p><h1>Contem o que<br/><em>Deus fez</em></h1><p className="intro">Estude a Bíblia de forma leve e divertida.</p><JourneyCard data={journey} remaining={remaining}/><div className="home-links"><a href="/notificacoes">🔔 Avisos{unreadNotifications > 0 ? ` (${unreadNotifications})` : ""}</a><a href="/jornada">📖 Jornada</a><a href="/perfil">👤 Perfil</a><a href="/rankings">🏆 Ranking</a><a href="/medalhas">🎖️ Medalhas</a>{["admin", "leader"].includes(user.role) && <a href="/admin">⚙️ Painel</a>}</div></section><p className="footer-note">Jornada Bíblica · Horário de Brasília · <a href="/termos">Termos</a> · <a href="/privacidade">Privacidade</a></p></main>;
+  return <PlatformHome displayName={user.displayName} journey={journey} badges={badges} progress={progress} mission={mission} missionLoaded={missionLoaded} remaining={remaining} />;
 }

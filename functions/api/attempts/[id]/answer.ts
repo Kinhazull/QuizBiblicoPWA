@@ -5,6 +5,7 @@ import { enforceRateLimit, requestFingerprint } from "../../../_lib/abuse";
 import { seededShuffle } from "../../../_lib/shuffle";
 import { calculateAnswerPoints, scoringRules, summarizeAnswers } from "../../../_lib/scoring";
 import { flushBadgeSync, queueBadgeSyncStatement } from "../../../_lib/badges";
+import { quizGameFinishedOutboxStatement } from "../../../_lib/game-integrations/quiz-core-outbox";
 
 async function persistedAnswer(env: AppEnv, attemptId: string, questionId: string) {
   return env.DB.prepare("SELECT aa.choice_id choiceId,aa.correct,aa.points,aa.response_time_ms responseTimeMs,q.commentary,c.correct choiceCorrect,r.seconds_per_question secondsPerQuestion FROM attempt_answers aa JOIN attempts a ON a.id=aa.attempt_id JOIN rounds r ON r.id=a.round_id JOIN questions q ON q.id=aa.question_id JOIN choices c ON c.id=aa.choice_id WHERE aa.attempt_id=?1 AND aa.question_id=?2").bind(attemptId, questionId).first<any>();
@@ -53,7 +54,24 @@ export const onRequestPost = async ({ request, env, params }: { request: Request
     try {
       if (isLast) {
         finalResult = summarizeAnswers([...(previous.results as any[]), { correct, points, response_time_ms: elapsed }]);
-        await env.DB.batch([answerStatement, env.DB.prepare("UPDATE attempts SET status='completed',score=?1,correct_answers=?2,total_time_ms=?3,max_streak=?4,completed_at=?5 WHERE id=?6 AND status='in_progress'").bind(finalResult.score, finalResult.correctAnswers, finalResult.totalTimeMs, finalResult.maxStreak, now, params.id), queueBadgeSyncStatement(env,user.id,"attempt.completed",now), env.DB.prepare("INSERT INTO audit_logs(id,organization_id,actor_user_id,action,entity_type,entity_id,details_json,created_at) VALUES(?1,?2,?3,'attempt.completed','attempt',?4,?5,?6)").bind(crypto.randomUUID(), user.organizationId, user.id, params.id, JSON.stringify({ mode: attempt.mode, roundId: attempt.round_id, score: finalResult.score, correctAnswers: finalResult.correctAnswers }), now)]);
+        const completionStatements = [answerStatement, env.DB.prepare("UPDATE attempts SET status='completed',score=?1,correct_answers=?2,total_time_ms=?3,max_streak=?4,completed_at=?5 WHERE id=?6 AND status='in_progress'").bind(finalResult.score, finalResult.correctAnswers, finalResult.totalTimeMs, finalResult.maxStreak, now, params.id), queueBadgeSyncStatement(env,user.id,"attempt.completed",now), env.DB.prepare("INSERT INTO audit_logs(id,organization_id,actor_user_id,action,entity_type,entity_id,details_json,created_at) VALUES(?1,?2,?3,'attempt.completed','attempt',?4,?5,?6)").bind(crypto.randomUUID(), user.organizationId, user.id, params.id, JSON.stringify({ mode: attempt.mode, roundId: attempt.round_id, score: finalResult.score, correctAnswers: finalResult.correctAnswers }), now)];
+        if (attempt.mode === "official") completionStatements.push(quizGameFinishedOutboxStatement(env, {
+          contractVersion: 1,
+          attemptId: params.id,
+          roundId: attempt.round_id,
+          organizationId: user.organizationId,
+          userId: user.id,
+          status: "completed",
+          mode: "official",
+          startedAt: Number(attempt.started_at),
+          finishedAt: now,
+          score: finalResult.score,
+          correctAnswers: finalResult.correctAnswers,
+          questionsAnswered: order + 1,
+          maxStreak: finalResult.maxStreak,
+          integrity: { valid: true },
+        }));
+        await env.DB.batch(completionStatements);
       } else await env.DB.batch([answerStatement,env.DB.prepare("UPDATE attempts SET current_question_started_at=NULL WHERE id=?1 AND status='in_progress'").bind(params.id)]);
     } catch {
       const winner: any = await persistedAnswer(env, params.id, questionId);
