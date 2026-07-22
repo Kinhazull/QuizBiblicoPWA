@@ -1,7 +1,9 @@
 # Architecture Review v1
 
-Data da revisão: **21/07/2026**  
-Branch revisada: **feature/platform-foundation**  
+Data da revisão: **21/07/2026**
+
+Branch revisada: **feature/platform-foundation**
+
 Natureza: **revisão somente de leitura**
 
 ## Resumo executivo

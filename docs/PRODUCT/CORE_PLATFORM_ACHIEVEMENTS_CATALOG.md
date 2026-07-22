@@ -1,8 +1,11 @@
 # Core Platform Achievements Catalog
 
-Status: Approved  
-Catalog version: 1  
-Scope: Global platform achievements  
+Status: Approved
+
+Catalog version: 1
+
+Scope: Global platform achievements
+
 Last updated: 2026-07-21
 
 ## 1. Purpose

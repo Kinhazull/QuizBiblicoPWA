@@ -1,8 +1,11 @@
 # Reward Consumer + Progress Service
 
-Status: implementado localmente na Sprint 3.5B  
-Consumidor: `reward-progress`  
-Versão do consumidor: `1`  
+Status: implementado localmente na Sprint 3.5B
+
+Consumidor: `reward-progress`
+
+Versão do consumidor: `1`
+
 Evento elegível: `GAME_FINISHED` versão `2`
 
 ## Fronteira

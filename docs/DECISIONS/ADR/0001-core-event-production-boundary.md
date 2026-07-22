@@ -1,6 +1,7 @@
 # ADR 0001 — Fronteira de produção e consumo de eventos do Core
 
-Data: 21/07/2026  
+Data: 21/07/2026
+
 Status: Aceita
 
 ## Contexto

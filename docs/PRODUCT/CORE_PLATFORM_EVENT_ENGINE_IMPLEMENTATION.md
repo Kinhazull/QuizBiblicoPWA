@@ -1,7 +1,9 @@
 # Implementação do Event Engine do Core Platform
 
-Status: MVP implementado localmente  
-Modo de execução: síncrono  
+Status: MVP implementado localmente
+
+Modo de execução: síncrono
+
 Migration: `0026_platform_event_engine.sql`
 
 ## Objetivo entregue
