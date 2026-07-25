@@ -43,18 +43,33 @@ Essa hipótese deve ser validada no código e no histórico recente antes de qua
 ### ChatGPT
 
 - auditar a `main`;
-- revisar commits e PRs;
-- validar ou corrigir este handoff;
-- preparar uma sprint pequena e objetiva.
+- revisar o pipeline do GitHub Actions;
+- validar a hipótese do Worker e da Outbox;
+- preparar a próxima sprint técnica.
 
 ### Codex
 
-Nenhuma ação antes da confirmação do escopo.
+Nenhuma implementação até a conclusão da auditoria.
 
 ### Usuário
 
-- copiar o CF-POS para o repositório;
-- criar branch documental;
-- fazer commit;
-- enviar ao GitHub;
-- informar quando estiver disponível.
+- manter o CF-POS atualizado;
+- abrir uma nova branch somente após a conclusão da auditoria;
+- aprovar a próxima sprint técnica.
+
+## Marcos recentes
+
+### 2026-07-24
+
+✅ CF-POS v1.0 implantado com sucesso.
+
+- documentação operacional criada;
+- protocolo de conversa oficializado;
+- papéis ChatGPT/Codex/Usuário definidos;
+- templates criados;
+- histórico operacional iniciado;
+- documentação versionada na branch principal.
+
+Último commit:
+
+67145b0 — docs: add CF-POS v1.0
