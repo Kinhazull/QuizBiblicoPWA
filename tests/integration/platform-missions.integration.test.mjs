@@ -20,12 +20,14 @@ async function setup(t) {
   return { ctx, token: await createSession(ctx, "player") };
 }
 
-test("authenticated current mission assigns one daily definition and returns a safe empty state without catalog", async t => {
+test("authenticated current mission automatically materializes one daily catalog mission", async t => {
   const { ctx, token } = await setup(t);
-  const empty = await readCurrentMission({ request: createAuthenticatedRequest("https://test/api/platform/missions/current", { token }), env: ctx.env });
-  assert.equal(empty.status, 200);
-  assert.deepEqual(await responseJson(empty), { mission: null });
-  assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM user_platform_missions").get().total, 0);
+  const automatic = await readCurrentMission({ request: createAuthenticatedRequest("https://test/api/platform/missions/current", { token }), env: ctx.env });
+  assert.equal(automatic.status, 200);
+  assert.ok((await responseJson(automatic)).mission);
+  assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM user_platform_missions").get().total, 1);
+  ctx.raw.prepare("DELETE FROM user_platform_missions").run();
+  ctx.raw.prepare("DELETE FROM platform_mission_definitions").run();
   seedDefinition(ctx);
   const [first, second] = await Promise.all([
     getCurrentDailyMission(ctx.env, "player", "org-1", Date.UTC(2026, 6, 19, 12)),
@@ -40,8 +42,6 @@ test("authenticated current mission assigns one daily definition and returns a s
 test("daily assignment ignores weekly catalog entries and isolates user and organization", async t => {
   const { ctx } = await setup(t);
   seedDefinition(ctx, { id: "weekly-v1", code: "platform.weekly.future", cadence: "weekly" });
-  assert.equal(await getCurrentDailyMission(ctx.env, "player", "org-1", Date.UTC(2026, 6, 19, 12)), null);
-  seedDefinition(ctx);
   const own = await getCurrentDailyMission(ctx.env, "player", "org-1", Date.UTC(2026, 6, 19, 12));
   const other = await getCurrentDailyMission(ctx.env, "other", "org-2", Date.UTC(2026, 6, 19, 12));
   assert.notEqual(own.id, other.id);

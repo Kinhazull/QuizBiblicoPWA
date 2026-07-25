@@ -57,6 +57,17 @@ export type PlatformMissionRewardInput = {
   coinAmount: number;
 };
 
+export type PlatformRetentionRewardInput = {
+  identity: string;
+  userId: string;
+  organizationId: string;
+  xpAmount: number;
+  coinAmount: number;
+  reason: string;
+  sourceType: "daily_login" | "daily_chest";
+  sourceId: string;
+};
+
 export function xpRequiredForLevel(level: number) {
   const safeLevel = Math.max(1, Math.floor(level));
   return XP_STEP * (safeLevel - 1) ** 2;
@@ -302,6 +313,61 @@ export async function grantPlatformMissionReward(env: AppEnv, input: PlatformMis
     claimed: Number((results[1] as any)?.meta?.changes || 0) === 1,
     rewarded: Number((results[5] as any)?.meta?.changes || 0) === 1
       || Number((results[6] as any)?.meta?.changes || 0) === 1,
+    progress: await getUserProgress(env, input.userId, input.organizationId),
+  };
+}
+
+/** Applies a daily retention reward atomically through the existing Progress ledgers. */
+export async function grantPlatformRetentionReward(env: AppEnv, input: PlatformRetentionRewardInput) {
+  if (!Number.isSafeInteger(input.xpAmount) || input.xpAmount < 0 || input.xpAmount > MAX_GRANT
+    || !Number.isSafeInteger(input.coinAmount) || input.coinAmount < 0 || input.coinAmount > MAX_GRANT
+    || input.xpAmount + input.coinAmount < 1) {
+    throw new Error("invalid_retention_reward");
+  }
+  const xpEventId = await compactEventId("retention-xp", input.identity);
+  const coinEventId = await compactEventId("retention-coins", input.identity);
+  const base = {
+    userId: input.userId,
+    organizationId: input.organizationId,
+    reason: input.reason,
+    sourceType: input.sourceType,
+    sourceId: input.sourceId,
+  };
+  if (input.xpAmount) assertExpectedLedger(await existingLedger(env, "platform_xp_ledger", xpEventId), {
+    ...base, eventId: xpEventId, amount: input.xpAmount,
+  });
+  if (input.coinAmount) assertExpectedLedger(await existingLedger(env, "platform_coin_ledger", coinEventId), {
+    ...base, eventId: coinEventId, amount: input.coinAmount,
+  });
+  const active = await env.DB.prepare(
+    "SELECT id FROM users WHERE id=?1 AND organization_id=?2 AND status='active'",
+  ).bind(input.userId, input.organizationId).first();
+  if (!active) throw new Error("progress_user_unavailable");
+
+  const now = Date.now();
+  const results = await env.DB.batch([
+    env.DB.prepare(
+      "INSERT INTO user_platform_progress(user_id,organization_id,total_xp,coins,created_at,updated_at) VALUES(?1,?2,0,0,?3,?3) ON CONFLICT(user_id) DO NOTHING",
+    ).bind(input.userId, input.organizationId, now),
+    env.DB.prepare(`INSERT INTO platform_xp_ledger(id,event_id,user_id,organization_id,amount,reason,source_type,source_id,created_at)
+      SELECT ?1,?2,?3,?4,?5,?6,?7,?8,?9 WHERE ?5>0 ON CONFLICT(event_id) DO NOTHING`)
+      .bind(crypto.randomUUID(), xpEventId, input.userId, input.organizationId, input.xpAmount, input.reason, input.sourceType, input.sourceId, now),
+    env.DB.prepare(`INSERT INTO platform_coin_ledger(id,event_id,user_id,organization_id,amount,reason,source_type,source_id,created_at)
+      SELECT ?1,?2,?3,?4,?5,?6,?7,?8,?9 WHERE ?5>0 ON CONFLICT(event_id) DO NOTHING`)
+      .bind(crypto.randomUUID(), coinEventId, input.userId, input.organizationId, input.coinAmount, input.reason, input.sourceType, input.sourceId, now),
+    env.DB.prepare(`UPDATE user_platform_progress SET
+      total_xp=total_xp+COALESCE((SELECT amount FROM platform_xp_ledger WHERE event_id=?1 AND user_id=?4 AND organization_id=?5 AND applied_at IS NULL),0),
+      coins=coins+COALESCE((SELECT amount FROM platform_coin_ledger WHERE event_id=?2 AND user_id=?4 AND organization_id=?5 AND applied_at IS NULL),0),
+      updated_at=?3 WHERE user_id=?4 AND organization_id=?5`)
+      .bind(xpEventId, coinEventId, now, input.userId, input.organizationId),
+    env.DB.prepare("UPDATE platform_xp_ledger SET applied_at=?1 WHERE event_id=?2 AND user_id=?3 AND organization_id=?4 AND applied_at IS NULL")
+      .bind(now, xpEventId, input.userId, input.organizationId),
+    env.DB.prepare("UPDATE platform_coin_ledger SET applied_at=?1 WHERE event_id=?2 AND user_id=?3 AND organization_id=?4 AND applied_at IS NULL")
+      .bind(now, coinEventId, input.userId, input.organizationId),
+  ]);
+  return {
+    applied: Number((results[3] as any)?.meta?.changes || 0) === 1
+      && (Number((results[4] as any)?.meta?.changes || 0) === 1 || Number((results[5] as any)?.meta?.changes || 0) === 1),
     progress: await getUserProgress(env, input.userId, input.organizationId),
   };
 }

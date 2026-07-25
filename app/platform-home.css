@@ -53,6 +53,11 @@
 .platform-currencies b { grid-row: 1/3; font-size: 31px; }
 .platform-currencies strong { color: white; font-size: 25px; }
 .platform-currencies small { color: #b8c5d5; }
+.platform-daily-login { grid-column: 1/-1; display: flex; min-width: 0; align-items: center; gap: 11px; border: 1px solid #f4b40038; border-radius: 14px; padding: 11px 14px; background: #f4b4000d; }
+.platform-daily-login>span { font-size: 25px; }
+.platform-daily-login>div { display: grid; min-width: 0; gap: 2px; }
+.platform-daily-login strong { color: var(--platform-gold); }
+.platform-daily-login small { color: #b8c5d5; overflow-wrap: anywhere; }
 .platform-continue-card { border-color: #2585f2a8; padding: 22px; }
 .platform-continue-card>header,.platform-section>header { display: flex; min-width: 0; align-items: center; justify-content: space-between; gap: 15px; }
 .platform-continue-card>header p,.platform-mission-card p,.platform-section h2,.platform-daily-chest p { margin: 0; color: #3e91f4; font-size: 16px; font-weight: 700; text-transform: uppercase; }
@@ -91,7 +96,8 @@
 .platform-chest-art { display: grid; min-height: 106px; place-items: center; border-radius: 17px; background: radial-gradient(circle,#f4b4003d,transparent 65%); font-size: 75px; }
 .platform-daily-chest p { color: var(--platform-gold); }
 .platform-daily-chest>strong { min-width: 100px; border: 1px solid #f4b4005c; border-radius: 15px; padding: 16px; color: var(--platform-gold); text-align: center; }
-.platform-daily-chest button { min-width: 135px; min-height: 52px; border: 0; border-radius: 12px; background: #735b1b; color: #e7d79f; font-weight: 700; text-transform: uppercase; cursor: not-allowed; }
+.platform-daily-chest button { min-width: 135px; min-height: 52px; border: 0; border-radius: 12px; background: linear-gradient(180deg,#f4b400,#c88d00); color: #161004; font-weight: 700; text-transform: uppercase; cursor: pointer; }
+.platform-daily-chest button:disabled { background: #735b1b; color: #e7d79f; cursor: not-allowed; opacity: .8; }
 .platform-achievements>header h2 { color: var(--platform-gold); }
 .platform-achievement-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-top: 17px; }
 .platform-achievement-grid article,.platform-empty-achievements { display: flex; min-height: 78px; align-items: center; gap: 13px; border: 1px solid #668bb020; border-radius: 15px; padding: 14px; background: #0a1b2daa; }

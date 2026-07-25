@@ -20,6 +20,10 @@ type PlatformHomeProps = {
   progress: PlatformProgressData | null;
   mission: PlatformMissionData | null;
   missionLoaded: boolean;
+  daily: DailyRetentionData | null;
+  dailyBusy: boolean;
+  dailyError: string;
+  onOpenChest: () => void;
   remaining: (target?: number) => string;
 };
 
@@ -44,6 +48,18 @@ export type PlatformProgressData = {
   levelProgress: { currentXp: number; targetXp: number; percent: number };
 };
 
+export type DailyRetentionData = {
+  dayKey: string;
+  streak: number;
+  login: { claimed: boolean; reward: { xp: number; coins: number; label: string } };
+  chest: {
+    unlocked: boolean;
+    opened: boolean;
+    reward: { xp: number; coins: number; label: string } | null;
+    preview: { xp: number; coins: number; label: string };
+  };
+};
+
 function firstName(displayName: string) {
   return displayName.trim().split(/\s+/)[0] || "participante";
 }
@@ -61,7 +77,10 @@ function recentAchievements(data: PlatformAchievementData | null) {
     .slice(0, 4);
 }
 
-export function PlatformHome({ displayName, journey, achievementData, progress, mission, missionLoaded, remaining }: PlatformHomeProps) {
+export function PlatformHome({
+  displayName, journey, achievementData, progress, mission, missionLoaded,
+  daily, dailyBusy, dailyError, onOpenChest, remaining,
+}: PlatformHomeProps) {
   const view = getJourneyCardView(journey, remaining);
   const quizProgress = progressFor(journey);
   const achievements = recentAchievements(achievementData);
@@ -88,6 +107,13 @@ export function PlatformHome({ displayName, journey, achievementData, progress, 
           <span><b aria-hidden="true">🪙</b><strong>{platformProgress.coins.toLocaleString("pt-BR")}</strong><small>Moedas</small></span>
           <span><b aria-hidden="true">💎</b><strong>{PLATFORM_HOME_PREVIEW.gems}</strong><small>Gemas</small></span>
         </div>
+        <div className="platform-daily-login" role="status">
+          <span aria-hidden="true">🔥</span>
+          <div>
+            <strong>{daily ? `${daily.streak} dia${daily.streak === 1 ? "" : "s"} de sequência` : "Preparando recompensa diária"}</strong>
+            <small>{daily?.login.claimed ? `Recompensa de hoje: ${daily.login.reward.label}` : "Sua recompensa será entregue ao entrar."}</small>
+          </div>
+        </div>
       </section>
 
       <section className="platform-continue-card" aria-labelledby="continue-title">
@@ -107,7 +133,7 @@ export function PlatformHome({ displayName, journey, achievementData, progress, 
       <section className="platform-mission-card" aria-labelledby="mission-title">
         <div className="platform-mission-icon" aria-hidden="true">{mission?.icon || "🎯"}</div>
         <div><p>Missão do dia</p><h2 id="mission-title">{!missionLoaded ? "Carregando missão..." : mission?.name || "Novas missões em breve"}</h2><span>{mission ? `${mission.progress}/${mission.target} ${mission.progressUnit}` : "Nenhuma missão diária disponível"}</span></div>
-        <aside><small>Recompensa</small><strong>{mission?.reward.label || "—"}</strong><span>{mission?.state === "claimed" ? "Resgatada" : mission?.state === "completed" ? "Pronta para resgate" : mission ? `Expira em ${remaining(mission.expiresAt)}` : "Aguarde o próximo catálogo"}</span></aside>
+        <aside><small>Recompensa</small><strong>{mission?.reward.label || "—"}</strong><span>{mission?.state === "claimed" ? "Resgatada" : mission?.state === "completed" ? "Missão concluída · cofre liberado" : mission ? `Expira em ${remaining(mission.expiresAt)}` : "Aguarde o próximo catálogo"}</span></aside>
       </section>
 
       <section className="platform-section platform-games" id="jogos" aria-labelledby="games-title">
@@ -120,7 +146,13 @@ export function PlatformHome({ displayName, journey, achievementData, progress, 
       </section>
 
       <section className="platform-daily-chest" id="recompensas" aria-labelledby="chest-title">
-        <div className="platform-chest-art" aria-hidden="true">🎁</div><div><p>Baú diário</p><h2 id="chest-title">Uma nova recompensa a cada dia</h2><span>A lógica de recompensas será liberada em uma próxima etapa.</span></div><strong>{PLATFORM_HOME_PREVIEW.dailyChest.label}</strong><button type="button" disabled>Em breve</button>
+        <div className="platform-chest-art" aria-hidden="true">🎁</div>
+        <div><p>Cofre diário</p><h2 id="chest-title">{daily?.chest.opened ? "Recompensa coletada" : daily?.chest.unlocked ? "Seu cofre está disponível" : "Conclua a missão do dia"}</h2>
+          <span>{dailyError || (daily?.chest.opened ? `Você recebeu ${daily.chest.reward?.label}.` : daily?.chest.unlocked ? "Abra uma vez para receber sua recompensa." : "O cofre será liberado após concluir a missão diária.")}</span></div>
+        <strong>{daily?.chest.reward?.label || daily?.chest.preview.label || "Recompensa surpresa"}</strong>
+        <button type="button" onClick={onOpenChest} disabled={dailyBusy || !daily?.chest.unlocked || daily.chest.opened}>
+          {dailyBusy ? "Aguarde..." : daily?.chest.opened ? "Aberto hoje" : daily?.chest.unlocked ? "Abrir cofre" : "Bloqueado"}
+        </button>
       </section>
 
       <section className="platform-section platform-achievements" aria-labelledby="achievements-title">
@@ -128,7 +160,7 @@ export function PlatformHome({ displayName, journey, achievementData, progress, 
         {achievements.length > 0 ? <div className="platform-achievement-grid">{achievements.map(item => <article key={item.code}><b aria-hidden="true">{item.icon || "⭐"}</b><div><strong>{item.name}</strong><small>{item.scopeType === "game" ? "Conquista de jogo" : "Conquista da plataforma"}</small></div></article>)}</div> : <div className="platform-empty-achievements"><span aria-hidden="true">✦</span><div><strong>Suas conquistas aparecerão aqui</strong><small>Jogue e complete desafios para desbloquear conquistas.</small></div></div>}
       </section>
 
-      <p className="platform-preview-note">Gemas e baú são uma prévia visual. A missão diária é carregada pelo Core Platform.</p>
+      <p className="platform-preview-note">Gemas permanecem como prévia visual. O ciclo diário é validado pelo Core Platform.</p>
     </div>
   </main>;
 }
