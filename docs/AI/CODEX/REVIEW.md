@@ -1,20 +1,9 @@
-# Prompt-base para revisão no Codex
+# Prompt Codex — Revisão
 
-## Objetivo
-
-Revise a mudança sem editar arquivos inicialmente.
-
-## Material
-
-- branch;
-- commit;
-- diff;
-- PR;
-- arquivos específicos.
+Revise sem editar arquivos inicialmente.
 
 ## Verificar
-
-- correção funcional;
+- correção;
 - regressões;
 - segurança;
 - contratos;
@@ -25,26 +14,9 @@ Revise a mudança sem editar arquivos inicialmente.
 - escopo;
 - documentação.
 
-## Formato da resposta
-
-### Bloqueadores
-
-- item
-
-### Problemas importantes
-
-- item
-
-### Melhorias não bloqueadoras
-
-- item
-
-### Validações recomendadas
-
-- comando
-
-### Conclusão
-
-`aprovar | solicitar correções | inconclusivo`
-
-Não implemente correções sem autorização posterior.
+## Saída
+- bloqueadores;
+- problemas importantes;
+- melhorias não bloqueadoras;
+- validações recomendadas;
+- conclusão: aprovar, solicitar correções ou inconclusivo.

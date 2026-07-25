@@ -16,19 +16,20 @@ Jogos planejados:
 
 O Show do Milhão foi removido do escopo.
 
-## Princípios de produto
+## Princípios
 
-- Experiência gratuita.
-- Sem publicidade pesada.
-- Retenção saudável.
-- Linguagem cristã acessível.
-- Conteúdo bíblico revisado por pessoas.
-- Novos jogos com regras e persistência próprias.
-- Evolução modular sem enfraquecer o domínio já validado do Quiz.
+- experiência gratuita;
+- sem publicidade pesada;
+- retenção saudável;
+- linguagem cristã acessível;
+- conteúdo bíblico revisado por pessoas;
+- regras e persistência próprias por jogo;
+- servidor como fonte de verdade;
+- evolução modular sem enfraquecer o Quiz.
 
-## Progressão da plataforma
+## Progressão geral
 
-A plataforma poderá utilizar:
+A plataforma pode utilizar:
 
 - XP global;
 - nível global;
@@ -40,23 +41,9 @@ A plataforma poderá utilizar:
 - recompensas;
 - desbloqueáveis.
 
-As Medalhas pertencem ao domínio competitivo do Quiz e não equivalem às Conquistas da plataforma.
+Medalhas continuam pertencendo ao domínio competitivo do Quiz.
 
-## Invariantes arquiteturais
-
-- O servidor concede recompensas persistentes.
-- O cliente nunca concede XP, moedas ou recompensas persistentes.
-- Estatísticas devem ser reconstruíveis.
-- Mudanças arquiteturais exigem decisão formal.
-- Eventos e consumidores devem ser versionados.
-- Processamento assíncrono deve ser idempotente.
-- Retry, dead letter e observabilidade devem ser preservados.
-- Novos jogos não reutilizam `rounds` ou `attempts` por conveniência.
-- Jornadas, Ranking e Medalhas continuam pertencendo ao Quiz Bíblico.
-
-## Arquitetura atual conhecida
-
-A solução utiliza:
+## Arquitetura conhecida
 
 - frontend/PWA;
 - Cloudflare Pages;
@@ -66,47 +53,23 @@ A solução utiliza:
 - GitHub Actions;
 - migrations versionadas;
 - serviços de domínio;
-- processamento assíncrono;
-- transactional outbox.
+- transactional outbox;
+- processamento assíncrono idempotente.
 
-## Fluxo Git oficial
+## Fluxo Git
 
-```text
-main
-  ↓
-feature branch
-  ↓
-implementação
-  ↓
-validações
-  ↓
-commit
-  ↓
-push
-  ↓
-Pull Request
-  ↓
-GitHub Actions
-  ↓
-revisão
-  ↓
-squash merge
-  ↓
-exclusão da branch
-  ↓
-pull da main
-```
+`main → feature branch → implementação → validações → commit → push → PR → CI → revisão → squash merge → exclusão da branch → pull da main`
 
 ## Ferramentas oficiais
 
-### ChatGPT com GitHub
+### ChatGPT
 
 - planejamento;
 - arquitetura;
 - auditoria;
 - documentação;
 - revisão;
-- preparação de sprint;
+- preparação de prompts;
 - continuidade entre conversas.
 
 ### Codex
@@ -115,20 +78,14 @@ pull da main
 - testes;
 - build;
 - debug;
-- mudanças complexas no ambiente local.
+- refatoração;
+- investigação dependente do ambiente local.
 
-### GitHub Desktop
+### Usuário
 
-- sincronização;
-- branches;
-- commits;
-- push;
-- pull.
+- aprova decisões;
+- executa ações humanas;
+- autoriza push, merge, deploy e migrations;
+- valida comportamento final.
 
 Gemini CLI, Roo Code e Qwen não fazem parte do fluxo oficial atual.
-
-## Memória operacional
-
-Conversas de chat são temporárias. A pasta `docs/AI` é a memória operacional oficial do projeto.
-
-Informações importantes não devem existir apenas no chat.

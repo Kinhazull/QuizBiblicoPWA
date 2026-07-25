@@ -1,56 +1,41 @@
-# Prompt-base para feature no Codex
+# Prompt Codex — Feature
+
+Implemente somente a feature descrita.
+
+## Leia
+- `docs/AI/AGENTS.md`
+- `docs/AI/CURRENT_STATE.md`
+- documentação específica indicada
 
 ## Objetivo
-
-Implemente somente a feature descrita abaixo.
-
-## Contexto obrigatório
-
-Leia:
-
-- `docs/AI/AGENTS.md`
-- `docs/AI/PROJECT_CONTEXT.md`
-- `docs/AI/CURRENT_STATE.md`
-- documentação específica listada na tarefa
-
-Não leia o repositório inteiro.
+[preencher]
 
 ## Escopo
-
-[DESCREVER]
+[preencher]
 
 ## Arquivos permitidos
-
-[LISTAR]
+[preencher]
 
 ## Arquivos protegidos
-
-[LISTAR]
-
-## Restrições
-
-- Não ampliar escopo.
-- Não trabalhar na `main`.
-- Não fazer push, merge, deploy ou migration remota.
-- Não alterar decisões arquiteturais.
-- Não reduzir testes.
-- Preservar compatibilidade existente.
+[preencher]
 
 ## Critérios de aceite
-
-[LISTAR]
+[preencher]
 
 ## Validações
+[preencher]
 
-[COMANDOS]
+## Proibições
+- não trabalhar na `main`;
+- não fazer push, merge, deploy ou migration remota;
+- não ampliar escopo;
+- não reduzir testes.
 
-## Relatório final obrigatório
-
-- arquivos inspecionados;
-- arquivos alterados;
-- resumo da implementação;
-- comandos executados;
+## Relatório final
+- inspecionado;
+- alterado;
+- comandos;
 - resultados;
 - testes não executados;
-- riscos residuais;
+- riscos;
 - rollback.

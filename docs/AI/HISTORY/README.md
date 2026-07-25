@@ -1,14 +1,6 @@
 # Histórico operacional
 
-Esta pasta registra resumos mensais de desenvolvimento, decisões e handoffs.
-
-Formato:
-
-- `2026-07.md`
-- `2026-08.md`
-- `2026-09.md`
-
-Não copiar conversas completas.
+Crie um arquivo mensal no formato `AAAA-MM.md`.
 
 Registrar somente:
 
@@ -17,6 +9,8 @@ Registrar somente:
 - branches;
 - commits;
 - PRs;
-- validações;
+- testes;
 - bloqueios;
 - próximas ações.
+
+Não copiar conversas completas.

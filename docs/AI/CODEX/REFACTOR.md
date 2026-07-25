@@ -1,44 +1,23 @@
-# Prompt-base para refatoração no Codex
+# Prompt Codex — Refatoração
 
 ## Objetivo
-
-Refatore somente o escopo definido, preservando comportamento.
+Refatorar preservando comportamento.
 
 ## Escopo
+[preencher]
 
-[DESCREVER]
-
-## Comportamento que deve permanecer idêntico
-
-[LISTAR]
-
-## Arquivos permitidos
-
-[LISTAR]
-
-## Restrições
-
-- Nenhuma mudança funcional não autorizada.
-- Nenhuma migration.
-- Nenhum deploy.
-- Nenhuma mudança de contrato sem autorização.
-- Não remover testes.
-- Manter compatibilidade pública.
+## Comportamento invariável
+[preencher]
 
 ## Validações
-
-- baseline antes;
-- testes relevantes;
+- baseline;
 - lint;
 - build;
+- testes;
 - comparação de comportamento.
 
-## Relatório final
-
-- motivo;
-- estrutura anterior;
-- estrutura nova;
-- comportamento preservado;
-- testes;
-- riscos;
-- rollback.
+## Proibições
+- mudança funcional;
+- migration;
+- deploy;
+- mudança de contrato não autorizada.
