@@ -14,9 +14,9 @@ test("daily streak grows consecutively and resets after a missed day", () => {
 });
 
 test("daily login bonus grows predictably and is capped at seven days", () => {
-  assert.deepEqual(dailyLoginReward(1), { xp: 10, coins: 2, label: "+10 XP + +2 moedas" });
-  assert.deepEqual(dailyLoginReward(4), { xp: 16, coins: 3, label: "+16 XP + +3 moedas" });
-  assert.deepEqual(dailyLoginReward(99), { xp: 22, coins: 5, label: "+22 XP + +5 moedas" });
+  assert.deepEqual(dailyLoginReward(1), { xp: 10, coins: 2, label: "+10 XP e +2 moedas" });
+  assert.deepEqual(dailyLoginReward(4), { xp: 16, coins: 3, label: "+16 XP e +3 moedas" });
+  assert.deepEqual(dailyLoginReward(99), { xp: 22, coins: 5, label: "+22 XP e +5 moedas" });
 });
 
 test("daily chest reward is deterministic and always contains value", () => {

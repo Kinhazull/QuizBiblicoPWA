@@ -21,7 +21,7 @@ function rewardLabel(reward: { xp: number; coins: number }) {
   return [
     reward.xp ? `+${reward.xp} XP` : "",
     reward.coins ? `+${reward.coins} moedas` : "",
-  ].filter(Boolean).join(" + ");
+  ].filter(Boolean).join(" e ");
 }
 
 export function calculateDailyStreak(dayKey: string, claimedDayKeys: readonly string[]) {

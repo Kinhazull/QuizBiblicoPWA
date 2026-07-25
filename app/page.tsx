@@ -34,25 +34,58 @@ export default function Home() {
 
   useEffect(() => {
     if (!user) return;
+    let active = true;
+    const controller = new AbortController();
     setProgress(null);
     setMission(null);
     setMissionLoaded(false);
     setDaily(null);
     setDailyError("");
-    fetch("/api/rounds/status").then(response => response.ok ? response.json() : null).then(setJourney);
-    fetch("/api/platform/achievements", { cache: "no-store" }).then(response => response.ok ? response.json() : null).then(data => data && setAchievementData(data));
-    fetch("/api/platform/progress", { cache: "no-store" }).then(response => response.ok ? response.json() : null).then(data => data?.progress && setProgress(data.progress));
-    fetch("/api/platform/missions/current", { cache: "no-store" }).then(response => response.ok ? response.json() : null).then(data => setMission(data?.mission || null)).finally(() => setMissionLoaded(true));
-    fetch("/api/platform/daily/check-in", { method: "POST", cache: "no-store" })
+    fetch("/api/rounds/status", { signal: controller.signal }).then(response => response.ok ? response.json() : null)
+      .then(data => { if (active) setJourney(data); }).catch(() => undefined);
+    fetch("/api/platform/achievements", { cache: "no-store", signal: controller.signal })
       .then(response => response.ok ? response.json() : null)
-      .then(data => {
-        if (!data?.daily) return;
+      .then(data => { if (active && data) setAchievementData(data); }).catch(() => undefined);
+    void (async () => {
+      try {
+        const response = await fetch("/api/platform/daily/check-in", {
+          method: "POST", cache: "no-store", signal: controller.signal,
+        });
+        if (!response.ok) throw new Error("daily_check_in_failed");
+        const data = await response.json();
+        if (!data?.daily) throw new Error("daily_state_unavailable");
+        if (!active) return;
         setDaily(data.daily);
         setMission(data.daily.mission || null);
         setProgress(data.daily.progress || null);
-      });
+      } catch (error) {
+        if (!active || (error instanceof DOMException && error.name === "AbortError")) return;
+        setDailyError("Não foi possível carregar o ciclo diário. Tente recarregar a página.");
+        try {
+          const [progressResponse, missionResponse] = await Promise.all([
+            fetch("/api/platform/progress", { cache: "no-store", signal: controller.signal }),
+            fetch("/api/platform/missions/current", { cache: "no-store", signal: controller.signal }),
+          ]);
+          const [progressData, missionData] = await Promise.all([
+            progressResponse.ok ? progressResponse.json() : null,
+            missionResponse.ok ? missionResponse.json() : null,
+          ]);
+          if (!active) return;
+          if (progressData?.progress) setProgress(progressData.progress);
+          setMission(missionData?.mission || null);
+        } catch {
+          // The visible daily error remains the safe fallback when the network is unavailable.
+        }
+      } finally {
+        if (active) setMissionLoaded(true);
+      }
+    })();
     const timer = window.setInterval(() => setClock(Date.now()), 15_000);
-    return () => clearInterval(timer);
+    return () => {
+      active = false;
+      controller.abort();
+      clearInterval(timer);
+    };
   }, [user]);
 
   function remaining(target?: number) {

@@ -83,6 +83,8 @@ test("daily chest unlocks after mission completion and opens only once", async t
   assert.equal(repeated.chest.opened, true);
   assert.equal(opened.progress.totalXp, before.totalXp + unlocked.chest.preview.xp);
   assert.equal(opened.progress.coins, before.coins + unlocked.chest.preview.coins);
+  const afterRepeat = await openDailyChest(ctx.env, "player", "org-1", now + 3000);
+  assert.deepEqual(afterRepeat.progress, opened.progress);
   const ledgers = ctx.raw.prepare(`SELECT
     (SELECT COUNT(*) FROM platform_xp_ledger WHERE source_type='daily_chest')+
     (SELECT COUNT(*) FROM platform_coin_ledger WHERE source_type='daily_chest') total`).get();

@@ -111,7 +111,7 @@ export function PlatformHome({
           <span aria-hidden="true">🔥</span>
           <div>
             <strong>{daily ? `${daily.streak} dia${daily.streak === 1 ? "" : "s"} de sequência` : "Preparando recompensa diária"}</strong>
-            <small>{daily?.login.claimed ? `Recompensa de hoje: ${daily.login.reward.label}` : "Sua recompensa será entregue ao entrar."}</small>
+            <small>{dailyError || (daily?.login.claimed ? `Recompensa de hoje: ${daily.login.reward.label}` : "Sua recompensa será entregue ao entrar.")}</small>
           </div>
         </div>
       </section>

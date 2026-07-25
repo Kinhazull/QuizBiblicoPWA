@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
+import { gameCatalog } from "../../app/data/gameCatalog";
 
 const participant = {
   id: "e2e-user",
@@ -29,7 +30,67 @@ async function mockPublicApi(page: import("@playwright/test").Page, authenticate
     contentType: "application/json",
     body: JSON.stringify({ achievements: [], summary: { total: 0, unlocked: 0, pending: 0 } }),
   }));
+  await page.route("**/api/platform/daily/check-in", route => route.fulfill({
+    status: authenticated ? 200 : 401,
+    contentType: "application/json",
+    body: JSON.stringify(authenticated ? {
+      daily: {
+        dayKey: "2026-07-25",
+        streak: 2,
+        login: { claimed: true, reward: { xp: 12, coins: 2, label: "+12 XP e +2 moedas" } },
+        mission: {
+          id: "mission-e2e", name: "Jogue uma partida", description: "Conclua uma partida.",
+          icon: "🎯", state: "active", progress: 0, target: 1, progressUnit: "partida",
+          expiresAt: Date.now() + 3_600_000, reward: { xp: 20, coins: 2, label: "+20 XP + +2 moedas" },
+        },
+        chest: {
+          unlocked: false, opened: false, reward: null,
+          preview: { xp: 10, coins: 3, label: "+10 XP e +3 moedas" },
+        },
+        progress: {
+          level: 1, totalXp: 12, coins: 2, curveVersion: "v1",
+          levelProgress: { currentXp: 12, targetXp: 100, percent: 12 },
+        },
+      },
+    } : { error: "unauthorized" }),
+  }));
 }
+
+test("daily retention stays readable and idempotent across a Home reload", async ({ page }) => {
+  let checkIns = 0;
+  await mockPublicApi(page, true);
+  await page.unroute("**/api/platform/daily/check-in");
+  await page.route("**/api/platform/daily/check-in", route => {
+    checkIns += 1;
+    return route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        daily: {
+          dayKey: "2026-07-25", streak: 2,
+          login: { claimed: true, reward: { xp: 12, coins: 2, label: "+12 XP e +2 moedas" } },
+          mission: {
+            id: "mission-e2e", name: "Jogue uma partida", description: "Conclua uma partida.",
+            icon: "🎯", state: "active", progress: 0, target: 1, progressUnit: "partida",
+            expiresAt: Date.now() + 3_600_000, reward: { xp: 20, coins: 2, label: "+20 XP + +2 moedas" },
+          },
+          chest: { unlocked: false, opened: false, reward: null, preview: { xp: 10, coins: 3, label: "+10 XP e +3 moedas" } },
+          progress: { level: 1, totalXp: 12, coins: 2, curveVersion: "v1", levelProgress: { currentXp: 12, targetXp: 100, percent: 12 } },
+        },
+      }),
+    });
+  });
+  await page.setViewportSize({ width: 320, height: 700 });
+  await page.goto("/");
+  await expect(page.getByText("2 dias de sequência")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Bloqueado" })).toBeDisabled();
+  await page.reload();
+  await expect(page.getByText("2 dias de sequência")).toBeVisible();
+  expect(checkIns).toBe(2);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(
+    await page.evaluate(() => document.documentElement.clientWidth),
+  );
+});
 
 test("login screen remains usable without an authenticated session", async ({ page }) => {
   await mockPublicApi(page, false);
@@ -186,7 +247,7 @@ test("catalog and Game SDK keep both platform games playable on mobile", async (
   });
 
   await page.goto("/jogos");
-  await expect(page.locator(".games-catalog-card")).toHaveCount(3);
+  await expect(page.locator(".games-catalog-card")).toHaveCount(gameCatalog.length);
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(
     await page.evaluate(() => document.documentElement.clientWidth),
   );
