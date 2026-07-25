@@ -17,6 +17,8 @@ import {
   TIMELINE_MAX_ATTEMPTS,
 } from "../../../app/games/timeline/engine";
 import { TIMELINE_ROUNDS } from "../../../app/games/timeline/rounds";
+import { evaluateMemoryCompletion } from "../../../app/games/memory/engine";
+import { MEMORY_SETS } from "../../../app/games/memory/sets";
 import type { CorePlatformEvent } from "../platform-event-engine";
 import type { GameFinishedV2Payload } from "../platform-event-catalog";
 
@@ -50,7 +52,14 @@ type TimelineCompletion = {
   attemptsUsed: number;
 };
 
-export type PlatformGameCompletion = WordleCompletion | ThreeCluesCompletion | TimelineCompletion;
+type MemoryCompletion = {
+  gameId: "memoria-biblica";
+  sessionId: string;
+  setId: string;
+  revealedCardIds: string[];
+};
+
+export type PlatformGameCompletion = WordleCompletion | ThreeCluesCompletion | TimelineCompletion | MemoryCompletion;
 
 function validateSessionId(value: unknown) {
   const sessionId = String(value || "");
@@ -118,6 +127,19 @@ function timelineResult(input: TimelineCompletion) {
   };
 }
 
+function memoryResult(input: MemoryCompletion) {
+  const set = MEMORY_SETS.find(item => item.id === input.setId);
+  if (!set) throw new Error("invalid_memory_set");
+  const result = evaluateMemoryCompletion(set, input.revealedCardIds);
+  return {
+    score: result.score,
+    correctAnswers: set.pairs.length,
+    questionsAnswered: set.pairs.length,
+    gameVersion: "memory-mvp-v1",
+    service: "memory-service",
+  };
+}
+
 export function adaptPlatformGameCompletion(
   input: PlatformGameCompletion,
   context: CompletionContext,
@@ -133,6 +155,8 @@ export function adaptPlatformGameCompletion(
       ? threeCluesResult(input)
       : input.gameId === "linha-do-tempo-biblica"
         ? timelineResult(input)
+      : input.gameId === "memoria-biblica"
+        ? memoryResult(input)
       : null;
   if (!result) throw new Error("unsupported_platform_game");
 

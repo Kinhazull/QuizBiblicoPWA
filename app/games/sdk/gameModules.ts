@@ -53,6 +53,19 @@ export const gameModules: readonly GameModuleContract[] = [
     route: "/jogos/linha-do-tempo-biblica",
     image: "⏳",
   },
+  {
+    id: "memoria-biblica",
+    slug: "memoria-biblica",
+    name: "Memória Bíblica",
+    shortDescription: "Encontre pares de símbolos e acontecimentos bíblicos.",
+    description: "Exercite a memória combinando cartas relacionadas a personagens, símbolos e acontecimentos da Bíblia.",
+    objective: "Encontrar todos os oito pares com a menor quantidade possível de jogadas.",
+    mechanics: ["Tabuleiro com dezesseis cartas", "Oito pares bíblicos", "Duas cartas reveladas por vez"],
+    status: "available",
+    primaryButton: "Jogar",
+    route: "/jogos/memoria-biblica",
+    image: "🧠",
+  },
 ] as const;
 
 export function getGameModule(slug: string) {

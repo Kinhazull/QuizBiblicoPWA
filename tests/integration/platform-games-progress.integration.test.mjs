@@ -159,6 +159,42 @@ test("Linha do Tempo victory reaches Progress, Statistics, Achievements and Miss
   }, { progress: 1, state: "completed" });
 });
 
+test("Memória Bíblica victory reaches Progress, Statistics, Achievements and Missions", async t => {
+  const { ctx, token } = await setup(t);
+  const pairIds = ["arca", "tabuas", "funda", "peixe", "estrela", "paes", "cruz", "fogo"];
+  const response = await withFrozenTime(NOW, () => finishPlatformGame({
+    request: request(token, {
+      gameId: "memoria-biblica",
+      sessionId: "session-memory-integration",
+      setId: "simbolos-da-biblia",
+      revealedCardIds: pairIds.flatMap(id => [`${id}:a`, `${id}:b`]),
+    }),
+    env: ctx.env,
+  }));
+  const data = await responseJson(response);
+  assert.equal(response.status, 200);
+  assert.equal(data.outcome, "won");
+  assert.equal(data.score, 1200);
+  assert.deepEqual({
+    ...ctx.raw.prepare("SELECT total_xp totalXp,coins FROM user_platform_progress WHERE user_id='player'").get(),
+  }, { totalXp: 160, coins: 25 });
+  assert.deepEqual({
+    ...ctx.raw.prepare(`SELECT sessions_completed sessionsCompleted,questions_answered questionsAnswered,
+      correct_answers correctAnswers,incorrect_answers incorrectAnswers,best_score bestScore
+      FROM user_platform_game_statistics WHERE user_id='player' AND game_id='memoria-biblica'`).get(),
+  }, {
+    sessionsCompleted: 1,
+    questionsAnswered: 8,
+    correctAnswers: 8,
+    incorrectAnswers: 0,
+    bestScore: 1200,
+  });
+  assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM user_platform_achievements WHERE user_id='player'").get().total, 2);
+  assert.deepEqual({
+    ...ctx.raw.prepare("SELECT progress,state FROM user_platform_missions WHERE id='mission-assignment'").get(),
+  }, { progress: 1, state: "completed" });
+});
+
 test("completion endpoint requires authentication and rejects incomplete games without effects", async t => {
   const { ctx, token } = await setup(t);
   const unauthenticated = await finishPlatformGame({

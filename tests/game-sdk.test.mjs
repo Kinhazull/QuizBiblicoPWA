@@ -18,14 +18,18 @@ test("Game SDK centralizes the module contract and registry", async () => {
 });
 
 test("Game SDK exposes shared layout, HUD and final states", async () => {
-  const [layout, hud, result] = await Promise.all([
+  const [layout, hud, result, memory] = await Promise.all([
     read("app/games/sdk/GameLayout.tsx"),
     read("app/games/sdk/GameHud.tsx"),
     read("app/games/sdk/GameResult.tsx"),
+    read("app/games/memory/MemoryGame.tsx"),
   ]);
   assert.match(layout, /GameHud/);
   assert.match(layout, /GameResult/);
   assert.match(hud, /currentAttempt/);
+  assert.match(hud, /progressLabel = "Tentativa"/);
+  assert.match(layout, /progressLabel=\{progressLabel\}/);
+  assert.match(memory, /progressLabel="Pares encontrados"/);
   assert.match(result, /Jogar novamente/);
   assert.match(result, /Voltar para Home/);
 });

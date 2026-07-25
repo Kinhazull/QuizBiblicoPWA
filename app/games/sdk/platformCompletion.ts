@@ -20,10 +20,18 @@ export type TimelineCompletionSubmission = {
   attemptsUsed: number;
 };
 
+export type MemoryCompletionSubmission = {
+  gameId: "memoria-biblica";
+  sessionId: string;
+  setId: string;
+  revealedCardIds: string[];
+};
+
 export type PlatformGameCompletionSubmission =
   | WordleCompletionSubmission
   | ThreeCluesCompletionSubmission
-  | TimelineCompletionSubmission;
+  | TimelineCompletionSubmission
+  | MemoryCompletionSubmission;
 
 export function createGameSessionId() {
   const bytes = crypto.getRandomValues(new Uint8Array(16));

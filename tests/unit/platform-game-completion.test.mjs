@@ -94,6 +94,27 @@ test("Linha do Tempo result is recalculated from the official chronological bank
   }, context), /incomplete_timeline_game/);
 });
 
+test("Memória Bíblica result is recalculated from the full reveal history", () => {
+  const pairIds = ["arca", "tabuas", "funda", "peixe", "estrela", "paes", "cruz", "fogo"];
+  const win = adaptPlatformGameCompletion({
+    gameId: "memoria-biblica",
+    sessionId: "session-memory-001",
+    setId: "simbolos-da-biblia",
+    revealedCardIds: pairIds.flatMap(id => [`${id}:a`, `${id}:b`]),
+  }, context);
+  assert.equal(win.source.service, "memory-service");
+  assert.equal(win.payload.score, 1200);
+  assert.equal(win.payload.correctAnswers, 8);
+  assert.equal(win.payload.questionsAnswered, 8);
+
+  assert.throws(() => adaptPlatformGameCompletion({
+    gameId: "memoria-biblica",
+    sessionId: "session-memory-002",
+    setId: "simbolos-da-biblia",
+    revealedCardIds: pairIds.slice(0, 7).flatMap(id => [`${id}:a`, `${id}:b`]),
+  }, context), /invalid_memory_reveals|incomplete_memory_game/);
+});
+
 test("invalid or tampered completions are rejected", () => {
   assert.throws(() => adaptPlatformGameCompletion({
     gameId: "wordle-biblico",
@@ -114,4 +135,10 @@ test("invalid or tampered completions are rejected", () => {
     orderedEventIds: ["one", "two", "three", "four"],
     attemptsUsed: 3,
   }, context), /invalid_timeline_round/);
+  assert.throws(() => adaptPlatformGameCompletion({
+    gameId: "memoria-biblica",
+    sessionId: "session-memory-003",
+    setId: "unknown",
+    revealedCardIds: [],
+  }, context), /invalid_memory_set/);
 });

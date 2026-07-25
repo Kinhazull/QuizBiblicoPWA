@@ -16,6 +16,7 @@ import "./wordle.css";
 import "./game-sdk.css";
 import "./three-clues.css";
 import "./timeline.css";
+import "./memory.css";
 import { AdminQuickNav } from "./AdminQuickNav";
 import { BackNavigation } from "./BackNavigation";
 import { LearningQuickNav } from "./LearningQuickNav";

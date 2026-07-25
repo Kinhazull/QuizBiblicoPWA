@@ -25,6 +25,7 @@ export type GameLayoutProps = {
   status: GamePlayStatus;
   currentAttempt: number;
   maxAttempts: number;
+  progressLabel?: string;
   onRestart: () => void;
   children: ReactNode;
 };

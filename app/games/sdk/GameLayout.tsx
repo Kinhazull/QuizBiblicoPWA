@@ -10,6 +10,7 @@ export function GameLayout({
   status,
   currentAttempt,
   maxAttempts,
+  progressLabel,
   onRestart,
   children,
 }: GameLayoutProps) {
@@ -24,11 +25,15 @@ export function GameLayout({
           <h1>{title} {highlightedTitle && <em>{highlightedTitle}</em>}</h1>
           <span>{description}</span>
         </header>
-        <GameHud status={status} currentAttempt={currentAttempt} maxAttempts={maxAttempts} />
+        <GameHud
+          status={status}
+          currentAttempt={currentAttempt}
+          maxAttempts={maxAttempts}
+          progressLabel={progressLabel}
+        />
         <div className="game-sdk-content">{children}</div>
         {status !== "playing" && <GameResult status={status} onRestart={onRestart} />}
       </section>
     </main>
   );
 }
-
