@@ -12,9 +12,18 @@ export type ThreeCluesCompletionSubmission = {
   cluesUsed: number;
 };
 
+export type TimelineCompletionSubmission = {
+  gameId: "linha-do-tempo-biblica";
+  sessionId: string;
+  roundId: string;
+  orderedEventIds: string[];
+  attemptsUsed: number;
+};
+
 export type PlatformGameCompletionSubmission =
   | WordleCompletionSubmission
-  | ThreeCluesCompletionSubmission;
+  | ThreeCluesCompletionSubmission
+  | TimelineCompletionSubmission;
 
 export function createGameSessionId() {
   const bytes = crypto.getRandomValues(new Uint8Array(16));

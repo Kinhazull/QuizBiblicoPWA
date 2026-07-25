@@ -11,6 +11,12 @@ import {
   THREE_CLUES_MAX,
 } from "../../../app/games/three-clues/engine";
 import { THREE_CLUES_QUESTIONS } from "../../../app/games/three-clues/questions";
+import {
+  isCorrectTimelineOrder,
+  timelineScore,
+  TIMELINE_MAX_ATTEMPTS,
+} from "../../../app/games/timeline/engine";
+import { TIMELINE_ROUNDS } from "../../../app/games/timeline/rounds";
 import type { CorePlatformEvent } from "../platform-event-engine";
 import type { GameFinishedV2Payload } from "../platform-event-catalog";
 
@@ -36,7 +42,15 @@ type ThreeCluesCompletion = {
   cluesUsed: number;
 };
 
-export type PlatformGameCompletion = WordleCompletion | ThreeCluesCompletion;
+type TimelineCompletion = {
+  gameId: "linha-do-tempo-biblica";
+  sessionId: string;
+  roundId: string;
+  orderedEventIds: string[];
+  attemptsUsed: number;
+};
+
+export type PlatformGameCompletion = WordleCompletion | ThreeCluesCompletion | TimelineCompletion;
 
 function validateSessionId(value: unknown) {
   const sessionId = String(value || "");
@@ -84,6 +98,26 @@ function threeCluesResult(input: ThreeCluesCompletion) {
   };
 }
 
+function timelineResult(input: TimelineCompletion) {
+  const round = TIMELINE_ROUNDS.find(item => item.id === input.roundId);
+  if (!round) throw new Error("invalid_timeline_round");
+  if (!Array.isArray(input.orderedEventIds) || input.orderedEventIds.some(id => typeof id !== "string")) {
+    throw new Error("invalid_timeline_order");
+  }
+  if (!Number.isInteger(input.attemptsUsed) || input.attemptsUsed < 1 || input.attemptsUsed > TIMELINE_MAX_ATTEMPTS) {
+    throw new Error("invalid_timeline_attempts");
+  }
+  const won = isCorrectTimelineOrder(round, input.orderedEventIds);
+  if (!won && input.attemptsUsed !== TIMELINE_MAX_ATTEMPTS) throw new Error("incomplete_timeline_game");
+  return {
+    score: won ? timelineScore(input.attemptsUsed) : 0,
+    correctAnswers: won ? 1 : 0,
+    questionsAnswered: 1,
+    gameVersion: "timeline-mvp-v1",
+    service: "timeline-service",
+  };
+}
+
 export function adaptPlatformGameCompletion(
   input: PlatformGameCompletion,
   context: CompletionContext,
@@ -97,6 +131,8 @@ export function adaptPlatformGameCompletion(
     ? wordleResult(input)
     : input.gameId === "jogo-tres-pistas"
       ? threeCluesResult(input)
+      : input.gameId === "linha-do-tempo-biblica"
+        ? timelineResult(input)
       : null;
   if (!result) throw new Error("unsupported_platform_game");
 

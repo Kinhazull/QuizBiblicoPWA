@@ -40,6 +40,19 @@ export const gameModules: readonly GameModuleContract[] = [
     route: "/jogos/jogo-das-3-pistas",
     image: "🔎",
   },
+  {
+    id: "linha-do-tempo-biblica",
+    slug: "linha-do-tempo-biblica",
+    name: "Linha do Tempo Bíblica",
+    shortDescription: "Organize acontecimentos bíblicos na sequência correta.",
+    description: "Relembre a história bíblica colocando quatro acontecimentos em ordem cronológica.",
+    objective: "Montar a sequência completa antes de esgotar as tentativas.",
+    mechanics: ["Quatro acontecimentos por partida", "Controles para subir e descer", "Três tentativas para confirmar a ordem"],
+    status: "available",
+    primaryButton: "Jogar",
+    route: "/jogos/linha-do-tempo-biblica",
+    image: "⏳",
+  },
 ] as const;
 
 export function getGameModule(slug: string) {

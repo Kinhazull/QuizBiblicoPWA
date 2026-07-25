@@ -8,6 +8,7 @@ import { gameModules } from "../../app/games/sdk/gameModules.ts";
 test("catalog discovers every registered module automatically", () => {
   assert.equal(gameCatalog, gameModules);
   assert.deepEqual(gameCatalog.map(game => game.id), gameModules.map(game => game.id));
+  assert.ok(gameCatalog.some(game => game.id === "linha-do-tempo-biblica" && game.status === "available"));
 });
 
 test("registered modules expose complete, unique and coherent metadata", () => {

@@ -64,6 +64,36 @@ test("3 Pistas result is recalculated from the official static bank", () => {
   assert.equal(loss.payload.correctAnswers, 0);
 });
 
+test("Linha do Tempo result is recalculated from the official chronological bank", () => {
+  const win = adaptPlatformGameCompletion({
+    gameId: "linha-do-tempo-biblica",
+    sessionId: "session-timeline-001",
+    roundId: "vida-de-jesus",
+    orderedEventIds: ["nascimento-jesus", "batismo-jesus", "crucificacao", "ressurreicao"],
+    attemptsUsed: 2,
+  }, context);
+  assert.equal(win.source.service, "timeline-service");
+  assert.equal(win.payload.score, 200);
+  assert.equal(win.payload.correctAnswers, 1);
+
+  const loss = adaptPlatformGameCompletion({
+    gameId: "linha-do-tempo-biblica",
+    sessionId: "session-timeline-002",
+    roundId: "vida-de-jesus",
+    orderedEventIds: ["ressurreicao", "crucificacao", "batismo-jesus", "nascimento-jesus"],
+    attemptsUsed: 3,
+  }, context);
+  assert.equal(loss.payload.score, 0);
+  assert.equal(loss.payload.correctAnswers, 0);
+  assert.throws(() => adaptPlatformGameCompletion({
+    gameId: "linha-do-tempo-biblica",
+    sessionId: "session-timeline-003",
+    roundId: "vida-de-jesus",
+    orderedEventIds: ["ressurreicao", "crucificacao", "batismo-jesus", "nascimento-jesus"],
+    attemptsUsed: 1,
+  }, context), /incomplete_timeline_game/);
+});
+
 test("invalid or tampered completions are rejected", () => {
   assert.throws(() => adaptPlatformGameCompletion({
     gameId: "wordle-biblico",
@@ -77,4 +107,11 @@ test("invalid or tampered completions are rejected", () => {
     answer: "Davi",
     cluesUsed: 1,
   }, context), /invalid_three_clues_question/);
+  assert.throws(() => adaptPlatformGameCompletion({
+    gameId: "linha-do-tempo-biblica",
+    sessionId: "session-timeline-004",
+    roundId: "unknown",
+    orderedEventIds: ["one", "two", "three", "four"],
+    attemptsUsed: 3,
+  }, context), /invalid_timeline_round/);
 });
