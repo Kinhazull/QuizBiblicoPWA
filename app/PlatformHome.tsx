@@ -91,9 +91,15 @@ export function PlatformHome({
     <div className="platform-ambient platform-ambient-one" aria-hidden="true" />
     <div className="platform-ambient platform-ambient-two" aria-hidden="true" />
     <div className="platform-home-inner">
-      <header className="platform-brand" aria-label="Conte os Feitos">
-        <span className="platform-brand-mark" aria-hidden="true"><b>C</b><i>✦</i></span>
-        <span>Conte os <strong>Feitos</strong></span>
+      <header className="platform-brand-row">
+        <div className="platform-brand" aria-label="Conte os Feitos">
+          <span className="platform-brand-mark" aria-hidden="true"><b>C</b><i>✦</i></span>
+          <span>Conte os <strong>Feitos</strong></span>
+        </div>
+        <nav className="platform-collection-actions" aria-label="Coleção">
+          <a className="platform-shop-button" href="/inventario"><span aria-hidden="true">🎒</span> Inventário</a>
+          <a className="platform-shop-button" href="/loja"><span aria-hidden="true">🛍️</span> Loja</a>
+        </nav>
       </header>
 
       <section className="platform-player-card" aria-labelledby="platform-greeting">

@@ -33,6 +33,9 @@
 .platform-home-inner>*,.platform-player-copy,.platform-continue-content>div,.platform-mission-card>div,.platform-daily-chest>div,.platform-section>header>* { min-width: 0; max-width: 100%; }
 .platform-home-inner>section,.platform-preview-note { scroll-margin-bottom: var(--platform-bottom-clearance); }
 .platform-brand { display: flex; align-items: center; gap: 12px; width: fit-content; min-height: 54px; color: #fff; font-size: clamp(22px, 3vw, 31px); font-weight: 700; letter-spacing: -.04em; }
+.platform-brand-row { display: flex; min-width: 0; align-items: center; justify-content: space-between; gap: 14px; }
+.platform-collection-actions { display: flex; align-items: center; gap: 8px; }
+.platform-shop-button { display: inline-flex; min-height: 44px; align-items: center; gap: 8px; border: 1px solid #f4b40055; border-radius: 13px; padding: 9px 14px; background: #2b230b; color: #f4b400!important; font-weight: 700; text-decoration: none; }
 .platform-brand>span:last-child { display: flex; min-width: 0; flex-wrap: wrap; gap: 0 7px; }
 .platform-brand strong { color: #4190f2; }
 .platform-brand-mark { display: grid; place-items: center; position: relative; width: 54px; height: 54px; border-radius: 17px; background: linear-gradient(145deg,#1769d7,#092b70); box-shadow: 0 11px 30px #020b1a99; }
@@ -169,8 +172,12 @@
   .platform-currencies { grid-template-columns: 1fr; }
   .platform-continue-content { grid-template-columns: 62px minmax(0,1fr); gap: 10px; }
   .platform-game-art { width: 60px; height: 60px; font-size: 32px; }
+  .platform-shop-button { padding-inline: 11px; font-size: 12px; }
 }
 @media (max-width: 375px) {
+  .platform-brand-row { align-items: flex-start; flex-direction: column; }
+  .platform-collection-actions { width: 100%; }
+  .platform-collection-actions .platform-shop-button { flex: 1; justify-content: center; }
   .platform-game-grid { gap: 12px; scroll-padding-inline: 0; }
   .platform-game-tile { min-width: 0; flex: 0 0 calc(100% - 42px); }
   .platform-mission-card>div:not(.platform-mission-icon) { width: 100%; overflow-wrap: anywhere; }

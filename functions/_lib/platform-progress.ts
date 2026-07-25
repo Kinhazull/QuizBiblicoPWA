@@ -68,6 +68,21 @@ export type PlatformRetentionRewardInput = {
   sourceId: string;
 };
 
+export type PlatformShopPurchaseInput = {
+  itemId: string;
+  itemName: string;
+  price: number;
+  userId: string;
+  organizationId: string;
+};
+
+export type PlatformEquipmentInput = {
+  itemId: string;
+  category: "frame" | "avatar";
+  userId: string;
+  organizationId: string;
+};
+
 export function xpRequiredForLevel(level: number) {
   const safeLevel = Math.max(1, Math.floor(level));
   return XP_STEP * (safeLevel - 1) ** 2;
@@ -370,6 +385,121 @@ export async function grantPlatformRetentionReward(env: AppEnv, input: PlatformR
       && (Number((results[4] as any)?.meta?.changes || 0) === 1 || Number((results[5] as any)?.meta?.changes || 0) === 1),
     progress: await getUserProgress(env, input.userId, input.organizationId),
   };
+}
+
+/** Debits coins and records item ownership in the existing coin ledger atomically. */
+export async function purchasePlatformItem(env: AppEnv, input: PlatformShopPurchaseInput) {
+  if (!/^[a-z0-9-]{3,80}$/.test(input.itemId)
+    || !input.itemName.trim() || input.itemName.length > 100
+    || !Number.isSafeInteger(input.price) || input.price < 1 || input.price > MAX_GRANT) {
+    throw new Error("invalid_shop_item");
+  }
+  const eventId = await compactEventId(
+    "shop-purchase",
+    `${input.organizationId}:${input.userId}:${input.itemId}`,
+  );
+  const reason = `Compra: ${input.itemName}`;
+  const expected = {
+    eventId,
+    userId: input.userId,
+    organizationId: input.organizationId,
+    amount: input.price,
+    reason,
+    sourceType: "shop_purchase",
+    sourceId: input.itemId,
+  };
+  const current = await existingLedger(env, "platform_coin_ledger", eventId);
+  assertExpectedLedger(current, expected);
+  if (current?.appliedAt) {
+    return { purchased: false, owned: true, progress: await getUserProgress(env, input.userId, input.organizationId) };
+  }
+  const active = await env.DB.prepare(
+    "SELECT id FROM users WHERE id=?1 AND organization_id=?2 AND status='active'",
+  ).bind(input.userId, input.organizationId).first();
+  if (!active) throw new Error("progress_user_unavailable");
+
+  const now = Date.now();
+  const results = await env.DB.batch([
+    env.DB.prepare(
+      "INSERT INTO user_platform_progress(user_id,organization_id,total_xp,coins,created_at,updated_at) VALUES(?1,?2,0,0,?3,?3) ON CONFLICT(user_id) DO NOTHING",
+    ).bind(input.userId, input.organizationId, now),
+    env.DB.prepare(`INSERT INTO platform_coin_ledger(id,event_id,user_id,organization_id,amount,reason,source_type,source_id,created_at)
+      SELECT ?1,?2,?3,?4,?5,?6,'shop_purchase',?7,?8
+      WHERE EXISTS(SELECT 1 FROM user_platform_progress
+        WHERE user_id=?3 AND organization_id=?4 AND coins>=?5)
+      ON CONFLICT(event_id) DO NOTHING`)
+      .bind(crypto.randomUUID(), eventId, input.userId, input.organizationId, input.price, reason, input.itemId, now),
+    env.DB.prepare(`UPDATE user_platform_progress SET
+      coins=coins-COALESCE((SELECT amount FROM platform_coin_ledger
+        WHERE event_id=?1 AND user_id=?2 AND organization_id=?3 AND applied_at IS NULL),0),
+      updated_at=?4
+      WHERE user_id=?2 AND organization_id=?3`)
+      .bind(eventId, input.userId, input.organizationId, now),
+    env.DB.prepare(`UPDATE platform_coin_ledger SET applied_at=?1
+      WHERE event_id=?2 AND user_id=?3 AND organization_id=?4 AND applied_at IS NULL`)
+      .bind(now, eventId, input.userId, input.organizationId),
+  ]);
+  const purchased = Number((results[3] as any)?.meta?.changes || 0) === 1;
+  if (!purchased) {
+    const raced = await existingLedger(env, "platform_coin_ledger", eventId);
+    if (!raced?.appliedAt) throw new Error("insufficient_coins");
+    assertExpectedLedger(raced, expected);
+  }
+  return {
+    purchased,
+    owned: true,
+    progress: await getUserProgress(env, input.userId, input.organizationId),
+  };
+}
+
+export async function getOwnedPlatformItemIds(env: AppEnv, userId: string, organizationId: string) {
+  const rows = await env.DB.prepare(`SELECT source_id itemId FROM platform_coin_ledger
+    WHERE user_id=?1 AND organization_id=?2 AND source_type='shop_purchase' AND applied_at IS NOT NULL
+    ORDER BY created_at ASC`).bind(userId, organizationId).all<any>();
+  return rows.results.map(row => String(row.itemId));
+}
+
+export async function getPlatformEquipment(env: AppEnv, userId: string, organizationId: string) {
+  const rows = await env.DB.prepare(`SELECT reason category,source_id itemId
+    FROM platform_coin_ledger
+    WHERE user_id=?1 AND organization_id=?2 AND source_type='shop_equipment'
+      AND reason IN ('frame','avatar') AND applied_at IS NOT NULL`)
+    .bind(userId, organizationId).all<any>();
+  const equipment: { frame: string | null; avatar: string | null } = { frame: null, avatar: null };
+  for (const row of rows.results) {
+    const category = String(row.category);
+    if (category === "frame" || category === "avatar") equipment[category] = String(row.itemId);
+  }
+  return equipment;
+}
+
+/** Persists one current item per category without changing the coin balance. */
+export async function equipPlatformItem(env: AppEnv, input: PlatformEquipmentInput) {
+  if (!/^[a-z0-9-]{3,80}$/.test(input.itemId)
+    || !["frame", "avatar"].includes(input.category)) throw new Error("invalid_shop_item");
+  const owned = await env.DB.prepare(`SELECT 1 owned FROM platform_coin_ledger
+    WHERE user_id=?1 AND organization_id=?2 AND source_type='shop_purchase'
+      AND source_id=?3 AND applied_at IS NOT NULL`)
+    .bind(input.userId, input.organizationId, input.itemId).first();
+  if (!owned) throw new Error("shop_item_not_owned");
+
+  const eventId = await compactEventId(
+    "shop-equipment",
+    `${input.organizationId}:${input.userId}:${input.category}`,
+  );
+  const now = Date.now();
+  await env.DB.prepare(`INSERT INTO platform_coin_ledger(
+      id,event_id,user_id,organization_id,amount,reason,source_type,source_id,created_at,applied_at
+    ) VALUES(?1,?2,?3,?4,1,?5,'shop_equipment',?6,?7,?7)
+    ON CONFLICT(event_id) DO UPDATE SET
+      source_id=excluded.source_id,applied_at=excluded.applied_at
+    WHERE platform_coin_ledger.user_id=excluded.user_id
+      AND platform_coin_ledger.organization_id=excluded.organization_id
+      AND platform_coin_ledger.source_type='shop_equipment'
+      AND platform_coin_ledger.reason=excluded.reason`)
+    .bind(crypto.randomUUID(), eventId, input.userId, input.organizationId, input.category, input.itemId, now)
+    .run();
+  return getPlatformEquipment(env, input.userId, input.organizationId);
 }
 
 async function grant(env: AppEnv, ledger: "platform_xp_ledger" | "platform_coin_ledger", balance: "total_xp" | "coins", input: GrantInput) {
