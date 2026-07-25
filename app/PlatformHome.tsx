@@ -1,5 +1,6 @@
 import { getJourneyCardView, type JourneyCardData } from "./journey-card-state";
-import { PLATFORM_HOME_PREVIEW, UPCOMING_GAMES } from "./platform-home-config";
+import { PLATFORM_HOME_PREVIEW } from "./platform-home-config";
+import { gameCatalog } from "./data/gameCatalog";
 
 type BadgeDefinition = { code: string; name: string; icon?: string; description?: string };
 type EarnedBadge = { code: string; earnedAt: number };
@@ -103,8 +104,9 @@ export function PlatformHome({ displayName, journey, badges, progress, mission, 
       <section className="platform-section platform-games" id="jogos" aria-labelledby="games-title">
         <header><h2 id="games-title">Seus jogos</h2><span>Novos desafios chegarão em breve</span></header>
         <div className="platform-game-grid">
-          <a className="platform-game-tile available" href="/jogar"><span className="platform-chip">Disponível</span><b aria-hidden="true">📖</b><strong>Quiz Bíblico</strong><small>Desafie seu conhecimento</small><i>Jogar agora</i></a>
-          {UPCOMING_GAMES.map(game => <article className="platform-game-tile locked" key={game.title}><span className="platform-chip">Em breve</span><b aria-hidden="true">{game.icon}</b><strong>{game.title}</strong><small>{game.description}</small><i>🔒 Em breve</i></article>)}
+          {gameCatalog.map(game => game.status === "available"
+            ? <a className="platform-game-tile available" href={game.route} key={game.id}><span className="platform-chip">Disponível</span><b aria-hidden="true">{game.image}</b><strong>{game.name}</strong><small>{game.shortDescription}</small><i>Jogar agora</i></a>
+            : <article className="platform-game-tile locked" key={game.id}><span className="platform-chip">Em breve</span><b aria-hidden="true">{game.image}</b><strong>{game.name}</strong><small>{game.shortDescription}</small><i>🔒 Em breve</i></article>)}
         </div>
       </section>
 
