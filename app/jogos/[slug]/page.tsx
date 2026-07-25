@@ -3,7 +3,9 @@ import { gameCatalog, getGameBySlug } from "../../data/gameCatalog";
 
 export const dynamicParams = false;
 export function generateStaticParams() {
-  return gameCatalog.filter(game => game.slug !== "wordle-biblico").map(game => ({ slug: game.slug }));
+  return gameCatalog
+    .filter(game => !["wordle-biblico", "jogo-das-3-pistas"].includes(game.slug))
+    .map(game => ({ slug: game.slug }));
 }
 
 export default async function GameDetailsPage({ params }: { params: Promise<{ slug: string }> }) {

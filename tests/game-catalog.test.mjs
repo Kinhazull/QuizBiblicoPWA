@@ -5,7 +5,7 @@ const read = path => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
 test("Tela Jogos usa um catálogo central sem jogos escritos diretamente no componente", async () => {
   const [catalog, page, card, details, navigation] = await Promise.all([read("app/data/gameCatalog.ts"), read("app/jogos/page.tsx"), read("app/GameCard.tsx"), read("app/jogos/[slug]/page.tsx"), read("app/navigation.tsx")]);
-  assert.match(catalog, /status: "available"/); assert.match(catalog, /status: "development"/);
+  assert.match(catalog, /status: "available"/); assert.match(catalog, /GameStatus = "available" \| "development"/);
   assert.match(catalog, /name: "Quiz Bíblico"/); assert.match(catalog, /name: "Wordle Bíblico"/); assert.match(catalog, /name: "Jogo das 3 Pistas"/);
   assert.doesNotMatch(page, /Quiz Bíblico|Wordle Bíblico|Jogo das 3 Pistas/); assert.match(page, /gameCatalog\.map/);
   assert.match(card, /Disponível/); assert.match(card, /Em desenvolvimento/); assert.match(card, /game\.primaryButton/);
