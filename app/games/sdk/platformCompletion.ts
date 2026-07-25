@@ -34,11 +34,19 @@ export type WhoAmICompletionSubmission = {
   actions: Array<{ type: "reveal" } | { type: "guess"; answerId: string }>;
 };
 
+export type ThemeAssociationCompletionSubmission = {
+  gameId: "associacao-de-temas";
+  sessionId: string;
+  roundId: string;
+  attempts: Array<{ leftId: string; rightId: string }>;
+};
+
 export type PlatformGameCompletionSubmission =
   | WordleCompletionSubmission
   | ThreeCluesCompletionSubmission
   | TimelineCompletionSubmission
   | MemoryCompletionSubmission
+  | ThemeAssociationCompletionSubmission
   | WhoAmICompletionSubmission;
 
 export function createGameSessionId() {

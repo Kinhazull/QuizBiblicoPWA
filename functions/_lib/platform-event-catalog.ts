@@ -41,6 +41,7 @@ const gameServices = [
   "three-clues-service",
   "timeline-service",
   "memory-service",
+  "theme-association-service",
   "who-am-i-service",
 ] as const;
 const gameIdsByService: Readonly<Record<(typeof gameServices)[number], readonly string[]>> = {
@@ -50,6 +51,7 @@ const gameIdsByService: Readonly<Record<(typeof gameServices)[number], readonly 
   "three-clues-service": ["jogo-tres-pistas"],
   "timeline-service": ["linha-do-tempo-biblica"],
   "memory-service": ["memoria-biblica"],
+  "theme-association-service": ["associacao-de-temas"],
   "who-am-i-service": ["quem-sou-eu"],
 };
 
@@ -114,6 +116,7 @@ const PUBLISHED_GAME_IDS = new Set([
   "jogo-tres-pistas",
   "linha-do-tempo-biblica",
   "memoria-biblica",
+  "associacao-de-temas",
   "quem-sou-eu",
 ]);
 const tokenPattern = /^[a-zA-Z0-9._:-]+$/;

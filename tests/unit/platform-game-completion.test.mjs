@@ -140,6 +140,30 @@ test("Quem Sou Eu result is recalculated from progressive hint actions", () => {
   assert.equal(loss.payload.correctAnswers, 0);
 });
 
+test("Associação de Temas result is recalculated from the complete selection transcript", () => {
+  const pairIds = ["noe-arca", "davi-golias", "ester-povo", "moises-mar"];
+  const win = adaptPlatformGameCompletion({
+    gameId: "associacao-de-temas",
+    sessionId: "session-association-001",
+    roundId: "personagens-e-feitos",
+    attempts: pairIds.map(id => ({ leftId: id, rightId: id })),
+  }, context);
+  assert.equal(win.source.service, "theme-association-service");
+  assert.equal(win.payload.score, 400);
+  assert.equal(win.payload.correctAnswers, 4);
+  assert.equal(win.payload.questionsAnswered, 4);
+
+  const wrong = { leftId: pairIds[0], rightId: pairIds[1] };
+  const loss = adaptPlatformGameCompletion({
+    gameId: "associacao-de-temas",
+    sessionId: "session-association-002",
+    roundId: "personagens-e-feitos",
+    attempts: [wrong, wrong, wrong],
+  }, context);
+  assert.equal(loss.payload.score, 0);
+  assert.equal(loss.payload.correctAnswers, 0);
+});
+
 test("invalid or tampered completions are rejected", () => {
   assert.throws(() => adaptPlatformGameCompletion({
     gameId: "wordle-biblico",
@@ -166,6 +190,12 @@ test("invalid or tampered completions are rejected", () => {
     setId: "unknown",
     revealedCardIds: [],
   }, context), /invalid_memory_set/);
+  assert.throws(() => adaptPlatformGameCompletion({
+    gameId: "associacao-de-temas",
+    sessionId: "session-association-003",
+    roundId: "unknown",
+    attempts: [],
+  }, context), /invalid_association_round/);
   assert.throws(() => adaptPlatformGameCompletion({
     gameId: "quem-sou-eu",
     sessionId: "session-who-am-i-003",

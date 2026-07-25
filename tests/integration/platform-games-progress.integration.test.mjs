@@ -230,6 +230,42 @@ test("Quem Sou Eu victory reaches Progress, Statistics, Achievements and Mission
   }, { progress: 1, state: "completed" });
 });
 
+test("Associação de Temas victory reaches Progress, Statistics, Achievements and Missions", async t => {
+  const { ctx, token } = await setup(t);
+  const pairIds = ["noe-arca", "davi-golias", "ester-povo", "moises-mar"];
+  const response = await withFrozenTime(NOW, () => finishPlatformGame({
+    request: request(token, {
+      gameId: "associacao-de-temas",
+      sessionId: "session-association-integration",
+      roundId: "personagens-e-feitos",
+      attempts: pairIds.map(id => ({ leftId: id, rightId: id })),
+    }),
+    env: ctx.env,
+  }));
+  const data = await responseJson(response);
+  assert.equal(response.status, 200);
+  assert.equal(data.outcome, "won");
+  assert.equal(data.score, 400);
+  assert.deepEqual({
+    ...ctx.raw.prepare("SELECT total_xp totalXp,coins FROM user_platform_progress WHERE user_id='player'").get(),
+  }, { totalXp: 160, coins: 25 });
+  assert.deepEqual({
+    ...ctx.raw.prepare(`SELECT sessions_completed sessionsCompleted,questions_answered questionsAnswered,
+      correct_answers correctAnswers,incorrect_answers incorrectAnswers,best_score bestScore
+      FROM user_platform_game_statistics WHERE user_id='player' AND game_id='associacao-de-temas'`).get(),
+  }, {
+    sessionsCompleted: 1,
+    questionsAnswered: 4,
+    correctAnswers: 4,
+    incorrectAnswers: 0,
+    bestScore: 400,
+  });
+  assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM user_platform_achievements WHERE user_id='player'").get().total, 2);
+  assert.deepEqual({
+    ...ctx.raw.prepare("SELECT progress,state FROM user_platform_missions WHERE id='mission-assignment'").get(),
+  }, { progress: 1, state: "completed" });
+});
+
 test("completion endpoint requires authentication and rejects incomplete games without effects", async t => {
   const { ctx, token } = await setup(t);
   const unauthenticated = await finishPlatformGame({

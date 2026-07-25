@@ -19,6 +19,8 @@ import {
 import { TIMELINE_ROUNDS } from "../../../app/games/timeline/rounds";
 import { evaluateMemoryCompletion } from "../../../app/games/memory/engine";
 import { MEMORY_SETS } from "../../../app/games/memory/sets";
+import { evaluateThemeAssociationGame, type ThemeAssociationAttempt } from "../../../app/games/theme-association/engine";
+import { THEME_ASSOCIATION_ROUNDS } from "../../../app/games/theme-association/rounds";
 import { evaluateWhoAmIGame, type WhoAmIAction } from "../../../app/games/who-am-i/engine";
 import { WHO_AM_I_CHARACTERS } from "../../../app/games/who-am-i/characters";
 import type { CorePlatformEvent } from "../platform-event-engine";
@@ -68,11 +70,19 @@ type WhoAmICompletion = {
   actions: WhoAmIAction[];
 };
 
+type ThemeAssociationCompletion = {
+  gameId: "associacao-de-temas";
+  sessionId: string;
+  roundId: string;
+  attempts: ThemeAssociationAttempt[];
+};
+
 export type PlatformGameCompletion =
   | WordleCompletion
   | ThreeCluesCompletion
   | TimelineCompletion
   | MemoryCompletion
+  | ThemeAssociationCompletion
   | WhoAmICompletion;
 
 function validateSessionId(value: unknown) {
@@ -167,6 +177,19 @@ function whoAmIResult(input: WhoAmICompletion) {
   };
 }
 
+function themeAssociationResult(input: ThemeAssociationCompletion) {
+  const round = THEME_ASSOCIATION_ROUNDS.find(item => item.id === input.roundId);
+  if (!round) throw new Error("invalid_association_round");
+  const result = evaluateThemeAssociationGame(round, input.attempts);
+  return {
+    score: result.score,
+    correctAnswers: result.matchedPairIds.length,
+    questionsAnswered: round.pairs.length,
+    gameVersion: "theme-association-mvp-v1",
+    service: "theme-association-service",
+  };
+}
+
 export function adaptPlatformGameCompletion(
   input: PlatformGameCompletion,
   context: CompletionContext,
@@ -184,6 +207,8 @@ export function adaptPlatformGameCompletion(
         ? timelineResult(input)
       : input.gameId === "memoria-biblica"
         ? memoryResult(input)
+      : input.gameId === "associacao-de-temas"
+        ? themeAssociationResult(input)
       : input.gameId === "quem-sou-eu"
         ? whoAmIResult(input)
       : null;

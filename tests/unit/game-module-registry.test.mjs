@@ -10,6 +10,7 @@ test("catalog discovers every registered module automatically", () => {
   assert.deepEqual(gameCatalog.map(game => game.id), gameModules.map(game => game.id));
   assert.ok(gameCatalog.some(game => game.id === "linha-do-tempo-biblica" && game.status === "available"));
   assert.ok(gameCatalog.some(game => game.id === "memoria-biblica" && game.status === "available"));
+  assert.ok(gameCatalog.some(game => game.id === "associacao-de-temas" && game.status === "available"));
   assert.ok(gameCatalog.some(game => game.id === "quem-sou-eu" && game.status === "available"));
 });
 
