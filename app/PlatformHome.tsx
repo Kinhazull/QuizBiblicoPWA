@@ -2,14 +2,21 @@ import { getJourneyCardView, type JourneyCardData } from "./journey-card-state";
 import { PLATFORM_HOME_PREVIEW } from "./platform-home-config";
 import { gameCatalog } from "./data/gameCatalog";
 
-type BadgeDefinition = { code: string; name: string; icon?: string; description?: string };
-type EarnedBadge = { code: string; earnedAt: number };
-export type PlatformBadgeData = { badges?: BadgeDefinition[]; earned?: EarnedBadge[]; newBadges?: BadgeDefinition[] };
+type PlatformAchievement = {
+  code: string;
+  name: string;
+  icon: string | null;
+  scopeType: "global" | "game";
+  gameId: string | null;
+  unlocked: boolean;
+  unlockedAt: number | null;
+};
+export type PlatformAchievementData = { achievements?: PlatformAchievement[] };
 
 type PlatformHomeProps = {
   displayName: string;
   journey: JourneyCardData | null;
-  badges: PlatformBadgeData | null;
+  achievementData: PlatformAchievementData | null;
   progress: PlatformProgressData | null;
   mission: PlatformMissionData | null;
   missionLoaded: boolean;
@@ -47,15 +54,17 @@ function progressFor(journey: JourneyCardData | null) {
   return 0;
 }
 
-function recentAchievements(data: PlatformBadgeData | null) {
-  const definitions = new Map((data?.badges || []).map(item => [item.code, item]));
-  return (data?.earned || []).slice(0, 4).map(item => ({ ...item, ...definitions.get(item.code) }));
+function recentAchievements(data: PlatformAchievementData | null) {
+  return (data?.achievements || [])
+    .filter(item => item.unlocked && item.unlockedAt)
+    .sort((left, right) => Number(right.unlockedAt) - Number(left.unlockedAt))
+    .slice(0, 4);
 }
 
-export function PlatformHome({ displayName, journey, badges, progress, mission, missionLoaded, remaining }: PlatformHomeProps) {
+export function PlatformHome({ displayName, journey, achievementData, progress, mission, missionLoaded, remaining }: PlatformHomeProps) {
   const view = getJourneyCardView(journey, remaining);
   const quizProgress = progressFor(journey);
-  const achievements = recentAchievements(badges);
+  const achievements = recentAchievements(achievementData);
   const platformProgress = progress || PLATFORM_HOME_PREVIEW.progress;
   const xpPercent = platformProgress.levelProgress.percent;
 
@@ -115,8 +124,8 @@ export function PlatformHome({ displayName, journey, badges, progress, mission, 
       </section>
 
       <section className="platform-section platform-achievements" aria-labelledby="achievements-title">
-        <header><h2 id="achievements-title">Conquistas recentes</h2><a href="/medalhas">Ver todas <span aria-hidden="true">›</span></a></header>
-        {achievements.length > 0 ? <div className="platform-achievement-grid">{achievements.map(item => <article key={item.code}><b aria-hidden="true">{item.icon || "⭐"}</b><div><strong>{item.name}</strong><small>Medalha do Quiz Bíblico</small></div></article>)}</div> : <div className="platform-empty-achievements"><span aria-hidden="true">✦</span><div><strong>Suas conquistas aparecerão aqui</strong><small>Participe das Jornadas do Quiz Bíblico para desbloquear medalhas.</small></div></div>}
+        <header><h2 id="achievements-title">Conquistas recentes</h2><a href="/perfil">Ver no perfil <span aria-hidden="true">›</span></a></header>
+        {achievements.length > 0 ? <div className="platform-achievement-grid">{achievements.map(item => <article key={item.code}><b aria-hidden="true">{item.icon || "⭐"}</b><div><strong>{item.name}</strong><small>{item.scopeType === "game" ? "Conquista de jogo" : "Conquista da plataforma"}</small></div></article>)}</div> : <div className="platform-empty-achievements"><span aria-hidden="true">✦</span><div><strong>Suas conquistas aparecerão aqui</strong><small>Jogue e complete desafios para desbloquear conquistas.</small></div></div>}
       </section>
 
       <p className="platform-preview-note">Gemas e baú são uma prévia visual. A missão diária é carregada pelo Core Platform.</p>

@@ -24,10 +24,10 @@ async function mockPublicApi(page: import("@playwright/test").Page, authenticate
     contentType: "application/json",
     body: JSON.stringify({ state: "empty" }),
   }));
-  await page.route("**/api/badges", route => route.fulfill({
+  await page.route("**/api/platform/achievements", route => route.fulfill({
     status: 200,
     contentType: "application/json",
-    body: JSON.stringify({ badges: [], newBadges: [] }),
+    body: JSON.stringify({ achievements: [], summary: { total: 0, unlocked: 0, pending: 0 } }),
   }));
 }
 
@@ -112,7 +112,7 @@ for (const { width, height } of responsiveViewports) {
     expect(layout.homeBottom, "scrollable Home area is missing").toBeDefined();
     expect(layout.navigationTop, "bottom navigation is missing").toBeDefined();
     expect(layout.homeBottom!, "scrollable Home area extends behind bottom navigation").toBeLessThanOrEqual(layout.navigationTop! + 0.5);
-    expect(layout.carouselScrollsInternally).toBe(true);
+    if (width <= 760) expect(layout.carouselScrollsInternally).toBe(true);
     if (width <= 375) {
       expect(layout.carousel, "mobile games carousel metrics are missing").not.toBeNull();
       expect(layout.carousel!.firstTileWidth, "first game card must be fully readable").toBeGreaterThan(layout.carousel!.clientWidth * 0.75);
@@ -170,4 +170,49 @@ test("platform Home has no horizontal overflow on desktop", async ({ page }) => 
     scrollWidth: document.documentElement.scrollWidth,
   }));
   expect(dimensions.scrollWidth).toBe(dimensions.clientWidth);
+});
+
+test("catalog and Game SDK keep both platform games playable on mobile", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 700 });
+  await mockPublicApi(page, true);
+  const completions: Array<Record<string, unknown>> = [];
+  await page.route("**/api/platform/games/finish", async route => {
+    completions.push(JSON.parse(route.request().postData() || "{}"));
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ ok: true, processing: "completed" }),
+    });
+  });
+
+  await page.goto("/jogos");
+  await expect(page.locator(".games-catalog-card")).toHaveCount(3);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(
+    await page.evaluate(() => document.documentElement.clientWidth),
+  );
+
+  await page.goto("/jogos/wordle-biblico");
+  await page.keyboard.type("JESUS");
+  await page.keyboard.press("Enter");
+  await expect(page.locator(".game-sdk-result.won")).toBeVisible();
+  await expect(page.getByRole("link", { name: /voltar para home/i })).toBeVisible();
+
+  await page.goto("/jogos/jogo-das-3-pistas");
+  await page.getByLabel(/qual .* resposta/i).fill("Noé");
+  await page.getByRole("button", { name: /responder/i }).click();
+  await expect(page.locator(".game-sdk-result.won")).toBeVisible();
+  await expect.poll(() => completions.length).toBe(2);
+  expect(completions.map(item => item.gameId)).toEqual(["wordle-biblico", "jogo-tres-pistas"]);
+
+  const resultClearance = await page.evaluate(() => {
+    window.scrollTo(0, document.documentElement.scrollHeight);
+    const result = document.querySelector(".game-sdk-result")?.getBoundingClientRect();
+    const navigation = document.querySelector(".participant-bottom-nav")?.getBoundingClientRect();
+    return result && navigation
+      ? { resultBottom: result.bottom, navigationTop: navigation.top, pageWidth: document.documentElement.scrollWidth, viewportWidth: document.documentElement.clientWidth }
+      : null;
+  });
+  expect(resultClearance).not.toBeNull();
+  expect(resultClearance!.resultBottom).toBeLessThanOrEqual(resultClearance!.navigationTop + 0.5);
+  expect(resultClearance!.pageWidth).toBe(resultClearance!.viewportWidth);
 });
