@@ -19,6 +19,8 @@ import {
 import { TIMELINE_ROUNDS } from "../../../app/games/timeline/rounds";
 import { evaluateMemoryCompletion } from "../../../app/games/memory/engine";
 import { MEMORY_SETS } from "../../../app/games/memory/sets";
+import { evaluateWhoAmIGame, type WhoAmIAction } from "../../../app/games/who-am-i/engine";
+import { WHO_AM_I_CHARACTERS } from "../../../app/games/who-am-i/characters";
 import type { CorePlatformEvent } from "../platform-event-engine";
 import type { GameFinishedV2Payload } from "../platform-event-catalog";
 
@@ -59,7 +61,19 @@ type MemoryCompletion = {
   revealedCardIds: string[];
 };
 
-export type PlatformGameCompletion = WordleCompletion | ThreeCluesCompletion | TimelineCompletion | MemoryCompletion;
+type WhoAmICompletion = {
+  gameId: "quem-sou-eu";
+  sessionId: string;
+  characterId: string;
+  actions: WhoAmIAction[];
+};
+
+export type PlatformGameCompletion =
+  | WordleCompletion
+  | ThreeCluesCompletion
+  | TimelineCompletion
+  | MemoryCompletion
+  | WhoAmICompletion;
 
 function validateSessionId(value: unknown) {
   const sessionId = String(value || "");
@@ -140,6 +154,19 @@ function memoryResult(input: MemoryCompletion) {
   };
 }
 
+function whoAmIResult(input: WhoAmICompletion) {
+  const character = WHO_AM_I_CHARACTERS.find(item => item.id === input.characterId);
+  if (!character) throw new Error("invalid_who_am_i_character");
+  const result = evaluateWhoAmIGame(character, input.actions);
+  return {
+    score: result.score,
+    correctAnswers: result.status === "won" ? 1 : 0,
+    questionsAnswered: 1,
+    gameVersion: "who-am-i-mvp-v1",
+    service: "who-am-i-service",
+  };
+}
+
 export function adaptPlatformGameCompletion(
   input: PlatformGameCompletion,
   context: CompletionContext,
@@ -157,6 +184,8 @@ export function adaptPlatformGameCompletion(
         ? timelineResult(input)
       : input.gameId === "memoria-biblica"
         ? memoryResult(input)
+      : input.gameId === "quem-sou-eu"
+        ? whoAmIResult(input)
       : null;
   if (!result) throw new Error("unsupported_platform_game");
 

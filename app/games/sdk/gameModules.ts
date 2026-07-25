@@ -66,6 +66,19 @@ export const gameModules: readonly GameModuleContract[] = [
     route: "/jogos/memoria-biblica",
     image: "🧠",
   },
+  {
+    id: "quem-sou-eu",
+    slug: "quem-sou-eu",
+    name: "Quem Sou Eu?",
+    shortDescription: "Descubra personagens bíblicos usando dicas progressivas.",
+    description: "Leia as dicas, revele novas pistas quando precisar e escolha o personagem correto.",
+    objective: "Identificar o personagem bíblico usando a menor quantidade possível de dicas.",
+    mechanics: ["Cinco dicas progressivas", "Quatro alternativas", "Resposta permitida a qualquer momento"],
+    status: "available",
+    primaryButton: "Jogar",
+    route: "/jogos/quem-sou-eu",
+    image: "❓",
+  },
 ] as const;
 
 export function getGameModule(slug: string) {

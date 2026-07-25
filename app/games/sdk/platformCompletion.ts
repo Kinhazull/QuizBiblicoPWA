@@ -27,11 +27,19 @@ export type MemoryCompletionSubmission = {
   revealedCardIds: string[];
 };
 
+export type WhoAmICompletionSubmission = {
+  gameId: "quem-sou-eu";
+  sessionId: string;
+  characterId: string;
+  actions: Array<{ type: "reveal" } | { type: "guess"; answerId: string }>;
+};
+
 export type PlatformGameCompletionSubmission =
   | WordleCompletionSubmission
   | ThreeCluesCompletionSubmission
   | TimelineCompletionSubmission
-  | MemoryCompletionSubmission;
+  | MemoryCompletionSubmission
+  | WhoAmICompletionSubmission;
 
 export function createGameSessionId() {
   const bytes = crypto.getRandomValues(new Uint8Array(16));

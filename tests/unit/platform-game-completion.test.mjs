@@ -115,6 +115,31 @@ test("Memória Bíblica result is recalculated from the full reveal history", ()
   }, context), /invalid_memory_reveals|incomplete_memory_game/);
 });
 
+test("Quem Sou Eu result is recalculated from progressive hint actions", () => {
+  const win = adaptPlatformGameCompletion({
+    gameId: "quem-sou-eu",
+    sessionId: "session-who-am-i-001",
+    characterId: "moises",
+    actions: [{ type: "reveal" }, { type: "guess", answerId: "moises" }],
+  }, context);
+  assert.equal(win.source.service, "who-am-i-service");
+  assert.equal(win.payload.score, 400);
+  assert.equal(win.payload.correctAnswers, 1);
+  assert.equal(win.payload.questionsAnswered, 1);
+
+  const loss = adaptPlatformGameCompletion({
+    gameId: "quem-sou-eu",
+    sessionId: "session-who-am-i-002",
+    characterId: "moises",
+    actions: [
+      { type: "reveal" }, { type: "reveal" }, { type: "reveal" }, { type: "reveal" },
+      { type: "guess", answerId: "josue" },
+    ],
+  }, context);
+  assert.equal(loss.payload.score, 0);
+  assert.equal(loss.payload.correctAnswers, 0);
+});
+
 test("invalid or tampered completions are rejected", () => {
   assert.throws(() => adaptPlatformGameCompletion({
     gameId: "wordle-biblico",
@@ -141,4 +166,10 @@ test("invalid or tampered completions are rejected", () => {
     setId: "unknown",
     revealedCardIds: [],
   }, context), /invalid_memory_set/);
+  assert.throws(() => adaptPlatformGameCompletion({
+    gameId: "quem-sou-eu",
+    sessionId: "session-who-am-i-003",
+    characterId: "unknown",
+    actions: [],
+  }, context), /invalid_who_am_i_character/);
 });

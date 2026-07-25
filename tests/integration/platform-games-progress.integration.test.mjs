@@ -195,6 +195,41 @@ test("Memória Bíblica victory reaches Progress, Statistics, Achievements and M
   }, { progress: 1, state: "completed" });
 });
 
+test("Quem Sou Eu victory reaches Progress, Statistics, Achievements and Missions", async t => {
+  const { ctx, token } = await setup(t);
+  const response = await withFrozenTime(NOW, () => finishPlatformGame({
+    request: request(token, {
+      gameId: "quem-sou-eu",
+      sessionId: "session-who-am-i-integration",
+      characterId: "moises",
+      actions: [{ type: "guess", answerId: "moises" }],
+    }),
+    env: ctx.env,
+  }));
+  const data = await responseJson(response);
+  assert.equal(response.status, 200);
+  assert.equal(data.outcome, "won");
+  assert.equal(data.score, 500);
+  assert.deepEqual({
+    ...ctx.raw.prepare("SELECT total_xp totalXp,coins FROM user_platform_progress WHERE user_id='player'").get(),
+  }, { totalXp: 160, coins: 25 });
+  assert.deepEqual({
+    ...ctx.raw.prepare(`SELECT sessions_completed sessionsCompleted,questions_answered questionsAnswered,
+      correct_answers correctAnswers,incorrect_answers incorrectAnswers,best_score bestScore
+      FROM user_platform_game_statistics WHERE user_id='player' AND game_id='quem-sou-eu'`).get(),
+  }, {
+    sessionsCompleted: 1,
+    questionsAnswered: 1,
+    correctAnswers: 1,
+    incorrectAnswers: 0,
+    bestScore: 500,
+  });
+  assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM user_platform_achievements WHERE user_id='player'").get().total, 2);
+  assert.deepEqual({
+    ...ctx.raw.prepare("SELECT progress,state FROM user_platform_missions WHERE id='mission-assignment'").get(),
+  }, { progress: 1, state: "completed" });
+});
+
 test("completion endpoint requires authentication and rejects incomplete games without effects", async t => {
   const { ctx, token } = await setup(t);
   const unauthenticated = await finishPlatformGame({

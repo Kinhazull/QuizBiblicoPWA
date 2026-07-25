@@ -41,6 +41,7 @@ const gameServices = [
   "three-clues-service",
   "timeline-service",
   "memory-service",
+  "who-am-i-service",
 ] as const;
 const gameIdsByService: Readonly<Record<(typeof gameServices)[number], readonly string[]>> = {
   "quiz-service": ["quiz-biblico"],
@@ -49,6 +50,7 @@ const gameIdsByService: Readonly<Record<(typeof gameServices)[number], readonly 
   "three-clues-service": ["jogo-tres-pistas"],
   "timeline-service": ["linha-do-tempo-biblica"],
   "memory-service": ["memoria-biblica"],
+  "who-am-i-service": ["quem-sou-eu"],
 };
 
 export const CORE_EVENT_CATALOG: Readonly<Record<CoreEventType, EventDefinition>> = {
@@ -112,6 +114,7 @@ const PUBLISHED_GAME_IDS = new Set([
   "jogo-tres-pistas",
   "linha-do-tempo-biblica",
   "memoria-biblica",
+  "quem-sou-eu",
 ]);
 const tokenPattern = /^[a-zA-Z0-9._:-]+$/;
 
