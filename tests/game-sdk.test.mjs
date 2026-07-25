@@ -5,14 +5,16 @@ import test from "node:test";
 const read = path => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
 test("Game SDK centralizes the module contract and registry", async () => {
-  const [types, registry] = await Promise.all([
+  const [types, registry, catalog] = await Promise.all([
     read("app/games/sdk/types.ts"),
     read("app/games/sdk/gameModules.ts"),
+    read("app/data/gameCatalog.ts"),
   ]);
   assert.match(types, /GameModuleContract/);
   assert.match(types, /GamePlayStatus/);
-  assert.match(registry, /gameCatalog\.map/);
+  assert.match(registry, /gameModules: readonly GameModuleContract\[\]/);
   assert.match(registry, /getGameModule/);
+  assert.match(catalog, /gameModules as gameCatalog/);
 });
 
 test("Game SDK exposes shared layout, HUD and final states", async () => {
@@ -34,4 +36,3 @@ test("Wordle consumes the shared Game SDK without changing its engine", async ()
   assert.match(wordle, /WORDLE_MAX_ATTEMPTS/);
   assert.doesNotMatch(wordle, /wordle-restart/);
 });
-

@@ -1,13 +1,20 @@
 import type { ReactNode } from "react";
 
 export type GamePlayStatus = "playing" | "won" | "lost";
+export type GameModuleStatus = "available" | "development";
 
 export type GameModuleContract = {
   id: string;
   slug: string;
   name: string;
+  shortDescription: string;
+  description: string;
+  objective: string;
+  mechanics: readonly string[];
+  status: GameModuleStatus;
+  primaryButton: "Jogar" | "Ver detalhes";
   route: string;
-  availability: "available" | "development";
+  image: string;
 };
 
 export type GameLayoutProps = {
@@ -21,4 +28,3 @@ export type GameLayoutProps = {
   onRestart: () => void;
   children: ReactNode;
 };
-
