@@ -1,7 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { GameLayout, type GamePlayStatus } from "../sdk";
+import { useRef, useState } from "react";
+import {
+  createGameSessionId,
+  GameLayout,
+  recordPlatformGameCompletion,
+  type GamePlayStatus,
+} from "../sdk";
 import {
   isCorrectThreeCluesAnswer,
   nextQuestionIndex,
@@ -11,6 +16,7 @@ import {
 import { THREE_CLUES_QUESTIONS } from "./questions";
 
 export function ThreeCluesGame() {
+  const sessionId = useRef(createGameSessionId());
   const [questionIndex, setQuestionIndex] = useState(0);
   const [revealedClues, setRevealedClues] = useState(1);
   const [answer, setAnswer] = useState("");
@@ -43,9 +49,17 @@ export function ThreeCluesGame() {
       setStatus("lost");
       setMessage(`A resposta era ${question.answer}.`);
     }
+    void recordPlatformGameCompletion({
+      gameId: "jogo-tres-pistas",
+      sessionId: sessionId.current,
+      questionId: question.id,
+      answer,
+      cluesUsed: revealedClues,
+    }).catch(() => undefined);
   }
 
   function restart() {
+    sessionId.current = createGameSessionId();
     setQuestionIndex(current => nextQuestionIndex(current, THREE_CLUES_QUESTIONS.length));
     setRevealedClues(1);
     setAnswer("");
@@ -103,4 +117,3 @@ export function ThreeCluesGame() {
     </GameLayout>
   );
 }
-

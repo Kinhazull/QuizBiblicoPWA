@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   evaluateGuess,
   isValidGuess,
@@ -11,7 +11,12 @@ import {
   WORDLE_TEMPORARY_ANSWER,
   type LetterState,
 } from "./engine";
-import { GameLayout, type GamePlayStatus } from "../sdk";
+import {
+  createGameSessionId,
+  GameLayout,
+  recordPlatformGameCompletion,
+  type GamePlayStatus,
+} from "../sdk";
 
 const KEYBOARD_ROWS = ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"];
 
@@ -21,6 +26,7 @@ function strongerState(current: LetterState | undefined, next: LetterState) {
 }
 
 export function WordleGame() {
+  const sessionId = useRef(createGameSessionId());
   const [guesses, setGuesses] = useState<string[]>([]);
   const [currentGuess, setCurrentGuess] = useState("");
   const [status, setStatus] = useState<GamePlayStatus>("playing");
@@ -62,15 +68,26 @@ export function WordleGame() {
     if (isWinningGuess(normalized, WORDLE_TEMPORARY_ANSWER)) {
       setStatus("won");
       setMessage(`Você venceu em ${nextGuesses.length} tentativa${nextGuesses.length === 1 ? "" : "s"}!`);
+      void recordPlatformGameCompletion({
+        gameId: "wordle-biblico",
+        sessionId: sessionId.current,
+        guesses: nextGuesses,
+      }).catch(() => undefined);
     } else if (nextGuesses.length === WORDLE_MAX_ATTEMPTS) {
       setStatus("lost");
       setMessage(`Fim de jogo. A palavra era ${WORDLE_TEMPORARY_ANSWER}.`);
+      void recordPlatformGameCompletion({
+        gameId: "wordle-biblico",
+        sessionId: sessionId.current,
+        guesses: nextGuesses,
+      }).catch(() => undefined);
     } else {
       setMessage(`Tentativa ${nextGuesses.length} de ${WORDLE_MAX_ATTEMPTS}. Continue!`);
     }
   }
 
   function restart() {
+    sessionId.current = createGameSessionId();
     setGuesses([]);
     setCurrentGuess("");
     setStatus("playing");

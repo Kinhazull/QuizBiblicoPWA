@@ -34,7 +34,12 @@ type EventDefinition = EventSchema & {
 };
 
 const authServices = ["auth-service"] as const;
-const gameServices = ["quiz-service", "quiz-attempt-service"] as const;
+const gameServices = [
+  "quiz-service",
+  "quiz-attempt-service",
+  "wordle-service",
+  "three-clues-service",
+] as const;
 
 export const CORE_EVENT_CATALOG: Readonly<Record<CoreEventType, EventDefinition>> = {
   USER_REGISTERED: { version: 1, sourceKind: "auth", services: authServices, fields: { method: "string" }, enums: { method: ["invite", "admin"] } },
@@ -91,7 +96,11 @@ export const CORE_EVENT_CATALOG: Readonly<Record<CoreEventType, EventDefinition>
   REWARD_GRANTED: { version: 1, sourceKind: "platform", services: ["reward-service"], fields: { rewardType: "string", amount: "positiveInteger" }, enums: { rewardType: ["xp", "coins"] } },
 };
 
-const PUBLISHED_GAME_IDS = new Set(["quiz-biblico"]);
+const PUBLISHED_GAME_IDS = new Set([
+  "quiz-biblico",
+  "wordle-biblico",
+  "jogo-tres-pistas",
+]);
 const tokenPattern = /^[a-zA-Z0-9._:-]+$/;
 
 function validString(value: unknown) {
