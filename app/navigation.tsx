@@ -2,8 +2,8 @@ import type { SVGProps } from "react";
 
 export type IconName = "home" | "book" | "trophy" | "medal" | "user" | "bell" | "settings" | "users" | "questions" | "calendar" | "shield" | "chart" | "file" | "key" | "message" | "sparkles" | "review" | "upload" | "history" | "privacy" | "health" | "logout" | "chevron" | "menu";
 
-export type NavigationItem = { label: string; href: string; icon: IconName; description?: string; permission?: string };
-export type NavigationGroup = { label: string; icon: IconName; items: NavigationItem[] };
+export type NavigationItem = { label: string; href: string; icon: IconName; description?: string; permissions?: string[]; requireAllPermissions?: boolean };
+export type NavigationGroup = { label: string; icon: IconName; items: NavigationItem[]; emptyLabel?: string };
 
 export const participantNavigation: NavigationItem[] = [
   { label: "Início", href: "/", icon: "home" },
@@ -22,36 +22,37 @@ export const platformHomeNavigation: NavigationItem[] = [
 
 export const adminNavigation: NavigationGroup[] = [
   { label: "Visão geral", icon: "home", items: [
-    { label: "Painel", href: "/admin", icon: "home", description: "Resumo da operação e pendências." },
-    { label: "Indicadores", href: "/admin/analises", icon: "chart", description: "Acompanhar participação, resultados e desempenho." },
-    { label: "Relatórios", href: "/admin/relatorios", icon: "file", description: "Exportar membros, resultados, ranking e auditoria." },
+    { label: "Painel", href: "/admin", icon: "home", description: "Resumo da operação e pendências.", permissions: ["reports.view"] },
+    { label: "Indicadores", href: "/admin/analises", icon: "chart", description: "Acompanhar participação, resultados e desempenho.", permissions: ["reports.view"] },
   ]},
-  { label: "Comunidade", icon: "users", items: [
-    { label: "Aprovações e acessos", href: "/admin/acessos", icon: "shield", description: "Aprovar cadastros, suspender usuários e revisar acessos." },
-    { label: "Membros", href: "/admin/membros", icon: "users", description: "Gerenciar perfis, grupos e situações." },
-    { label: "Convites", href: "/admin/convites", icon: "key", description: "Criar e acompanhar convites de cadastro." },
-    { label: "Avisos e comunicados", href: "/admin/comunicacao", icon: "message", description: "Criar mensagens e notificações para os participantes." },
+  { label: "Usuários", icon: "users", items: [
+    { label: "Usuários e membros", href: "/admin/membros", icon: "users", description: "Pesquisar e gerenciar perfis, funções e situações.", permissions: ["members.manage"] },
+    { label: "Aprovações", href: "/admin/acessos", icon: "shield", description: "Aprovar cadastros e revisar novos acessos.", permissions: ["members.manage", "invitations.manage"], requireAllPermissions: true },
+    { label: "Convites", href: "/admin/convites", icon: "key", description: "Criar e acompanhar convites de cadastro.", permissions: ["invitations.manage"] },
+    { label: "Permissões", href: "/admin/permissoes", icon: "shield", description: "Definir responsabilidades administrativas.", permissions: ["permissions.manage"] },
+    { label: "Comunicados", href: "/admin/comunicacao", icon: "message", description: "Criar mensagens e notificações para os participantes.", permissions: ["notifications.manage"] },
   ]},
-  { label: "Perguntas", icon: "questions", items: [
-    { label: "Banco de perguntas", href: "/admin/perguntas", icon: "questions", description: "Criar, localizar e organizar perguntas." },
-    { label: "Perguntas arquivadas", href: "/admin/perguntas/arquivadas", icon: "file", description: "Consultar conteúdo preservado fora de uso." },
-    { label: "Revisão de perguntas", href: "/admin/perguntas/revisao", icon: "review", description: "Revisar e aprovar perguntas do banco." },
-    { label: "Revisão colaborativa", href: "/admin/perguntas/colaboracao", icon: "users", description: "Compartilhar perguntas e acompanhar contribuições." },
-    { label: "Importar perguntas", href: "/admin/perguntas/importar", icon: "upload", description: "Adicionar perguntas em lote ao banco." },
-    { label: "Base inicial", href: "/admin/perguntas/base", icon: "book", description: "Gerenciar a coleção bíblica inicial." },
+  { label: "Conteúdo do Quiz", icon: "questions", items: [
+    { label: "Banco de perguntas", href: "/admin/perguntas", icon: "questions", description: "Criar, localizar e organizar perguntas.", permissions: ["questions.edit", "questions.review", "rounds.manage"] },
+    { label: "Perguntas arquivadas", href: "/admin/perguntas/arquivadas", icon: "file", description: "Consultar conteúdo preservado fora de uso.", permissions: ["questions.edit", "questions.review"] },
+    { label: "Revisão de perguntas", href: "/admin/perguntas/revisao", icon: "review", description: "Revisar e aprovar perguntas do banco.", permissions: ["questions.review"] },
+    { label: "Revisão colaborativa", href: "/admin/perguntas/colaboracao", icon: "users", description: "Compartilhar perguntas e acompanhar contribuições.", permissions: ["questions.edit", "questions.review"] },
+    { label: "Importar perguntas", href: "/admin/perguntas/importar", icon: "upload", description: "Adicionar perguntas em lote ao banco.", permissions: ["questions.edit"] },
+    { label: "Base inicial", href: "/admin/perguntas/base", icon: "book", description: "Gerenciar a coleção bíblica inicial.", permissions: ["questions.edit"] },
+    { label: "Gerenciar jornadas", href: "/admin/rodadas/lista", icon: "calendar", description: "Consultar e administrar jornadas.", permissions: ["rounds.manage"] },
+    { label: "Nova jornada", href: "/admin/rodadas", icon: "sparkles", description: "Montar uma jornada manualmente ou pelo banco.", permissions: ["rounds.manage"] },
+    { label: "Importar jornada", href: "/admin/rodadas/importar", icon: "upload", description: "Criar uma jornada a partir de texto estruturado.", permissions: ["rounds.manage"] },
+    { label: "Calendário", href: "/admin/calendario", icon: "calendar", description: "Visualizar a programação das jornadas.", permissions: ["rounds.manage"] },
+    { label: "Temporadas", href: "/admin/temporadas", icon: "trophy", description: "Planejar e acompanhar ciclos trimestrais.", permissions: ["rounds.manage"] },
   ]},
-  { label: "Jornadas", icon: "calendar", items: [
-    { label: "Gerenciar jornadas", href: "/admin/rodadas/lista", icon: "calendar", description: "Consultar e administrar jornadas." },
-    { label: "Nova jornada", href: "/admin/rodadas", icon: "sparkles", description: "Montar uma jornada manualmente ou pelo banco." },
-    { label: "Importar jornada", href: "/admin/rodadas/importar", icon: "upload", description: "Criar uma jornada a partir de texto estruturado." },
-    { label: "Calendário", href: "/admin/calendario", icon: "calendar", description: "Visualizar a programação das jornadas." },
-    { label: "Temporadas", href: "/admin/temporadas", icon: "trophy", description: "Planejar e acompanhar ciclos trimestrais." },
-  ]},
-  { label: "Gestão", icon: "shield", items: [
-    { label: "Permissões", href: "/admin/permissoes", icon: "shield", description: "Definir responsabilidades administrativas." },
-    { label: "Auditoria administrativa", href: "/admin/historico", icon: "history", description: "Consultar alterações e ações importantes do sistema." },
-    { label: "Privacidade", href: "/admin/privacidade", icon: "privacy", description: "Atender solicitações e políticas de dados." },
-    { label: "Diagnóstico", href: "/admin/diagnostico", icon: "health", description: "Verificar integridade e configuração do sistema." },
+  { label: "Jogos", icon: "questions", items: [], emptyLabel: "Gestão de jogos em breve" },
+  { label: "Progressão", icon: "chart", items: [], emptyLabel: "XP, missões e conquistas em breve" },
+  { label: "Economia", icon: "medal", items: [], emptyLabel: "Saldos e itens em breve" },
+  { label: "Operações", icon: "shield", items: [
+    { label: "Relatórios", href: "/admin/relatorios", icon: "file", description: "Exportar membros, resultados, ranking e auditoria.", permissions: ["reports.view"] },
+    { label: "Auditoria administrativa", href: "/admin/historico", icon: "history", description: "Consultar alterações e ações importantes do sistema.", permissions: ["audit.view"] },
+    { label: "Privacidade", href: "/admin/privacidade", icon: "privacy", description: "Atender solicitações e políticas de dados.", permissions: ["members.manage"] },
+    { label: "Diagnóstico", href: "/admin/diagnostico", icon: "health", description: "Verificar integridade e configuração do sistema.", permissions: ["reports.view"] },
   ]},
 ];
 

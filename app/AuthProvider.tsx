@@ -8,6 +8,7 @@ export type AuthenticatedUser = {
   displayName: string;
   role: string;
   mustChangePassword?: boolean;
+  permissions?: string[];
 };
 
 type AuthState = {

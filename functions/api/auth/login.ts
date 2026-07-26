@@ -1,6 +1,7 @@
 import { json, normalizeUsername, randomToken, sessionCookie, sha256, verifyPasswordDetails } from "../../_lib/security";
 import type { AppEnv } from "../../_lib/auth";
 import { enforceRateLimit, requestFingerprint } from "../../_lib/abuse";
+import { effectivePermissions } from "../../_lib/permissions";
 
 export const onRequestPost = async ({ request, env }: { request: Request; env: AppEnv }) => {
   const body: any = await request.json().catch(() => null);
@@ -29,6 +30,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
   }
   if (user.status === "pending") return json({ error: "pending_approval" }, 403);
   if (user.status !== "active") return json({ error: "account_unavailable" }, 403);
+  const permissions = await effectivePermissions(env, user);
   const token = randomToken();
   const expires = now + (persistent ? 30 : .5) * 24 * 60 * 60 * 1000;
   await env.DB.batch([
@@ -38,5 +40,5 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
     env.DB.prepare(`DELETE FROM login_security WHERE username_hash=?1`).bind(usernameHash),
   ]);
   const secureCookie = String(env.LOCAL_LAN_DEVELOPMENT) !== "true";
-  return json({ ok: true, mustChangePassword: Boolean(user.must_change_password), user: { id: user.id, displayName: user.display_name, role: user.role, mustChangePassword: Boolean(user.must_change_password) } }, 200, { "set-cookie": sessionCookie(token, persistent, secureCookie) });
+  return json({ ok: true, mustChangePassword: Boolean(user.must_change_password), user: { id: user.id, displayName: user.display_name, role: user.role, mustChangePassword: Boolean(user.must_change_password), permissions } }, 200, { "set-cookie": sessionCookie(token, persistent, secureCookie) });
 };
