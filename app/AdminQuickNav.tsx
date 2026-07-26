@@ -2,12 +2,16 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { adminNavigation, BrandIcon } from "./navigation";
+import { visibleAdminNavigation } from "./admin-navigation-access";
+import { useAuth } from "./AuthProvider";
 
 const cleanPath = (value: string) => value !== "/" ? value.replace(/\/+$/, "") : value;
 const activeHref = (path: string) => { const normalized=cleanPath(path); const exact=adminNavigation.flatMap(group=>group.items).find(item=>cleanPath(item.href)===normalized); if(exact)return exact.href; const candidates=adminNavigation.flatMap(group=>group.items).filter(item=>item.href!=="/admin"&&normalized.startsWith(`${cleanPath(item.href)}/`)).sort((a,b)=>b.href.length-a.href.length); return candidates[0]?.href||""; };
 
 export function AdminQuickNav() {
   const path = usePathname(), toggleRef = useRef<HTMLButtonElement>(null);
+  const { user } = useAuth();
+  const navigation = useMemo(() => visibleAdminNavigation(adminNavigation, user), [user]);
   const selected=useMemo(()=>activeHref(path),[path]);
   const current = useMemo(() => adminNavigation.find(group => group.items.some(item => item.href===selected))?.label || "Visão geral", [selected]);
   const [open, setOpen] = useState(false), [expanded, setExpanded] = useState<Record<string, boolean>>({ [current]: true });
@@ -22,7 +26,7 @@ export function AdminQuickNav() {
     <aside id="admin-side-menu" className={`admin-side-menu ${open ? "open" : ""}`} aria-label="Navegação administrativa">
       <div className="admin-drawer-heading"><strong>Navegação</strong><button type="button" onClick={() => close(true)} aria-label="Fechar menu">×</button></div>
       <a className="admin-open-app" href="/"><BrandIcon name="home" /> Abrir aplicativo</a>
-      {adminNavigation.map(group => { const groupOpen = Boolean(expanded[group.label]); return <section className="admin-nav-group" key={group.label}><button type="button" className="admin-nav-group-toggle" aria-expanded={groupOpen} onClick={() => setExpanded(value => ({ ...value, [group.label]: !groupOpen }))}><BrandIcon name={group.icon} /><span>{group.label}</span><BrandIcon name="chevron" /></button>{groupOpen && <nav aria-label={group.label}>{group.items.map(item => { const active = item.href===selected; return <a href={item.href} key={item.href} className={active ? "active" : ""} aria-current={active ? "page" : undefined} title={item.description}><BrandIcon name={item.icon} /><span>{item.label}</span></a>; })}</nav>}</section>; })}
+      {navigation.map(group => { const groupOpen = Boolean(expanded[group.label]); return <section className="admin-nav-group" key={group.label}><button type="button" className="admin-nav-group-toggle" aria-expanded={groupOpen} onClick={() => setExpanded(value => ({ ...value, [group.label]: !groupOpen }))}><BrandIcon name={group.icon} /><span>{group.label}</span><BrandIcon name="chevron" /></button>{groupOpen && <nav aria-label={group.label}>{group.items.map(item => { const active = item.href===selected; return <a href={item.href} key={item.href} className={active ? "active" : ""} aria-current={active ? "page" : undefined} title={item.description}><BrandIcon name={item.icon} /><span>{item.label}</span></a>; })}{group.items.length === 0 && group.emptyLabel && <span className="admin-nav-empty">{group.emptyLabel}</span>}</nav>}</section>; })}
     </aside>
   </>;
 }

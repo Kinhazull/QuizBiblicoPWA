@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "./AuthProvider";
-import { PlatformHome, type PlatformBadgeData, type PlatformMissionData, type PlatformProgressData } from "./PlatformHome";
+import { PlatformHome, type DailyRetentionData, type PlatformAchievementData, type PlatformMissionData, type PlatformProgressData } from "./PlatformHome";
 import type { JourneyCardData } from "./journey-card-state";
+import type { EquipmentView } from "./EquippedAvatar";
 
 const LEGAL_VERSION = "2026-07-13";
 
@@ -14,10 +15,14 @@ export default function Home() {
   const [authBusy, setAuthBusy] = useState(false);
   const [journey, setJourney] = useState<JourneyCardData | null>(null);
   const [clock, setClock] = useState(Date.now());
-  const [badges, setBadges] = useState<PlatformBadgeData | null>(null);
+  const [achievementData, setAchievementData] = useState<PlatformAchievementData | null>(null);
   const [progress, setProgress] = useState<PlatformProgressData | null>(null);
   const [mission, setMission] = useState<PlatformMissionData | null>(null);
   const [missionLoaded, setMissionLoaded] = useState(false);
+  const [daily, setDaily] = useState<DailyRetentionData | null>(null);
+  const [dailyBusy, setDailyBusy] = useState(false);
+  const [dailyError, setDailyError] = useState("");
+  const [equipment, setEquipment] = useState<EquipmentView | null>(null);
 
   useEffect(() => {
     const invite = new URLSearchParams(location.search).get("convite");
@@ -31,15 +36,80 @@ export default function Home() {
 
   useEffect(() => {
     if (!user) return;
+    let active = true;
+    const controller = new AbortController();
     setProgress(null);
     setMission(null);
     setMissionLoaded(false);
-    fetch("/api/rounds/status").then(response => response.ok ? response.json() : null).then(setJourney);
-    fetch("/api/badges").then(response => response.ok ? response.json() : null).then(data => data && setBadges(data));
-    fetch("/api/platform/progress", { cache: "no-store" }).then(response => response.ok ? response.json() : null).then(data => data?.progress && setProgress(data.progress));
-    fetch("/api/platform/missions/current", { cache: "no-store" }).then(response => response.ok ? response.json() : null).then(data => setMission(data?.mission || null)).finally(() => setMissionLoaded(true));
+    setDaily(null);
+    setDailyError("");
+    fetch("/api/rounds/status", { signal: controller.signal }).then(response => response.ok ? response.json() : null)
+      .then(data => { if (active) setJourney(data); }).catch(() => undefined);
+    fetch("/api/platform/achievements", { cache: "no-store", signal: controller.signal })
+      .then(response => response.ok ? response.json() : null)
+      .then(data => { if (active && data) setAchievementData(data); }).catch(() => undefined);
+    void (async () => {
+      try {
+        const response = await fetch("/api/platform/daily/check-in", {
+          method: "POST", cache: "no-store", signal: controller.signal,
+        });
+        if (!response.ok) throw new Error("daily_check_in_failed");
+        const data = await response.json();
+        if (!data?.daily) throw new Error("daily_state_unavailable");
+        if (!active) return;
+        setDaily(data.daily);
+        setMission(data.daily.mission || null);
+        setProgress(data.daily.progress || null);
+      } catch (error) {
+        if (!active || (error instanceof DOMException && error.name === "AbortError")) return;
+        setDailyError("Não foi possível carregar o ciclo diário. Tente recarregar a página.");
+        try {
+          const [progressResponse, missionResponse] = await Promise.all([
+            fetch("/api/platform/progress", { cache: "no-store", signal: controller.signal }),
+            fetch("/api/platform/missions/current", { cache: "no-store", signal: controller.signal }),
+          ]);
+          const [progressData, missionData] = await Promise.all([
+            progressResponse.ok ? progressResponse.json() : null,
+            missionResponse.ok ? missionResponse.json() : null,
+          ]);
+          if (!active) return;
+          if (progressData?.progress) setProgress(progressData.progress);
+          setMission(missionData?.mission || null);
+        } catch {
+          // The visible daily error remains the safe fallback when the network is unavailable.
+        }
+      } finally {
+        if (active) setMissionLoaded(true);
+      }
+    })();
     const timer = window.setInterval(() => setClock(Date.now()), 15_000);
-    return () => clearInterval(timer);
+    return () => {
+      active = false;
+      controller.abort();
+      clearInterval(timer);
+    };
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) {
+      setEquipment(null);
+      return;
+    }
+    let active = true;
+    const loadEquipment = () => {
+      fetch("/api/platform/inventory", { cache: "no-store" })
+        .then(response => response.ok ? response.json() : null)
+        .then(data => { if (active && data) setEquipment(data); })
+        .catch(() => undefined);
+    };
+    loadEquipment();
+    window.addEventListener("focus", loadEquipment);
+    window.addEventListener("platform-equipment-changed", loadEquipment);
+    return () => {
+      active = false;
+      window.removeEventListener("focus", loadEquipment);
+      window.removeEventListener("platform-equipment-changed", loadEquipment);
+    };
   }, [user]);
 
   function remaining(target?: number) {
@@ -49,6 +119,27 @@ export default function Home() {
     const hours = Math.floor((seconds % 86400) / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     return `${days ? `${days}d ` : ""}${String(hours).padStart(2, "0")}h ${String(minutes).padStart(2, "0")}min`;
+  }
+
+  async function openDailyChest() {
+    if (dailyBusy || !daily?.chest.unlocked || daily.chest.opened) return;
+    setDailyBusy(true);
+    setDailyError("");
+    try {
+      const response = await fetch("/api/platform/daily/chest", { method: "POST", cache: "no-store" });
+      const data = await response.json();
+      if (!response.ok) {
+        setDailyError(data.error === "daily_chest_locked" ? "Conclua a missão diária para liberar o cofre." : "Não foi possível abrir o cofre.");
+        return;
+      }
+      setDaily(data.daily);
+      setMission(data.daily.mission || null);
+      setProgress(data.daily.progress || null);
+    } catch {
+      setDailyError("Sem conexão. Tente novamente.");
+    } finally {
+      setDailyBusy(false);
+    }
   }
 
   async function submitAuth(event: React.FormEvent<HTMLFormElement>) {
@@ -86,5 +177,7 @@ export default function Home() {
 
   if (!user) return <main className="shell auth-screen"><div className="ambient one"/><div className="ambient two"/><section className="auth-card"><header className="brand"><span className="brand-dot">✦</span> CONTE OS FEITOS</header><p className="eyebrow">JORNADA BÍBLICA</p><h1>{authMode === "login" ? <>Que bom ter você<br/><em>de volta</em></> : <>Entre para a<br/><em>jornada</em></>}</h1><p className="intro">{authMode === "login" ? "Acesse sua conta para jogar a rodada da semana e acompanhar sua jornada." : "Use o código do seu grupo. Seu cadastro será analisado por um líder."}</p><form onSubmit={submitAuth}>{authMode === "register" && <label>Seu nome<input name="displayName" autoComplete="name" required minLength={3} placeholder="Nome e sobrenome"/></label>}{authMode === "register" && <label>Código do grupo<input name="inviteCode" autoCapitalize="characters" required placeholder="Ex.: FAROL-2026" defaultValue={new URLSearchParams(location.search).get("convite") || ""}/></label>}<label>Nome de usuário<input name="username" autoCapitalize="none" autoComplete="username" required minLength={3} placeholder="Como você vai entrar"/></label><label>Senha<input name="password" type="password" autoComplete={authMode === "login" ? "current-password" : "new-password"} required minLength={10} placeholder="Mínimo de 10 caracteres"/></label>{authMode === "login" && <label className="remember"><input name="persistent" type="checkbox"/> Permanecer conectado neste aparelho</label>}{authMode === "register" && <label className="legal-consent"><input name="legalAccepted" type="checkbox" required/><span>Li e aceito os <a href="/termos" target="_blank" rel="noreferrer">Termos de Uso</a> e a <a href="/privacidade" target="_blank" rel="noreferrer">Política de Privacidade</a>.</span></label>}{authError && <p className="auth-message" role="status" aria-live="polite">{authError}</p>}<button className="primary" disabled={authBusy}>{authBusy ? "AGUARDE..." : authMode === "login" ? "ENTRAR" : "CRIAR MINHA CONTA"}<span>→</span></button></form><button className="auth-switch" onClick={() => { setAuthMode(authMode === "login" ? "register" : "login"); setAuthError(""); }}>{authMode === "login" ? "Ainda não tenho conta" : "Já tenho uma conta"}</button><nav className="legal-links" aria-label="Documentos legais"><a href="/termos">Termos de Uso</a><a href="/privacidade">Privacidade</a></nav></section></main>;
 
-  return <PlatformHome displayName={user.displayName} journey={journey} badges={badges} progress={progress} mission={mission} missionLoaded={missionLoaded} remaining={remaining} />;
+  return <PlatformHome displayName={user.displayName} journey={journey} achievementData={achievementData}
+    progress={progress} mission={mission} missionLoaded={missionLoaded} daily={daily} dailyBusy={dailyBusy}
+    dailyError={dailyError} equipment={equipment} onOpenChest={openDailyChest} remaining={remaining} />;
 }

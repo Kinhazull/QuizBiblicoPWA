@@ -1,17 +1,31 @@
 import { getJourneyCardView, type JourneyCardData } from "./journey-card-state";
-import { PLATFORM_HOME_PREVIEW, UPCOMING_GAMES } from "./platform-home-config";
+import { PLATFORM_HOME_PREVIEW } from "./platform-home-config";
+import { gameCatalog } from "./data/gameCatalog";
+import { EquippedAvatar, type EquipmentView } from "./EquippedAvatar";
 
-type BadgeDefinition = { code: string; name: string; icon?: string; description?: string };
-type EarnedBadge = { code: string; earnedAt: number };
-export type PlatformBadgeData = { badges?: BadgeDefinition[]; earned?: EarnedBadge[]; newBadges?: BadgeDefinition[] };
+type PlatformAchievement = {
+  code: string;
+  name: string;
+  icon: string | null;
+  scopeType: "global" | "game";
+  gameId: string | null;
+  unlocked: boolean;
+  unlockedAt: number | null;
+};
+export type PlatformAchievementData = { achievements?: PlatformAchievement[] };
 
 type PlatformHomeProps = {
   displayName: string;
   journey: JourneyCardData | null;
-  badges: PlatformBadgeData | null;
+  achievementData: PlatformAchievementData | null;
   progress: PlatformProgressData | null;
   mission: PlatformMissionData | null;
   missionLoaded: boolean;
+  daily: DailyRetentionData | null;
+  dailyBusy: boolean;
+  dailyError: string;
+  equipment: EquipmentView | null;
+  onOpenChest: () => void;
   remaining: (target?: number) => string;
 };
 
@@ -36,6 +50,18 @@ export type PlatformProgressData = {
   levelProgress: { currentXp: number; targetXp: number; percent: number };
 };
 
+export type DailyRetentionData = {
+  dayKey: string;
+  streak: number;
+  login: { claimed: boolean; reward: { xp: number; coins: number; label: string } };
+  chest: {
+    unlocked: boolean;
+    opened: boolean;
+    reward: { xp: number; coins: number; label: string } | null;
+    preview: { xp: number; coins: number; label: string };
+  };
+};
+
 function firstName(displayName: string) {
   return displayName.trim().split(/\s+/)[0] || "participante";
 }
@@ -46,15 +72,20 @@ function progressFor(journey: JourneyCardData | null) {
   return 0;
 }
 
-function recentAchievements(data: PlatformBadgeData | null) {
-  const definitions = new Map((data?.badges || []).map(item => [item.code, item]));
-  return (data?.earned || []).slice(0, 4).map(item => ({ ...item, ...definitions.get(item.code) }));
+function recentAchievements(data: PlatformAchievementData | null) {
+  return (data?.achievements || [])
+    .filter(item => item.unlocked && item.unlockedAt)
+    .sort((left, right) => Number(right.unlockedAt) - Number(left.unlockedAt))
+    .slice(0, 4);
 }
 
-export function PlatformHome({ displayName, journey, badges, progress, mission, missionLoaded, remaining }: PlatformHomeProps) {
+export function PlatformHome({
+  displayName, journey, achievementData, progress, mission, missionLoaded,
+  daily, dailyBusy, dailyError, equipment, onOpenChest, remaining,
+}: PlatformHomeProps) {
   const view = getJourneyCardView(journey, remaining);
   const quizProgress = progressFor(journey);
-  const achievements = recentAchievements(badges);
+  const achievements = recentAchievements(achievementData);
   const platformProgress = progress || PLATFORM_HOME_PREVIEW.progress;
   const xpPercent = platformProgress.levelProgress.percent;
 
@@ -62,13 +93,19 @@ export function PlatformHome({ displayName, journey, badges, progress, mission, 
     <div className="platform-ambient platform-ambient-one" aria-hidden="true" />
     <div className="platform-ambient platform-ambient-two" aria-hidden="true" />
     <div className="platform-home-inner">
-      <header className="platform-brand" aria-label="Conte os Feitos">
-        <span className="platform-brand-mark" aria-hidden="true"><b>C</b><i>✦</i></span>
-        <span>Conte os <strong>Feitos</strong></span>
+      <header className="platform-brand-row">
+        <div className="platform-brand" aria-label="Conte os Feitos">
+          <span className="platform-brand-mark" aria-hidden="true"><b>C</b><i>✦</i></span>
+          <span>Conte os <strong>Feitos</strong></span>
+        </div>
+        <nav className="platform-collection-actions" aria-label="Coleção">
+          <a className="platform-shop-button" href="/inventario"><span aria-hidden="true">🎒</span> Inventário</a>
+          <a className="platform-shop-button" href="/loja"><span aria-hidden="true">🛍️</span> Loja</a>
+        </nav>
       </header>
 
       <section className="platform-player-card" aria-labelledby="platform-greeting">
-        <div className="platform-avatar" aria-hidden="true">{firstName(displayName).slice(0, 1).toUpperCase()}</div>
+        <EquippedAvatar displayName={displayName} equipment={equipment} />
         <div className="platform-player-copy">
           <h1 id="platform-greeting">Fala, {firstName(displayName)}! <span aria-hidden="true">👋</span></h1>
           <p>Que bom ter você por aqui!</p>
@@ -77,6 +114,13 @@ export function PlatformHome({ displayName, journey, badges, progress, mission, 
         <div className="platform-currencies" aria-label="Recursos da plataforma em prévia visual">
           <span><b aria-hidden="true">🪙</b><strong>{platformProgress.coins.toLocaleString("pt-BR")}</strong><small>Moedas</small></span>
           <span><b aria-hidden="true">💎</b><strong>{PLATFORM_HOME_PREVIEW.gems}</strong><small>Gemas</small></span>
+        </div>
+        <div className="platform-daily-login" role="status">
+          <span aria-hidden="true">🔥</span>
+          <div>
+            <strong>{daily ? `${daily.streak} dia${daily.streak === 1 ? "" : "s"} de sequência` : "Preparando recompensa diária"}</strong>
+            <small>{dailyError || (daily?.login.claimed ? `Recompensa de hoje: ${daily.login.reward.label}` : "Sua recompensa será entregue ao entrar.")}</small>
+          </div>
         </div>
       </section>
 
@@ -97,27 +141,34 @@ export function PlatformHome({ displayName, journey, badges, progress, mission, 
       <section className="platform-mission-card" aria-labelledby="mission-title">
         <div className="platform-mission-icon" aria-hidden="true">{mission?.icon || "🎯"}</div>
         <div><p>Missão do dia</p><h2 id="mission-title">{!missionLoaded ? "Carregando missão..." : mission?.name || "Novas missões em breve"}</h2><span>{mission ? `${mission.progress}/${mission.target} ${mission.progressUnit}` : "Nenhuma missão diária disponível"}</span></div>
-        <aside><small>Recompensa</small><strong>{mission?.reward.label || "—"}</strong><span>{mission?.state === "claimed" ? "Resgatada" : mission?.state === "completed" ? "Pronta para resgate" : mission ? `Expira em ${remaining(mission.expiresAt)}` : "Aguarde o próximo catálogo"}</span></aside>
+        <aside><small>Recompensa</small><strong>{mission?.reward.label || "—"}</strong><span>{mission?.state === "claimed" ? "Resgatada" : mission?.state === "completed" ? "Missão concluída · cofre liberado" : mission ? `Expira em ${remaining(mission.expiresAt)}` : "Aguarde o próximo catálogo"}</span></aside>
       </section>
 
       <section className="platform-section platform-games" id="jogos" aria-labelledby="games-title">
         <header><h2 id="games-title">Seus jogos</h2><span>Novos desafios chegarão em breve</span></header>
         <div className="platform-game-grid">
-          <a className="platform-game-tile available" href="/jogar"><span className="platform-chip">Disponível</span><b aria-hidden="true">📖</b><strong>Quiz Bíblico</strong><small>Desafie seu conhecimento</small><i>Jogar agora</i></a>
-          {UPCOMING_GAMES.map(game => <article className="platform-game-tile locked" key={game.title}><span className="platform-chip">Em breve</span><b aria-hidden="true">{game.icon}</b><strong>{game.title}</strong><small>{game.description}</small><i>🔒 Em breve</i></article>)}
+          {gameCatalog.map(game => game.status === "available"
+            ? <a className="platform-game-tile available" href={game.route} key={game.id}><span className="platform-chip">Disponível</span><b aria-hidden="true">{game.image}</b><strong>{game.name}</strong><small>{game.shortDescription}</small><i>Jogar agora</i></a>
+            : <article className="platform-game-tile locked" key={game.id}><span className="platform-chip">Em breve</span><b aria-hidden="true">{game.image}</b><strong>{game.name}</strong><small>{game.shortDescription}</small><i>🔒 Em breve</i></article>)}
         </div>
       </section>
 
       <section className="platform-daily-chest" id="recompensas" aria-labelledby="chest-title">
-        <div className="platform-chest-art" aria-hidden="true">🎁</div><div><p>Baú diário</p><h2 id="chest-title">Uma nova recompensa a cada dia</h2><span>A lógica de recompensas será liberada em uma próxima etapa.</span></div><strong>{PLATFORM_HOME_PREVIEW.dailyChest.label}</strong><button type="button" disabled>Em breve</button>
+        <div className="platform-chest-art" aria-hidden="true">🎁</div>
+        <div><p>Cofre diário</p><h2 id="chest-title">{daily?.chest.opened ? "Recompensa coletada" : daily?.chest.unlocked ? "Seu cofre está disponível" : "Conclua a missão do dia"}</h2>
+          <span>{dailyError || (daily?.chest.opened ? `Você recebeu ${daily.chest.reward?.label}.` : daily?.chest.unlocked ? "Abra uma vez para receber sua recompensa." : "O cofre será liberado após concluir a missão diária.")}</span></div>
+        <strong>{daily?.chest.reward?.label || daily?.chest.preview.label || "Recompensa surpresa"}</strong>
+        <button type="button" onClick={onOpenChest} disabled={dailyBusy || !daily?.chest.unlocked || daily.chest.opened}>
+          {dailyBusy ? "Aguarde..." : daily?.chest.opened ? "Aberto hoje" : daily?.chest.unlocked ? "Abrir cofre" : "Bloqueado"}
+        </button>
       </section>
 
       <section className="platform-section platform-achievements" aria-labelledby="achievements-title">
-        <header><h2 id="achievements-title">Conquistas recentes</h2><a href="/medalhas">Ver todas <span aria-hidden="true">›</span></a></header>
-        {achievements.length > 0 ? <div className="platform-achievement-grid">{achievements.map(item => <article key={item.code}><b aria-hidden="true">{item.icon || "⭐"}</b><div><strong>{item.name}</strong><small>Medalha do Quiz Bíblico</small></div></article>)}</div> : <div className="platform-empty-achievements"><span aria-hidden="true">✦</span><div><strong>Suas conquistas aparecerão aqui</strong><small>Participe das Jornadas do Quiz Bíblico para desbloquear medalhas.</small></div></div>}
+        <header><h2 id="achievements-title">Conquistas recentes</h2><a href="/perfil">Ver no perfil <span aria-hidden="true">›</span></a></header>
+        {achievements.length > 0 ? <div className="platform-achievement-grid">{achievements.map(item => <article key={item.code}><b aria-hidden="true">{item.icon || "⭐"}</b><div><strong>{item.name}</strong><small>{item.scopeType === "game" ? "Conquista de jogo" : "Conquista da plataforma"}</small></div></article>)}</div> : <div className="platform-empty-achievements"><span aria-hidden="true">✦</span><div><strong>Suas conquistas aparecerão aqui</strong><small>Jogue e complete desafios para desbloquear conquistas.</small></div></div>}
       </section>
 
-      <p className="platform-preview-note">Gemas e baú são uma prévia visual. A missão diária é carregada pelo Core Platform.</p>
+      <p className="platform-preview-note">Gemas permanecem como prévia visual. O ciclo diário é validado pelo Core Platform.</p>
     </div>
   </main>;
 }

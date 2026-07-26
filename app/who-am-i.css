@@ -1,0 +1,19 @@
+.who-am-i-game{display:grid;gap:14px;width:100%;min-width:0;border:1px solid #78a6d435;border-radius:20px;padding:clamp(12px,4vw,22px);background:linear-gradient(145deg,#0b1d31f2,#071525f2);box-shadow:0 18px 48px #0108164f}
+.who-am-i-heading span{color:#6cc08a;font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
+.who-am-i-heading h2{margin:4px 0 0;color:#fff;font-size:clamp(19px,5.5vw,25px)}
+.who-am-i-hints{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.who-am-i-hints li{display:grid;grid-template-columns:30px minmax(0,1fr);align-items:center;gap:9px;min-width:0;border:1px solid #78a6d42b;border-radius:12px;padding:10px;background:#0d2238;color:#b8c5d5}
+.who-am-i-hints li span{display:grid;width:28px;height:28px;place-items:center;border-radius:9px;background:#173b61;color:#8fc0f5;font-size:11px;font-weight:800}
+.who-am-i-hints li p{min-width:0;margin:0;overflow-wrap:anywhere;font-size:12px;line-height:1.4}
+.who-am-i-hints li.is-current{border-color:#f4b40080;background:#17304b;color:#fff;box-shadow:0 0 18px #f4b40012}
+.who-am-i-hints li.is-current span{background:#f4b400;color:#172234}
+.who-am-i-reveal{min-height:46px;border:1px solid #78a6d44a;border-radius:12px;background:#173b61;color:#fff;font:inherit;font-size:12px;font-weight:800;cursor:pointer}
+.who-am-i-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;min-width:0}
+.who-am-i-options button{min-width:0;min-height:48px;border:1px solid #78a6d438;border-radius:12px;padding:9px;background:#102a44;color:#f2f7ff;font:inherit;font-size:13px;font-weight:700;overflow-wrap:anywhere;cursor:pointer}
+.who-am-i-options button.is-wrong{border-color:#f06b76;background:#492435;color:#ffd6da}
+.who-am-i-options button.is-correct{border-color:#6cc08a;background:#123e36;color:#bdf5d0}
+.who-am-i-options button:disabled{cursor:default;opacity:.62}.who-am-i-options button.is-wrong:disabled,.who-am-i-options button.is-correct:disabled{opacity:1}
+.who-am-i-reveal:focus-visible,.who-am-i-options button:focus-visible{outline:3px solid #f4b400;outline-offset:2px}
+.who-am-i-message{min-height:42px;margin:0;border-radius:11px;padding:11px 13px;background:#0a192a;color:#b8c5d5;font-size:12px;line-height:1.45}.who-am-i-message.won{color:#77e5aa}.who-am-i-message.lost{color:#ffd067}
+@media(max-width:350px){.who-am-i-options{grid-template-columns:1fr}.who-am-i-hints li{grid-template-columns:26px minmax(0,1fr);padding:8px}.who-am-i-hints li span{width:24px;height:24px}}
+@media(prefers-reduced-motion:reduce){.who-am-i-game *{transition:none!important}}

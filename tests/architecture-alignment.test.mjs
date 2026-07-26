@@ -64,11 +64,23 @@ test("production code reaches the low-level dispatcher only through the official
 test("no arbitrary public Core mutation endpoint is introduced", () => {
   const apiFiles = filesBelow("functions/api/");
   const forbidden = /\b(?:grantXp|grantCoins|unlockAchievement|recordMissionProgress|claimMissionReward|publishCoreEvent|publishOfficialCoreEvent)\b/;
-  const allowedClaim = "functions/api/platform/missions/[id]/claim.ts";
-  const violations = apiFiles.filter(path => !path.replaceAll("\\", "/").endsWith(allowedClaim) && forbidden.test(readFileSync(path, "utf8")));
+  const allowedEndpoints = [
+    "functions/api/platform/missions/[id]/claim.ts",
+    "functions/api/platform/games/finish.ts",
+  ];
+  const violations = apiFiles.filter(path => {
+    const normalized = path.replaceAll("\\", "/");
+    return !allowedEndpoints.some(allowed => normalized.endsWith(allowed))
+      && forbidden.test(readFileSync(path, "utf8"));
+  });
   assert.deepEqual(violations, []);
   const claim = read("functions/api/platform/missions/[id]/claim.ts");
   assert.match(claim, /requireUser/);
   assert.match(claim, /claimMissionReward/);
   assert.doesNotMatch(claim, /grantXp|grantCoins|recordMissionProgress|request\.json/);
+  const gameCompletion = read("functions/api/platform/games/finish.ts");
+  assert.match(gameCompletion, /requireUser/);
+  assert.match(gameCompletion, /adaptPlatformGameCompletion/);
+  assert.match(gameCompletion, /publishOfficialCoreEvent/);
+  assert.doesNotMatch(gameCompletion, /grantXp|grantCoins|unlockAchievement|recordMissionProgress/);
 });

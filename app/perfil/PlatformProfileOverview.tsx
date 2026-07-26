@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { EquippedAvatar, type EquipmentView } from "../EquippedAvatar";
 
 type ProgressResponse = {
   progress: {
@@ -44,6 +45,7 @@ type ProfilePlatformData = {
   statistics: StatisticsResponse;
   achievements: AchievementsResponse["summary"];
   missions: Mission[];
+  equipment: EquipmentView;
 };
 
 async function readJson<T>(url: string, signal: AbortSignal): Promise<T> {
@@ -64,7 +66,7 @@ function missionState(state: Mission["state"]) {
   return ({ active: "Em andamento", completed: "Pronta para resgate", claimed: "Resgatada", expired: "Expirada" })[state];
 }
 
-export function PlatformProfileOverview() {
+export function PlatformProfileOverview({ displayName }: { displayName: string }) {
   const [data, setData] = useState<ProfilePlatformData | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [reloadKey, setReloadKey] = useState(0);
@@ -77,12 +79,14 @@ export function PlatformProfileOverview() {
       readJson<StatisticsResponse>("/api/platform/statistics", controller.signal),
       readJson<AchievementsResponse>("/api/platform/achievements", controller.signal),
       readJson<{ mission: Mission | null }>("/api/platform/missions/current", controller.signal),
-    ]).then(([progress, statistics, achievements, mission]) => {
+      readJson<EquipmentView>("/api/platform/inventory", controller.signal),
+    ]).then(([progress, statistics, achievements, mission, equipment]) => {
       setData({
         progress: progress.progress,
         statistics,
         achievements: achievements.summary,
         missions: mission.mission ? [mission.mission] : [],
+        equipment,
       });
       setStatus("ready");
     }).catch(error => {
@@ -103,13 +107,17 @@ export function PlatformProfileOverview() {
     <div className="platform-profile-error" role="alert"><strong>Não foi possível carregar seu progresso.</strong><span>Verifique sua conexão e tente novamente.</span><button type="button" onClick={() => setReloadKey(value => value + 1)}>Tentar novamente</button></div>
   </section>;
 
-  const { progress, statistics, achievements, missions } = data;
+  const { progress, statistics, achievements, missions, equipment } = data;
   const remainingXp = Math.max(0, progress.levelProgress.targetXp - progress.levelProgress.currentXp);
   const global = statistics.global;
   const hasActivity = global.sessionsCompleted > 0 || global.officialGamesCompleted > 0 || global.questionsAnswered > 0;
 
   return <section className="platform-profile-overview" aria-labelledby="platform-profile-title">
-    <header><div><p>PROGRESSO GLOBAL</p><h2 id="platform-profile-title">Sua jornada na plataforma</h2></div><span className="platform-profile-level">Nível {progress.level}</span></header>
+    <header className="platform-profile-identity">
+      <EquippedAvatar displayName={displayName} equipment={equipment} size="large" />
+      <div><p>PROGRESSO GLOBAL</p><h2 id="platform-profile-title">Visão geral</h2><span>Acompanhe sua evolução na plataforma.</span></div>
+      <span className="platform-profile-level">Nível {progress.level}</span>
+    </header>
 
     <div className="platform-profile-progress-card">
       <div className="platform-profile-level-mark" aria-hidden="true">{progress.level}</div>
@@ -126,6 +134,7 @@ export function PlatformProfileOverview() {
       <article><small>Perguntas</small><strong>{formatNumber(global.questionsAnswered)}</strong><span>respondidas</span></article>
       <article><small>Partidas perfeitas</small><strong>{formatNumber(global.perfectGames)}</strong><span>sem erros</span></article>
       <article><small>Dias ativos</small><strong>{formatNumber(global.distinctOfficialPlayDaysUtc || global.activeDays)}</strong><span>na plataforma</span></article>
+      <article><small>Sequência diária</small><strong>{formatNumber(global.currentDailyStreak)}</strong><span>dia{global.currentDailyStreak === 1 ? "" : "s"}</span></article>
       <article><small>Conquistas</small><strong>{formatNumber(achievements.unlocked)}</strong><span>de {formatNumber(achievements.total)}</span></article>
     </div>
 

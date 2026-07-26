@@ -9,10 +9,3 @@ export const PLATFORM_HOME_PREVIEW = {
   gems: 0,
   dailyChest: { available: true, label: "1/1" },
 } as const;
-
-export const UPCOMING_GAMES = [
-  { title: "3 Pistas", description: "Adivinhe com sabedoria", icon: "🔎" },
-  { title: "Palavra do Dia", description: "Inspiração para cada dia", icon: "📖" },
-  { title: "Linha do Tempo", description: "Histórias bíblicas em ordem", icon: "⌛" },
-  { title: "Batalha da Fé", description: "Desafios de fé e coragem", icon: "🛡️" },
-] as const;

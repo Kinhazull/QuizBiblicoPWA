@@ -33,6 +33,19 @@
 .platform-home-inner>*,.platform-player-copy,.platform-continue-content>div,.platform-mission-card>div,.platform-daily-chest>div,.platform-section>header>* { min-width: 0; max-width: 100%; }
 .platform-home-inner>section,.platform-preview-note { scroll-margin-bottom: var(--platform-bottom-clearance); }
 .platform-brand { display: flex; align-items: center; gap: 12px; width: fit-content; min-height: 54px; color: #fff; font-size: clamp(22px, 3vw, 31px); font-weight: 700; letter-spacing: -.04em; }
+.platform-brand-row { display: flex; min-width: 0; align-items: center; justify-content: space-between; gap: 14px; }
+.platform-collection-actions { display: flex; align-items: center; gap: 8px; }
+.platform-shop-button { display: inline-flex; min-height: 44px; align-items: center; gap: 8px; border: 1px solid #f4b40055; border-radius: 13px; padding: 9px 14px; background: #2b230b; color: #f4b400!important; font-weight: 700; text-decoration: none; }
+.platform-shop-button { transition: border-color .15s,background .15s,transform .15s; }
+.platform-shop-button:hover { border-color: #f4b400aa; background: #3a2f0d; transform: translateY(-1px); }
+.platform-shop-button:focus-visible { outline: 3px solid #6cc08a; outline-offset: 3px; }
+.platform-continue-card>header a,.platform-achievements>header a { display: inline-flex; min-height: 44px; align-items: center; }
+.equipped-avatar { display: grid; place-items: center; flex: 0 0 auto; border: 3px solid #2d8df2; border-radius: 50%; background: linear-gradient(145deg,#267de2,#0d4a9b); color: #fff; box-shadow: 0 10px 25px #020a1899; font-weight: 800; }
+.equipped-avatar-medium { width: 68px; height: 68px; font-size: 29px; }
+.equipped-avatar-large { width: 90px; height: 90px; font-size: 42px; }
+.equipped-avatar[data-frame="frame-bronze"] { border-color: #bf7a3b; box-shadow: 0 0 0 4px #71401e,0 10px 25px #020a1899; }
+.equipped-avatar[data-frame="frame-silver"] { border-color: #e1e7ed; box-shadow: 0 0 0 4px #7f91a1,0 10px 25px #020a1899; }
+.equipped-avatar[data-frame="frame-gold"] { border-color: #ffd84a; box-shadow: 0 0 0 4px #b77b00,0 10px 25px #020a1899; }
 .platform-brand>span:last-child { display: flex; min-width: 0; flex-wrap: wrap; gap: 0 7px; }
 .platform-brand strong { color: #4190f2; }
 .platform-brand-mark { display: grid; place-items: center; position: relative; width: 54px; height: 54px; border-radius: 17px; background: linear-gradient(145deg,#1769d7,#092b70); box-shadow: 0 11px 30px #020b1a99; }
@@ -53,6 +66,11 @@
 .platform-currencies b { grid-row: 1/3; font-size: 31px; }
 .platform-currencies strong { color: white; font-size: 25px; }
 .platform-currencies small { color: #b8c5d5; }
+.platform-daily-login { grid-column: 1/-1; display: flex; min-width: 0; align-items: center; gap: 11px; border: 1px solid #f4b40038; border-radius: 14px; padding: 11px 14px; background: #f4b4000d; }
+.platform-daily-login>span { font-size: 25px; }
+.platform-daily-login>div { display: grid; min-width: 0; gap: 2px; }
+.platform-daily-login strong { color: var(--platform-gold); }
+.platform-daily-login small { color: #b8c5d5; overflow-wrap: anywhere; }
 .platform-continue-card { border-color: #2585f2a8; padding: 22px; }
 .platform-continue-card>header,.platform-section>header { display: flex; min-width: 0; align-items: center; justify-content: space-between; gap: 15px; }
 .platform-continue-card>header p,.platform-mission-card p,.platform-section h2,.platform-daily-chest p { margin: 0; color: #3e91f4; font-size: 16px; font-weight: 700; text-transform: uppercase; }
@@ -91,7 +109,8 @@
 .platform-chest-art { display: grid; min-height: 106px; place-items: center; border-radius: 17px; background: radial-gradient(circle,#f4b4003d,transparent 65%); font-size: 75px; }
 .platform-daily-chest p { color: var(--platform-gold); }
 .platform-daily-chest>strong { min-width: 100px; border: 1px solid #f4b4005c; border-radius: 15px; padding: 16px; color: var(--platform-gold); text-align: center; }
-.platform-daily-chest button { min-width: 135px; min-height: 52px; border: 0; border-radius: 12px; background: #735b1b; color: #e7d79f; font-weight: 700; text-transform: uppercase; cursor: not-allowed; }
+.platform-daily-chest button { min-width: 135px; min-height: 52px; border: 0; border-radius: 12px; background: linear-gradient(180deg,#f4b400,#c88d00); color: #161004; font-weight: 700; text-transform: uppercase; cursor: pointer; }
+.platform-daily-chest button:disabled { background: #735b1b; color: #e7d79f; cursor: not-allowed; opacity: .8; }
 .platform-achievements>header h2 { color: var(--platform-gold); }
 .platform-achievement-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-top: 17px; }
 .platform-achievement-grid article,.platform-empty-achievements { display: flex; min-height: 78px; align-items: center; gap: 13px; border: 1px solid #668bb020; border-radius: 15px; padding: 14px; background: #0a1b2daa; }
@@ -157,12 +176,18 @@
 @media (max-width: 360px) {
   .platform-home { padding-right: max(12px,env(safe-area-inset-right)); padding-left: max(12px,env(safe-area-inset-left)); }
   .platform-continue-card>header,.platform-section>header { align-items: flex-start; flex-wrap: wrap; gap: 0 10px; }
-  .platform-continue-card>header a,.platform-section>header a { min-height: 38px; }
+  .platform-continue-card>header a,.platform-section>header a { min-height: 44px; }
   .platform-player-card { grid-template-columns: 52px minmax(0,1fr); }
   .platform-avatar { width: 50px; height: 50px; }
   .platform-currencies { grid-template-columns: 1fr; }
   .platform-continue-content { grid-template-columns: 62px minmax(0,1fr); gap: 10px; }
   .platform-game-art { width: 60px; height: 60px; font-size: 32px; }
+  .platform-shop-button { padding-inline: 11px; font-size: 12px; }
+}
+@media (max-width: 520px) {
+  .platform-brand-row { align-items: flex-start; flex-direction: column; }
+  .platform-collection-actions { width: 100%; }
+  .platform-collection-actions .platform-shop-button { flex: 1; justify-content: center; }
 }
 @media (max-width: 375px) {
   .platform-game-grid { gap: 12px; scroll-padding-inline: 0; }

@@ -34,7 +34,26 @@ type EventDefinition = EventSchema & {
 };
 
 const authServices = ["auth-service"] as const;
-const gameServices = ["quiz-service", "quiz-attempt-service"] as const;
+const gameServices = [
+  "quiz-service",
+  "quiz-attempt-service",
+  "wordle-service",
+  "three-clues-service",
+  "timeline-service",
+  "memory-service",
+  "theme-association-service",
+  "who-am-i-service",
+] as const;
+const gameIdsByService: Readonly<Record<(typeof gameServices)[number], readonly string[]>> = {
+  "quiz-service": ["quiz-biblico"],
+  "quiz-attempt-service": ["quiz-biblico"],
+  "wordle-service": ["wordle-biblico"],
+  "three-clues-service": ["jogo-tres-pistas"],
+  "timeline-service": ["linha-do-tempo-biblica"],
+  "memory-service": ["memoria-biblica"],
+  "theme-association-service": ["associacao-de-temas"],
+  "who-am-i-service": ["quem-sou-eu"],
+};
 
 export const CORE_EVENT_CATALOG: Readonly<Record<CoreEventType, EventDefinition>> = {
   USER_REGISTERED: { version: 1, sourceKind: "auth", services: authServices, fields: { method: "string" }, enums: { method: ["invite", "admin"] } },
@@ -91,7 +110,15 @@ export const CORE_EVENT_CATALOG: Readonly<Record<CoreEventType, EventDefinition>
   REWARD_GRANTED: { version: 1, sourceKind: "platform", services: ["reward-service"], fields: { rewardType: "string", amount: "positiveInteger" }, enums: { rewardType: ["xp", "coins"] } },
 };
 
-const PUBLISHED_GAME_IDS = new Set(["quiz-biblico"]);
+const PUBLISHED_GAME_IDS = new Set([
+  "quiz-biblico",
+  "wordle-biblico",
+  "jogo-tres-pistas",
+  "linha-do-tempo-biblica",
+  "memoria-biblica",
+  "associacao-de-temas",
+  "quem-sou-eu",
+]);
 const tokenPattern = /^[a-zA-Z0-9._:-]+$/;
 
 function validString(value: unknown) {
@@ -131,6 +158,11 @@ export function validateCoreEventProducer(eventType: CoreEventType, kind: CoreEv
   if (!definition) throw new Error("unsupported_event_contract");
   if (definition.sourceKind !== kind || !definition.services.includes(service)) throw new Error("unauthorized_event_producer");
   if (!validString(service) || !tokenPattern.test(service)) throw new Error("invalid_event_source");
-  if (kind === "game" && (!gameId || !PUBLISHED_GAME_IDS.has(gameId))) throw new Error("invalid_event_game");
+  if (kind === "game") {
+    const allowedGameIds = gameIdsByService[service as keyof typeof gameIdsByService];
+    if (!gameId || !PUBLISHED_GAME_IDS.has(gameId) || !allowedGameIds?.includes(gameId)) {
+      throw new Error("invalid_event_game");
+    }
+  }
   if (kind !== "game" && gameId) throw new Error("invalid_event_game");
 }

@@ -5,6 +5,20 @@ export type PermissionCode = typeof permissionCodes[number];
 
 const legacyLeader = new Set<PermissionCode>(["members.manage","invitations.manage","questions.edit","questions.review","rounds.manage","reports.view","audit.view"]);
 
+export async function effectivePermissions(env: AppEnv, user: Record<string, unknown>): Promise<PermissionCode[]> {
+  const userId = typeof user.id === "string" ? user.id : "";
+  const role = typeof user.role === "string" ? user.role : "";
+  if (!userId) return [];
+  if (role === "admin") return [];
+  const result = await env.DB.prepare("SELECT permission_code AS permissionCode FROM user_permissions WHERE user_id=?1")
+    .bind(userId)
+    .all<{ permissionCode: string }>();
+  const explicit = new Set((result.results || []).map(row => row.permissionCode));
+  return permissionCodes.filter(permission =>
+    explicit.has(permission) || (role === "leader" && legacyLeader.has(permission))
+  );
+}
+
 export async function hasPermission(env: AppEnv, user: any, permission: PermissionCode) {
   if (user.role === "admin") return true;
   if (user.role === "leader" && legacyLeader.has(permission)) return true;

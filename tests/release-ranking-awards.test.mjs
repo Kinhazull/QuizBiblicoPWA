@@ -21,6 +21,10 @@ test("Worker separado possui fechamento automático idempotente configurado", as
   ]);
   assert.match(worker, /async scheduled/);
   assert.match(worker, /processClosedRoundAwards/);
+  assert.match(worker, /dispatchQuizOutbox/);
+  assert.match(worker, /retryOfficialCoreEvents/);
+  assert.match(worker, /message: `\$\{item\.operation\}_completed`/);
+  assert.match(worker, /message: `\$\{item\.operation\}_failed`/);
   assert.match(worker, /Journey awards worker is active/);
   assert.match(config, /"crons": \["\* \* \* \* \*"\]/);
   assert.match(config, /"binding": "DB"/);

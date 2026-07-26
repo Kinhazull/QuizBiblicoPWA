@@ -1,4 +1,6 @@
 import type { AppEnv } from "./auth";
+import { PLATFORM_MISSION_CATALOG } from "./platform-mission-catalog";
+import { generatePlayerMissions } from "./platform-mission-generator";
 import { grantPlatformMissionReward } from "./platform-progress";
 
 export type MissionState = "active" | "completed" | "claimed" | "expired";
@@ -70,6 +72,73 @@ async function readAssignment(env: AppEnv, id: string, userId: string, organizat
     WHERE m.id=?1 AND m.user_id=?2 AND m.organization_id=?3`).bind(id, userId, organizationId).first<MissionRow>();
 }
 
+const dailyMissionCopy: Record<string, { name: string; description: string; unit: string; icon: string }> = {
+  officialGamesCompletedInWindow: {
+    name: "Complete uma partida",
+    description: "Conclua uma partida em qualquer jogo da plataforma.",
+    unit: "partida",
+    icon: "🎮",
+  },
+  questionsAnsweredInWindow: {
+    name: "Responda perguntas",
+    description: "Responda perguntas válidas nos jogos da plataforma.",
+    unit: "perguntas",
+    icon: "❓",
+  },
+  perfectGamesInWindow: {
+    name: "Faça uma partida perfeita",
+    description: "Conclua uma partida sem errar.",
+    unit: "partida perfeita",
+    icon: "⭐",
+  },
+};
+
+async function ensureDailyDefinition(
+  env: AppEnv,
+  userId: string,
+  organizationId: string,
+  windowKey: string,
+  now: number,
+) {
+  const historyRows = await env.DB.prepare(`SELECT mission_code missionId,
+    COALESCE(claimed_at,completed_at,expires_at) resolvedAt FROM user_platform_missions
+    WHERE user_id=?1 AND organization_id=?2 AND window_key<>?3 ORDER BY resolvedAt DESC LIMIT 30`)
+    .bind(userId, organizationId, windowKey).all<any>();
+  const supportedCatalog = PLATFORM_MISSION_CATALOG.filter(item =>
+    item.type === "daily" && item.scope === "global" && Boolean(dailyMissionCopy[item.target.metric]));
+  const generated = generatePlayerMissions({
+    organizationId,
+    userId,
+    windowKey,
+    seed: `daily:${windowKey}`,
+    now,
+    types: ["daily"],
+    history: historyRows.results.map(row => ({ missionId: String(row.missionId), resolvedAt: Number(row.resolvedAt) })),
+  }, supportedCatalog)[0];
+  if (!generated) return null;
+  const catalogEntry = supportedCatalog.find(item => item.missionId === generated.missionId)!;
+  const copy = dailyMissionCopy[catalogEntry.target.metric];
+  const definitionId = `catalog:${catalogEntry.missionId}:v${catalogEntry.catalogVersion}`;
+  await env.DB.prepare(`INSERT INTO platform_mission_definitions(
+    id,code,version,name,description,icon,cadence,scope_type,game_id,target,progress_unit,
+    criterion_json,reward_json,status,created_at,updated_at
+  ) VALUES(?1,?2,?3,?4,?5,?6,'daily','global',NULL,?7,?8,?9,?10,'active',?11,?11)
+  ON CONFLICT(id) DO NOTHING`).bind(
+    definitionId,
+    catalogEntry.missionId,
+    catalogEntry.catalogVersion,
+    copy.name,
+    copy.description,
+    copy.icon,
+    catalogEntry.target.value,
+    copy.unit,
+    JSON.stringify(catalogEntry.target),
+    JSON.stringify(catalogEntry.reward),
+    now,
+  ).run();
+  return definitionId;
+}
+
 export async function expireMissions(env: AppEnv, userId: string, organizationId: string, now = Date.now()) {
   return env.DB.prepare(`UPDATE user_platform_missions SET state='expired'
     WHERE user_id=?1 AND organization_id=?2 AND state='active' AND expires_at<=?3`).bind(userId, organizationId, now).run();
@@ -83,11 +152,19 @@ export async function getCurrentDailyMission(env: AppEnv, userId: string, organi
     WHERE m.user_id=?1 AND m.organization_id=?2 AND m.cadence='daily' AND m.window_key=?3
     ORDER BY m.assigned_at LIMIT 1`).bind(userId, organizationId, window.windowKey).first<any>();
   if (existing) return view((await readAssignment(env, existing.id, userId, organizationId))!);
-  const definition = await env.DB.prepare(`SELECT d.id,d.code,d.version,d.name,d.description,d.icon,d.cadence,d.scope_type scopeType,d.game_id gameId,d.target,d.progress_unit progressUnit,d.reward_json rewardJson
+  let definition = await env.DB.prepare(`SELECT d.id,d.code,d.version,d.name,d.description,d.icon,d.cadence,d.scope_type scopeType,d.game_id gameId,d.target,d.progress_unit progressUnit,d.reward_json rewardJson
     FROM platform_mission_definitions d WHERE d.status='active' AND d.cadence='daily'
       AND (d.available_from IS NULL OR d.available_from<=?1) AND (d.available_until IS NULL OR d.available_until>?1)
       AND d.version=(SELECT MAX(v.version) FROM platform_mission_definitions v WHERE v.code=d.code AND v.status='active')
     ORDER BY d.code LIMIT 1`).bind(now).first<any>();
+  if (!definition) {
+    const generatedId = await ensureDailyDefinition(env, userId, organizationId, window.windowKey, now);
+    if (generatedId) {
+      definition = await env.DB.prepare(`SELECT d.id,d.code,d.version,d.name,d.description,d.icon,d.cadence,
+        d.scope_type scopeType,d.game_id gameId,d.target,d.progress_unit progressUnit,d.reward_json rewardJson
+        FROM platform_mission_definitions d WHERE d.id=?1`).bind(generatedId).first<any>();
+    }
+  }
   if (!definition) return null;
   reward(definition.rewardJson);
   const id = crypto.randomUUID();

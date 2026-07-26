@@ -38,7 +38,9 @@ jobs:
           test ! -e out/_worker.js
       - run: pnpm run test:quick
       - run: pnpm run test:integration
-      - run: pnpm audit --audit-level=high
+      # Temporary dev-only exception: ESLint/minimatch@3 requires brace-expansion 1.x,
+      # while forcing the fixed 5.x release is API-incompatible. Remove after upstream updates.
+      - run: pnpm audit --audit-level=high --ignore GHSA-mh99-v99m-4gvg
       - name: Store verified Pages build
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

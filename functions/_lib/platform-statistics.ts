@@ -130,6 +130,9 @@ async function applyStatisticsEvent(event: StatisticsEvent, env: AppEnv) {
       event.eventId, STATISTICS_CONSUMER_VERSION),
   );
   if (gameId) {
+    const completedQuestions = officialCompletion ? officialQuestions : 0;
+    const completedCorrect = officialCompletion ? Number(event.payload.correctAnswers) : 0;
+    const completedIncorrect = officialCompletion ? completedQuestions - completedCorrect : 0;
     statements.push(env.DB.prepare(`UPDATE user_platform_game_statistics SET
       sessions_started=sessions_started+?1,
       sessions_completed=sessions_completed+?2,
@@ -144,9 +147,9 @@ async function applyStatisticsEvent(event: StatisticsEvent, env: AppEnv) {
       )`).bind(
       event.eventType === "GAME_STARTED" ? 1 : 0,
       event.eventType === "GAME_FINISHED" ? 1 : 0,
-      event.eventType === "QUESTION_ANSWERED" ? 1 : 0,
-      event.eventType === "QUESTION_ANSWERED" && correct ? 1 : 0,
-      event.eventType === "QUESTION_ANSWERED" && !correct ? 1 : 0,
+      (event.eventType === "QUESTION_ANSWERED" ? 1 : 0) + completedQuestions,
+      (event.eventType === "QUESTION_ANSWERED" && correct ? 1 : 0) + completedCorrect,
+      (event.eventType === "QUESTION_ANSWERED" && !correct ? 1 : 0) + completedIncorrect,
       score,
       event.occurredAt,
       now,
