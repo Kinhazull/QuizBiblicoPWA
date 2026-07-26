@@ -18,9 +18,11 @@ export default function InventoryPage() {
   const [data, setData] = useState<InventoryData | null>(null);
   const [busyId, setBusyId] = useState("");
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   async function load() {
     setError("");
+    setSuccess("");
     try {
       const response = await fetch("/api/platform/inventory", { cache: "no-store" });
       if (response.status === 401) {
@@ -42,6 +44,7 @@ export default function InventoryPage() {
     if (busyId || item.equipped) return;
     setBusyId(item.id);
     setError("");
+    setSuccess("");
     try {
       const response = await fetch("/api/platform/inventory", {
         method: "PATCH",
@@ -57,6 +60,7 @@ export default function InventoryPage() {
       }
       setData(result);
       window.dispatchEvent(new Event("platform-equipment-changed"));
+      setSuccess(`${item.name} está equipado.`);
     } catch {
       setError("Sem conexão. Tente novamente.");
     } finally {
@@ -76,7 +80,8 @@ export default function InventoryPage() {
       <a className={styles.storeLink} href="/loja">Ir para a Loja</a>
     </header>
     {error && <p className={styles.error} role="alert">{error}</p>}
-    {!data && !error && <p className={styles.loading} role="status">Carregando itens...</p>}
+    {success && <p className={styles.success} role="status" aria-live="polite">{success}</p>}
+    {!data && !error && <div className={styles.skeletonGrid} role="status" aria-label="Carregando seu Inventário"><i /><i /><i /></div>}
     {data && data.items.length === 0 && <section className={styles.empty}>
       <strong>Seu Inventário ainda está vazio.</strong>
       <p>Visite a Loja para adquirir seu primeiro avatar ou moldura.</p>
@@ -86,7 +91,7 @@ export default function InventoryPage() {
       const items = data.items.filter(item => item.category === category.id);
       if (!items.length) return null;
       return <section className={styles.inventorySection} key={category.id}>
-        <h2>{category.label}</h2>
+        <header><h2>{category.label}</h2><span>{items.length} adquirido{items.length === 1 ? "" : "s"}</span></header>
         <div className={styles.grid}>
           {items.map(item => <article className={`${styles.card} ${item.equipped ? styles.equipped : ""}`} key={item.id}>
             <span className={styles.category}>{item.equipped ? "Equipado" : category.label.slice(0, -1)}</span>

@@ -115,7 +115,7 @@ export function PlatformProfileOverview({ displayName }: { displayName: string }
   return <section className="platform-profile-overview" aria-labelledby="platform-profile-title">
     <header className="platform-profile-identity">
       <EquippedAvatar displayName={displayName} equipment={equipment} size="large" />
-      <div><p>PROGRESSO GLOBAL</p><h2 id="platform-profile-title">{displayName}</h2><span>Sua jornada na plataforma</span></div>
+      <div><p>PROGRESSO GLOBAL</p><h2 id="platform-profile-title">Visão geral</h2><span>Acompanhe sua evolução na plataforma.</span></div>
       <span className="platform-profile-level">Nível {progress.level}</span>
     </header>
 

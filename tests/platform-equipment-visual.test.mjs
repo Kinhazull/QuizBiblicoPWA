@@ -33,3 +33,18 @@ test("Shop and Inventory update equipped state immediately", () => {
   }
   assert.match(shop, /item\.owned\s*\?\s*equip\(item\)\s*:\s*buy\(item\)/);
 });
+
+test("Shop and Inventory expose clear loading success and ownership states", () => {
+  const shop = read("app/loja/page.tsx");
+  const inventory = read("app/inventario/page.tsx");
+  const css = read("app/loja/shop.module.css");
+  for (const source of [shop, inventory]) {
+    assert.match(source, /aria-live="polite"/);
+    assert.match(source, /skeletonGrid/);
+  }
+  for (const state of ["Comprar", "Adquirido", "Equipar", "Equipado"]) assert.ok(shop.includes(state), `estado ausente: ${state}`);
+  assert.match(shop, /Molduras/);
+  assert.match(shop, /Avatares/);
+  assert.match(css, /prefers-reduced-motion/);
+  assert.match(css, /:focus-visible/);
+});
