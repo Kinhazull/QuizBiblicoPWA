@@ -27,6 +27,7 @@ export function EquippedAvatar({
   return <div
     className={`equipped-avatar equipped-avatar-${size}`}
     data-frame={frame?.id || "none"}
+    role="img"
     aria-label={avatar || frame
       ? `${avatar?.name || "Avatar padrão"}${frame ? ` com ${frame.name}` : ""}`
       : `Avatar de ${displayName}`}

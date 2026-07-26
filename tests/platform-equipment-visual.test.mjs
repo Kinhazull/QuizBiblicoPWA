@@ -18,6 +18,7 @@ test("equipped avatar supports the three official frame styles", () => {
   const component = read("app/EquippedAvatar.tsx");
   const css = read("app/platform-home.css");
   assert.match(component, /data-frame/);
+  assert.match(component, /role="img"/);
   for (const frame of ["frame-bronze", "frame-silver", "frame-gold"]) {
     assert.ok(css.includes(`[data-frame="${frame}"]`), `estilo ausente: ${frame}`);
   }

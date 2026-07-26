@@ -27,6 +27,7 @@ function strongerState(current: LetterState | undefined, next: LetterState) {
 
 export function WordleGame() {
   const sessionId = useRef(createGameSessionId());
+  const currentGuessRef = useRef("");
   const [guesses, setGuesses] = useState<string[]>([]);
   const [currentGuess, setCurrentGuess] = useState("");
   const [status, setStatus] = useState<GamePlayStatus>("playing");
@@ -43,26 +44,30 @@ export function WordleGame() {
   }, [guesses]);
 
   function addLetter(letter: string) {
-    if (status !== "playing" || currentGuess.length >= WORDLE_LENGTH) return;
-    setCurrentGuess(value => `${value}${letter}`);
+    if (status !== "playing" || currentGuessRef.current.length >= WORDLE_LENGTH) return;
+    currentGuessRef.current = `${currentGuessRef.current}${letter}`;
+    setCurrentGuess(currentGuessRef.current);
     setMessage("Complete a palavra e confirme.");
   }
 
   function removeLetter() {
     if (status !== "playing") return;
-    setCurrentGuess(value => value.slice(0, -1));
+    currentGuessRef.current = currentGuessRef.current.slice(0, -1);
+    setCurrentGuess(currentGuessRef.current);
   }
 
   function submitGuess() {
     if (status !== "playing") return;
-    if (!isValidGuess(currentGuess)) {
+    const submittedGuess = currentGuessRef.current;
+    if (!isValidGuess(submittedGuess)) {
       setMessage(`A palavra precisa ter ${WORDLE_LENGTH} letras.`);
       return;
     }
 
-    const normalized = normalizeWord(currentGuess);
+    const normalized = normalizeWord(submittedGuess);
     const nextGuesses = [...guesses, normalized];
     setGuesses(nextGuesses);
+    currentGuessRef.current = "";
     setCurrentGuess("");
 
     if (isWinningGuess(normalized, WORDLE_TEMPORARY_ANSWER)) {
@@ -88,6 +93,7 @@ export function WordleGame() {
 
   function restart() {
     sessionId.current = createGameSessionId();
+    currentGuessRef.current = "";
     setGuesses([]);
     setCurrentGuess("");
     setStatus("playing");

@@ -29,8 +29,8 @@ import { AuthProvider } from "./AuthProvider";
 import { PasswordVisibility } from "./PasswordVisibility";
 
 export const metadata: Metadata = {
-  title: "Contem o que Deus fez — Quiz Bíblico",
-  description: "Quiz bíblico sobre testemunhos, milagres e os feitos de Deus.",
+  title: "Conte os Feitos — Jogos e Desafios Bíblicos",
+  description: "Plataforma de jogos e desafios bíblicos para aprender de forma leve e divertida.",
   applicationName: "Conte os Feitos",
   manifest: "/manifest.webmanifest",
   appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Conte os Feitos" },

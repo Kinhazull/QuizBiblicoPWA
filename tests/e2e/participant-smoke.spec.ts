@@ -253,8 +253,10 @@ test("catalog and Game SDK keep both platform games playable on mobile", async (
   );
 
   await page.goto("/jogos/wordle-biblico");
-  await page.keyboard.type("JESUS");
-  await page.keyboard.press("Enter");
+  for (const letter of "JESUS") {
+    await page.getByRole("button", { name: `Letra ${letter}`, exact: true }).click();
+  }
+  await page.getByRole("button", { name: "Enter", exact: true }).click();
   await expect(page.locator(".game-sdk-result.won")).toBeVisible();
   await expect(page.getByRole("link", { name: /voltar para home/i })).toBeVisible();
 
