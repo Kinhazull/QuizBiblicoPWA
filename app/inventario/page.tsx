@@ -56,6 +56,7 @@ export default function InventoryPage() {
         return;
       }
       setData(result);
+      window.dispatchEvent(new Event("platform-equipment-changed"));
     } catch {
       setError("Sem conexão. Tente novamente.");
     } finally {

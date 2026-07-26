@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "./AuthProvider";
 import { PlatformHome, type DailyRetentionData, type PlatformAchievementData, type PlatformMissionData, type PlatformProgressData } from "./PlatformHome";
 import type { JourneyCardData } from "./journey-card-state";
+import type { EquipmentView } from "./EquippedAvatar";
 
 const LEGAL_VERSION = "2026-07-13";
 
@@ -21,6 +22,7 @@ export default function Home() {
   const [daily, setDaily] = useState<DailyRetentionData | null>(null);
   const [dailyBusy, setDailyBusy] = useState(false);
   const [dailyError, setDailyError] = useState("");
+  const [equipment, setEquipment] = useState<EquipmentView | null>(null);
 
   useEffect(() => {
     const invite = new URLSearchParams(location.search).get("convite");
@@ -85,6 +87,28 @@ export default function Home() {
       active = false;
       controller.abort();
       clearInterval(timer);
+    };
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) {
+      setEquipment(null);
+      return;
+    }
+    let active = true;
+    const loadEquipment = () => {
+      fetch("/api/platform/inventory", { cache: "no-store" })
+        .then(response => response.ok ? response.json() : null)
+        .then(data => { if (active && data) setEquipment(data); })
+        .catch(() => undefined);
+    };
+    loadEquipment();
+    window.addEventListener("focus", loadEquipment);
+    window.addEventListener("platform-equipment-changed", loadEquipment);
+    return () => {
+      active = false;
+      window.removeEventListener("focus", loadEquipment);
+      window.removeEventListener("platform-equipment-changed", loadEquipment);
     };
   }, [user]);
 
@@ -155,5 +179,5 @@ export default function Home() {
 
   return <PlatformHome displayName={user.displayName} journey={journey} achievementData={achievementData}
     progress={progress} mission={mission} missionLoaded={missionLoaded} daily={daily} dailyBusy={dailyBusy}
-    dailyError={dailyError} onOpenChest={openDailyChest} remaining={remaining} />;
+    dailyError={dailyError} equipment={equipment} onOpenChest={openDailyChest} remaining={remaining} />;
 }

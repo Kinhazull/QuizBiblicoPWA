@@ -1,0 +1,35 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import test from "node:test";
+
+const read = path => readFileSync(path, "utf8");
+
+test("Home and Profile render the same equipped avatar component", () => {
+  const home = read("app/PlatformHome.tsx");
+  const profile = read("app/perfil/PlatformProfileOverview.tsx");
+  const page = read("app/page.tsx");
+  assert.match(home, /EquippedAvatar/);
+  assert.match(profile, /EquippedAvatar/);
+  assert.match(page, /\/api\/platform\/inventory/);
+  assert.match(page, /platform-equipment-changed/);
+});
+
+test("equipped avatar supports the three official frame styles", () => {
+  const component = read("app/EquippedAvatar.tsx");
+  const css = read("app/platform-home.css");
+  assert.match(component, /data-frame/);
+  for (const frame of ["frame-bronze", "frame-silver", "frame-gold"]) {
+    assert.ok(css.includes(`[data-frame="${frame}"]`), `estilo ausente: ${frame}`);
+  }
+});
+
+test("Shop and Inventory update equipped state immediately", () => {
+  const shop = read("app/loja/page.tsx");
+  const inventory = read("app/inventario/page.tsx");
+  for (const source of [shop, inventory]) {
+    assert.match(source, /\/api\/platform\/inventory/);
+    assert.match(source, /platform-equipment-changed/);
+    assert.match(source, /Equipado/);
+  }
+  assert.match(shop, /item\.owned\s*\?\s*equip\(item\)\s*:\s*buy\(item\)/);
+});

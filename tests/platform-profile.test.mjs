@@ -6,8 +6,8 @@ const component = readFileSync("app/perfil/PlatformProfileOverview.tsx", "utf8")
 const page = readFileSync("app/perfil/page.tsx", "utf8");
 const css = readFileSync("app/profile.css", "utf8");
 
-test("perfil da plataforma consulta somente as quatro APIs existentes", () => {
-  for (const endpoint of ["/api/platform/progress", "/api/platform/statistics", "/api/platform/achievements", "/api/platform/missions/current"]) {
+test("perfil da plataforma consulta somente as APIs existentes necessárias", () => {
+  for (const endpoint of ["/api/platform/progress", "/api/platform/statistics", "/api/platform/achievements", "/api/platform/missions/current", "/api/platform/inventory"]) {
     assert.ok(component.includes(endpoint), `endpoint ausente: ${endpoint}`);
   }
   assert.match(component, /cache:\s*"no-store"/);
@@ -31,7 +31,7 @@ test("resumo expõe progresso estatísticas conquistas e missões com acessibili
 });
 
 test("página integra o resumo sem remover edição recuperação e privacidade", () => {
-  assert.match(page, /<PlatformProfileOverview\s*\/>/);
+  assert.match(page, /<PlatformProfileOverview\s+displayName=/);
   assert.match(page, /onSubmit=\{save\}/);
   assert.match(page, /recovery-codes/);
   assert.match(page, /<ProfilePrivacySections/);

@@ -1,17 +1,23 @@
 import { getShopCatalogItem, SHOP_CATALOG } from "../../../app/data/shopCatalog";
 import { requireUser, type AppEnv } from "../../_lib/auth";
-import { getOwnedPlatformItemIds, getUserProgress, purchasePlatformItem } from "../../_lib/platform-progress";
+import { getOwnedPlatformItemIds, getPlatformEquipment, getUserProgress, purchasePlatformItem } from "../../_lib/platform-progress";
 import { json } from "../../_lib/security";
 
 async function view(env: AppEnv, user: any) {
-  const [ownedItemIds, progress] = await Promise.all([
+  const [ownedItemIds, progress, equipped] = await Promise.all([
     getOwnedPlatformItemIds(env, user.id, user.organizationId),
     getUserProgress(env, user.id, user.organizationId),
+    getPlatformEquipment(env, user.id, user.organizationId),
   ]);
   const owned = new Set(ownedItemIds);
   return {
-    items: SHOP_CATALOG.map(item => ({ ...item, owned: owned.has(item.id) })),
+    items: SHOP_CATALOG.map(item => ({
+      ...item,
+      owned: owned.has(item.id),
+      equipped: equipped[item.category] === item.id,
+    })),
     balance: progress.coins,
+    equipped,
   };
 }
 

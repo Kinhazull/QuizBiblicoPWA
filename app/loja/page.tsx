@@ -11,6 +11,7 @@ type ShopItem = {
   price: number;
   icon: string;
   owned: boolean;
+  equipped: boolean;
 };
 
 type ShopData = { items: ShopItem[]; balance: number };
@@ -64,6 +65,33 @@ export default function ShopPage() {
     }
   }
 
+  async function equip(item: ShopItem) {
+    if (busyId || !item.owned || item.equipped) return;
+    setBusyId(item.id);
+    setError("");
+    try {
+      const response = await fetch("/api/platform/inventory", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ itemId: item.id }),
+      });
+      if (!response.ok) throw new Error();
+      const inventory = await response.json();
+      setData(current => current ? {
+        ...current,
+        items: current.items.map(candidate => ({
+          ...candidate,
+          equipped: inventory.equipped[candidate.category] === candidate.id,
+        })),
+      } : current);
+      window.dispatchEvent(new Event("platform-equipment-changed"));
+    } catch {
+      setError("Não foi possível equipar o item.");
+    } finally {
+      setBusyId("");
+    }
+  }
+
   return <main className={styles.page}>
     <header className={styles.header}>
       <a href="/" aria-label="Voltar para a Home">←</a>
@@ -73,14 +101,14 @@ export default function ShopPage() {
     {error && <p className={styles.error} role="alert">{error}</p>}
     {!data && !error && <p className={styles.loading} role="status">Carregando itens...</p>}
     {data && <section className={styles.grid} aria-label="Itens disponíveis">
-      {data.items.map(item => <article className={styles.card} key={item.id}>
-        <span className={styles.category}>{item.category === "frame" ? "Moldura" : "Avatar"}</span>
+      {data.items.map(item => <article className={`${styles.card} ${item.equipped ? styles.equipped : ""}`} key={item.id}>
+        <span className={styles.category}>{item.equipped ? "Equipado" : item.category === "frame" ? "Moldura" : "Avatar"}</span>
         <b className={styles.icon} aria-hidden="true">{item.icon}</b>
         <h2>{item.name}</h2>
         <p>{item.description}</p>
         <div><strong>🪙 {item.price}</strong>
-          <button type="button" disabled={item.owned || Boolean(busyId)} onClick={() => buy(item)}>
-            {item.owned ? "Comprado" : busyId === item.id ? "Aguarde..." : "Comprar"}
+          <button type="button" disabled={item.equipped || Boolean(busyId)} onClick={() => item.owned ? equip(item) : buy(item)}>
+            {item.equipped ? "Equipado" : busyId === item.id ? "Aguarde..." : item.owned ? "Equipar" : "Comprar"}
           </button>
         </div>
       </article>)}

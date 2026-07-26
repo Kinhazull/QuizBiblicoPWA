@@ -36,6 +36,12 @@
 .platform-brand-row { display: flex; min-width: 0; align-items: center; justify-content: space-between; gap: 14px; }
 .platform-collection-actions { display: flex; align-items: center; gap: 8px; }
 .platform-shop-button { display: inline-flex; min-height: 44px; align-items: center; gap: 8px; border: 1px solid #f4b40055; border-radius: 13px; padding: 9px 14px; background: #2b230b; color: #f4b400!important; font-weight: 700; text-decoration: none; }
+.equipped-avatar { display: grid; place-items: center; flex: 0 0 auto; border: 3px solid #2d8df2; border-radius: 50%; background: linear-gradient(145deg,#267de2,#0d4a9b); color: #fff; box-shadow: 0 10px 25px #020a1899; font-weight: 800; }
+.equipped-avatar-medium { width: 68px; height: 68px; font-size: 29px; }
+.equipped-avatar-large { width: 90px; height: 90px; font-size: 42px; }
+.equipped-avatar[data-frame="frame-bronze"] { border-color: #bf7a3b; box-shadow: 0 0 0 4px #71401e,0 10px 25px #020a1899; }
+.equipped-avatar[data-frame="frame-silver"] { border-color: #e1e7ed; box-shadow: 0 0 0 4px #7f91a1,0 10px 25px #020a1899; }
+.equipped-avatar[data-frame="frame-gold"] { border-color: #ffd84a; box-shadow: 0 0 0 4px #b77b00,0 10px 25px #020a1899; }
 .platform-brand>span:last-child { display: flex; min-width: 0; flex-wrap: wrap; gap: 0 7px; }
 .platform-brand strong { color: #4190f2; }
 .platform-brand-mark { display: grid; place-items: center; position: relative; width: 54px; height: 54px; border-radius: 17px; background: linear-gradient(145deg,#1769d7,#092b70); box-shadow: 0 11px 30px #020b1a99; }

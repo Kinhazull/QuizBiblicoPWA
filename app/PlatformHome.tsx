@@ -1,6 +1,7 @@
 import { getJourneyCardView, type JourneyCardData } from "./journey-card-state";
 import { PLATFORM_HOME_PREVIEW } from "./platform-home-config";
 import { gameCatalog } from "./data/gameCatalog";
+import { EquippedAvatar, type EquipmentView } from "./EquippedAvatar";
 
 type PlatformAchievement = {
   code: string;
@@ -23,6 +24,7 @@ type PlatformHomeProps = {
   daily: DailyRetentionData | null;
   dailyBusy: boolean;
   dailyError: string;
+  equipment: EquipmentView | null;
   onOpenChest: () => void;
   remaining: (target?: number) => string;
 };
@@ -79,7 +81,7 @@ function recentAchievements(data: PlatformAchievementData | null) {
 
 export function PlatformHome({
   displayName, journey, achievementData, progress, mission, missionLoaded,
-  daily, dailyBusy, dailyError, onOpenChest, remaining,
+  daily, dailyBusy, dailyError, equipment, onOpenChest, remaining,
 }: PlatformHomeProps) {
   const view = getJourneyCardView(journey, remaining);
   const quizProgress = progressFor(journey);
@@ -103,7 +105,7 @@ export function PlatformHome({
       </header>
 
       <section className="platform-player-card" aria-labelledby="platform-greeting">
-        <div className="platform-avatar" aria-hidden="true">{firstName(displayName).slice(0, 1).toUpperCase()}</div>
+        <EquippedAvatar displayName={displayName} equipment={equipment} />
         <div className="platform-player-copy">
           <h1 id="platform-greeting">Fala, {firstName(displayName)}! <span aria-hidden="true">👋</span></h1>
           <p>Que bom ter você por aqui!</p>
