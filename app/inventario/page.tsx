@@ -60,7 +60,7 @@ export default function InventoryPage() {
       }
       setData(result);
       window.dispatchEvent(new Event("platform-equipment-changed"));
-      setSuccess(`${item.name} está equipado.`);
+      setSuccess(`Item equipado: ${item.name}.`);
     } catch {
       setError("Sem conexão. Tente novamente.");
     } finally {
@@ -75,7 +75,6 @@ export default function InventoryPage() {
 
   return <main className={styles.page}>
     <header className={styles.header}>
-      <a href="/" aria-label="Voltar para a Home">←</a>
       <div><p>Sua coleção</p><h1>Inventário</h1><span>Escolha os itens que representam você.</span></div>
       <a className={styles.storeLink} href="/loja">Ir para a Loja</a>
     </header>
@@ -91,10 +90,10 @@ export default function InventoryPage() {
       const items = data.items.filter(item => item.category === category.id);
       if (!items.length) return null;
       return <section className={styles.inventorySection} key={category.id}>
-        <header><h2>{category.label}</h2><span>{items.length} adquirido{items.length === 1 ? "" : "s"}</span></header>
+        <header><h2>{category.label}</h2><span>{items.length === 1 ? "1 item adquirido" : `${items.length} itens adquiridos`}</span></header>
         <div className={styles.grid}>
           {items.map(item => <article className={`${styles.card} ${item.equipped ? styles.equipped : ""}`} key={item.id}>
-            <span className={styles.category}>{item.equipped ? "Equipado" : category.label.slice(0, -1)}</span>
+            <span className={styles.category}>{item.equipped ? "Equipado" : category.id === "avatar" ? "Avatar" : "Moldura"}</span>
             <b className={styles.icon} aria-hidden="true">{item.icon}</b>
             <h3>{item.name}</h3>
             <p>{item.description}</p>

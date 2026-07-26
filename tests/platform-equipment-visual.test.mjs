@@ -45,6 +45,17 @@ test("Shop and Inventory expose clear loading success and ownership states", () 
   for (const state of ["Comprar", "Adquirido", "Equipar", "Equipado"]) assert.ok(shop.includes(state), `estado ausente: ${state}`);
   assert.match(shop, /Molduras/);
   assert.match(shop, /Avatares/);
+  assert.doesNotMatch(shop, /adquirido\(s\)|"Avatare"/);
+  assert.doesNotMatch(inventory, /adquirido\(s\)|"Avatare"/);
   assert.match(css, /prefers-reduced-motion/);
   assert.match(css, /:focus-visible/);
+});
+
+test("Shop and Inventory rely on the shared back navigation without mobile overlap", () => {
+  const shop = read("app/loja/page.tsx");
+  const inventory = read("app/inventario/page.tsx");
+  const css = read("app/loja/shop.module.css");
+  assert.doesNotMatch(shop, /aria-label="Voltar para a Home"/);
+  assert.doesNotMatch(inventory, /aria-label="Voltar para a Home"/);
+  assert.match(css, /padding-top:72px/);
 });
