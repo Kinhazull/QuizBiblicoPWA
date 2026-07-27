@@ -59,6 +59,31 @@ function view(row: MissionRow) {
   };
 }
 
+export async function listCurrentMissionSnapshots(
+  env: AppEnv,
+  userId: string,
+  organizationId: string,
+  now = Date.now(),
+) {
+  const rows = await env.DB.prepare(`SELECT m.id,d.code,d.version,d.name,d.description,d.icon,
+    d.cadence,d.scope_type scopeType,d.game_id gameId,m.target,d.progress_unit progressUnit,
+    d.reward_json rewardJson,m.state,m.progress,m.expires_at expiresAt
+    FROM user_platform_missions m
+    JOIN platform_mission_definitions d ON d.id=m.definition_id
+    WHERE m.user_id=?1 AND m.organization_id=?2 AND m.cadence IN ('daily','weekly')
+      AND m.expires_at>?3
+    ORDER BY CASE m.cadence WHEN 'daily' THEN 0 ELSE 1 END,m.assigned_at DESC`)
+    .bind(userId, organizationId, now).all<MissionRow>();
+  const current = new Map<MissionCadence, ReturnType<typeof view>>();
+  for (const row of rows.results) {
+    if (!current.has(row.cadence)) current.set(row.cadence, view(row));
+  }
+  return {
+    daily: current.get("daily") || null,
+    weekly: current.get("weekly") || null,
+  };
+}
+
 async function activeUser(env: AppEnv, userId: string, organizationId: string) {
   const row = await env.DB.prepare("SELECT u.id,o.timezone FROM users u JOIN organizations o ON o.id=u.organization_id WHERE u.id=?1 AND u.organization_id=?2 AND u.status='active'").bind(userId, organizationId).first<any>();
   if (!row) throw new Error("mission_user_unavailable");

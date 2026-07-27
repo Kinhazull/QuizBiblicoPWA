@@ -1,5 +1,5 @@
 import type { AppEnv } from "./auth";
-import { getCurrentDailyMission } from "./platform-missions";
+import { getCurrentDailyMission, listCurrentMissionSnapshots } from "./platform-missions";
 import { getUserProgress, grantPlatformRetentionReward } from "./platform-progress";
 
 const DEFAULT_TIME_ZONE = "America/Sao_Paulo";
@@ -15,6 +15,18 @@ function dateKey(at: number, timeZone: string) {
 function previousDayKey(dayKey: string) {
   const [year, month, day] = dayKey.split("-").map(Number);
   return new Date(Date.UTC(year, month - 1, day - 1, 12)).toISOString().slice(0, 10);
+}
+
+function nextDayStart(at: number, timeZone: string) {
+  const current = dateKey(at, timeZone);
+  let high = at + 60 * 60 * 1000;
+  while (dateKey(high, timeZone) === current && high < at + 32 * 60 * 60 * 1000) high += 60 * 60 * 1000;
+  let low = high - 60 * 60 * 1000;
+  while (high - low > 1) {
+    const middle = Math.floor((low + high) / 2);
+    if (dateKey(middle, timeZone) === current) low = middle; else high = middle;
+  }
+  return high;
 }
 
 function rewardLabel(reward: { xp: number; coins: number }) {
@@ -75,6 +87,84 @@ async function storedReward(env: AppEnv, userId: string, organizationId: string,
   ]);
   const reward = { xp: Number(xp?.amount || 0), coins: Number(coins?.amount || 0) };
   return reward.xp || reward.coins ? { ...reward, label: rewardLabel(reward) } : null;
+}
+
+function longestStreak(dayKeys: readonly string[]) {
+  const ordered = [...new Set(dayKeys)].sort();
+  let best = 0;
+  let current = 0;
+  let previous = "";
+  for (const day of ordered) {
+    current = previous && previousDayKey(day) === previous ? current + 1 : 1;
+    best = Math.max(best, current);
+    previous = day;
+  }
+  return best;
+}
+
+function currentStoredStreak(dayKey: string, dayKeys: readonly string[]) {
+  const days = new Set(dayKeys);
+  let cursor = days.has(dayKey) ? dayKey : previousDayKey(dayKey);
+  if (!days.has(cursor)) return 0;
+  let streak = 0;
+  while (days.has(cursor) && streak < 3660) {
+    streak += 1;
+    cursor = previousDayKey(cursor);
+  }
+  return streak;
+}
+
+export async function getDailyRetentionAdminSnapshot(
+  env: AppEnv,
+  userId: string,
+  organizationId: string,
+  now = Date.now(),
+) {
+  const user = await env.DB.prepare(`SELECT u.last_login_at lastLoginAt,u.created_at createdAt,o.timezone
+    FROM users u JOIN organizations o ON o.id=u.organization_id
+    WHERE u.id=?1 AND u.organization_id=?2`).bind(userId, organizationId).first<any>();
+  if (!user) throw new Error("retention_user_unavailable");
+  const timeZone = String(user.timezone || DEFAULT_TIME_ZONE);
+  const dayKey = dateKey(now, timeZone);
+  const [days, missions, currentChest, latestChest] = await Promise.all([
+    loginDays(env, userId, organizationId),
+    listCurrentMissionSnapshots(env, userId, organizationId, now),
+    storedReward(env, userId, organizationId, "daily_chest", dayKey),
+    env.DB.prepare(`SELECT source_id sourceId,MAX(applied_at) claimedAt
+      FROM platform_coin_ledger
+      WHERE user_id=?1 AND organization_id=?2 AND source_type='daily_chest' AND applied_at IS NOT NULL
+      GROUP BY source_id
+      UNION ALL
+      SELECT source_id sourceId,MAX(applied_at) claimedAt
+      FROM platform_xp_ledger
+      WHERE user_id=?1 AND organization_id=?2 AND source_type='daily_chest' AND applied_at IS NOT NULL
+      GROUP BY source_id
+      ORDER BY claimedAt DESC LIMIT 1`).bind(userId, organizationId).all<any>(),
+  ]);
+  const latest = latestChest.results[0] || null;
+  const latestReward = latest?.sourceId
+    ? await storedReward(env, userId, organizationId, "daily_chest", String(latest.sourceId))
+    : null;
+  const currentStreak = currentStoredStreak(dayKey, days);
+  const missionUnlocksChest = missions.daily?.state === "completed" || missions.daily?.state === "claimed";
+  const opened = Boolean(currentChest);
+  return {
+    missions,
+    retention: {
+      currentStreak,
+      bestStreak: longestStreak(days),
+      activeDays: new Set(days).size,
+      lastAccessAt: user.lastLoginAt == null ? null : Number(user.lastLoginAt),
+      createdAt: Number(user.createdAt),
+    },
+    dailyChest: {
+      available: missionUnlocksChest && !opened,
+      opened,
+      lastClaimedAt: latest?.claimedAt == null ? null : Number(latest.claimedAt),
+      nextAvailableAt: opened ? nextDayStart(now, timeZone) : null,
+      lastReward: latestReward,
+    },
+  };
 }
 
 export async function getDailyRetentionState(

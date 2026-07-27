@@ -24,6 +24,13 @@ test("platform user panel exposes accessible loading, error, regions and close c
   assert.match(panel, /Nenhuma atividade por jogo/);
   assert.match(panel, /Nenhuma conquista desbloqueada/);
   assert.match(panel, /Nenhum item adquirido/);
+  assert.match(panel, /id="platform-missions">Missões/);
+  assert.match(panel, /Missão diária/);
+  assert.match(panel, /Missão semanal/);
+  assert.match(panel, /id="platform-retention">Retenção/);
+  assert.match(panel, /Sequência atual/);
+  assert.match(panel, /id="platform-daily-chest">Cofre diário/);
+  assert.match(panel, /Última recompensa/);
   assert.match(css, /width: min\(680px, 100%\)/);
   assert.match(css, /@media \(max-width: 540px\)/);
 });

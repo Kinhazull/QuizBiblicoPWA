@@ -3,6 +3,7 @@ import { gameModules } from "../../../../../app/games/sdk/gameModules";
 import type { AppEnv } from "../../../../_lib/auth";
 import { requirePermission } from "../../../../_lib/permissions";
 import { getAchievementSummary, listAchievements } from "../../../../_lib/platform-achievements";
+import { getDailyRetentionAdminSnapshot } from "../../../../_lib/platform-daily-retention";
 import {
   getOwnedPlatformItemIds,
   getPlatformEquipment,
@@ -37,13 +38,14 @@ export const onRequestGet = async ({
     ).bind(params.id, admin.organizationId).first<any>();
     if (!account) return json({ error: "not_found" }, 404, PRIVATE_HEADERS);
 
-    const [progress, statistics, achievements, achievementSummary, ownedIds, equipment] = await Promise.all([
+    const [progress, statistics, achievements, achievementSummary, ownedIds, equipment, daily] = await Promise.all([
       getUserProgress(env, account.id, admin.organizationId),
       getUserStatistics(env, account.id, admin.organizationId),
       listAchievements(env, account.id, admin.organizationId),
       getAchievementSummary(env, account.id, admin.organizationId),
       getOwnedPlatformItemIds(env, account.id, admin.organizationId),
       getPlatformEquipment(env, account.id, admin.organizationId),
+      getDailyRetentionAdminSnapshot(env, account.id, admin.organizationId),
     ]);
     const catalogById = new Map(SHOP_CATALOG.map(item => [item.id, item]));
     const gamesById = new Map(gameModules.map(game => [game.id, game.name]));
@@ -81,6 +83,9 @@ export const onRequestGet = async ({
         avatar: resolveEquipment(equipment.avatar),
         frame: resolveEquipment(equipment.frame),
       },
+      missions: daily.missions,
+      retention: daily.retention,
+      dailyChest: daily.dailyChest,
     }, 200, PRIVATE_HEADERS);
   } catch (error) {
     if (error instanceof Response) return withPrivateCache(error);

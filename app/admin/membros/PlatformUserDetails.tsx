@@ -94,6 +94,38 @@ export default function PlatformUserDetails({ userId, userName, onClose }: Props
       <section className={styles.section} aria-labelledby="platform-equipment"><h3 id="platform-equipment">Equipamentos</h3>
         <dl className={styles.metrics}><div><dt>Avatar</dt><dd>{data.equipment.avatar?.name || "Não equipado"}</dd></div><div><dt>Moldura</dt><dd>{data.equipment.frame?.name || "Não equipada"}</dd></div></dl>
       </section>
+      <section className={styles.section} aria-labelledby="platform-missions"><h3 id="platform-missions">Missões</h3>
+        {(["daily", "weekly"] as const).map(cadence => {
+          const mission = data.missions[cadence];
+          const label = cadence === "daily" ? "Missão diária" : "Missão semanal";
+          return mission ? <div key={cadence}>
+            <strong>{label}: {mission.name}</strong>
+            <dl className={styles.metrics}>
+              <div><dt>Progresso</dt><dd>{mission.progress} / {mission.target} {mission.progressUnit}</dd></div>
+              <div><dt>Concluída</dt><dd>{mission.state === "completed" || mission.state === "claimed" ? "Sim" : "Não"}</dd></div>
+              <div><dt>Recompensa</dt><dd>{mission.reward.label}</dd></div>
+              <div><dt>Reset</dt><dd>{date(mission.expiresAt)}</dd></div>
+            </dl>
+          </div> : <p className={styles.empty} key={cadence}>Nenhuma {label.toLocaleLowerCase("pt-BR")} vigente.</p>;
+        })}
+      </section>
+      <section className={styles.section} aria-labelledby="platform-retention"><h3 id="platform-retention">Retenção</h3>
+        <dl className={styles.metrics}>
+          <div><dt>Sequência atual</dt><dd>{data.retention.currentStreak} dia(s)</dd></div>
+          <div><dt>Maior sequência</dt><dd>{data.retention.bestStreak} dia(s)</dd></div>
+          <div><dt>Dias ativos</dt><dd>{data.retention.activeDays}</dd></div>
+          <div><dt>Último acesso</dt><dd>{date(data.retention.lastAccessAt)}</dd></div>
+          <div><dt>Conta criada em</dt><dd>{date(data.retention.createdAt)}</dd></div>
+        </dl>
+      </section>
+      <section className={styles.section} aria-labelledby="platform-daily-chest"><h3 id="platform-daily-chest">Cofre diário</h3>
+        <dl className={styles.metrics}>
+          <div><dt>Disponível</dt><dd>{data.dailyChest.available ? "Sim" : "Não"}</dd></div>
+          <div><dt>Último resgate</dt><dd>{date(data.dailyChest.lastClaimedAt)}</dd></div>
+          <div><dt>Próximo horário</dt><dd>{date(data.dailyChest.nextAvailableAt)}</dd></div>
+          <div><dt>Última recompensa</dt><dd>{data.dailyChest.lastReward?.label || "Sem registro"}</dd></div>
+        </dl>
+      </section>
     </div>}
   </aside>;
 }
