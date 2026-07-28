@@ -47,7 +47,8 @@ const dashboardGroups: NavigationGroup[] = adminNavigation.slice(1);
 
 const groupDescriptions: Record<string, string> = {
   Usuários: "Participantes, aprovações, convites, permissões e comunicados.",
-  "Conteúdo do Quiz": "Perguntas, revisão editorial, jornadas e temporadas.",
+  Conteúdo: "Acervo, revisão editorial, importação e colaboração.",
+  "Quiz Bíblico": "Jornadas, calendário e temporadas do Quiz.",
   Jogos: "Catálogo, conteúdo e acompanhamento dos jogos bíblicos.",
   Progressão: "XP, níveis, missões, conquistas e retenção dos participantes.",
   Economia: "Saldos, recompensas, inventário e itens da plataforma.",
@@ -310,7 +311,16 @@ export default function AdminHub() {
 
             {group.items.length > 0 ? (
               <nav aria-label={`Acessos de ${group.label}`}>
-                {group.items.map((item) => (
+                {group.items.map((item) => item.disabled ? (
+                  <span className="module-link-disabled" key={`${group.label}:${item.label}`} aria-disabled="true">
+                    <BrandIcon name={item.icon} className="module-link-icon" />
+                    <div>
+                      <strong>{item.label}</strong>
+                      {item.description && <small>{item.description}</small>}
+                    </div>
+                    <span className="module-link-arrow" aria-hidden="true">Em breve</span>
+                  </span>
+                ) : (
                   <a href={item.href} key={item.href}>
                     <BrandIcon name={item.icon} className="module-link-icon" />
                     <div>

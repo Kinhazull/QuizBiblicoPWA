@@ -26,8 +26,8 @@ test("profile owns explicit secure logout and privileged admin entry", () => {
 test("admin navigation is one-column collapsible accessible and centrally named", () => {
   const menu = read("app/AdminQuickNav.tsx"), config = read("app/navigation.tsx"), css = read("app/brand-system.css");
   assert.match(menu, /adminNavigation/); assert.match(menu, /aria-expanded/); assert.match(menu, /event\.key === "Escape"/); assert.match(menu, /toggleRef\.current\?\.focus/); assert.match(menu, /aria-current/);
-  for (const label of ["Visão geral", "Usuários", "Conteúdo do Quiz", "Jogos", "Progressão", "Economia", "Operações"]) assert.match(config, new RegExp(label));
-  for (const label of ["Usuários e membros", "Aprovações", "Comunicados", "Revisão colaborativa", "Auditoria administrativa"]) assert.match(config, new RegExp(label));
+  for (const label of ["Visão geral", "Usuários", "Conteúdo", "Quiz Bíblico", "Jogos", "Progressão", "Economia", "Operações"]) assert.match(config, new RegExp(label));
+  for (const label of ["Usuários e membros", "Aprovações", "Comunicados", "Colaboração e versões", "Auditoria administrativa"]) assert.match(config, new RegExp(label));
   assert.match(menu, /admin-nav-empty/);
   assert.doesNotMatch(config, /Sugestões com IA/);
   assert.match(css, /\.admin-nav-group nav\{display:flex!important;flex-direction:column/);

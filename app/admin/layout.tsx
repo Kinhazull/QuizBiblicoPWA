@@ -24,6 +24,8 @@ import "../members-batch.css";
 import "../quality.css";
 import "../seasons.css";
 import "../member-alignment.css";
+import "../content-cms.css";
+import "../content-cms-nav.css";
 
 export default function AdminLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return children;

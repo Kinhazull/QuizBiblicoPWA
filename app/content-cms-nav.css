@@ -1,0 +1,51 @@
+.admin-nav-disabled {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 9px;
+  border-radius: 9px;
+  padding: 9px 11px;
+  color: #a89dbb;
+  font-size: 12px;
+}
+
+.admin-nav-disabled > svg {
+  width: 18px;
+  flex: 0 0 auto;
+}
+
+.admin-nav-disabled > span {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.admin-nav-disabled small {
+  border-radius: 999px;
+  padding: 3px 6px;
+  background: #ffffff12;
+  font-size: 8px;
+  text-transform: uppercase;
+}
+
+.module-link-disabled {
+  display: flex;
+  min-height: 66px;
+  align-items: center;
+  gap: 12px;
+  border-radius: 12px;
+  padding: 12px;
+  background: #f5f1f8;
+  color: #8c8297;
+}
+
+.module-link-disabled > div {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+}

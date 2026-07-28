@@ -39,6 +39,7 @@ export type NavigationItem = {
   description?: string;
   permissions?: string[];
   requireAllPermissions?: boolean;
+  disabled?: boolean;
 };
 
 export type NavigationGroup = {
@@ -129,51 +130,58 @@ export const adminNavigation: NavigationGroup[] = [
     ],
   },
   {
-    label: "Conteúdo do Quiz",
+    label: "Conteúdo",
     icon: "questions",
     items: [
       {
-        label: "Banco de perguntas",
-        href: "/admin/perguntas",
-        icon: "database",
-        description: "Criar, localizar e organizar perguntas.",
+        label: "Visão geral",
+        href: "/admin/conteudo",
+        icon: "home",
+        description: "Indicadores e integrações do acervo editorial.",
         permissions: ["questions.edit", "questions.review", "rounds.manage"],
       },
       {
-        label: "Revisão de perguntas",
+        label: "Acervo",
+        href: "/admin/conteudo/acervo",
+        icon: "database",
+        description: "Consultar conteúdos de todos os jogos.",
+        permissions: ["questions.edit", "questions.review", "rounds.manage"],
+      },
+      {
+        label: "Criar conteúdo",
+        href: "",
+        icon: "sparkles",
+        description: "Editor universal em uma etapa futura.",
+        permissions: ["questions.edit"],
+        disabled: true,
+      },
+      {
+        label: "Revisão",
         href: "/admin/perguntas/revisao",
         icon: "review",
-        description: "Revisar e aprovar perguntas do banco.",
+        description: "Usar temporariamente a revisão atual do Quiz.",
         permissions: ["questions.review"],
       },
       {
-        label: "Revisão colaborativa",
-        href: "/admin/perguntas/colaboracao",
-        icon: "users",
-        description: "Compartilhar perguntas e acompanhar contribuições.",
-        permissions: ["questions.edit", "questions.review"],
-      },
-      {
-        label: "Importar perguntas",
+        label: "Importação",
         href: "/admin/perguntas/importar",
         icon: "upload",
-        description: "Adicionar perguntas em lote ao banco.",
+        description: "Usar temporariamente o importador atual do Quiz.",
         permissions: ["questions.edit"],
       },
       {
-        label: "Perguntas arquivadas",
-        href: "/admin/perguntas/arquivadas",
-        icon: "file",
-        description: "Consultar conteúdo preservado fora de uso.",
+        label: "Colaboração e versões",
+        href: "/admin/perguntas/colaboracao",
+        icon: "history",
+        description: "Usar temporariamente a área colaborativa do Quiz.",
         permissions: ["questions.edit", "questions.review"],
       },
-      {
-        label: "Base inicial",
-        href: "/admin/perguntas/base",
-        icon: "book",
-        description: "Gerenciar a coleção bíblica inicial.",
-        permissions: ["questions.edit"],
-      },
+    ],
+  },
+  {
+    label: "Quiz Bíblico",
+    icon: "book",
+    items: [
       {
         label: "Gerenciar jornadas",
         href: "/admin/rodadas/lista",
