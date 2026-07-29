@@ -1,55 +1,51 @@
-import type { WhoAmICharacter } from "./characters";
+export type WhoAmIChallenge = {
+  id: string;
+  answer: string;
+  hints: readonly string[];
+};
 
 export type WhoAmIAction =
   | { type: "reveal" }
-  | { type: "guess"; answerId: string };
+  | { type: "guess"; answer: string };
 
 export type WhoAmIStatus = "playing" | "won" | "lost";
 export type WhoAmIState = {
   hintsVisible: number;
-  wrongAnswerIds: string[];
-  awaitingNextHint: boolean;
   status: WhoAmIStatus;
 };
 
-export function initialWhoAmIState(): WhoAmIState {
-  return { hintsVisible: 1, wrongAnswerIds: [], awaitingNextHint: false, status: "playing" };
+export type WhoAmIChallengeHistory = {
+  challengeId: string;
+  actions: readonly WhoAmIAction[];
+};
+
+export function normalizeWhoAmIAnswer(value: string) {
+  return value.normalize("NFKC").trim().replace(/\s+/g, " ").toLocaleLowerCase("pt-BR");
 }
 
-export function shuffleWhoAmIOptions(optionIds: readonly string[], random: () => number = Math.random) {
-  const shuffled = [...optionIds];
-  for (let index = shuffled.length - 1; index > 0; index -= 1) {
-    const target = Math.floor(random() * (index + 1));
-    [shuffled[index], shuffled[target]] = [shuffled[target], shuffled[index]];
-  }
-  if (shuffled.length > 1 && shuffled.every((id, index) => id === optionIds[index])) {
-    [shuffled[0], shuffled[1]] = [shuffled[1], shuffled[0]];
-  }
-  return shuffled;
+export function initialWhoAmIState(): WhoAmIState {
+  return { hintsVisible: 1, status: "playing" };
 }
 
 export function applyWhoAmIAction(
-  character: WhoAmICharacter,
+  challenge: WhoAmIChallenge,
   state: WhoAmIState,
   action: WhoAmIAction,
 ): WhoAmIState {
-  if (state.status !== "playing") throw new Error("who_am_i_game_finished");
+  if (state.status !== "playing") throw new Error("who_am_i_challenge_finished");
   if (action.type === "reveal") {
-    if (state.hintsVisible >= character.hints.length) throw new Error("all_who_am_i_hints_revealed");
-    return { ...state, hintsVisible: state.hintsVisible + 1, awaitingNextHint: false };
+    if (state.hintsVisible >= challenge.hints.length) throw new Error("all_who_am_i_hints_revealed");
+    return { ...state, hintsVisible: state.hintsVisible + 1 };
   }
-  if (action.type !== "guess" || typeof action.answerId !== "string" || !character.optionIds.includes(action.answerId)) {
+  if (action.type !== "guess" || typeof action.answer !== "string"
+    || !normalizeWhoAmIAnswer(action.answer) || action.answer.length > 100) {
     throw new Error("invalid_who_am_i_answer");
   }
-  if (state.awaitingNextHint) throw new Error("who_am_i_hint_required");
-  if (state.wrongAnswerIds.includes(action.answerId)) throw new Error("who_am_i_answer_repeated");
-  if (action.answerId === character.id) return { ...state, status: "won" };
-  const wrongAnswerIds = [...state.wrongAnswerIds, action.answerId];
   return {
     ...state,
-    wrongAnswerIds,
-    awaitingNextHint: state.hintsVisible < character.hints.length,
-    status: state.hintsVisible === character.hints.length ? "lost" : "playing",
+    status: normalizeWhoAmIAnswer(action.answer) === normalizeWhoAmIAnswer(challenge.answer)
+      ? "won"
+      : "lost",
   };
 }
 
@@ -60,20 +56,42 @@ export function whoAmIScore(hintsVisible: number) {
   return (6 - hintsVisible) * 100;
 }
 
-export function evaluateWhoAmIGame(character: WhoAmICharacter, actions: readonly WhoAmIAction[]) {
-  if (!Array.isArray(actions) || actions.length < 1 || actions.length > 12) {
+export function evaluateWhoAmIChallenge(
+  challenge: WhoAmIChallenge,
+  actions: readonly WhoAmIAction[],
+) {
+  if (!Array.isArray(actions) || actions.length < 1 || actions.length > challenge.hints.length) {
     throw new Error("invalid_who_am_i_actions");
   }
   let state = initialWhoAmIState();
   for (const action of actions) {
     if (!action || typeof action !== "object") throw new Error("invalid_who_am_i_action");
-    state = applyWhoAmIAction(character, state, action);
+    state = applyWhoAmIAction(challenge, state, action);
   }
-  if (state.status === "playing") throw new Error("incomplete_who_am_i_game");
+  if (state.status === "playing") throw new Error("incomplete_who_am_i_challenge");
   return { ...state, score: state.status === "won" ? whoAmIScore(state.hintsVisible) : 0 };
 }
 
-export function nextWhoAmICharacterIndex(current: number, total: number) {
-  if (!Number.isInteger(total) || total < 1) throw new Error("invalid_who_am_i_character_total");
-  return (current + 1) % total;
+export function evaluateWhoAmISet(
+  challenges: readonly WhoAmIChallenge[],
+  histories: readonly WhoAmIChallengeHistory[],
+) {
+  if (!Array.isArray(histories) || histories.length !== challenges.length) {
+    throw new Error("incomplete_who_am_i_game");
+  }
+  const seen = new Set<string>();
+  let score = 0;
+  let correctAnswers = 0;
+  for (const history of histories) {
+    if (!history || typeof history.challengeId !== "string" || seen.has(history.challengeId)) {
+      throw new Error("invalid_who_am_i_history");
+    }
+    const challenge = challenges.find(item => item.id === history.challengeId);
+    if (!challenge) throw new Error("invalid_who_am_i_challenge");
+    seen.add(history.challengeId);
+    const result = evaluateWhoAmIChallenge(challenge, history.actions);
+    score += result.score;
+    if (result.status === "won") correctAnswers += 1;
+  }
+  return { score, correctAnswers, questionsAnswered: challenges.length };
 }

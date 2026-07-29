@@ -4,6 +4,8 @@ import { onRequestPost as finishPlatformGame } from "../../functions/api/platfor
 import { timelineRoundFromContent } from "../../functions/_lib/game-integrations/timeline-content.ts";
 import { memorySetFromContent } from "../../functions/_lib/game-integrations/memory-content.ts";
 import { associationRoundFromContent } from "../../functions/_lib/game-integrations/association-content.ts";
+import { whoAmIChallengesFromContent } from "../../functions/_lib/game-integrations/who-am-i-content.ts";
+import { threeCluesChallengesFromContent } from "../../functions/_lib/game-integrations/three-clues-content.ts";
 import {
   createAuthenticatedRequest,
   createSession,
@@ -52,6 +54,16 @@ async function setup(t) {
     payload_json,version,author_id,created_at,updated_at
   ) VALUES('association-published','org-1','associacao-de-temas','PUBLISHED','Personagens','EASY',
     'Gênesis–1 Samuel','[]','{"title":"Personagens e feitos","pairs":[{"left":"Noé","right":"Arca"},{"left":"Moisés","right":"Êxodo"},{"left":"Davi","right":"Golias"}]}',5,'player',?,?)`).run(NOW, NOW);
+  ctx.raw.prepare(`INSERT INTO content_items(
+    id,organization_id,game_type,status,category,difficulty,biblical_reference,tags_json,
+    payload_json,version,author_id,created_at,updated_at
+  ) VALUES('who-am-i-published','org-1','quem-sou-eu','PUBLISHED','Personagens','EASY',
+    'Êxodo–Ester','[]','{"title":"Personagens bíblicos","challenges":[{"answer":"Moisés","hints":["Egito","Sarça","Êxodo"]},{"answer":"Davi","hints":["Pastor","Funda","Rei"]},{"answer":"Ester","hints":["Pérsia","Rainha","Seu povo"]}]}',6,'player',?,?)`).run(NOW, NOW);
+  ctx.raw.prepare(`INSERT INTO content_items(
+    id,organization_id,game_type,status,category,difficulty,biblical_reference,tags_json,
+    payload_json,version,author_id,created_at,updated_at
+  ) VALUES('three-clues-published','org-1','jogo-tres-pistas','PUBLISHED','Personagens','EASY',
+    'Gênesis–Ester','[]','{"title":"Personagens bíblicos","challenges":[{"answer":"Noé","clues":["Obedeci","Arca","Dilúvio"]},{"answer":"Davi","clues":["Pastor","Funda","Rei"]},{"answer":"Ester","clues":["Pérsia","Rainha","Seu povo"]}]}',7,'player',?,?)`).run(NOW, NOW);
   return { ctx, token };
 }
 
@@ -116,35 +128,48 @@ test("Wordle completion updates Progress, Statistics, Achievements and Missions 
   );
 });
 
-test("3 Pistas defeat is registered with minimum reward and game-specific statistics", async t => {
+test("3 Pistas CMS completion reaches Progress, Statistics, Achievements and Missions", async t => {
   const { ctx, token } = await setup(t);
+  const challenges = await threeCluesChallengesFromContent("three-clues-published", {
+    title: "Personagens bíblicos",
+    challenges: [
+      { answer: "Noé", clues: ["Obedeci", "Arca", "Dilúvio"] },
+      { answer: "Davi", clues: ["Pastor", "Funda", "Rei"] },
+      { answer: "Ester", clues: ["Pérsia", "Rainha", "Seu povo"] },
+    ],
+  });
   const response = await withFrozenTime(NOW, () => finishPlatformGame({
     request: request(token, {
       gameId: "jogo-tres-pistas",
       sessionId: "session-clues-integration",
-      questionId: "noe",
-      answer: "Jonas",
-      cluesUsed: 3,
+      contentId: "three-clues-published",
+      contentVersion: 7,
+      challenges: challenges.map((challenge, index) => ({
+        challengeId: challenge.id,
+        actions: index === 0
+          ? [{ type: "guess", answer: challenge.answer }]
+          : [{ type: "reveal" }, { type: "guess", answer: challenge.answer }],
+      })),
     }),
     env: ctx.env,
   }));
   const data = await responseJson(response);
   assert.equal(response.status, 200);
-  assert.equal(data.outcome, "lost");
-  assert.equal(data.score, 0);
+  assert.equal(data.outcome, "won");
+  assert.equal(data.score, 700);
   assert.deepEqual({
     ...ctx.raw.prepare("SELECT total_xp totalXp,coins FROM user_platform_progress WHERE user_id='player'").get(),
-  }, { totalXp: 80, coins: 12 });
+  }, { totalXp: 160, coins: 25 });
   assert.deepEqual({
     ...ctx.raw.prepare(`SELECT sessions_completed sessionsCompleted,questions_answered questionsAnswered,
       correct_answers correctAnswers,incorrect_answers incorrectAnswers,best_score bestScore
       FROM user_platform_game_statistics WHERE user_id='player' AND game_id='jogo-tres-pistas'`).get(),
   }, {
     sessionsCompleted: 1,
-    questionsAnswered: 1,
-    correctAnswers: 0,
-    incorrectAnswers: 1,
-    bestScore: 0,
+    questionsAnswered: 3,
+    correctAnswers: 3,
+    incorrectAnswers: 0,
+    bestScore: 700,
   });
 });
 
@@ -239,19 +264,31 @@ test("Memória Bíblica victory reaches Progress, Statistics, Achievements and M
 
 test("Quem Sou Eu victory reaches Progress, Statistics, Achievements and Missions", async t => {
   const { ctx, token } = await setup(t);
+  const challenges = await whoAmIChallengesFromContent("who-am-i-published", {
+    title: "Personagens bíblicos",
+    challenges: [
+      { answer: "Moisés", hints: ["Egito", "Sarça", "Êxodo"] },
+      { answer: "Davi", hints: ["Pastor", "Funda", "Rei"] },
+      { answer: "Ester", hints: ["Pérsia", "Rainha", "Seu povo"] },
+    ],
+  });
   const response = await withFrozenTime(NOW, () => finishPlatformGame({
     request: request(token, {
       gameId: "quem-sou-eu",
       sessionId: "session-who-am-i-integration",
-      characterId: "moises",
-      actions: [{ type: "guess", answerId: "moises" }],
+      contentId: "who-am-i-published",
+      contentVersion: 6,
+      challenges: challenges.map(challenge => ({
+        challengeId: challenge.id,
+        actions: [{ type: "guess", answer: challenge.answer }],
+      })),
     }),
     env: ctx.env,
   }));
   const data = await responseJson(response);
   assert.equal(response.status, 200);
   assert.equal(data.outcome, "won");
-  assert.equal(data.score, 500);
+  assert.equal(data.score, 1500);
   assert.deepEqual({
     ...ctx.raw.prepare("SELECT total_xp totalXp,coins FROM user_platform_progress WHERE user_id='player'").get(),
   }, { totalXp: 160, coins: 25 });
@@ -261,10 +298,10 @@ test("Quem Sou Eu victory reaches Progress, Statistics, Achievements and Mission
       FROM user_platform_game_statistics WHERE user_id='player' AND game_id='quem-sou-eu'`).get(),
   }, {
     sessionsCompleted: 1,
-    questionsAnswered: 1,
-    correctAnswers: 1,
+    questionsAnswered: 3,
+    correctAnswers: 3,
     incorrectAnswers: 0,
-    bestScore: 500,
+    bestScore: 1500,
   });
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM user_platform_achievements WHERE user_id='player'").get().total, 2);
   assert.deepEqual({

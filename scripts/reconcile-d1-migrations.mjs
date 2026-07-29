@@ -36,10 +36,18 @@ const foundationMigrations = [
   "0029_quiz_core_event_outbox_leases.sql",
   "0030_achievement_statistics_projections.sql",
   "0031_universal_content_drafts.sql",
+  "0032_universal_content_library.sql",
 ];
 const expectedFinalLedger = [...baseline, targetMigration, ...foundationMigrations];
 const introducedTablesByMigration = {
   "0031_universal_content_drafts.sql": ["content_items", "content_versions"],
+  "0032_universal_content_library.sql": ["universal_content_library"],
+};
+const introducedIndexesByMigration = {
+  "0032_universal_content_library.sql": [
+    "universal_content_library_eligible_idx",
+    "universal_content_library_publication_idx",
+  ],
 };
 
 const requiredTables = [
@@ -52,7 +60,7 @@ const requiredTables = [
   "user_platform_progress", "platform_xp_ledger", "platform_coin_ledger", "platform_achievement_definitions",
   "user_platform_achievements", "platform_mission_definitions", "user_platform_missions",
   "user_platform_mission_progress_events", "core_platform_events", "core_platform_event_processing",
-  "content_items", "content_versions",
+  "content_items", "content_versions", "universal_content_library",
   "user_platform_statistics", "user_platform_game_statistics", "user_platform_game_difficulty_statistics",
   "user_platform_statistics_active_days", "platform_statistics_event_checkpoints", "quiz_core_event_outbox",
   "user_platform_statistics_official_days_utc",
@@ -85,6 +93,7 @@ const requiredIndexes = [
   "core_platform_event_processing_retry_idx", "user_platform_statistics_org_activity_idx",
   "platform_statistics_event_checkpoints_user_idx", "quiz_core_event_outbox_delivery_idx",
   "quiz_core_event_outbox_claim_idx", "user_platform_statistics_official_days_utc_user_idx",
+  "universal_content_library_eligible_idx", "universal_content_library_publication_idx",
 ];
 
 function runWrangler(command) {
@@ -132,9 +141,9 @@ function validateTargetMigration() {
   validateMigration0022(readFileSync(resolve("drizzle", targetMigration), "utf8"), targetMigration);
 }
 
-function validateLegacySchema(tables = requiredTables) {
+function validateLegacySchema(tables = requiredTables, indexes = requiredIndexes) {
   const tableList = tables.map(quoteValue).join(",");
-  const indexList = requiredIndexes.map(quoteValue).join(",");
+  const indexList = indexes.map(quoteValue).join(",");
   const tableCount = scalar(
     `SELECT COUNT(*) AS value FROM sqlite_master WHERE type='table' AND name IN (${tableList})`,
     "value",
@@ -149,10 +158,10 @@ function validateLegacySchema(tables = requiredTables) {
       const found = new Set(rows(`SELECT name FROM pragma_table_info(${quoteValue(table)})`).map((row) => String(row.name)));
       return columns.filter((column) => !found.has(column)).map((column) => `${table}.${column}`);
     });
-  if (tableCount !== tables.length || indexCount !== requiredIndexes.length || missingColumns.length) {
+  if (tableCount !== tables.length || indexCount !== indexes.length || missingColumns.length) {
     throw new Error(
       `Legacy schema is incomplete: tables ${tableCount}/${tables.length}, ` +
-      `indexes ${indexCount}/${requiredIndexes.length}, missing columns ${missingColumns.join(", ") || "none"}.`,
+      `indexes ${indexCount}/${indexes.length}, missing columns ${missingColumns.join(", ") || "none"}.`,
     );
   }
 }
@@ -174,7 +183,11 @@ function promotableState() {
     requiredTables,
     introducedTablesByMigration,
   );
-  validateLegacySchema(tables);
+  const applied = new Set(ledger);
+  const pendingIndexes = new Set(Object.entries(introducedIndexesByMigration)
+    .filter(([migration]) => !applied.has(migration))
+    .flatMap(([, indexes]) => indexes));
+  validateLegacySchema(tables, requiredIndexes.filter(index => !pendingIndexes.has(index)));
   return { ledger, pending, tables };
 }
 

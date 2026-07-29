@@ -2,59 +2,77 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   applyWhoAmIAction,
-  evaluateWhoAmIGame,
+  evaluateWhoAmIChallenge,
+  evaluateWhoAmISet,
   initialWhoAmIState,
-  shuffleWhoAmIOptions,
+  normalizeWhoAmIAnswer,
 } from "../../app/games/who-am-i/engine.ts";
-import { WHO_AM_I_CHARACTERS } from "../../app/games/who-am-i/characters.ts";
 
-const moises = WHO_AM_I_CHARACTERS.find(character => character.id === "moises");
+const challenges = [
+  {
+    id: "challenge-1",
+    answer: "Moisés",
+    hints: ["Fui criado no Egito", "Vi uma sarça", "Conduzi Israel"],
+  },
+  {
+    id: "challenge-2",
+    answer: "Davi",
+    hints: ["Fui pastor", "Usei uma funda", "Fui rei"],
+  },
+  {
+    id: "challenge-3",
+    answer: "Ester",
+    hints: ["Vivi na Pérsia", "Entrei diante do rei", "Salvei meu povo"],
+  },
+];
 
-test("Who Am I bank contains the eight required characters with five hints", () => {
-  assert.deepEqual(
-    WHO_AM_I_CHARACTERS.map(character => character.id),
-    ["moises", "davi", "ester", "paulo", "daniel", "noe", "jose", "elias"],
-  );
-  for (const character of WHO_AM_I_CHARACTERS) {
-    assert.equal(character.hints.length, 5);
-    assert.equal(character.optionIds.length, 4);
-    assert.ok(character.optionIds.includes(character.id));
-  }
+test("Quem Sou Eu normalizes case and repeated surrounding spaces", () => {
+  assert.equal(normalizeWhoAmIAnswer("  MOISÉS   "), "moisés");
+  assert.equal(normalizeWhoAmIAnswer("Lucas   de   Tarso"), "lucas de tarso");
 });
 
-test("Who Am I reveals hints progressively and shuffles options", () => {
+test("Quem Sou Eu reveals hints progressively in registered order", () => {
   const initial = initialWhoAmIState();
-  const next = applyWhoAmIAction(moises, initial, { type: "reveal" });
+  const next = applyWhoAmIAction(challenges[0], initial, { type: "reveal" });
   assert.equal(initial.hintsVisible, 1);
   assert.equal(next.hintsVisible, 2);
-  const options = shuffleWhoAmIOptions(moises.optionIds, () => 0);
-  assert.deepEqual(new Set(options), new Set(moises.optionIds));
-  assert.notDeepEqual(options, moises.optionIds);
+  assert.throws(
+    () => applyWhoAmIAction(challenges[0], { hintsVisible: 3, status: "playing" }, { type: "reveal" }),
+    /all_who_am_i_hints_revealed/,
+  );
 });
 
-test("Who Am I wins immediately with the correct character", () => {
-  const result = evaluateWhoAmIGame(moises, [{ type: "guess", answerId: "moises" }]);
-  assert.equal(result.status, "won");
-  assert.equal(result.hintsVisible, 1);
-  assert.equal(result.score, 500);
+test("Quem Sou Eu validates correct and incorrect textual answers", () => {
+  const correct = evaluateWhoAmIChallenge(challenges[0], [{ type: "guess", answer: "  MOISÉS " }]);
+  assert.equal(correct.status, "won");
+  assert.equal(correct.score, 500);
+  const incorrect = evaluateWhoAmIChallenge(challenges[0], [{ type: "guess", answer: "Josué" }]);
+  assert.equal(incorrect.status, "lost");
+  assert.equal(incorrect.score, 0);
 });
 
-test("Who Am I requires another hint after an early wrong answer", () => {
-  const wrong = applyWhoAmIAction(moises, initialWhoAmIState(), { type: "guess", answerId: "josue" });
-  assert.equal(wrong.awaitingNextHint, true);
-  assert.throws(() => applyWhoAmIAction(moises, wrong, { type: "guess", answerId: "arao" }), /who_am_i_hint_required/);
-  const continued = applyWhoAmIAction(moises, wrong, { type: "reveal" });
-  assert.equal(continued.awaitingNextHint, false);
-  assert.equal(continued.hintsVisible, 2);
+test("Quem Sou Eu score decreases as more hints are revealed", () => {
+  const result = evaluateWhoAmIChallenge(challenges[0], [
+    { type: "reveal" },
+    { type: "reveal" },
+    { type: "guess", answer: "Moisés" },
+  ]);
+  assert.equal(result.hintsVisible, 3);
+  assert.equal(result.score, 300);
 });
 
-test("Who Am I loses after an incorrect answer with all hints visible", () => {
-  const actions = [
-    { type: "reveal" }, { type: "reveal" }, { type: "reveal" }, { type: "reveal" },
-    { type: "guess", answerId: "josue" },
-  ];
-  const result = evaluateWhoAmIGame(moises, actions);
-  assert.equal(result.status, "lost");
-  assert.equal(result.hintsVisible, 5);
-  assert.equal(result.score, 0);
+test("complete set aggregates score and rejects missing or duplicated histories", () => {
+  const histories = challenges.map(challenge => ({
+    challengeId: challenge.id,
+    actions: [{ type: "guess", answer: challenge.answer }],
+  }));
+  assert.deepEqual(evaluateWhoAmISet(challenges, histories), {
+    score: 1500,
+    correctAnswers: 3,
+    questionsAnswered: 3,
+  });
+  assert.throws(() => evaluateWhoAmISet(challenges, histories.slice(0, 2)), /incomplete_who_am_i_game/);
+  assert.throws(() => evaluateWhoAmISet(challenges, [
+    histories[0], histories[0], histories[2],
+  ]), /invalid_who_am_i_history/);
 });

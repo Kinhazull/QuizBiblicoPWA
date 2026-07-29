@@ -9,9 +9,12 @@ export type WordleCompletionSubmission = {
 export type ThreeCluesCompletionSubmission = {
   gameId: "jogo-tres-pistas";
   sessionId: string;
-  questionId: string;
-  answer: string;
-  cluesUsed: number;
+  contentId: string;
+  contentVersion: number;
+  challenges: Array<{
+    challengeId: string;
+    actions: Array<{ type: "reveal" } | { type: "guess"; answer: string }>;
+  }>;
 };
 
 export type TimelineCompletionSubmission = {
@@ -34,8 +37,12 @@ export type MemoryCompletionSubmission = {
 export type WhoAmICompletionSubmission = {
   gameId: "quem-sou-eu";
   sessionId: string;
-  characterId: string;
-  actions: Array<{ type: "reveal" } | { type: "guess"; answerId: string }>;
+  contentId: string;
+  contentVersion: number;
+  challenges: Array<{
+    challengeId: string;
+    actions: Array<{ type: "reveal" } | { type: "guess"; answer: string }>;
+  }>;
 };
 
 export type ThemeAssociationCompletionSubmission = {

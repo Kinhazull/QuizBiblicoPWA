@@ -8,6 +8,8 @@ import {
   type AssociationContentPayload,
   type MemoryContentPayload,
   type TimelineContentPayload,
+  type ThreeCluesContentPayload,
+  type WhoAmIContentPayload,
   type WordleContentPayload,
 } from "../../../../shared/content";
 import { findPublishedUniversalContent } from "../../../_lib/universal-content-store";
@@ -18,6 +20,10 @@ import { memorySetFromContent } from "../../../_lib/game-integrations/memory-con
 import type { MemorySet } from "../../../../app/games/memory/engine";
 import type { ThemeAssociationRound } from "../../../../app/games/theme-association/engine";
 import { associationRoundFromContent } from "../../../_lib/game-integrations/association-content";
+import type { WhoAmIChallenge } from "../../../../app/games/who-am-i/engine";
+import { whoAmIChallengesFromContent } from "../../../_lib/game-integrations/who-am-i-content";
+import type { ThreeCluesChallenge } from "../../../../app/games/three-clues/engine";
+import { threeCluesChallengesFromContent } from "../../../_lib/game-integrations/three-clues-content";
 
 const SAFE_ERROR = /^[a-z0-9_]{1,100}$/;
 
@@ -135,6 +141,68 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
         associationContent.payload as AssociationContentPayload,
       );
     }
+    const whoAmIContent = body.gameId === "quem-sou-eu"
+      ? await findPublishedUniversalContent(
+        env,
+        String(user.organizationId),
+        GameType.WHO_AM_I,
+        body.contentId,
+      )
+      : null;
+    let whoAmIChallenges: WhoAmIChallenge[] | undefined;
+    if (whoAmIContent) {
+      const validation = validateContent(whoAmIContent.gameType, {
+        id: whoAmIContent.id,
+        gameType: whoAmIContent.gameType,
+        category: whoAmIContent.category,
+        tags: whoAmIContent.tags,
+        difficulty: whoAmIContent.difficulty,
+        biblicalReference: whoAmIContent.biblicalReference,
+        status: whoAmIContent.status,
+        authorId: whoAmIContent.authorId,
+        reviewerId: whoAmIContent.reviewerId,
+        createdAt: whoAmIContent.createdAt,
+        updatedAt: whoAmIContent.updatedAt,
+        version: whoAmIContent.version,
+        internalNotes: whoAmIContent.internalNotes,
+      }, whoAmIContent.payload);
+      if (!validation.valid) throw new Error("invalid_who_am_i_content");
+      whoAmIChallenges = await whoAmIChallengesFromContent(
+        whoAmIContent.id,
+        whoAmIContent.payload as WhoAmIContentPayload,
+      );
+    }
+    const threeCluesContent = body.gameId === "jogo-tres-pistas"
+      ? await findPublishedUniversalContent(
+        env,
+        String(user.organizationId),
+        GameType.THREE_CLUES,
+        body.contentId,
+      )
+      : null;
+    let threeCluesChallenges: ThreeCluesChallenge[] | undefined;
+    if (threeCluesContent) {
+      const validation = validateContent(threeCluesContent.gameType, {
+        id: threeCluesContent.id,
+        gameType: threeCluesContent.gameType,
+        category: threeCluesContent.category,
+        tags: threeCluesContent.tags,
+        difficulty: threeCluesContent.difficulty,
+        biblicalReference: threeCluesContent.biblicalReference,
+        status: threeCluesContent.status,
+        authorId: threeCluesContent.authorId,
+        reviewerId: threeCluesContent.reviewerId,
+        createdAt: threeCluesContent.createdAt,
+        updatedAt: threeCluesContent.updatedAt,
+        version: threeCluesContent.version,
+        internalNotes: threeCluesContent.internalNotes,
+      }, threeCluesContent.payload);
+      if (!validation.valid) throw new Error("invalid_three_clues_content");
+      threeCluesChallenges = await threeCluesChallengesFromContent(
+        threeCluesContent.id,
+        threeCluesContent.payload as ThreeCluesContentPayload,
+      );
+    }
     const event = adaptPlatformGameCompletion(body, {
       userId: user.id,
       organizationId: user.organizationId,
@@ -158,6 +226,16 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
         id: associationContent.id,
         version: associationContent.version,
         round: associationRound,
+      } : undefined,
+      whoAmIContent: whoAmIContent && whoAmIChallenges ? {
+        id: whoAmIContent.id,
+        version: whoAmIContent.version,
+        challenges: whoAmIChallenges,
+      } : undefined,
+      threeCluesContent: threeCluesContent && threeCluesChallenges ? {
+        id: threeCluesContent.id,
+        version: threeCluesContent.version,
+        challenges: threeCluesChallenges,
       } : undefined,
     });
     const result = await publishOfficialCoreEvent(env, event, event.occurredAt);

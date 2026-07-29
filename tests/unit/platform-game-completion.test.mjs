@@ -47,6 +47,24 @@ const context = {
       ],
     },
   },
+  whoAmIContent: {
+    id: "who-am-i-1",
+    version: 6,
+    challenges: [
+      { id: "challenge-1", answer: "Moisés", hints: ["Egito", "Sarça", "Êxodo"] },
+      { id: "challenge-2", answer: "Davi", hints: ["Pastor", "Funda", "Rei"] },
+      { id: "challenge-3", answer: "Ester", hints: ["Pérsia", "Rainha", "Seu povo"] },
+    ],
+  },
+  threeCluesContent: {
+    id: "three-clues-1",
+    version: 7,
+    challenges: [
+      { id: "clue-1", answer: "Noé", clues: ["Obedeci", "Arca", "Dilúvio"] },
+      { id: "clue-2", answer: "Davi", clues: ["Pastor", "Funda", "Rei"] },
+      { id: "clue-3", answer: "Ester", clues: ["Pérsia", "Rainha", "Seu povo"] },
+    ],
+  },
 };
 
 test("Wordle victory is normalized to a deterministic GAME_FINISHED v2", () => {
@@ -88,24 +106,33 @@ test("Wordle loss requires all six valid attempts", () => {
   }, context), /incomplete_wordle_game/);
 });
 
-test("3 Pistas result is recalculated from the official static bank", () => {
+test("3 Pistas result is recalculated from the published CMS content", () => {
   const win = adaptPlatformGameCompletion({
     gameId: "jogo-tres-pistas",
     sessionId: "session-clues-001",
-    questionId: "davi",
-    answer: "Davi",
-    cluesUsed: 2,
+    contentId: "three-clues-1",
+    contentVersion: 7,
+    challenges: [
+      { challengeId: "clue-1", actions: [{ type: "guess", answer: "Noé" }] },
+      { challengeId: "clue-2", actions: [{ type: "reveal" }, { type: "guess", answer: "Davi" }] },
+      { challengeId: "clue-3", actions: [{ type: "reveal" }, { type: "reveal" }, { type: "guess", answer: "Ester" }] },
+    ],
   }, context);
   assert.equal(win.source.service, "three-clues-service");
-  assert.equal(win.payload.score, 200);
-  assert.equal(win.payload.correctAnswers, 1);
+  assert.equal(win.payload.score, 600);
+  assert.equal(win.payload.correctAnswers, 3);
+  assert.equal(win.payload.questionsAnswered, 3);
 
   const loss = adaptPlatformGameCompletion({
     gameId: "jogo-tres-pistas",
     sessionId: "session-clues-002",
-    questionId: "davi",
-    answer: "Moisés",
-    cluesUsed: 1,
+    contentId: "three-clues-1",
+    contentVersion: 7,
+    challenges: [
+      { challengeId: "clue-1", actions: [{ type: "guess", answer: "Jonas" }] },
+      { challengeId: "clue-2", actions: [{ type: "guess", answer: "Saul" }] },
+      { challengeId: "clue-3", actions: [{ type: "guess", answer: "Rute" }] },
+    ],
   }, context);
   assert.equal(loss.payload.score, 0);
   assert.equal(loss.payload.correctAnswers, 0);
@@ -171,21 +198,28 @@ test("Quem Sou Eu result is recalculated from progressive hint actions", () => {
   const win = adaptPlatformGameCompletion({
     gameId: "quem-sou-eu",
     sessionId: "session-who-am-i-001",
-    characterId: "moises",
-    actions: [{ type: "reveal" }, { type: "guess", answerId: "moises" }],
+    contentId: "who-am-i-1",
+    contentVersion: 6,
+    challenges: [
+      { challengeId: "challenge-1", actions: [{ type: "reveal" }, { type: "guess", answer: "Moisés" }] },
+      { challengeId: "challenge-2", actions: [{ type: "guess", answer: "Davi" }] },
+      { challengeId: "challenge-3", actions: [{ type: "guess", answer: "Ester" }] },
+    ],
   }, context);
   assert.equal(win.source.service, "who-am-i-service");
-  assert.equal(win.payload.score, 400);
-  assert.equal(win.payload.correctAnswers, 1);
-  assert.equal(win.payload.questionsAnswered, 1);
+  assert.equal(win.payload.score, 1400);
+  assert.equal(win.payload.correctAnswers, 3);
+  assert.equal(win.payload.questionsAnswered, 3);
 
   const loss = adaptPlatformGameCompletion({
     gameId: "quem-sou-eu",
     sessionId: "session-who-am-i-002",
-    characterId: "moises",
-    actions: [
-      { type: "reveal" }, { type: "reveal" }, { type: "reveal" }, { type: "reveal" },
-      { type: "guess", answerId: "josue" },
+    contentId: "who-am-i-1",
+    contentVersion: 6,
+    challenges: [
+      { challengeId: "challenge-1", actions: [{ type: "guess", answer: "Josué" }] },
+      { challengeId: "challenge-2", actions: [{ type: "guess", answer: "Saul" }] },
+      { challengeId: "challenge-3", actions: [{ type: "guess", answer: "Rute" }] },
     ],
   }, context);
   assert.equal(loss.payload.score, 0);
@@ -229,10 +263,10 @@ test("invalid or tampered completions are rejected", () => {
   assert.throws(() => adaptPlatformGameCompletion({
     gameId: "jogo-tres-pistas",
     sessionId: "session-clues-003",
-    questionId: "unknown",
-    answer: "Davi",
-    cluesUsed: 1,
-  }, context), /invalid_three_clues_question/);
+    contentId: "unknown",
+    contentVersion: 7,
+    challenges: [],
+  }, context), /invalid_three_clues_content/);
   assert.throws(() => adaptPlatformGameCompletion({
     gameId: "linha-do-tempo-biblica",
     sessionId: "session-timeline-004",
@@ -258,7 +292,8 @@ test("invalid or tampered completions are rejected", () => {
   assert.throws(() => adaptPlatformGameCompletion({
     gameId: "quem-sou-eu",
     sessionId: "session-who-am-i-003",
-    characterId: "unknown",
-    actions: [],
-  }, context), /invalid_who_am_i_character/);
+    contentId: "unknown",
+    contentVersion: 6,
+    challenges: [],
+  }, context), /invalid_who_am_i_content/);
 });

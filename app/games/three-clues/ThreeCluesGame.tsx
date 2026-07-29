@@ -1,118 +1,217 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
+import { createGameSessionId, GameLayout, recordPlatformGameCompletion, type GamePlayStatus } from "../sdk";
 import {
-  createGameSessionId,
-  GameLayout,
-  recordPlatformGameCompletion,
-  type GamePlayStatus,
-} from "../sdk";
-import {
-  isCorrectThreeCluesAnswer,
-  nextQuestionIndex,
   scoreForCluesUsed,
   THREE_CLUES_MAX,
+  type ThreeCluesAction,
+  type ThreeCluesChallengeHistory,
 } from "./engine";
-import { THREE_CLUES_QUESTIONS } from "./questions";
+
+type PublishedChallenge = { id: string; clues: [string, string, string] };
+type PublishedThreeClues = {
+  id: string;
+  version: number;
+  title: string;
+  challenges: PublishedChallenge[];
+  biblicalReference: string | null;
+};
 
 export function ThreeCluesGame() {
   const sessionId = useRef(createGameSessionId());
-  const [questionIndex, setQuestionIndex] = useState(0);
+  const completionRecorded = useRef(false);
+  const [content, setContent] = useState<PublishedThreeClues | null>(null);
+  const [challengeIndex, setChallengeIndex] = useState(0);
   const [revealedClues, setRevealedClues] = useState(1);
+  const [actions, setActions] = useState<ThreeCluesAction[]>([]);
+  const [histories, setHistories] = useState<ThreeCluesChallengeHistory[]>([]);
   const [answer, setAnswer] = useState("");
-  const [status, setStatus] = useState<GamePlayStatus>("playing");
+  const [correctCount, setCorrectCount] = useState(0);
   const [score, setScore] = useState(0);
-  const [message, setMessage] = useState("Você pode responder agora ou revelar outra pista.");
-  const question = THREE_CLUES_QUESTIONS[questionIndex];
+  const [status, setStatus] = useState<GamePlayStatus>("playing");
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [validating, setValidating] = useState(false);
+  const [message, setMessage] = useState("Leia a primeira pista e responda quando estiver pronto.");
+
+  const loadContent = useCallback(async (signal?: AbortSignal) => {
+    setLoading(true);
+    setLoadError(false);
+    try {
+      const response = await fetch("/api/platform/games/three-clues", {
+        credentials: "same-origin",
+        cache: "no-store",
+        signal,
+      });
+      if (!response.ok) throw new Error("three_clues_content_unavailable");
+      const data = await response.json() as { content: PublishedThreeClues };
+      setContent(data.content);
+      setMessage(`Desafio 1 de ${data.content.challenges.length}. Leia a primeira pista.`);
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") return;
+      setLoadError(true);
+    } finally {
+      if (!signal?.aborted) setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    void loadContent(controller.signal);
+    return () => controller.abort();
+  }, [loadContent]);
+
+  const challenge = content?.challenges[challengeIndex] ?? null;
 
   function revealNextClue() {
-    if (status !== "playing" || revealedClues >= THREE_CLUES_MAX) return;
+    if (!challenge || status !== "playing" || revealedClues >= THREE_CLUES_MAX || validating) return;
     const next = revealedClues + 1;
     setRevealedClues(next);
-    setMessage(next === THREE_CLUES_MAX ? "Última pista revelada. Qual é a resposta?" : "Nova pista revelada.");
+    setActions(current => [...current, { type: "reveal" }]);
+    setMessage(`Pista ${next} de ${THREE_CLUES_MAX} revelada.`);
   }
 
-  function submitAnswer(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (status !== "playing") return;
-    if (!answer.trim()) {
-      setMessage("Digite uma resposta antes de confirmar.");
-      return;
+  async function registerCompletion(
+    nextHistories: ThreeCluesChallengeHistory[],
+    wonCount: number,
+    totalScore: number,
+  ) {
+    if (!content || completionRecorded.current) return;
+    completionRecorded.current = true;
+    setStatus(wonCount > 0 ? "won" : "lost");
+    setScore(totalScore);
+    setMessage(`Conjunto concluído: ${wonCount} de ${content.challenges.length} resposta(s) correta(s).`);
+    try {
+      await recordPlatformGameCompletion({
+        gameId: "jogo-tres-pistas",
+        sessionId: sessionId.current,
+        contentId: content.id,
+        contentVersion: content.version,
+        challenges: nextHistories.map(history => ({
+          challengeId: history.challengeId,
+          actions: [...history.actions],
+        })),
+      });
+    } catch {
+      setMessage("O conjunto terminou, mas não foi possível registrar o resultado. Tente novamente.");
     }
+  }
 
-    if (isCorrectThreeCluesAnswer(answer, question.answer)) {
-      const earned = scoreForCluesUsed(revealedClues);
-      setScore(earned);
-      setStatus("won");
-      setMessage(`Resposta correta: ${question.answer}. Você fez ${earned} pontos.`);
-    } else {
-      setStatus("lost");
-      setMessage(`A resposta era ${question.answer}.`);
+  async function submitAnswer(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!content || !challenge || !answer.trim() || validating || status !== "playing") return;
+    setValidating(true);
+    try {
+      const response = await fetch("/api/platform/games/three-clues", {
+        method: "POST",
+        credentials: "same-origin",
+        cache: "no-store",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          contentId: content.id,
+          contentVersion: content.version,
+          challengeId: challenge.id,
+          answer,
+        }),
+      });
+      if (!response.ok) throw new Error("three_clues_validation_failed");
+      const result = await response.json() as { correct: boolean };
+      const challengeActions: ThreeCluesAction[] = [...actions, { type: "guess", answer }];
+      const nextHistories = [...histories, { challengeId: challenge.id, actions: challengeActions }];
+      const nextCorrectCount = correctCount + (result.correct ? 1 : 0);
+      const nextScore = score + (result.correct ? scoreForCluesUsed(revealedClues) : 0);
+      setHistories(nextHistories);
+      setCorrectCount(nextCorrectCount);
+      setScore(nextScore);
+      setAnswer("");
+      if (challengeIndex === content.challenges.length - 1) {
+        await registerCompletion(nextHistories, nextCorrectCount, nextScore);
+      } else {
+        const nextIndex = challengeIndex + 1;
+        setChallengeIndex(nextIndex);
+        setRevealedClues(1);
+        setActions([]);
+        setMessage(`${result.correct ? "Resposta correta!" : "Resposta incorreta."} Desafio ${nextIndex + 1} de ${content.challenges.length}.`);
+      }
+    } catch {
+      setMessage("Não foi possível validar a resposta. Tente novamente.");
+    } finally {
+      setValidating(false);
     }
-    void recordPlatformGameCompletion({
-      gameId: "jogo-tres-pistas",
-      sessionId: sessionId.current,
-      questionId: question.id,
-      answer,
-      cluesUsed: revealedClues,
-    }).catch(() => undefined);
   }
 
   function restart() {
     sessionId.current = createGameSessionId();
-    setQuestionIndex(current => nextQuestionIndex(current, THREE_CLUES_QUESTIONS.length));
+    completionRecorded.current = false;
+    setChallengeIndex(0);
     setRevealedClues(1);
+    setActions([]);
+    setHistories([]);
     setAnswer("");
-    setStatus("playing");
+    setCorrectCount(0);
     setScore(0);
-    setMessage("Você pode responder agora ou revelar outra pista.");
+    setStatus("playing");
+    setValidating(false);
+    setMessage("Leia a primeira pista e responda quando estiver pronto.");
+    void loadContent();
   }
 
+  const challengeCount = content?.challenges.length ?? 0;
   return (
     <GameLayout
       eyebrow="Adivinhe com sabedoria"
       title="Jogo das"
       highlightedTitle="3 Pistas"
-      description="Descubra a resposta bíblica usando o menor número de pistas."
+      description="Descubra respostas bíblicas usando o menor número de pistas."
       status={status}
-      currentAttempt={revealedClues}
-      maxAttempts={THREE_CLUES_MAX}
+      currentAttempt={Math.min(challengeIndex + 1, challengeCount || 1)}
+      maxAttempts={challengeCount || 1}
+      progressLabel="Desafios"
       onRestart={restart}
     >
-      <section className="three-clues-game" aria-label="Jogo das 3 Pistas">
-        <div className="three-clues-score" aria-live="polite">
-          <span>Pontuação possível</span>
-          <strong>{status === "won" ? score : scoreForCluesUsed(revealedClues)} pontos</strong>
-        </div>
-
-        <ol className="three-clues-list" aria-label="Pistas reveladas">
-          {question.clues.map((clue, index) => {
-            const visible = index < revealedClues;
-            return (
-              <li className={visible ? "visible" : "hidden"} key={clue}>
-                <span>{index + 1}</span>
-                <p>{visible ? clue : "Pista ainda não revelada"}</p>
-              </li>
-            );
-          })}
-        </ol>
-
-        {status === "playing" && (
+      <section className="three-clues-game" aria-label="Jogo das 3 Pistas" aria-busy={loading || validating}>
+        {loading && <p className="three-clues-message" role="status">Carregando Três Pistas...</p>}
+        {loadError && <p className="three-clues-message" role="alert">Nenhum conjunto Três Pistas publicado está disponível agora.</p>}
+        {content && challenge && !loading && !loadError && (
           <>
-            <button className="three-clues-reveal" type="button" onClick={revealNextClue} disabled={revealedClues === THREE_CLUES_MAX}>
-              {revealedClues === THREE_CLUES_MAX ? "Todas as pistas reveladas" : "Revelar próxima pista"}
-            </button>
-            <form className="three-clues-answer" onSubmit={submitAnswer}>
-              <label htmlFor="three-clues-answer">Qual é a resposta?</label>
-              <div>
-                <input id="three-clues-answer" value={answer} onChange={event => setAnswer(event.target.value)} autoComplete="off" maxLength={60} placeholder="Digite sua resposta" />
-                <button type="submit">Responder</button>
-              </div>
-            </form>
+            <header className="three-clues-score">
+              <span>{content.title}</span>
+              <strong>Desafio {challengeIndex + 1} de {challengeCount}</strong>
+              {content.biblicalReference && <small>{content.biblicalReference}</small>}
+            </header>
+            <ol className="three-clues-list" aria-label="Pistas reveladas">
+              {challenge.clues.map((clue, index) => {
+                const visible = index < revealedClues;
+                return (
+                  <li className={visible ? "visible" : "hidden"} key={`${challenge.id}:${index}`}>
+                    <span>{index + 1}</span>
+                    <p>{visible ? clue : "Pista ainda não revelada"}</p>
+                  </li>
+                );
+              })}
+            </ol>
+            {status === "playing" && (
+              <>
+                <button className="three-clues-reveal" type="button" onClick={revealNextClue}
+                  disabled={revealedClues === THREE_CLUES_MAX || validating}>
+                  {revealedClues === THREE_CLUES_MAX ? "Todas as pistas reveladas" : "Revelar próxima pista"}
+                </button>
+                <form className="three-clues-answer" onSubmit={submitAnswer}>
+                  <label htmlFor="three-clues-answer">Qual é a resposta?</label>
+                  <div>
+                    <input id="three-clues-answer" value={answer} onChange={event => setAnswer(event.target.value)}
+                      autoComplete="off" maxLength={100} disabled={validating} placeholder="Digite sua resposta" />
+                    <button type="submit" disabled={validating || !answer.trim()}>
+                      {validating ? "Validando..." : "Responder"}
+                    </button>
+                  </div>
+                </form>
+              </>
+            )}
+            <p className={`three-clues-message ${status}`} role="status" aria-live="polite">{message}</p>
           </>
         )}
-
-        <p className={`three-clues-message ${status}`} role="status" aria-live="polite">{message}</p>
       </section>
     </GameLayout>
   );

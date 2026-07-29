@@ -5,11 +5,10 @@ import {
   WORDLE_MAX_ATTEMPTS,
 } from "../../../app/games/wordle/engine";
 import {
-  isCorrectThreeCluesAnswer,
-  scoreForCluesUsed,
-  THREE_CLUES_MAX,
+  evaluateThreeCluesSet,
+  type ThreeCluesChallenge,
+  type ThreeCluesChallengeHistory,
 } from "../../../app/games/three-clues/engine";
-import { THREE_CLUES_QUESTIONS } from "../../../app/games/three-clues/questions";
 import {
   isCorrectTimelineOrder,
   timelineScore,
@@ -22,8 +21,11 @@ import {
   type ThemeAssociationAttempt,
   type ThemeAssociationRound,
 } from "../../../app/games/theme-association/engine";
-import { evaluateWhoAmIGame, type WhoAmIAction } from "../../../app/games/who-am-i/engine";
-import { WHO_AM_I_CHARACTERS } from "../../../app/games/who-am-i/characters";
+import {
+  evaluateWhoAmISet,
+  type WhoAmIChallenge,
+  type WhoAmIChallengeHistory,
+} from "../../../app/games/who-am-i/engine";
 import type { CorePlatformEvent } from "../platform-event-engine";
 import type { GameFinishedV2Payload } from "../platform-event-catalog";
 
@@ -53,6 +55,16 @@ type CompletionContext = {
     version: number;
     round: ThemeAssociationRound;
   };
+  whoAmIContent?: {
+    id: string;
+    version: number;
+    challenges: WhoAmIChallenge[];
+  };
+  threeCluesContent?: {
+    id: string;
+    version: number;
+    challenges: ThreeCluesChallenge[];
+  };
 };
 
 type WordleCompletion = {
@@ -66,9 +78,9 @@ type WordleCompletion = {
 type ThreeCluesCompletion = {
   gameId: "jogo-tres-pistas";
   sessionId: string;
-  questionId: string;
-  answer: string;
-  cluesUsed: number;
+  contentId: string;
+  contentVersion: number;
+  challenges: ThreeCluesChallengeHistory[];
 };
 
 type TimelineCompletion = {
@@ -91,8 +103,9 @@ type MemoryCompletion = {
 type WhoAmICompletion = {
   gameId: "quem-sou-eu";
   sessionId: string;
-  characterId: string;
-  actions: WhoAmIAction[];
+  contentId: string;
+  contentVersion: number;
+  challenges: WhoAmIChallengeHistory[];
 };
 
 type ThemeAssociationCompletion = {
@@ -141,21 +154,19 @@ function wordleResult(input: WordleCompletion, content: CompletionContext["wordl
   };
 }
 
-function threeCluesResult(input: ThreeCluesCompletion) {
-  const question = THREE_CLUES_QUESTIONS.find(item => item.id === input.questionId);
-  if (!question) throw new Error("invalid_three_clues_question");
-  if (typeof input.answer !== "string" || !input.answer.trim() || input.answer.length > 60) {
-    throw new Error("invalid_three_clues_answer");
+function threeCluesResult(
+  input: ThreeCluesCompletion,
+  content: CompletionContext["threeCluesContent"],
+) {
+  if (!content || input.contentId !== content.id || input.contentVersion !== content.version) {
+    throw new Error("invalid_three_clues_content");
   }
-  if (!Number.isInteger(input.cluesUsed) || input.cluesUsed < 1 || input.cluesUsed > THREE_CLUES_MAX) {
-    throw new Error("invalid_clues_used");
-  }
-  const won = isCorrectThreeCluesAnswer(input.answer, question.answer);
+  const result = evaluateThreeCluesSet(content.challenges, input.challenges);
   return {
-    score: won ? scoreForCluesUsed(input.cluesUsed) : 0,
-    correctAnswers: won ? 1 : 0,
-    questionsAnswered: 1,
-    gameVersion: "three-clues-mvp-v1",
+    score: result.score,
+    correctAnswers: result.correctAnswers,
+    questionsAnswered: result.questionsAnswered,
+    gameVersion: `three-clues-cms-v${content.version}`,
     service: "three-clues-service",
   };
 }
@@ -197,15 +208,16 @@ function memoryResult(input: MemoryCompletion, content: CompletionContext["memor
   };
 }
 
-function whoAmIResult(input: WhoAmICompletion) {
-  const character = WHO_AM_I_CHARACTERS.find(item => item.id === input.characterId);
-  if (!character) throw new Error("invalid_who_am_i_character");
-  const result = evaluateWhoAmIGame(character, input.actions);
+function whoAmIResult(input: WhoAmICompletion, content: CompletionContext["whoAmIContent"]) {
+  if (!content || input.contentId !== content.id || input.contentVersion !== content.version) {
+    throw new Error("invalid_who_am_i_content");
+  }
+  const result = evaluateWhoAmISet(content.challenges, input.challenges);
   return {
     score: result.score,
-    correctAnswers: result.status === "won" ? 1 : 0,
-    questionsAnswered: 1,
-    gameVersion: "who-am-i-mvp-v1",
+    correctAnswers: result.correctAnswers,
+    questionsAnswered: result.questionsAnswered,
+    gameVersion: `who-am-i-cms-v${content.version}`,
     service: "who-am-i-service",
   };
 }
@@ -239,7 +251,7 @@ export function adaptPlatformGameCompletion(
   const result = input.gameId === "wordle-biblico"
     ? wordleResult(input, context.wordleContent)
     : input.gameId === "jogo-tres-pistas"
-      ? threeCluesResult(input)
+      ? threeCluesResult(input, context.threeCluesContent)
       : input.gameId === "linha-do-tempo-biblica"
         ? timelineResult(input, context.timelineContent)
       : input.gameId === "memoria-biblica"
@@ -247,7 +259,7 @@ export function adaptPlatformGameCompletion(
       : input.gameId === "associacao-de-temas"
         ? themeAssociationResult(input, context.associationContent)
       : input.gameId === "quem-sou-eu"
-        ? whoAmIResult(input)
+        ? whoAmIResult(input, context.whoAmIContent)
       : null;
   if (!result) throw new Error("unsupported_platform_game");
 

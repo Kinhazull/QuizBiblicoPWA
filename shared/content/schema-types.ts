@@ -68,11 +68,13 @@ export type AssociationContentPayload = {
   pairs: readonly { category?: string; left: string; right: string }[];
 };
 export type WhoAmIContentPayload = {
-  name: string;
-  hints: readonly string[];
-  options: readonly string[];
+  title: string;
+  challenges: readonly { answer: string; hints: readonly string[] }[];
 };
-export type ThreeCluesContentPayload = { answer: string; clues: readonly string[] };
+export type ThreeCluesContentPayload = {
+  title: string;
+  challenges: readonly { answer: string; clues: readonly string[] }[];
+};
 
 export type SpecificContent<TGameType extends GameType, TPayload> = {
   gameType: TGameType;

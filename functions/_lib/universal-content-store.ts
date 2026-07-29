@@ -6,6 +6,10 @@ import {
   type SharedContentModel,
 } from "../../shared/content";
 import type { AppEnv } from "./auth";
+import {
+  prepareDraftContentLibrarySync,
+  preparePublishedContentLibrarySync,
+} from "./universal-content-library";
 
 export type UniversalContentSource = "UNIVERSAL_CMS";
 export type PersistedUniversalContent = {
@@ -350,6 +354,9 @@ export async function transitionUniversalContentStatus(
     ? `Conteúdo publicado na versão ${nextVersion}`
     : `Conteúdo retornado para rascunho na versão ${nextVersion}`;
   try {
+    const librarySync = targetStatus === ContentStatus.PUBLISHED
+      ? preparePublishedContentLibrarySync(env, current, nextVersion, now)
+      : prepareDraftContentLibrarySync(env, current, nextVersion, now);
     await env.DB.batch([
       env.DB.prepare(`UPDATE content_items
         SET status=?1,version=?2,updated_at=?3
@@ -371,6 +378,7 @@ export async function transitionUniversalContentStatus(
         .bind(crypto.randomUUID(), organizationId, actorId, action, id,
           JSON.stringify({ fromStatus: current.status, toStatus: targetStatus, version: nextVersion }),
           now, nextVersion, targetStatus),
+      librarySync,
     ]);
   } catch {
     const latest = await findUniversalContent(env, organizationId, id);

@@ -27,6 +27,14 @@ import {
   onRequestGet as getPublishedAssociation,
   onRequestPost as validatePublishedAssociation,
 } from "../../functions/api/platform/games/association.ts";
+import {
+  onRequestGet as getPublishedWhoAmI,
+  onRequestPost as validatePublishedWhoAmI,
+} from "../../functions/api/platform/games/who-am-i.ts";
+import {
+  onRequestGet as getPublishedThreeClues,
+  onRequestPost as validatePublishedThreeClues,
+} from "../../functions/api/platform/games/three-clues.ts";
 import { GameType } from "../../shared/content.ts";
 
 const payloads = {
@@ -54,11 +62,21 @@ const payloads = {
     pairs: Array.from({ length: 4 }, (_, index) => ({ front: `Frente ${index + 1}`, back: `Verso ${index + 1}` })),
   },
   [GameType.WHO_AM_I]: {
-    name: "Moisés",
-    hints: ["Fui criado no Egito", "Vi uma sarça", "Conduzi o povo"],
-    options: ["Moisés", "Davi", "Pedro", "Paulo"],
+    title: "Personagens bíblicos",
+    challenges: [
+      { answer: "Moisés", hints: ["Fui criado no Egito", "Vi uma sarça", "Conduzi o povo"] },
+      { answer: "Davi", hints: ["Fui pastor", "Usei uma funda", "Fui rei"] },
+      { answer: "Ester", hints: ["Vivi na Pérsia", "Fui rainha", "Salvei meu povo"] },
+    ],
   },
-  [GameType.THREE_CLUES]: { answer: "Belém", clues: ["Cidade", "Judá", "Nascimento de Jesus"] },
+  [GameType.THREE_CLUES]: {
+    title: "Personagens bíblicos",
+    challenges: [
+      { answer: "Noé", clues: ["Obedeci a Deus", "Construí uma arca", "Sobrevivi ao dilúvio"] },
+      { answer: "Davi", clues: ["Fui pastor", "Usei uma funda", "Fui rei"] },
+      { answer: "Ester", clues: ["Vivi na Pérsia", "Fui rainha", "Intercedi pelo povo"] },
+    ],
+  },
 };
 
 function universalBody(gameType = GameType.QUIZ, overrides = {}) {
@@ -456,6 +474,197 @@ test("Association player endpoint ignores drafts and another organization", asyn
   );
   const stillUnavailable = await getPublishedAssociation({
     request: createAuthenticatedRequest("https://test/api/platform/games/association", {
+      token: tokens.member,
+    }),
+    env: ctx.env,
+  });
+  assert.equal(stillUnavailable.status, 404);
+});
+
+test("published Quem Sou Eu protects answers and validates them on the server", async t => {
+  const { ctx, tokens } = await fixture(t);
+  const created = await responseJson(await post(ctx, tokens.admin, universalBody(GameType.WHO_AM_I)));
+  const publishedResponse = await transition(
+    publishContent,
+    ctx,
+    tokens.admin,
+    created.content.id,
+    created.content.version,
+  );
+  const { content: published } = await responseJson(publishedResponse);
+  const playerResponse = await getPublishedWhoAmI({
+    request: createAuthenticatedRequest("https://test/api/platform/games/who-am-i", {
+      token: tokens.member,
+    }),
+    env: ctx.env,
+  });
+  assert.equal(playerResponse.status, 200);
+  assert.equal(playerResponse.headers.get("cache-control"), "no-store, private");
+  const playerData = await responseJson(playerResponse);
+  assert.equal(playerData.content.id, published.id);
+  assert.equal(playerData.content.version, published.version);
+  assert.equal(playerData.content.challenges.length, 3);
+  assert.ok(playerData.content.challenges.every(challenge => /^challenge-[A-Za-z0-9_-]{20}$/.test(challenge.id)));
+  assert.ok(playerData.content.challenges.every(challenge => !("answer" in challenge)));
+  assert.doesNotMatch(JSON.stringify(playerData), /Moisés|Davi|Ester/);
+
+  const challenge = playerData.content.challenges[0];
+  const correctResponse = await validatePublishedWhoAmI({
+    request: createAuthenticatedRequest("https://test/api/platform/games/who-am-i", {
+      token: tokens.member,
+      method: "POST",
+      body: {
+        contentId: published.id,
+        contentVersion: published.version,
+        challengeId: challenge.id,
+        answer: "  MOISÉS  ",
+      },
+    }),
+    env: ctx.env,
+  });
+  assert.deepEqual(await responseJson(correctResponse), { correct: true });
+  const incorrectResponse = await validatePublishedWhoAmI({
+    request: createAuthenticatedRequest("https://test/api/platform/games/who-am-i", {
+      token: tokens.member,
+      method: "POST",
+      body: {
+        contentId: published.id,
+        contentVersion: published.version,
+        challengeId: challenge.id,
+        answer: "Josué",
+      },
+    }),
+    env: ctx.env,
+  });
+  assert.deepEqual(await responseJson(incorrectResponse), { correct: false });
+  const staleResponse = await validatePublishedWhoAmI({
+    request: createAuthenticatedRequest("https://test/api/platform/games/who-am-i", {
+      token: tokens.member,
+      method: "POST",
+      body: {
+        contentId: published.id,
+        contentVersion: published.version + 1,
+        challengeId: challenge.id,
+        answer: "Moisés",
+      },
+    }),
+    env: ctx.env,
+  });
+  assert.equal(staleResponse.status, 400);
+});
+
+test("Quem Sou Eu endpoint ignores drafts and content from another organization", async t => {
+  const { ctx, tokens } = await fixture(t);
+  await post(ctx, tokens.admin, universalBody(GameType.WHO_AM_I));
+  const unavailable = await getPublishedWhoAmI({
+    request: createAuthenticatedRequest("https://test/api/platform/games/who-am-i", {
+      token: tokens.member,
+    }),
+    env: ctx.env,
+  });
+  assert.equal(unavailable.status, 404);
+  const otherToken = await createSession(ctx, "org-2-admin");
+  const otherDraft = await responseJson(await post(ctx, otherToken, universalBody(GameType.WHO_AM_I)));
+  await transition(
+    publishContent,
+    ctx,
+    otherToken,
+    otherDraft.content.id,
+    otherDraft.content.version,
+  );
+  const stillUnavailable = await getPublishedWhoAmI({
+    request: createAuthenticatedRequest("https://test/api/platform/games/who-am-i", {
+      token: tokens.member,
+    }),
+    env: ctx.env,
+  });
+  assert.equal(stillUnavailable.status, 404);
+});
+
+test("published Três Pistas protects answers and validates them on the server", async t => {
+  const { ctx, tokens } = await fixture(t);
+  const created = await responseJson(await post(ctx, tokens.admin, universalBody(GameType.THREE_CLUES)));
+  const publishedResponse = await transition(
+    publishContent, ctx, tokens.admin, created.content.id, created.content.version,
+  );
+  const { content: published } = await responseJson(publishedResponse);
+  const playerResponse = await getPublishedThreeClues({
+    request: createAuthenticatedRequest("https://test/api/platform/games/three-clues", {
+      token: tokens.member,
+    }),
+    env: ctx.env,
+  });
+  assert.equal(playerResponse.status, 200);
+  assert.equal(playerResponse.headers.get("cache-control"), "no-store, private");
+  const playerData = await responseJson(playerResponse);
+  assert.equal(playerData.content.id, published.id);
+  assert.equal(playerData.content.version, published.version);
+  assert.equal(playerData.content.challenges.length, 3);
+  assert.ok(playerData.content.challenges.every(challenge => /^challenge-[A-Za-z0-9_-]{20}$/.test(challenge.id)));
+  assert.ok(playerData.content.challenges.every(challenge => challenge.clues.length === 3));
+  assert.ok(playerData.content.challenges.every(challenge => !("answer" in challenge)));
+  assert.doesNotMatch(JSON.stringify(playerData), /Noé|Davi|Ester/);
+
+  const challenge = playerData.content.challenges[0];
+  const correctResponse = await validatePublishedThreeClues({
+    request: createAuthenticatedRequest("https://test/api/platform/games/three-clues", {
+      token: tokens.member,
+      method: "POST",
+      body: {
+        contentId: published.id,
+        contentVersion: published.version,
+        challengeId: challenge.id,
+        answer: "  NOÉ  ",
+      },
+    }),
+    env: ctx.env,
+  });
+  assert.deepEqual(await responseJson(correctResponse), { correct: true });
+  const incorrectResponse = await validatePublishedThreeClues({
+    request: createAuthenticatedRequest("https://test/api/platform/games/three-clues", {
+      token: tokens.member,
+      method: "POST",
+      body: {
+        contentId: published.id,
+        contentVersion: published.version,
+        challengeId: challenge.id,
+        answer: "Jonas",
+      },
+    }),
+    env: ctx.env,
+  });
+  assert.deepEqual(await responseJson(incorrectResponse), { correct: false });
+  const staleResponse = await validatePublishedThreeClues({
+    request: createAuthenticatedRequest("https://test/api/platform/games/three-clues", {
+      token: tokens.member,
+      method: "POST",
+      body: {
+        contentId: published.id,
+        contentVersion: published.version + 1,
+        challengeId: challenge.id,
+        answer: "Noé",
+      },
+    }),
+    env: ctx.env,
+  });
+  assert.equal(staleResponse.status, 400);
+});
+
+test("Três Pistas endpoint ignores drafts and content from another organization", async t => {
+  const { ctx, tokens } = await fixture(t);
+  await post(ctx, tokens.admin, universalBody(GameType.THREE_CLUES));
+  const unavailable = await getPublishedThreeClues({
+    request: createAuthenticatedRequest("https://test/api/platform/games/three-clues", {
+      token: tokens.member,
+    }),
+    env: ctx.env,
+  });
+  assert.equal(unavailable.status, 404);
+  const otherToken = await createSession(ctx, "org-2-admin");
+  const otherDraft = await responseJson(await post(ctx, otherToken, universalBody(GameType.THREE_CLUES)));
+  await transition(publishContent, ctx, otherToken, otherDraft.content.id, otherDraft.content.version);
+  const stillUnavailable = await getPublishedThreeClues({
+    request: createAuthenticatedRequest("https://test/api/platform/games/three-clues", {
       token: tokens.member,
     }),
     env: ctx.env,

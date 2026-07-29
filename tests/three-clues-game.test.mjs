@@ -13,7 +13,10 @@ test("3 Pistas uses only the shared Game SDK shell", async () => {
   assert.match(game, /scoreForCluesUsed/);
   assert.match(game, /revealNextClue/);
   assert.match(game, /submitAnswer/);
+  assert.match(game, /\/api\/platform\/games\/three-clues/);
+  assert.match(game, /contentId/);
+  assert.match(game, /contentVersion/);
   assert.match(page, /ThreeCluesGame/);
-  assert.doesNotMatch(game, /fetch\(|\/api\//);
+  assert.doesNotMatch(game, /THREE_CLUES_QUESTIONS|questions/);
 });
 

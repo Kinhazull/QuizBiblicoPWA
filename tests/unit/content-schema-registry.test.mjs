@@ -68,11 +68,21 @@ const validPayloads = {
     ],
   },
   [GameType.WHO_AM_I]: {
-    name: "Moisés",
-    hints: ["Fui criado no Egito", "Vi uma sarça", "Conduzi Israel"],
-    options: ["Moisés", "Davi", "Paulo", "Pedro"],
+    title: "Personagens bíblicos",
+    challenges: [
+      { answer: "Moisés", hints: ["Fui criado no Egito", "Vi uma sarça", "Conduzi Israel"] },
+      { answer: "Davi", hints: ["Fui pastor", "Usei uma funda", "Fui rei"] },
+      { answer: "Ester", hints: ["Vivi na Pérsia", "Fui rainha", "Salvei meu povo"] },
+    ],
   },
-  [GameType.THREE_CLUES]: { answer: "Noé", clues: ["Construí uma arca", "Houve um dilúvio", "Vi um arco-íris"] },
+  [GameType.THREE_CLUES]: {
+    title: "Personagens bíblicos",
+    challenges: [
+      { answer: "Noé", clues: ["Obedeci a Deus", "Construí uma arca", "Sobrevivi ao dilúvio"] },
+      { answer: "Davi", clues: ["Fui pastor", "Usei uma funda", "Fui rei"] },
+      { answer: "Ester", clues: ["Vivi na Pérsia", "Fui rainha", "Intercedi pelo povo"] },
+    ],
+  },
 };
 
 test("registry exposes complete schemas and real templates for all seven games", () => {
@@ -188,6 +198,62 @@ test("Association accepts 3 to 10 pairs with required and unique sides", () => {
     pairs: valid.pairs.map((pair, index) => index === 0 ? { ...pair, right: "" } : pair),
   });
   assert.ok(incomplete.errors.some(error => error.field === "pairs.0.right"));
+});
+
+test("Quem Sou Eu accepts 3 to 10 unique challenges with 3 to 5 unique hints", () => {
+  const valid = validPayloads[GameType.WHO_AM_I];
+  assert.equal(validateContent(GameType.WHO_AM_I, metadata(GameType.WHO_AM_I), valid).valid, true);
+  const duplicateAnswer = validateContent(GameType.WHO_AM_I, metadata(GameType.WHO_AM_I), {
+    ...valid,
+    challenges: [...valid.challenges, {
+      answer: " moisés ",
+      hints: ["Outra pista 1", "Outra pista 2", "Outra pista 3"],
+    }],
+  });
+  assert.ok(duplicateAnswer.errors.some(error => error.code === "duplicate_answers"));
+  const duplicateHint = validateContent(GameType.WHO_AM_I, metadata(GameType.WHO_AM_I), {
+    ...valid,
+    challenges: valid.challenges.map((challenge, index) => index === 0 ? {
+      ...challenge,
+      hints: ["Fui criado no Egito", " fui criado no egito ", "Conduzi Israel"],
+    } : challenge),
+  });
+  assert.ok(duplicateHint.errors.some(error => error.code === "duplicate_hints"));
+  const tooFewHints = validateContent(GameType.WHO_AM_I, metadata(GameType.WHO_AM_I), {
+    ...valid,
+    challenges: valid.challenges.map((challenge, index) => index === 0
+      ? { ...challenge, hints: challenge.hints.slice(0, 2) }
+      : challenge),
+  });
+  assert.ok(tooFewHints.errors.some(error => error.code === "minimum_items"));
+});
+
+test("Três Pistas accepts 3 to 10 challenges with exactly 3 required clues", () => {
+  const valid = validPayloads[GameType.THREE_CLUES];
+  assert.equal(validateContent(GameType.THREE_CLUES, metadata(GameType.THREE_CLUES), valid).valid, true);
+  const duplicateAnswer = validateContent(GameType.THREE_CLUES, metadata(GameType.THREE_CLUES), {
+    ...valid,
+    challenges: [...valid.challenges, {
+      answer: " noé ",
+      clues: ["Outra pista 1", "Outra pista 2", "Outra pista 3"],
+    }],
+  });
+  assert.ok(duplicateAnswer.errors.some(error => error.code === "duplicate_answers"));
+  const duplicateClue = validateContent(GameType.THREE_CLUES, metadata(GameType.THREE_CLUES), {
+    ...valid,
+    challenges: valid.challenges.map((challenge, index) => index === 0 ? {
+      ...challenge,
+      clues: ["Obedeci a Deus", " obedeci a deus ", "Sobrevivi ao dilúvio"],
+    } : challenge),
+  });
+  assert.ok(duplicateClue.errors.some(error => error.code === "duplicate_clues"));
+  const wrongClueCount = validateContent(GameType.THREE_CLUES, metadata(GameType.THREE_CLUES), {
+    ...valid,
+    challenges: valid.challenges.map((challenge, index) => index === 0
+      ? { ...challenge, clues: challenge.clues.slice(0, 2) }
+      : challenge),
+  });
+  assert.ok(wrongClueCount.errors.some(error => error.code === "minimum_items"));
 });
 
 test("published content requires a biblical reference while drafts do not", () => {
