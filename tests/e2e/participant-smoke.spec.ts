@@ -9,6 +9,44 @@ const participant = {
   mustChangePassword: false,
 };
 
+async function mockCmsGameApi(
+  page: import("@playwright/test").Page,
+  path: string,
+  content: Record<string, unknown>,
+  authenticated: boolean,
+  validate?: (body: Record<string, unknown>) => Record<string, unknown>,
+) {
+  await page.route(`**${path}`, async route => {
+    if (!authenticated) {
+      await route.fulfill({
+        status: 401,
+        contentType: "application/json",
+        body: JSON.stringify({ error: "unauthorized" }),
+      });
+      return;
+    }
+    const request = route.request();
+    if (request.method() === "GET") {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ content }),
+      });
+      return;
+    }
+    if (request.method() === "POST" && validate) {
+      const body = request.postDataJSON() as Record<string, unknown>;
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(validate(body)),
+      });
+      return;
+    }
+    await route.fulfill({ status: 405 });
+  });
+}
+
 async function mockPublicApi(page: import("@playwright/test").Page, authenticated: boolean) {
   await page.route("**/api/auth/me", route => route.fulfill({
     status: authenticated ? 200 : 401,
@@ -30,19 +68,23 @@ async function mockPublicApi(page: import("@playwright/test").Page, authenticate
     contentType: "application/json",
     body: JSON.stringify({ achievements: [], summary: { total: 0, unlocked: 0, pending: 0 } }),
   }));
-  await page.route("**/api/platform/games/wordle", route => route.fulfill({
-    status: authenticated ? 200 : 401,
-    contentType: "application/json",
-    body: JSON.stringify(authenticated ? {
-      content: {
-        id: "wordle-e2e",
-        version: 2,
-        word: "JESUS",
-        hint: "O Salvador",
-        biblicalReference: "Mateus 1:21",
-      },
-    } : { error: "unauthorized" }),
-  }));
+  await mockCmsGameApi(page, "/api/platform/games/wordle", {
+    id: "wordle-e2e",
+    version: 2,
+    word: "JESUS",
+    hint: "O Salvador",
+    biblicalReference: "Mateus 1:21",
+  }, authenticated);
+  await mockCmsGameApi(page, "/api/platform/games/three-clues", {
+    id: "three-clues-e2e",
+    version: 1,
+    title: "Personagens bíblicos",
+    challenges: [{
+      id: "challenge-e2e",
+      clues: ["Construí uma arca.", "Minha família sobreviveu ao dilúvio.", "Recebi o sinal do arco-íris."],
+    }],
+    biblicalReference: "Gênesis 6–9",
+  }, authenticated, body => ({ correct: body.answer === "Noé" }));
   await page.route("**/api/platform/daily/check-in", route => route.fulfill({
     status: authenticated ? 200 : 401,
     contentType: "application/json",
