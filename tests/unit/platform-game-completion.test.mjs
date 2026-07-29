@@ -21,6 +21,32 @@ const context = {
       ],
     },
   },
+  memoryContent: {
+    id: "memory-1",
+    version: 2,
+    set: {
+      id: "memory-1",
+      title: "Personagens",
+      pairs: [
+        { id: "pair-1", front: "Noé", back: "Arca" },
+        { id: "pair-2", front: "Moisés", back: "Êxodo" },
+        { id: "pair-3", front: "Davi", back: "Golias" },
+      ],
+    },
+  },
+  associationContent: {
+    id: "association-1",
+    version: 5,
+    round: {
+      id: "association-1",
+      title: "Personagens e feitos",
+      pairs: [
+        { id: "pair-1", leftId: "left-1", rightId: "right-1", left: "Noé", right: "Arca" },
+        { id: "pair-2", leftId: "left-2", rightId: "right-2", left: "Davi", right: "Golias" },
+        { id: "pair-3", leftId: "left-3", rightId: "right-3", left: "Moisés", right: "Mar Vermelho" },
+      ],
+    },
+  },
 };
 
 test("Wordle victory is normalized to a deterministic GAME_FINISHED v2", () => {
@@ -119,23 +145,25 @@ test("Linha do Tempo result is recalculated from the published CMS content", () 
 });
 
 test("Memória Bíblica result is recalculated from the full reveal history", () => {
-  const pairIds = ["arca", "tabuas", "funda", "peixe", "estrela", "paes", "cruz", "fogo"];
+  const pairIds = ["pair-1", "pair-2", "pair-3"];
   const win = adaptPlatformGameCompletion({
     gameId: "memoria-biblica",
     sessionId: "session-memory-001",
-    setId: "simbolos-da-biblia",
+    contentId: "memory-1",
+    contentVersion: 2,
     revealedCardIds: pairIds.flatMap(id => [`${id}:a`, `${id}:b`]),
   }, context);
   assert.equal(win.source.service, "memory-service");
-  assert.equal(win.payload.score, 1200);
-  assert.equal(win.payload.correctAnswers, 8);
-  assert.equal(win.payload.questionsAnswered, 8);
+  assert.equal(win.payload.score, 450);
+  assert.equal(win.payload.correctAnswers, 3);
+  assert.equal(win.payload.questionsAnswered, 3);
 
   assert.throws(() => adaptPlatformGameCompletion({
     gameId: "memoria-biblica",
     sessionId: "session-memory-002",
-    setId: "simbolos-da-biblia",
-    revealedCardIds: pairIds.slice(0, 7).flatMap(id => [`${id}:a`, `${id}:b`]),
+    contentId: "memory-1",
+    contentVersion: 2,
+    revealedCardIds: pairIds.slice(0, 2).flatMap(id => [`${id}:a`, `${id}:b`]),
   }, context), /invalid_memory_reveals|incomplete_memory_game/);
 });
 
@@ -165,23 +193,25 @@ test("Quem Sou Eu result is recalculated from progressive hint actions", () => {
 });
 
 test("Associação de Temas result is recalculated from the complete selection transcript", () => {
-  const pairIds = ["noe-arca", "davi-golias", "ester-povo", "moises-mar"];
+  const pairs = context.associationContent.round.pairs;
   const win = adaptPlatformGameCompletion({
     gameId: "associacao-de-temas",
     sessionId: "session-association-001",
-    roundId: "personagens-e-feitos",
-    attempts: pairIds.map(id => ({ leftId: id, rightId: id })),
+    contentId: "association-1",
+    contentVersion: 5,
+    attempts: pairs.map(pair => ({ leftId: pair.leftId, rightId: pair.rightId })),
   }, context);
   assert.equal(win.source.service, "theme-association-service");
-  assert.equal(win.payload.score, 400);
-  assert.equal(win.payload.correctAnswers, 4);
-  assert.equal(win.payload.questionsAnswered, 4);
+  assert.equal(win.payload.score, 300);
+  assert.equal(win.payload.correctAnswers, 3);
+  assert.equal(win.payload.questionsAnswered, 3);
 
-  const wrong = { leftId: pairIds[0], rightId: pairIds[1] };
+  const wrong = { leftId: pairs[0].leftId, rightId: pairs[1].rightId };
   const loss = adaptPlatformGameCompletion({
     gameId: "associacao-de-temas",
     sessionId: "session-association-002",
-    roundId: "personagens-e-feitos",
+    contentId: "association-1",
+    contentVersion: 5,
     attempts: [wrong, wrong, wrong],
   }, context);
   assert.equal(loss.payload.score, 0);
@@ -214,15 +244,17 @@ test("invalid or tampered completions are rejected", () => {
   assert.throws(() => adaptPlatformGameCompletion({
     gameId: "memoria-biblica",
     sessionId: "session-memory-003",
-    setId: "unknown",
+    contentId: "unknown",
+    contentVersion: 2,
     revealedCardIds: [],
-  }, context), /invalid_memory_set/);
+  }, context), /invalid_memory_content/);
   assert.throws(() => adaptPlatformGameCompletion({
     gameId: "associacao-de-temas",
     sessionId: "session-association-003",
-    roundId: "unknown",
+    contentId: "unknown",
+    contentVersion: 5,
     attempts: [],
-  }, context), /invalid_association_round/);
+  }, context), /invalid_association_content/);
   assert.throws(() => adaptPlatformGameCompletion({
     gameId: "quem-sou-eu",
     sessionId: "session-who-am-i-003",

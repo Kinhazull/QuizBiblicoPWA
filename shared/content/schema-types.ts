@@ -61,11 +61,11 @@ export type TimelineContentPayload = {
 };
 export type MemoryContentPayload = {
   title: string;
-  pairs: readonly { title: string; icon: string }[];
+  pairs: readonly { front: string; back: string }[];
 };
 export type AssociationContentPayload = {
   title: string;
-  pairs: readonly { category: string; left: string; right: string }[];
+  pairs: readonly { category?: string; left: string; right: string }[];
 };
 export type WhoAmIContentPayload = {
   name: string;

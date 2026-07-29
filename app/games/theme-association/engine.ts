@@ -1,4 +1,17 @@
-import type { ThemeAssociationPair, ThemeAssociationRound } from "./rounds";
+export type ThemeAssociationPair = {
+  id: string;
+  leftId: string;
+  rightId: string;
+  category?: string;
+  left: string;
+  right: string;
+};
+
+export type ThemeAssociationRound = {
+  id: string;
+  title: string;
+  pairs: readonly ThemeAssociationPair[];
+};
 
 export const THEME_ASSOCIATION_MAX_ERRORS = 3;
 
@@ -35,8 +48,8 @@ export function applyThemeAssociationAttempt(
   attempt: ThemeAssociationAttempt,
 ): ThemeAssociationState {
   if (state.status !== "playing") throw new Error("association_game_finished");
-  const left = round.pairs.find(pair => pair.id === attempt.leftId);
-  const right = round.pairs.find(pair => pair.id === attempt.rightId);
+  const left = round.pairs.find(pair => pair.leftId === attempt.leftId);
+  const right = round.pairs.find(pair => pair.rightId === attempt.rightId);
   if (!left || !right) throw new Error("invalid_association_item");
   if (state.matchedPairIds.includes(left.id) || state.matchedPairIds.includes(right.id)) {
     throw new Error("association_pair_already_matched");
@@ -73,10 +86,8 @@ export function evaluateThemeAssociationGame(
     state = applyThemeAssociationAttempt(round, state, attempt);
   }
   if (state.status === "playing") throw new Error("incomplete_association_game");
-  return { ...state, score: state.status === "won" ? 400 - (state.errors * 100) : 0 };
-}
-
-export function nextThemeAssociationRoundIndex(current: number, total: number) {
-  if (!Number.isInteger(total) || total < 1) throw new Error("invalid_association_round_total");
-  return (current + 1) % total;
+  return {
+    ...state,
+    score: state.status === "won" ? (round.pairs.length * 100) - (state.errors * 100) : 0,
+  };
 }

@@ -8,11 +8,11 @@ export const memoryContentSchema: ContentSchema = {
   fields: [
     field("title", "Título do conjunto", "text", true, { minimum: 3, maximum: 120 }),
     field("pairs", "Pares", "list", true, {
-      minimumItems: 4,
+      minimumItems: 3,
       maximumItems: 12,
       fields: [
-        field("title", "Título do par", "text", true),
-        field("icon", "Ícone ou símbolo", "text", true),
+        field("front", "Frente", "text", true),
+        field("back", "Verso", "text", true),
       ],
     }),
   ],
@@ -21,13 +21,24 @@ export const memoryContentSchema: ContentSchema = {
     { id: "books", label: "Livros", description: "Pares relacionados a livros bíblicos.", values: { category: "Livros" } },
     { id: "symbols", label: "Símbolos", description: "Pares de símbolos e significados.", values: { category: "Símbolos" } },
   ],
-  validation: payload => objectArray(payload.pairs).flatMap((pair, index) => [
-    ...(typeof pair.title !== "string" || !pair.title.trim() ? [issue(`pairs.${index}.title`, "required", "O par precisa de título.")] : []),
-    ...(typeof pair.icon !== "string" || !pair.icon.trim() ? [issue(`pairs.${index}.icon`, "required", "O par precisa de ícone.")] : []),
-  ]),
+  validation: payload => {
+    const pairs = objectArray(payload.pairs);
+    const errors = pairs.flatMap((pair, index) => [
+      ...(typeof pair.front !== "string" || !pair.front.trim() ? [issue(`pairs.${index}.front`, "required", "A frente do par é obrigatória.")] : []),
+      ...(typeof pair.back !== "string" || !pair.back.trim() ? [issue(`pairs.${index}.back`, "required", "O verso do par é obrigatório.")] : []),
+    ]);
+    const identities = pairs.map(pair => `${String(pair.front ?? "").trim().toLocaleLowerCase("pt-BR")}\u0000${String(pair.back ?? "").trim().toLocaleLowerCase("pt-BR")}`);
+    if (new Set(identities).size !== identities.length) {
+      errors.push(issue("pairs", "duplicate_pairs", "Os pares não podem ser duplicados."));
+    }
+    return errors;
+  },
   duplicateStrategy: {
-    fields: ["title", "pairs.title"],
-    buildParts: (_metadata, payload) => [String(payload.title ?? ""), ...objectArray(payload.pairs).map(pair => String(pair.title ?? "")).sort()],
+    fields: ["title", "pairs.front", "pairs.back"],
+    buildParts: (_metadata, payload) => [
+      String(payload.title ?? ""),
+      ...objectArray(payload.pairs).map(pair => `${String(pair.front ?? "")}:${String(pair.back ?? "")}`).sort(),
+    ],
   },
   importColumns: [],
   capabilities: standardCapabilities(),

@@ -1,16 +1,23 @@
-import type { MemorySet } from "./sets";
+export type MemoryPair = { id: string; front: string; back: string };
+export type MemorySet = { id: string; title: string; pairs: readonly MemoryPair[] };
 
-export type MemoryCard = { cardId: string; pairId: string; title: string; icon: string };
+export type MemoryCard = { cardId: string; pairId: string; label: string };
 export type MemoryCompletionResult = { moves: number; score: number; matchedPairIds: string[] };
 
 export function createMemoryDeck(set: MemorySet, random: () => number = Math.random) {
   const cards = set.pairs.flatMap(pair => [
-    { cardId: `${pair.id}:a`, pairId: pair.id, title: pair.title, icon: pair.icon },
-    { cardId: `${pair.id}:b`, pairId: pair.id, title: pair.title, icon: pair.icon },
+    { cardId: `${pair.id}:a`, pairId: pair.id, label: pair.front },
+    { cardId: `${pair.id}:b`, pairId: pair.id, label: pair.back },
   ]);
   for (let index = cards.length - 1; index > 0; index -= 1) {
     const target = Math.floor(random() * (index + 1));
     [cards[index], cards[target]] = [cards[target], cards[index]];
+  }
+  if (cards.length > 1 && cards.every((card, index) => {
+    const pair = set.pairs[Math.floor(index / 2)];
+    return card.cardId === `${pair.id}:${index % 2 === 0 ? "a" : "b"}`;
+  })) {
+    [cards[0], cards[1]] = [cards[1], cards[0]];
   }
   return cards;
 }
@@ -19,9 +26,10 @@ export function areMatchingMemoryCards(first: MemoryCard, second: MemoryCard) {
   return first.cardId !== second.cardId && first.pairId === second.pairId;
 }
 
-export function memoryScore(moves: number) {
-  if (!Number.isInteger(moves) || moves < 8) throw new Error("invalid_memory_moves");
-  return Math.max(100, 1200 - ((moves - 8) * 50));
+export function memoryScore(moves: number, pairCount = 8) {
+  if (!Number.isInteger(pairCount) || pairCount < 3 || pairCount > 12
+    || !Number.isInteger(moves) || moves < pairCount) throw new Error("invalid_memory_moves");
+  return Math.max(100, (pairCount * 150) - ((moves - pairCount) * 50));
 }
 
 export function evaluateMemoryCompletion(set: MemorySet, revealedCardIds: readonly string[]): MemoryCompletionResult {
@@ -43,5 +51,5 @@ export function evaluateMemoryCompletion(set: MemorySet, revealedCardIds: readon
   }
   if (matched.size !== set.pairs.length) throw new Error("incomplete_memory_game");
   const moves = revealedCardIds.length / 2;
-  return { moves, score: memoryScore(moves), matchedPairIds: [...matched] };
+  return { moves, score: memoryScore(moves, set.pairs.length), matchedPairIds: [...matched] };
 }

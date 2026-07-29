@@ -16,10 +16,12 @@ import {
   TIMELINE_MAX_ATTEMPTS,
   type TimelineRound,
 } from "../../../app/games/timeline/engine";
-import { evaluateMemoryCompletion } from "../../../app/games/memory/engine";
-import { MEMORY_SETS } from "../../../app/games/memory/sets";
-import { evaluateThemeAssociationGame, type ThemeAssociationAttempt } from "../../../app/games/theme-association/engine";
-import { THEME_ASSOCIATION_ROUNDS } from "../../../app/games/theme-association/rounds";
+import { evaluateMemoryCompletion, type MemorySet } from "../../../app/games/memory/engine";
+import {
+  evaluateThemeAssociationGame,
+  type ThemeAssociationAttempt,
+  type ThemeAssociationRound,
+} from "../../../app/games/theme-association/engine";
 import { evaluateWhoAmIGame, type WhoAmIAction } from "../../../app/games/who-am-i/engine";
 import { WHO_AM_I_CHARACTERS } from "../../../app/games/who-am-i/characters";
 import type { CorePlatformEvent } from "../platform-event-engine";
@@ -40,6 +42,16 @@ type CompletionContext = {
     id: string;
     version: number;
     round: TimelineRound;
+  };
+  memoryContent?: {
+    id: string;
+    version: number;
+    set: MemorySet;
+  };
+  associationContent?: {
+    id: string;
+    version: number;
+    round: ThemeAssociationRound;
   };
 };
 
@@ -71,7 +83,8 @@ type TimelineCompletion = {
 type MemoryCompletion = {
   gameId: "memoria-biblica";
   sessionId: string;
-  setId: string;
+  contentId: string;
+  contentVersion: number;
   revealedCardIds: string[];
 };
 
@@ -85,7 +98,8 @@ type WhoAmICompletion = {
 type ThemeAssociationCompletion = {
   gameId: "associacao-de-temas";
   sessionId: string;
-  roundId: string;
+  contentId: string;
+  contentVersion: number;
   attempts: ThemeAssociationAttempt[];
 };
 
@@ -168,15 +182,17 @@ function timelineResult(input: TimelineCompletion, content: CompletionContext["t
   };
 }
 
-function memoryResult(input: MemoryCompletion) {
-  const set = MEMORY_SETS.find(item => item.id === input.setId);
-  if (!set) throw new Error("invalid_memory_set");
+function memoryResult(input: MemoryCompletion, content: CompletionContext["memoryContent"]) {
+  if (!content || input.contentId !== content.id || input.contentVersion !== content.version) {
+    throw new Error("invalid_memory_content");
+  }
+  const set = content.set;
   const result = evaluateMemoryCompletion(set, input.revealedCardIds);
   return {
     score: result.score,
     correctAnswers: set.pairs.length,
     questionsAnswered: set.pairs.length,
-    gameVersion: "memory-mvp-v1",
+    gameVersion: `memory-cms-v${content.version}`,
     service: "memory-service",
   };
 }
@@ -194,15 +210,19 @@ function whoAmIResult(input: WhoAmICompletion) {
   };
 }
 
-function themeAssociationResult(input: ThemeAssociationCompletion) {
-  const round = THEME_ASSOCIATION_ROUNDS.find(item => item.id === input.roundId);
-  if (!round) throw new Error("invalid_association_round");
-  const result = evaluateThemeAssociationGame(round, input.attempts);
+function themeAssociationResult(
+  input: ThemeAssociationCompletion,
+  content: CompletionContext["associationContent"],
+) {
+  if (!content || input.contentId !== content.id || input.contentVersion !== content.version) {
+    throw new Error("invalid_association_content");
+  }
+  const result = evaluateThemeAssociationGame(content.round, input.attempts);
   return {
     score: result.score,
     correctAnswers: result.matchedPairIds.length,
-    questionsAnswered: round.pairs.length,
-    gameVersion: "theme-association-mvp-v1",
+    questionsAnswered: content.round.pairs.length,
+    gameVersion: `theme-association-cms-v${content.version}`,
     service: "theme-association-service",
   };
 }
@@ -223,9 +243,9 @@ export function adaptPlatformGameCompletion(
       : input.gameId === "linha-do-tempo-biblica"
         ? timelineResult(input, context.timelineContent)
       : input.gameId === "memoria-biblica"
-        ? memoryResult(input)
+        ? memoryResult(input, context.memoryContent)
       : input.gameId === "associacao-de-temas"
-        ? themeAssociationResult(input)
+        ? themeAssociationResult(input, context.associationContent)
       : input.gameId === "quem-sou-eu"
         ? whoAmIResult(input)
       : null;

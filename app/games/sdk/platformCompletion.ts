@@ -26,7 +26,8 @@ export type TimelineCompletionSubmission = {
 export type MemoryCompletionSubmission = {
   gameId: "memoria-biblica";
   sessionId: string;
-  setId: string;
+  contentId: string;
+  contentVersion: number;
   revealedCardIds: string[];
 };
 
@@ -40,7 +41,8 @@ export type WhoAmICompletionSubmission = {
 export type ThemeAssociationCompletionSubmission = {
   gameId: "associacao-de-temas";
   sessionId: string;
-  roundId: string;
+  contentId: string;
+  contentVersion: number;
   attempts: Array<{ leftId: string; rightId: string }>;
 };
 

@@ -6,10 +6,17 @@ import {
   initialThemeAssociationState,
   shuffleThemeAssociationOptions,
 } from "../../app/games/theme-association/engine.ts";
-import { THEME_ASSOCIATION_ROUNDS } from "../../app/games/theme-association/rounds.ts";
 
-const round = THEME_ASSOCIATION_ROUNDS[0];
-const winningAttempts = round.pairs.map(pair => ({ leftId: pair.id, rightId: pair.id }));
+const round = {
+  id: "association-1",
+  title: "Personagens e feitos",
+  pairs: [
+    { id: "pair-1", leftId: "left-1", rightId: "right-1", left: "Noé", right: "Arca" },
+    { id: "pair-2", leftId: "left-2", rightId: "right-2", left: "Davi", right: "Golias" },
+    { id: "pair-3", leftId: "left-3", rightId: "right-3", left: "Moisés", right: "Mar Vermelho" },
+  ],
+};
+const winningAttempts = round.pairs.map(pair => ({ leftId: pair.leftId, rightId: pair.rightId }));
 
 test("association options shuffle without changing the official pairs", () => {
   const shuffled = shuffleThemeAssociationOptions(round.pairs, () => 0);
@@ -25,24 +32,24 @@ test("correct association completes and locks a pair", () => {
 
 test("incorrect association consumes one error", () => {
   const state = applyThemeAssociationAttempt(round, initialThemeAssociationState(), {
-    leftId: round.pairs[0].id,
-    rightId: round.pairs[1].id,
+    leftId: round.pairs[0].leftId,
+    rightId: round.pairs[1].rightId,
   });
   assert.deepEqual(state, { matchedPairIds: [], errors: 1, status: "playing" });
 });
 
-test("four correct associations produce a victory", () => {
+test("all correct associations produce a victory", () => {
   const result = evaluateThemeAssociationGame(round, winningAttempts);
   assert.equal(result.status, "won");
-  assert.equal(result.matchedPairIds.length, 4);
+  assert.equal(result.matchedPairIds.length, 3);
   assert.equal(result.errors, 0);
-  assert.equal(result.score, 400);
+  assert.equal(result.score, 300);
 });
 
 test("three incorrect associations produce a defeat", () => {
   const incorrect = {
-    leftId: round.pairs[0].id,
-    rightId: round.pairs[1].id,
+    leftId: round.pairs[0].leftId,
+    rightId: round.pairs[1].rightId,
   };
   const result = evaluateThemeAssociationGame(round, [incorrect, incorrect, incorrect]);
   assert.equal(result.status, "lost");

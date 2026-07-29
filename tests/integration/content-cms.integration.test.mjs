@@ -22,6 +22,11 @@ import {
   onRequestGet as getPublishedTimeline,
   onRequestPost as validatePublishedTimeline,
 } from "../../functions/api/platform/games/timeline.ts";
+import { onRequestGet as getPublishedMemory } from "../../functions/api/platform/games/memory.ts";
+import {
+  onRequestGet as getPublishedAssociation,
+  onRequestPost as validatePublishedAssociation,
+} from "../../functions/api/platform/games/association.ts";
 import { GameType } from "../../shared/content.ts";
 
 const payloads = {
@@ -38,7 +43,7 @@ const payloads = {
   [GameType.WORDLE]: { word: "GRACA", hint: "Favor imerecido" },
   [GameType.ASSOCIATION]: {
     title: "Personagens e acontecimentos",
-    pairs: Array.from({ length: 4 }, (_, index) => ({ category: "Personagem", left: `Pessoa ${index}`, right: `Evento ${index}` })),
+    pairs: Array.from({ length: 3 }, (_, index) => ({ left: `Pessoa ${index}`, right: `Evento ${index}` })),
   },
   [GameType.TIMELINE]: {
     title: "Eventos bíblicos",
@@ -46,7 +51,7 @@ const payloads = {
   },
   [GameType.MEMORY]: {
     title: "Símbolos bíblicos",
-    pairs: Array.from({ length: 4 }, (_, index) => ({ title: `Par ${index + 1}`, icon: `Ícone ${index + 1}` })),
+    pairs: Array.from({ length: 4 }, (_, index) => ({ front: `Frente ${index + 1}`, back: `Verso ${index + 1}` })),
   },
   [GameType.WHO_AM_I]: {
     name: "Moisés",
@@ -290,6 +295,167 @@ test("Timeline player endpoint ignores drafts and content from another organizat
   );
   const stillUnavailable = await getPublishedTimeline({
     request: createAuthenticatedRequest("https://test/api/platform/games/timeline", {
+      token: tokens.member,
+    }),
+    env: ctx.env,
+  });
+  assert.equal(stillUnavailable.status, 404);
+});
+
+test("published Memory flows from the universal CMS to the authenticated player", async t => {
+  const { ctx, tokens } = await fixture(t);
+  const createdResponse = await post(ctx, tokens.admin, universalBody(GameType.MEMORY));
+  assert.equal(createdResponse.status, 201);
+  const { content: draft } = await responseJson(createdResponse);
+  const publishedResponse = await transition(
+    publishContent,
+    ctx,
+    tokens.admin,
+    draft.id,
+    draft.version,
+  );
+  assert.equal(publishedResponse.status, 200);
+  const { content: published } = await responseJson(publishedResponse);
+
+  const playerResponse = await getPublishedMemory({
+    request: createAuthenticatedRequest("https://test/api/platform/games/memory", {
+      token: tokens.member,
+    }),
+    env: ctx.env,
+  });
+  assert.equal(playerResponse.status, 200);
+  assert.equal(playerResponse.headers.get("cache-control"), "no-store, private");
+  const playerData = await responseJson(playerResponse);
+  assert.equal(playerData.content.id, published.id);
+  assert.equal(playerData.content.version, published.version);
+  assert.equal(playerData.content.pairCount, 4);
+  assert.equal(playerData.content.cards.length, 8);
+  assert.equal(new Set(playerData.content.cards.map(card => card.cardId)).size, 8);
+  assert.equal(new Set(playerData.content.cards.map(card => card.pairId)).size, 4);
+});
+
+test("Memory player endpoint ignores drafts and content from another organization", async t => {
+  const { ctx, tokens } = await fixture(t);
+  await post(ctx, tokens.admin, universalBody(GameType.MEMORY));
+  const unavailable = await getPublishedMemory({
+    request: createAuthenticatedRequest("https://test/api/platform/games/memory", {
+      token: tokens.member,
+    }),
+    env: ctx.env,
+  });
+  assert.equal(unavailable.status, 404);
+
+  const otherOrganizationToken = await createSession(ctx, "org-2-admin");
+  const otherDraft = await responseJson(await post(
+    ctx,
+    otherOrganizationToken,
+    universalBody(GameType.MEMORY),
+  ));
+  await transition(
+    publishContent,
+    ctx,
+    otherOrganizationToken,
+    otherDraft.content.id,
+    otherDraft.content.version,
+  );
+  const stillUnavailable = await getPublishedMemory({
+    request: createAuthenticatedRequest("https://test/api/platform/games/memory", {
+      token: tokens.member,
+    }),
+    env: ctx.env,
+  });
+  assert.equal(stillUnavailable.status, 404);
+});
+
+test("published Association flows from CMS and validates pairs on the server", async t => {
+  const { ctx, tokens } = await fixture(t);
+  const created = await responseJson(await post(ctx, tokens.admin, universalBody(GameType.ASSOCIATION)));
+  const publishedResponse = await transition(
+    publishContent,
+    ctx,
+    tokens.admin,
+    created.content.id,
+    created.content.version,
+  );
+  const { content: published } = await responseJson(publishedResponse);
+  const playerResponse = await getPublishedAssociation({
+    request: createAuthenticatedRequest("https://test/api/platform/games/association", {
+      token: tokens.member,
+    }),
+    env: ctx.env,
+  });
+  assert.equal(playerResponse.status, 200);
+  assert.equal(playerResponse.headers.get("cache-control"), "no-store, private");
+  const playerData = await responseJson(playerResponse);
+  assert.equal(playerData.content.id, published.id);
+  assert.equal(playerData.content.version, published.version);
+  assert.equal(playerData.content.pairCount, 3);
+  assert.equal(playerData.content.leftItems.length, 3);
+  assert.equal(playerData.content.rightItems.length, 3);
+  assert.ok(playerData.content.leftItems.every(item => !("right" in item)));
+  assert.ok(playerData.content.rightItems.every(item => !("left" in item)));
+
+  const correctLeft = playerData.content.leftItems.find(item => item.label === "Pessoa 0");
+  const correctRight = playerData.content.rightItems.find(item => item.label === "Evento 0");
+  const wrongRight = playerData.content.rightItems.find(item => item.label === "Evento 1");
+  const correct = await validatePublishedAssociation({
+    request: createAuthenticatedRequest("https://test/api/platform/games/association", {
+      token: tokens.member,
+      method: "POST",
+      body: {
+        contentId: published.id,
+        contentVersion: published.version,
+        leftId: correctLeft.id,
+        rightId: correctRight.id,
+      },
+    }),
+    env: ctx.env,
+  });
+  const correctData = await responseJson(correct);
+  assert.equal(correctData.correct, true);
+  assert.match(correctData.matchedPairId, /^pair-[A-Za-z0-9_-]{20}$/);
+  const wrong = await validatePublishedAssociation({
+    request: createAuthenticatedRequest("https://test/api/platform/games/association", {
+      token: tokens.member,
+      method: "POST",
+      body: {
+        contentId: published.id,
+        contentVersion: published.version,
+        leftId: correctLeft.id,
+        rightId: wrongRight.id,
+      },
+    }),
+    env: ctx.env,
+  });
+  assert.equal((await responseJson(wrong)).correct, false);
+});
+
+test("Association player endpoint ignores drafts and another organization", async t => {
+  const { ctx, tokens } = await fixture(t);
+  await post(ctx, tokens.admin, universalBody(GameType.ASSOCIATION));
+  const draftUnavailable = await getPublishedAssociation({
+    request: createAuthenticatedRequest("https://test/api/platform/games/association", {
+      token: tokens.member,
+    }),
+    env: ctx.env,
+  });
+  assert.equal(draftUnavailable.status, 404);
+
+  const otherToken = await createSession(ctx, "org-2-admin");
+  const otherDraft = await responseJson(await post(
+    ctx,
+    otherToken,
+    universalBody(GameType.ASSOCIATION),
+  ));
+  await transition(
+    publishContent,
+    ctx,
+    otherToken,
+    otherDraft.content.id,
+    otherDraft.content.version,
+  );
+  const stillUnavailable = await getPublishedAssociation({
+    request: createAuthenticatedRequest("https://test/api/platform/games/association", {
       token: tokens.member,
     }),
     env: ctx.env,

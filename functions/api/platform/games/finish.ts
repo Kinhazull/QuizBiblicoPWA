@@ -5,6 +5,8 @@ import { json } from "../../../_lib/security";
 import {
   GameType,
   validateContent,
+  type AssociationContentPayload,
+  type MemoryContentPayload,
   type TimelineContentPayload,
   type WordleContentPayload,
 } from "../../../../shared/content";
@@ -12,6 +14,10 @@ import { findPublishedUniversalContent } from "../../../_lib/universal-content-s
 import { isValidGuess } from "../../../../app/games/wordle/engine";
 import type { TimelineRound } from "../../../../app/games/timeline/engine";
 import { timelineRoundFromContent } from "../../../_lib/game-integrations/timeline-content";
+import { memorySetFromContent } from "../../../_lib/game-integrations/memory-content";
+import type { MemorySet } from "../../../../app/games/memory/engine";
+import type { ThemeAssociationRound } from "../../../../app/games/theme-association/engine";
+import { associationRoundFromContent } from "../../../_lib/game-integrations/association-content";
 
 const SAFE_ERROR = /^[a-z0-9_]{1,100}$/;
 
@@ -67,6 +73,68 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
         timelineContent.payload as TimelineContentPayload,
       );
     }
+    const memoryContent = body.gameId === "memoria-biblica"
+      ? await findPublishedUniversalContent(
+        env,
+        String(user.organizationId),
+        GameType.MEMORY,
+        body.contentId,
+      )
+      : null;
+    let memorySet: MemorySet | undefined;
+    if (memoryContent) {
+      const validation = validateContent(memoryContent.gameType, {
+        id: memoryContent.id,
+        gameType: memoryContent.gameType,
+        category: memoryContent.category,
+        tags: memoryContent.tags,
+        difficulty: memoryContent.difficulty,
+        biblicalReference: memoryContent.biblicalReference,
+        status: memoryContent.status,
+        authorId: memoryContent.authorId,
+        reviewerId: memoryContent.reviewerId,
+        createdAt: memoryContent.createdAt,
+        updatedAt: memoryContent.updatedAt,
+        version: memoryContent.version,
+        internalNotes: memoryContent.internalNotes,
+      }, memoryContent.payload);
+      if (!validation.valid) throw new Error("invalid_memory_content");
+      memorySet = await memorySetFromContent(
+        memoryContent.id,
+        memoryContent.payload as MemoryContentPayload,
+      );
+    }
+    const associationContent = body.gameId === "associacao-de-temas"
+      ? await findPublishedUniversalContent(
+        env,
+        String(user.organizationId),
+        GameType.ASSOCIATION,
+        body.contentId,
+      )
+      : null;
+    let associationRound: ThemeAssociationRound | undefined;
+    if (associationContent) {
+      const validation = validateContent(associationContent.gameType, {
+        id: associationContent.id,
+        gameType: associationContent.gameType,
+        category: associationContent.category,
+        tags: associationContent.tags,
+        difficulty: associationContent.difficulty,
+        biblicalReference: associationContent.biblicalReference,
+        status: associationContent.status,
+        authorId: associationContent.authorId,
+        reviewerId: associationContent.reviewerId,
+        createdAt: associationContent.createdAt,
+        updatedAt: associationContent.updatedAt,
+        version: associationContent.version,
+        internalNotes: associationContent.internalNotes,
+      }, associationContent.payload);
+      if (!validation.valid) throw new Error("invalid_association_content");
+      associationRound = await associationRoundFromContent(
+        associationContent.id,
+        associationContent.payload as AssociationContentPayload,
+      );
+    }
     const event = adaptPlatformGameCompletion(body, {
       userId: user.id,
       organizationId: user.organizationId,
@@ -80,6 +148,16 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
         id: timelineContent.id,
         version: timelineContent.version,
         round: timelineRound,
+      } : undefined,
+      memoryContent: memoryContent && memorySet ? {
+        id: memoryContent.id,
+        version: memoryContent.version,
+        set: memorySet,
+      } : undefined,
+      associationContent: associationContent && associationRound ? {
+        id: associationContent.id,
+        version: associationContent.version,
+        round: associationRound,
       } : undefined,
     });
     const result = await publishOfficialCoreEvent(env, event, event.occurredAt);

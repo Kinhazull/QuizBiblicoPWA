@@ -55,17 +55,16 @@ const validPayloads = {
   [GameType.MEMORY]: {
     title: "Símbolos",
     pairs: [
-      { title: "Arca", icon: "🚢" }, { title: "Pomba", icon: "🕊️" },
-      { title: "Leão", icon: "🦁" }, { title: "Pergaminho", icon: "📜" },
+      { front: "Noé", back: "Arca" }, { front: "Espírito Santo", back: "Pomba" },
+      { front: "Judá", back: "Leão" },
     ],
   },
   [GameType.ASSOCIATION]: {
     title: "Personagens",
     pairs: [
-      { category: "Pessoa", left: "Noé", right: "Arca" },
-      { category: "Pessoa", left: "Davi", right: "Golias" },
-      { category: "Pessoa", left: "Moisés", right: "Mar Vermelho" },
-      { category: "Pessoa", left: "Daniel", right: "Leões" },
+      { left: "Noé", right: "Arca" },
+      { left: "Davi", right: "Golias" },
+      { left: "Moisés", right: "Mar Vermelho" },
     ],
   },
   [GameType.WHO_AM_I]: {
@@ -154,6 +153,41 @@ test("Timeline accepts 3 to 8 events and requires a unique contiguous sequence",
     events: threeEvents.events.map((event, index) => ({ ...event, position: index === 2 ? 2 : event.position })),
   });
   assert.ok(duplicate.errors.some(error => error.code === "duplicate_positions"));
+});
+
+test("Memory accepts 3 to 12 pairs with required, unique fronts and backs", () => {
+  const valid = validPayloads[GameType.MEMORY];
+  assert.equal(validateContent(GameType.MEMORY, metadata(GameType.MEMORY), valid).valid, true);
+  const duplicate = validateContent(GameType.MEMORY, metadata(GameType.MEMORY), {
+    ...valid,
+    pairs: [...valid.pairs, { ...valid.pairs[0] }],
+  });
+  assert.ok(duplicate.errors.some(error => error.code === "duplicate_pairs"));
+  const incomplete = validateContent(GameType.MEMORY, metadata(GameType.MEMORY), {
+    ...valid,
+    pairs: valid.pairs.map((pair, index) => index === 0 ? { ...pair, back: "" } : pair),
+  });
+  assert.ok(incomplete.errors.some(error => error.field === "pairs.0.back"));
+});
+
+test("Association accepts 3 to 10 pairs with required and unique sides", () => {
+  const valid = validPayloads[GameType.ASSOCIATION];
+  assert.equal(validateContent(GameType.ASSOCIATION, metadata(GameType.ASSOCIATION), valid).valid, true);
+  const duplicateLeft = validateContent(GameType.ASSOCIATION, metadata(GameType.ASSOCIATION), {
+    ...valid,
+    pairs: [...valid.pairs, { left: " noé ", right: "Dilúvio" }],
+  });
+  assert.ok(duplicateLeft.errors.some(error => error.code === "duplicate_left_items"));
+  const duplicateRight = validateContent(GameType.ASSOCIATION, metadata(GameType.ASSOCIATION), {
+    ...valid,
+    pairs: [...valid.pairs, { left: "Ester", right: " ARCA " }],
+  });
+  assert.ok(duplicateRight.errors.some(error => error.code === "duplicate_right_items"));
+  const incomplete = validateContent(GameType.ASSOCIATION, metadata(GameType.ASSOCIATION), {
+    ...valid,
+    pairs: valid.pairs.map((pair, index) => index === 0 ? { ...pair, right: "" } : pair),
+  });
+  assert.ok(incomplete.errors.some(error => error.field === "pairs.0.right"));
 });
 
 test("published content requires a biblical reference while drafts do not", () => {

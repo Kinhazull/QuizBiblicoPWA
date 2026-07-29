@@ -1,148 +1,206 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createGameSessionId, GameLayout, recordPlatformGameCompletion, type GamePlayStatus } from "../sdk";
-import {
-  applyThemeAssociationAttempt,
-  initialThemeAssociationState,
-  nextThemeAssociationRoundIndex,
-  shuffleThemeAssociationOptions,
-  THEME_ASSOCIATION_MAX_ERRORS,
-  type ThemeAssociationAttempt,
-} from "./engine";
-import { THEME_ASSOCIATION_ROUNDS } from "./rounds";
+import { THEME_ASSOCIATION_MAX_ERRORS, type ThemeAssociationAttempt } from "./engine";
 
-const ERROR_FEEDBACK_MS = 550;
+type AssociationItem = { id: string; label: string; category?: string | null };
+type PublishedAssociation = {
+  id: string;
+  version: number;
+  title: string;
+  leftItems: AssociationItem[];
+  rightItems: AssociationItem[];
+  pairCount: number;
+  biblicalReference: string | null;
+};
 
 export function ThemeAssociationGame() {
   const sessionId = useRef(createGameSessionId());
   const completionRecorded = useRef(false);
-  const feedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [roundIndex, setRoundIndex] = useState(0);
-  const round = THEME_ASSOCIATION_ROUNDS[roundIndex];
-  const [rightOptions, setRightOptions] = useState(() => shuffleThemeAssociationOptions(round.pairs));
-  const [gameState, setGameState] = useState(initialThemeAssociationState);
+  const [content, setContent] = useState<PublishedAssociation | null>(null);
   const [attempts, setAttempts] = useState<ThemeAssociationAttempt[]>([]);
+  const [matchedLeftIds, setMatchedLeftIds] = useState<string[]>([]);
+  const [matchedRightIds, setMatchedRightIds] = useState<string[]>([]);
+  const [errors, setErrors] = useState(0);
+  const [status, setStatus] = useState<GamePlayStatus>("playing");
   const [selectedLeftId, setSelectedLeftId] = useState<string | null>(null);
   const [selectedRightId, setSelectedRightId] = useState<string | null>(null);
   const [incorrectIds, setIncorrectIds] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [locked, setLocked] = useState(false);
   const [message, setMessage] = useState("Selecione um item de cada coluna para formar um par.");
 
-  useEffect(() => () => {
-    if (feedbackTimer.current) clearTimeout(feedbackTimer.current);
+  const loadContent = useCallback(async (signal?: AbortSignal) => {
+    setLoading(true);
+    setLoadError(false);
+    try {
+      const response = await fetch("/api/platform/games/association", {
+        credentials: "same-origin",
+        cache: "no-store",
+        signal,
+      });
+      if (!response.ok) throw new Error("association_content_unavailable");
+      const data = await response.json() as { content: PublishedAssociation };
+      setContent(data.content);
+      setMessage(`Associe corretamente os ${data.content.pairCount} pares.`);
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") return;
+      setLoadError(true);
+    } finally {
+      if (!signal?.aborted) setLoading(false);
+    }
   }, []);
 
-  function registerCompletion(nextAttempts: ThemeAssociationAttempt[], status: GamePlayStatus) {
-    if (completionRecorded.current) return;
+  useEffect(() => {
+    const controller = new AbortController();
+    void loadContent(controller.signal);
+    return () => controller.abort();
+  }, [loadContent]);
+
+  async function registerCompletion(nextAttempts: ThemeAssociationAttempt[], nextStatus: GamePlayStatus) {
+    if (!content || completionRecorded.current) return;
     completionRecorded.current = true;
-    void recordPlatformGameCompletion({
-      gameId: "associacao-de-temas",
-      sessionId: sessionId.current,
-      roundId: round.id,
-      attempts: nextAttempts,
-    }).catch(() => undefined);
-    setMessage(status === "won"
+    setStatus(nextStatus);
+    setMessage(nextStatus === "won"
       ? "Todos os pares foram associados corretamente!"
       : "O limite de três erros foi atingido. Reinicie para tentar novamente.");
-  }
-
-  function resolvePair(leftId: string, rightId: string) {
-    if (locked || gameState.status !== "playing") return;
-    const attempt = { leftId, rightId };
-    const nextAttempts = [...attempts, attempt];
-    const nextState = applyThemeAssociationAttempt(round, gameState, attempt);
-    setAttempts(nextAttempts);
-    setGameState(nextState);
-
-    if (leftId === rightId) {
-      setSelectedLeftId(null);
-      setSelectedRightId(null);
-      if (nextState.status === "won") registerCompletion(nextAttempts, "won");
-      else setMessage("Par correto! Continue associando.");
-      return;
+    try {
+      await recordPlatformGameCompletion({
+        gameId: "associacao-de-temas",
+        sessionId: sessionId.current,
+        contentId: content.id,
+        contentVersion: content.version,
+        attempts: nextAttempts,
+      });
+    } catch {
+      setMessage("A partida terminou, mas não foi possível registrar o resultado. Tente novamente.");
     }
+  }
 
-    setSelectedLeftId(leftId);
-    setSelectedRightId(rightId);
-    setIncorrectIds([leftId, rightId]);
+  async function resolvePair(leftId: string, rightId: string) {
+    if (!content || locked || status !== "playing") return;
     setLocked(true);
-    if (nextState.status === "lost") registerCompletion(nextAttempts, "lost");
-    else setMessage(`Associação incorreta. Restam ${THEME_ASSOCIATION_MAX_ERRORS - nextState.errors} erro(s).`);
-    feedbackTimer.current = setTimeout(() => {
-      setSelectedLeftId(null);
-      setSelectedRightId(null);
-      setIncorrectIds([]);
+    const attempt = { leftId, rightId };
+    try {
+      const response = await fetch("/api/platform/games/association", {
+        method: "POST",
+        credentials: "same-origin",
+        cache: "no-store",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          contentId: content.id,
+          contentVersion: content.version,
+          leftId,
+          rightId,
+        }),
+      });
+      if (!response.ok) throw new Error("association_validation_failed");
+      const result = await response.json() as { correct: boolean };
+      const nextAttempts = [...attempts, attempt];
+      setAttempts(nextAttempts);
+      if (result.correct) {
+        const nextLeft = [...matchedLeftIds, leftId];
+        const nextRight = [...matchedRightIds, rightId];
+        setMatchedLeftIds(nextLeft);
+        setMatchedRightIds(nextRight);
+        setSelectedLeftId(null);
+        setSelectedRightId(null);
+        setMessage("Par correto! Continue associando.");
+        if (nextLeft.length === content.pairCount) await registerCompletion(nextAttempts, "won");
+      } else {
+        const nextErrors = errors + 1;
+        setErrors(nextErrors);
+        setIncorrectIds([leftId, rightId]);
+        setMessage(`Associação incorreta. Restam ${Math.max(0, THEME_ASSOCIATION_MAX_ERRORS - nextErrors)} erro(s).`);
+        if (nextErrors >= THEME_ASSOCIATION_MAX_ERRORS) await registerCompletion(nextAttempts, "lost");
+        setIncorrectIds([]);
+        setSelectedLeftId(null);
+        setSelectedRightId(null);
+      }
+    } catch {
+      setMessage("Não foi possível validar esta associação. Tente novamente.");
+    } finally {
       setLocked(false);
-    }, ERROR_FEEDBACK_MS);
+    }
   }
 
-  function chooseLeft(pairId: string) {
-    if (locked || gameState.status !== "playing" || gameState.matchedPairIds.includes(pairId)) return;
-    setSelectedLeftId(pairId);
-    if (selectedRightId) resolvePair(pairId, selectedRightId);
+  function chooseLeft(itemId: string) {
+    if (locked || status !== "playing" || matchedLeftIds.includes(itemId)) return;
+    setSelectedLeftId(itemId);
+    if (selectedRightId) void resolvePair(itemId, selectedRightId);
   }
 
-  function chooseRight(pairId: string) {
-    if (locked || gameState.status !== "playing" || gameState.matchedPairIds.includes(pairId)) return;
-    setSelectedRightId(pairId);
-    if (selectedLeftId) resolvePair(selectedLeftId, pairId);
+  function chooseRight(itemId: string) {
+    if (locked || status !== "playing" || matchedRightIds.includes(itemId)) return;
+    setSelectedRightId(itemId);
+    if (selectedLeftId) void resolvePair(selectedLeftId, itemId);
   }
 
   function restart() {
-    if (feedbackTimer.current) clearTimeout(feedbackTimer.current);
-    const nextIndex = nextThemeAssociationRoundIndex(roundIndex, THEME_ASSOCIATION_ROUNDS.length);
-    const nextRound = THEME_ASSOCIATION_ROUNDS[nextIndex];
     sessionId.current = createGameSessionId();
     completionRecorded.current = false;
-    setRoundIndex(nextIndex);
-    setRightOptions(shuffleThemeAssociationOptions(nextRound.pairs));
-    setGameState(initialThemeAssociationState());
     setAttempts([]);
+    setMatchedLeftIds([]);
+    setMatchedRightIds([]);
+    setErrors(0);
+    setStatus("playing");
     setSelectedLeftId(null);
     setSelectedRightId(null);
     setIncorrectIds([]);
     setLocked(false);
     setMessage("Selecione um item de cada coluna para formar um par.");
+    void loadContent();
   }
 
+  const pairCount = content?.pairCount ?? 0;
   return (
     <GameLayout eyebrow="Conecte os conhecimentos" title="Associação de" highlightedTitle="Temas"
       description="Combine cada item bíblico com sua associação correta."
-      status={gameState.status} currentAttempt={gameState.matchedPairIds.length}
-      maxAttempts={round.pairs.length} progressLabel="Pares encontrados" onRestart={restart}>
-      <section className="theme-association-game" aria-label="Associação de Temas">
-        <header className="theme-association-heading">
-          <div><span>Rodada</span><h2>{round.title}</h2></div>
-          <p><strong>{gameState.errors}</strong> de {THEME_ASSOCIATION_MAX_ERRORS} erros</p>
-        </header>
-        <div className="theme-association-board">
-          <div className="theme-association-column" role="group" aria-label="Itens bíblicos">
-            <h3>Itens</h3>
-            {round.pairs.map(pair => {
-              const matched = gameState.matchedPairIds.includes(pair.id);
-              return <button key={pair.id} type="button" onClick={() => chooseLeft(pair.id)}
-                disabled={locked || matched || gameState.status !== "playing"}
-                aria-pressed={selectedLeftId === pair.id}
-                className={`${selectedLeftId === pair.id ? "is-selected " : ""}${matched ? "is-matched " : ""}${incorrectIds.includes(pair.id) ? "is-incorrect" : ""}`}>
-                <small>{pair.category}</small><span>{pair.left}</span>
-              </button>;
-            })}
-          </div>
-          <div className="theme-association-column" role="group" aria-label="Opções de associação">
-            <h3>Associações</h3>
-            {rightOptions.map(pair => {
-              const matched = gameState.matchedPairIds.includes(pair.id);
-              return <button key={pair.id} type="button" onClick={() => chooseRight(pair.id)}
-                disabled={locked || matched || gameState.status !== "playing"}
-                aria-pressed={selectedRightId === pair.id}
-                className={`${selectedRightId === pair.id ? "is-selected " : ""}${matched ? "is-matched " : ""}${incorrectIds.includes(pair.id) ? "is-incorrect" : ""}`}>
-                <span>{pair.right}</span>
-              </button>;
-            })}
-          </div>
-        </div>
-        <p className={`theme-association-message ${gameState.status}`} role="status" aria-live="polite">{message}</p>
+      status={status} currentAttempt={matchedLeftIds.length}
+      maxAttempts={pairCount || 1} progressLabel="Pares encontrados" onRestart={restart}>
+      <section className="theme-association-game" aria-label="Associação de Temas" aria-busy={loading}>
+        {loading && <p className="theme-association-message" role="status">Carregando Associação de Temas...</p>}
+        {loadError && <p className="theme-association-message" role="alert">Nenhuma Associação publicada está disponível agora.</p>}
+        {content && !loading && !loadError && (
+          <>
+            <header className="theme-association-heading">
+              <div>
+                <span>Conteúdo</span><h2>{content.title}</h2>
+                {content.biblicalReference && <small>{content.biblicalReference}</small>}
+              </div>
+              <p><strong>{errors}</strong> de {THEME_ASSOCIATION_MAX_ERRORS} erros</p>
+            </header>
+            <div className="theme-association-board">
+              <div className="theme-association-column" role="group" aria-label="Itens A">
+                <h3>Itens</h3>
+                {content.leftItems.map(item => {
+                  const matched = matchedLeftIds.includes(item.id);
+                  return <button key={item.id} type="button" onClick={() => chooseLeft(item.id)}
+                    disabled={locked || matched || status !== "playing"}
+                    aria-pressed={selectedLeftId === item.id}
+                    className={`${selectedLeftId === item.id ? "is-selected " : ""}${matched ? "is-matched " : ""}${incorrectIds.includes(item.id) ? "is-incorrect" : ""}`}>
+                    {item.category && <small>{item.category}</small>}<span>{item.label}</span>
+                  </button>;
+                })}
+              </div>
+              <div className="theme-association-column" role="group" aria-label="Itens B">
+                <h3>Associações</h3>
+                {content.rightItems.map(item => {
+                  const matched = matchedRightIds.includes(item.id);
+                  return <button key={item.id} type="button" onClick={() => chooseRight(item.id)}
+                    disabled={locked || matched || status !== "playing"}
+                    aria-pressed={selectedRightId === item.id}
+                    className={`${selectedRightId === item.id ? "is-selected " : ""}${matched ? "is-matched " : ""}${incorrectIds.includes(item.id) ? "is-incorrect" : ""}`}>
+                    <span>{item.label}</span>
+                  </button>;
+                })}
+              </div>
+            </div>
+            <p className={`theme-association-message ${status}`} role="status" aria-live="polite">{message}</p>
+          </>
+        )}
       </section>
     </GameLayout>
   );

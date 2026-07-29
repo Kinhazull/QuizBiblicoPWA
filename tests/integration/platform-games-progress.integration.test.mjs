@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { onRequestPost as finishPlatformGame } from "../../functions/api/platform/games/finish.ts";
 import { timelineRoundFromContent } from "../../functions/_lib/game-integrations/timeline-content.ts";
+import { memorySetFromContent } from "../../functions/_lib/game-integrations/memory-content.ts";
+import { associationRoundFromContent } from "../../functions/_lib/game-integrations/association-content.ts";
 import {
   createAuthenticatedRequest,
   createSession,
@@ -40,6 +42,16 @@ async function setup(t) {
     payload_json,version,author_id,created_at,updated_at
   ) VALUES('timeline-published','org-1','linha-do-tempo-biblica','PUBLISHED','Eventos','EASY',
     'Gênesis 1–12','[]','{"title":"Origens","events":[{"title":"Criação","position":1},{"title":"Dilúvio","position":2},{"title":"Abraão","position":3}]}',3,'player',?,?)`).run(NOW, NOW);
+  ctx.raw.prepare(`INSERT INTO content_items(
+    id,organization_id,game_type,status,category,difficulty,biblical_reference,tags_json,
+    payload_json,version,author_id,created_at,updated_at
+  ) VALUES('memory-published','org-1','memoria-biblica','PUBLISHED','Personagens','EASY',
+    'Gênesis–1 Samuel','[]','{"title":"Personagens","pairs":[{"front":"Noé","back":"Arca"},{"front":"Moisés","back":"Êxodo"},{"front":"Davi","back":"Golias"}]}',4,'player',?,?)`).run(NOW, NOW);
+  ctx.raw.prepare(`INSERT INTO content_items(
+    id,organization_id,game_type,status,category,difficulty,biblical_reference,tags_json,
+    payload_json,version,author_id,created_at,updated_at
+  ) VALUES('association-published','org-1','associacao-de-temas','PUBLISHED','Personagens','EASY',
+    'Gênesis–1 Samuel','[]','{"title":"Personagens e feitos","pairs":[{"left":"Noé","right":"Arca"},{"left":"Moisés","right":"Êxodo"},{"left":"Davi","right":"Golias"}]}',5,'player',?,?)`).run(NOW, NOW);
   return { ctx, token };
 }
 
@@ -183,20 +195,28 @@ test("Linha do Tempo victory reaches Progress, Statistics, Achievements and Miss
 
 test("Memória Bíblica victory reaches Progress, Statistics, Achievements and Missions", async t => {
   const { ctx, token } = await setup(t);
-  const pairIds = ["arca", "tabuas", "funda", "peixe", "estrela", "paes", "cruz", "fogo"];
+  const set = await memorySetFromContent("memory-published", {
+    title: "Personagens",
+    pairs: [
+      { front: "Noé", back: "Arca" },
+      { front: "Moisés", back: "Êxodo" },
+      { front: "Davi", back: "Golias" },
+    ],
+  });
   const response = await withFrozenTime(NOW, () => finishPlatformGame({
     request: request(token, {
       gameId: "memoria-biblica",
       sessionId: "session-memory-integration",
-      setId: "simbolos-da-biblia",
-      revealedCardIds: pairIds.flatMap(id => [`${id}:a`, `${id}:b`]),
+      contentId: "memory-published",
+      contentVersion: 4,
+      revealedCardIds: set.pairs.flatMap(pair => [`${pair.id}:a`, `${pair.id}:b`]),
     }),
     env: ctx.env,
   }));
   const data = await responseJson(response);
   assert.equal(response.status, 200);
   assert.equal(data.outcome, "won");
-  assert.equal(data.score, 1200);
+  assert.equal(data.score, 450);
   assert.deepEqual({
     ...ctx.raw.prepare("SELECT total_xp totalXp,coins FROM user_platform_progress WHERE user_id='player'").get(),
   }, { totalXp: 160, coins: 25 });
@@ -206,10 +226,10 @@ test("Memória Bíblica victory reaches Progress, Statistics, Achievements and M
       FROM user_platform_game_statistics WHERE user_id='player' AND game_id='memoria-biblica'`).get(),
   }, {
     sessionsCompleted: 1,
-    questionsAnswered: 8,
-    correctAnswers: 8,
+    questionsAnswered: 3,
+    correctAnswers: 3,
     incorrectAnswers: 0,
-    bestScore: 1200,
+    bestScore: 450,
   });
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM user_platform_achievements WHERE user_id='player'").get().total, 2);
   assert.deepEqual({
@@ -254,20 +274,28 @@ test("Quem Sou Eu victory reaches Progress, Statistics, Achievements and Mission
 
 test("Associação de Temas victory reaches Progress, Statistics, Achievements and Missions", async t => {
   const { ctx, token } = await setup(t);
-  const pairIds = ["noe-arca", "davi-golias", "ester-povo", "moises-mar"];
+  const round = await associationRoundFromContent("association-published", {
+    title: "Personagens e feitos",
+    pairs: [
+      { left: "Noé", right: "Arca" },
+      { left: "Moisés", right: "Êxodo" },
+      { left: "Davi", right: "Golias" },
+    ],
+  });
   const response = await withFrozenTime(NOW, () => finishPlatformGame({
     request: request(token, {
       gameId: "associacao-de-temas",
       sessionId: "session-association-integration",
-      roundId: "personagens-e-feitos",
-      attempts: pairIds.map(id => ({ leftId: id, rightId: id })),
+      contentId: "association-published",
+      contentVersion: 5,
+      attempts: round.pairs.map(pair => ({ leftId: pair.leftId, rightId: pair.rightId })),
     }),
     env: ctx.env,
   }));
   const data = await responseJson(response);
   assert.equal(response.status, 200);
   assert.equal(data.outcome, "won");
-  assert.equal(data.score, 400);
+  assert.equal(data.score, 300);
   assert.deepEqual({
     ...ctx.raw.prepare("SELECT total_xp totalXp,coins FROM user_platform_progress WHERE user_id='player'").get(),
   }, { totalXp: 160, coins: 25 });
@@ -277,10 +305,10 @@ test("Associação de Temas victory reaches Progress, Statistics, Achievements a
       FROM user_platform_game_statistics WHERE user_id='player' AND game_id='associacao-de-temas'`).get(),
   }, {
     sessionsCompleted: 1,
-    questionsAnswered: 4,
-    correctAnswers: 4,
+    questionsAnswered: 3,
+    correctAnswers: 3,
     incorrectAnswers: 0,
-    bestScore: 400,
+    bestScore: 300,
   });
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM user_platform_achievements WHERE user_id='player'").get().total, 2);
   assert.deepEqual({
