@@ -64,8 +64,8 @@ jobs:
       - name: Install locked dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Validate legacy schema without writing
-        run: pnpm run db:reconcile-migrations
+      - name: Validate pending migrations without writing
+        run: pnpm run db:reconcile-migrations:verify-promotable
 
       - name: Capture pre-change integrity snapshot
         run: pnpm run db:reconcile-migrations:snapshot
@@ -98,13 +98,10 @@ jobs:
           retention-days: 7
           compression-level: 9
 
-      - name: Record verified legacy migration history
-        run: pnpm run db:reconcile-migrations:apply
+      - name: Revalidate pending migrations immediately before writing
+        run: pnpm run db:reconcile-migrations:verify-promotable
 
-      - name: Confirm only migration 0022 remains pending
-        run: pnpm run db:reconcile-migrations:verify-pending
-
-      - name: Apply migration 0022 only
+      - name: Apply verified pending migrations
         run: pnpm run worker:awards:migrate
 
       - name: Validate final migration state
@@ -117,12 +114,10 @@ jobs:
         shell: bash
         run: |
           {
-            echo "## Reconciliação D1 concluída"
-            echo "- Histórico 0000–0020 reconciliado"
-            echo "- Migration 0022 aplicada"
-            echo "- Total validado: 23 migrations"
-            echo "- Tabela round_award_participant_processing validada"
-            echo "- Indice audit_action_entity_time_idx validado"
+            echo "## Promoção controlada de migrations D1 concluída"
+            echo "- Histórico remoto validado como prefixo exato do catálogo local"
+            echo "- Apenas migrations oficiais pendentes foram aplicadas"
+            echo "- Histórico e schema finais validados por verify-final"
             echo "- Estruturas e contagens anteriores preservadas"
             echo "- Nenhum deploy de Pages ou Worker executado"
           } >> "$GITHUB_STEP_SUMMARY"

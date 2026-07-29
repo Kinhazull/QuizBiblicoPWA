@@ -3,6 +3,11 @@ import { readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { resolve } from "node:path";
 import { validateMigration0021, validateMigration0022 } from "./lib/d1-migration-validator.mjs";
+import {
+  assertMigrationLedgerPrefix,
+  pendingMigrationNames,
+  schemaTablesForLedger,
+} from "./lib/d1-migration-promotion-policy.mjs";
 import { assertSnapshotTableAllowlist, buildApplicationSchemaQuery } from "./lib/d1-snapshot-policy.mjs";
 import { buildAtomicBaselineInsert } from "./lib/d1-ledger-policy.mjs";
 
@@ -33,6 +38,9 @@ const foundationMigrations = [
   "0031_universal_content_drafts.sql",
 ];
 const expectedFinalLedger = [...baseline, targetMigration, ...foundationMigrations];
+const introducedTablesByMigration = {
+  "0031_universal_content_drafts.sql": ["content_items", "content_versions"],
+};
 
 const requiredTables = [
   "organizations", "groups", "users", "invitations", "sessions", "rounds", "questions", "choices", "attempts",
@@ -124,8 +132,8 @@ function validateTargetMigration() {
   validateMigration0022(readFileSync(resolve("drizzle", targetMigration), "utf8"), targetMigration);
 }
 
-function validateLegacySchema() {
-  const tableList = requiredTables.map(quoteValue).join(",");
+function validateLegacySchema(tables = requiredTables) {
+  const tableList = tables.map(quoteValue).join(",");
   const indexList = requiredIndexes.map(quoteValue).join(",");
   const tableCount = scalar(
     `SELECT COUNT(*) AS value FROM sqlite_master WHERE type='table' AND name IN (${tableList})`,
@@ -135,16 +143,47 @@ function validateLegacySchema() {
     `SELECT COUNT(*) AS value FROM sqlite_master WHERE type='index' AND name IN (${indexList})`,
     "value",
   );
-  const missingColumns = Object.entries(requiredColumns).flatMap(([table, columns]) => {
-    const found = new Set(rows(`SELECT name FROM pragma_table_info(${quoteValue(table)})`).map((row) => String(row.name)));
-    return columns.filter((column) => !found.has(column)).map((column) => `${table}.${column}`);
-  });
-  if (tableCount !== requiredTables.length || indexCount !== requiredIndexes.length || missingColumns.length) {
+  const missingColumns = Object.entries(requiredColumns)
+    .filter(([table]) => tables.includes(table))
+    .flatMap(([table, columns]) => {
+      const found = new Set(rows(`SELECT name FROM pragma_table_info(${quoteValue(table)})`).map((row) => String(row.name)));
+      return columns.filter((column) => !found.has(column)).map((column) => `${table}.${column}`);
+    });
+  if (tableCount !== tables.length || indexCount !== requiredIndexes.length || missingColumns.length) {
     throw new Error(
-      `Legacy schema is incomplete: tables ${tableCount}/${requiredTables.length}, ` +
+      `Legacy schema is incomplete: tables ${tableCount}/${tables.length}, ` +
       `indexes ${indexCount}/${requiredIndexes.length}, missing columns ${missingColumns.join(", ") || "none"}.`,
     );
   }
+}
+
+function promotableState() {
+  validateTargetMigration();
+  const ledger = ledgerNames();
+  assertMigrationLedgerPrefix(ledger, expectedFinalLedger);
+  const pending = pendingMigrationNames(ledger, expectedFinalLedger);
+  if (pending.length === 0) {
+    throw new Error("No migration is pending; production already matches the approved local ledger.");
+  }
+  if (ledger.length === 0) {
+    throw new Error("Remote migration history is empty; use the historical reconciliation procedure first.");
+  }
+  const tables = schemaTablesForLedger(
+    ledger,
+    expectedFinalLedger,
+    requiredTables,
+    introducedTablesByMigration,
+  );
+  validateLegacySchema(tables);
+  return { ledger, pending, tables };
+}
+
+function verifyPromotable() {
+  const { ledger, pending } = promotableState();
+  console.log(
+    `Promotion preflight verified: ${ledger.length} applied migration(s); ` +
+    `${pending.length} exact pending migration(s): ${pending.join(", ")}.`,
+  );
 }
 
 function dryRun() {
@@ -222,19 +261,29 @@ function verifyFinal() {
 }
 
 function createSnapshot(path) {
-  validateLegacySchema();
-  const schemaObjects = rows(buildApplicationSchemaQuery(requiredTables));
-  const rowCounts = Object.fromEntries(requiredTables.map((table) => [
+  const { ledger, tables } = promotableState();
+  const schemaObjects = rows(buildApplicationSchemaQuery(tables));
+  const rowCounts = Object.fromEntries(tables.map((table) => [
     table,
     scalar(`SELECT COUNT(*) AS value FROM ${quoteIdentifier(table)}`, "value"),
   ]));
-  writeFileSync(path, JSON.stringify({ database, createdAt: new Date().toISOString(), schemaObjects, rowCounts }, null, 2));
+  writeFileSync(
+    path,
+    JSON.stringify({ database, createdAt: new Date().toISOString(), ledger, schemaObjects, rowCounts }, null, 2),
+  );
   console.log(`Pre-change integrity snapshot written to ${path}.`);
 }
 
 function compareSnapshot(path) {
   const snapshot = JSON.parse(readFileSync(path, "utf8"));
-  assertSnapshotTableAllowlist(snapshot.rowCounts, requiredTables);
+  assertMigrationLedgerPrefix(snapshot.ledger, expectedFinalLedger);
+  const snapshotTables = schemaTablesForLedger(
+    snapshot.ledger,
+    expectedFinalLedger,
+    requiredTables,
+    introducedTablesByMigration,
+  );
+  assertSnapshotTableAllowlist(snapshot.rowCounts, snapshotTables);
   for (const [table, before] of Object.entries(snapshot.rowCounts || {})) {
     const exists = scalar(
       `SELECT COUNT(*) AS value FROM sqlite_master WHERE type='table' AND name=${quoteValue(table)}`,
@@ -246,7 +295,7 @@ function compareSnapshot(path) {
       throw new Error(`Row count decreased in ${table}: before=${before}, after=${after}.`);
     }
   }
-  const currentSchema = new Map(rows(buildApplicationSchemaQuery(requiredTables))
+  const currentSchema = new Map(rows(buildApplicationSchemaQuery(snapshotTables))
     .map((item) => [`${item.type}:${item.name}`, item]));
   for (const object of snapshot.schemaObjects || []) {
     const current = currentSchema.get(`${object.type}:${object.name}`);
@@ -262,6 +311,7 @@ const compareIndex = process.argv.indexOf("--compare-snapshot");
 
 if (process.argv.includes("--apply")) applyBaseline();
 else if (process.argv.includes("--verify-pending")) verifyPending();
+else if (process.argv.includes("--verify-promotable")) verifyPromotable();
 else if (process.argv.includes("--verify-final")) verifyFinal();
 else if (snapshotIndex >= 0) createSnapshot(resolve(process.argv[snapshotIndex + 1] || "d1-before.json"));
 else if (compareIndex >= 0) compareSnapshot(resolve(process.argv[compareIndex + 1] || "d1-before.json"));

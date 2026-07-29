@@ -28,6 +28,7 @@
     "db:reconcile-migrations": "node scripts/reconcile-d1-migrations.mjs",
     "db:reconcile-migrations:apply": "node scripts/reconcile-d1-migrations.mjs --apply",
     "db:reconcile-migrations:verify-pending": "node scripts/reconcile-d1-migrations.mjs --verify-pending",
+    "db:reconcile-migrations:verify-promotable": "node scripts/reconcile-d1-migrations.mjs --verify-promotable",
     "db:reconcile-migrations:verify-final": "node scripts/reconcile-d1-migrations.mjs --verify-final",
     "db:reconcile-migrations:snapshot": "node scripts/reconcile-d1-migrations.mjs --snapshot d1-before.json",
     "db:reconcile-migrations:compare": "node scripts/reconcile-d1-migrations.mjs --compare-snapshot d1-before.json",

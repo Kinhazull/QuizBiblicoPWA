@@ -73,11 +73,12 @@ test("reconciliação é manual, confirmada, precedida por backup e não faz dep
   assert.match(workflow, /d1 export quiz-biblico-db --remote/);
   assert.match(workflow, /openssl enc -aes-256-cbc -pbkdf2/);
   assert.match(workflow, /actions\/upload-artifact@[0-9a-f]{40}/);
-  const dryRun = workflow.indexOf("db:reconcile-migrations\n");
+  const dryRun = workflow.indexOf("db:reconcile-migrations:verify-promotable");
   const backup = workflow.indexOf("d1 export quiz-biblico-db");
-  const apply = workflow.indexOf("db:reconcile-migrations:apply");
+  const apply = workflow.indexOf("worker:awards:migrate");
   assert.ok(dryRun >= 0 && backup > dryRun && apply > backup);
-  assert.match(workflow, /db:reconcile-migrations:verify-pending/);
+  assert.doesNotMatch(workflow, /db:reconcile-migrations:apply/);
+  assert.doesNotMatch(workflow, /db:reconcile-migrations:verify-pending/);
   assert.match(workflow, /worker:awards:migrate/);
   assert.match(workflow, /db:reconcile-migrations:verify-final/);
   assert.match(workflow, /db:reconcile-migrations:compare/);
@@ -87,6 +88,8 @@ test("reconciliação é manual, confirmada, precedida por backup e não faz dep
   assert.match(script, /validateMigration0022/);
   assert.match(script, /0023_platform_user_progress\.sql/);
   assert.match(script, /0030_achievement_statistics_projections\.sql/);
+  assert.match(script, /0031_universal_content_drafts\.sql/);
+  assert.match(script, /assertMigrationLedgerPrefix/);
   assert.match(script, /foundationMigrations/);
   assert.match(script, /expectedFinalLedger\.length/);
   assert.match(script, /quiz_core_event_outbox_claim_idx/);

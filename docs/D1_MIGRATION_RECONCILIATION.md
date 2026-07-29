@@ -1,43 +1,59 @@
-# Reconciliação segura das migrations do D1
+# Promoção segura das migrations do D1
 
-Este procedimento registra o histórico legado já verificado e aplica somente a migration atualmente pendente. Ele não publica o Pages, não publica o Worker e não recria tabelas antigas.
+O workflow manual **Reconcile production D1 migrations** promove migrations
+oficiais pendentes sem publicar o Pages ou o Worker.
 
-## Estado reconciliado em produção
+## Proteções
 
-- Migrations registradas: `0000` até `0022`.
-- Migrations pendentes: **nenhuma**.
-- Total final esperado no histórico: **23 migrations**.
-- Novo índice esperado: `audit_action_entity_time_idx`.
+Antes de escrever, o workflow:
 
-Esse estado foi confirmado pelo workflow manual e pelo Diagnóstico em 16/07/2026. A documentação abaixo é histórica e serve para auditoria; não execute novamente a reconciliação sem uma migration futura e uma revisão específica do script.
+1. exige a confirmação `RECONCILIAR_MIGRATIONS_PRODUCAO`;
+2. aceita execução somente pela `main` e pelo environment `production`;
+3. valida que o histórico remoto é um prefixo exato e ordenado do catálogo local;
+4. valida o schema correspondente às migrations que já estão aplicadas;
+5. cria snapshot de integridade e backup remoto criptografado;
+6. repete o preflight imediatamente antes da escrita.
+
+Após aplicar somente o sufixo pendente, o workflow:
+
+1. executa `db:reconcile-migrations:verify-final`;
+2. confirma que o histórico e o schema correspondem ao estado final local;
+3. verifica que tabelas e objetos preexistentes não mudaram;
+4. verifica que nenhuma tabela perdeu linhas.
+
+Qualquer divergência interrompe a execução. O workflow não reconcilia
+automaticamente históricos vazios ou divergentes.
 
 ## Pré-requisitos no GitHub
 
-1. O secret `CLOUDFLARE_API_TOKEN` deve existir em **Settings → Secrets and variables → Actions**.
+1. O secret `CLOUDFLARE_API_TOKEN` deve existir em
+   **Settings → Secrets and variables → Actions**.
 2. O token precisa ter acesso à conta configurada e permissão de escrita no D1.
-3. Execute o workflow pela branch `main`.
-4. Recomenda-se exigir aprovação no environment `production`.
+3. A migration deve estar revisada, versionada e presente na `main`.
+4. O environment `production` deve manter a aprovação operacional adotada pelo projeto.
 
-## Como foi executado
+## Como promover uma nova migration
 
-1. Abra **Actions** no repositório.
-2. Escolha **Reconcile production D1 migrations**.
-3. Clique em **Run workflow** e selecione `main`.
-4. Digite exatamente:
+1. Confirme que a migration aditiva foi integrada à `main`.
+2. Abra **Actions**.
+3. Escolha **Reconcile production D1 migrations**.
+4. Clique em **Run workflow** e selecione `main`.
+5. Digite exatamente:
 
    ```text
    RECONCILIAR_MIGRATIONS_PRODUCAO
    ```
 
-5. Aguarde o resumo verde confirmar 23 migrations e o índice novo.
+6. Aguarde o resumo confirmar o preflight, backup, aplicação, `verify-final`
+   e preservação dos dados.
+7. Somente depois do sucesso, execute ou reexecute o workflow de deploy.
 
-O workflow validou o schema antes de escrever, produziu backup confidencial criptografado e interromperia diante de divergências. Não repita depois do sucesso: a execução seguinte deve falhar com segurança porque não há migration pendente.
+Se não houver migration pendente, o workflow falha antes do backup e de
+qualquer escrita. Não é necessário nem recomendado executá-lo em todo push.
 
-## Registro da ordem usada no release hardening
+## Separação entre migration e deploy
 
-1. Os arquivos de infraestrutura foram publicados no GitHub.
-2. O workflow aplicou exclusivamente a `0022` após dry-run e backup.
-3. O resumo confirmou 23 migrations e preservação das estruturas anteriores.
-4. Os jobs de implantação foram reexecutados e concluídos com sucesso.
-
-O deploy automatizado do Pages e do Worker valida o histórico final antes de publicar.
+- O workflow manual promove migrations.
+- O workflow **Quality and security** não aplica migrations.
+- Os deploys de Pages e Worker continuam executando `verify-final` e só
+  prosseguem quando o banco remoto já está no estado esperado.
