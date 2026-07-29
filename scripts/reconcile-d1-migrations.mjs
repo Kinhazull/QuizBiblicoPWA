@@ -37,16 +37,27 @@ const foundationMigrations = [
   "0030_achievement_statistics_projections.sql",
   "0031_universal_content_drafts.sql",
   "0032_universal_content_library.sql",
+  "0033_universal_game_generator.sql",
 ];
 const expectedFinalLedger = [...baseline, targetMigration, ...foundationMigrations];
 const introducedTablesByMigration = {
   "0031_universal_content_drafts.sql": ["content_items", "content_versions"],
   "0032_universal_content_library.sql": ["universal_content_library"],
+  "0033_universal_game_generator.sql": [
+    "generated_game_selections",
+    "generated_game_selection_items",
+  ],
 };
 const introducedIndexesByMigration = {
   "0032_universal_content_library.sql": [
     "universal_content_library_eligible_idx",
     "universal_content_library_publication_idx",
+  ],
+  "0033_universal_game_generator.sql": [
+    "generated_game_selections_org_created_idx",
+    "generated_game_selections_mode_key_idx",
+    "generated_game_selections_expiration_idx",
+    "generated_game_selection_items_content_idx",
   ],
 };
 
@@ -61,6 +72,7 @@ const requiredTables = [
   "user_platform_achievements", "platform_mission_definitions", "user_platform_missions",
   "user_platform_mission_progress_events", "core_platform_events", "core_platform_event_processing",
   "content_items", "content_versions", "universal_content_library",
+  "generated_game_selections", "generated_game_selection_items",
   "user_platform_statistics", "user_platform_game_statistics", "user_platform_game_difficulty_statistics",
   "user_platform_statistics_active_days", "platform_statistics_event_checkpoints", "quiz_core_event_outbox",
   "user_platform_statistics_official_days_utc",
@@ -94,6 +106,8 @@ const requiredIndexes = [
   "platform_statistics_event_checkpoints_user_idx", "quiz_core_event_outbox_delivery_idx",
   "quiz_core_event_outbox_claim_idx", "user_platform_statistics_official_days_utc_user_idx",
   "universal_content_library_eligible_idx", "universal_content_library_publication_idx",
+  "generated_game_selections_org_created_idx", "generated_game_selections_mode_key_idx",
+  "generated_game_selections_expiration_idx", "generated_game_selection_items_content_idx",
 ];
 
 function runWrangler(command) {
