@@ -7,7 +7,14 @@ export const timelineContentSchema: ContentSchema = {
   description: "Sequências cronológicas de acontecimentos bíblicos.",
   fields: [
     field("title", "Título", "text", true, { minimum: 3, maximum: 120 }),
-    field("events", "Acontecimentos", "list", true, { minimumItems: 4, maximumItems: 8 }),
+    field("events", "Acontecimentos", "list", true, {
+      minimumItems: 4,
+      maximumItems: 8,
+      fields: [
+        field("title", "Acontecimento", "text", true),
+        field("position", "Posição cronológica", "number", true, { minimum: 1 }),
+      ],
+    }),
   ],
   templates: [
     { id: "biblical-event", label: "Evento bíblico", description: "Sequência geral de eventos.", values: { category: "Eventos" } },

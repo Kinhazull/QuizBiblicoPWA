@@ -17,7 +17,8 @@ test("admin navigation promotes universal content without deleting legacy operat
   for (const route of ["/admin/perguntas/revisao", "/admin/perguntas/importar", "/admin/perguntas/colaboracao", "/admin/rodadas/lista"]) {
     assert.ok(navigation.includes(route), route);
   }
-  assert.match(navigation, /label: "Criar conteúdo"[\s\S]*?disabled: true/);
+  assert.match(navigation, /label: "Criar conteúdo"[\s\S]*?href: "\/admin\/conteudo\/editor"/);
+  assert.doesNotMatch(navigation, /label: "Criar conteúdo"[\s\S]*?disabled: true/);
   assert.match(quickNav, /admin-nav-disabled/);
 });
 

@@ -11,7 +11,14 @@ export const quizContentSchema: ContentSchema = {
   description: "Perguntas bíblicas com alternativas e resposta verificável.",
   fields: [
     field("prompt", "Enunciado", "textarea", true, { minimum: 8, maximum: 500, importColumn: "enunciado" }),
-    field("choices", "Alternativas", "list", true, { minimumItems: 4, maximumItems: 4 }),
+    field("choices", "Alternativas", "list", true, {
+      minimumItems: 4,
+      maximumItems: 4,
+      fields: [
+        field("text", "Texto da alternativa", "text", true, { maximum: 300 }),
+        field("correct", "Alternativa correta", "boolean", true, { defaultValue: false }),
+      ],
+    }),
     field("book", "Livro", "text", false, { maximum: 80, importColumn: "livro" }),
     field("theme", "Tema", "text", true, { minimum: 2, maximum: 80, importColumn: "tema" }),
     field("explanation", "Comentário", "textarea", false, { maximum: 1000, importColumn: "comentario" }),

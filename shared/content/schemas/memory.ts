@@ -7,7 +7,14 @@ export const memoryContentSchema: ContentSchema = {
   description: "Conjuntos de pares bíblicos para o jogo da memória.",
   fields: [
     field("title", "Título do conjunto", "text", true, { minimum: 3, maximum: 120 }),
-    field("pairs", "Pares", "list", true, { minimumItems: 4, maximumItems: 12 }),
+    field("pairs", "Pares", "list", true, {
+      minimumItems: 4,
+      maximumItems: 12,
+      fields: [
+        field("title", "Título do par", "text", true),
+        field("icon", "Ícone ou símbolo", "text", true),
+      ],
+    }),
   ],
   templates: [
     { id: "characters", label: "Personagens", description: "Pares de personagens e símbolos.", values: { category: "Personagens" } },

@@ -7,7 +7,15 @@ export const associationContentSchema: ContentSchema = {
   description: "Pares de conceitos bíblicos relacionados.",
   fields: [
     field("title", "Título", "text", true, { minimum: 3, maximum: 120 }),
-    field("pairs", "Associações", "list", true, { minimumItems: 4, maximumItems: 8 }),
+    field("pairs", "Associações", "list", true, {
+      minimumItems: 4,
+      maximumItems: 8,
+      fields: [
+        field("category", "Categoria", "text", true),
+        field("left", "Item da esquerda", "text", true),
+        field("right", "Item da direita", "text", true),
+      ],
+    }),
   ],
   templates: [
     { id: "character-event", label: "Personagem e acontecimento", description: "Liga personagens a acontecimentos.", values: { category: "Personagens" } },

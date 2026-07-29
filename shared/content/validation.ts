@@ -41,33 +41,54 @@ const allowedStatusTransitions: Record<ContentStatus, readonly ContentStatus[]> 
 export const canTransitionContentStatus = (from: ContentStatus, to: ContentStatus): boolean =>
   allowedStatusTransitions[from]?.includes(to) ?? false;
 
-function validateField(field: ContentField, value: unknown): ContentValidationIssue[] {
+function validateField(
+  field: ContentField,
+  value: unknown,
+  path = field.key,
+  depth = 0,
+): ContentValidationIssue[] {
   const errors: ContentValidationIssue[] = [];
   const missing = value === undefined || value === null || value === "";
-  if (field.required && missing) return [{ field: field.key, code: "required", message: `${field.label} é obrigatório.` }];
+  if (field.required && missing) return [{ field: path, code: "required", message: `${field.label} é obrigatório.` }];
   if (missing) return errors;
+  if (depth > 4) return [{ field: path, code: "maximum_depth", message: `${field.label} excede a profundidade permitida.` }];
   if (field.type === "text" || field.type === "textarea" || field.type === "reference") {
-    if (typeof value !== "string") return [{ field: field.key, code: "invalid_type", message: `${field.label} deve ser texto.` }];
-    if (field.minimum !== undefined && value.length < field.minimum) errors.push({ field: field.key, code: "minimum", message: `${field.label} deve ter ao menos ${field.minimum} caracteres.` });
-    if (field.maximum !== undefined && value.length > field.maximum) errors.push({ field: field.key, code: "maximum", message: `${field.label} deve ter no máximo ${field.maximum} caracteres.` });
+    if (typeof value !== "string") return [{ field: path, code: "invalid_type", message: `${field.label} deve ser texto.` }];
+    if (field.minimum !== undefined && value.length < field.minimum) errors.push({ field: path, code: "minimum", message: `${field.label} deve ter ao menos ${field.minimum} caracteres.` });
+    if (field.maximum !== undefined && value.length > field.maximum) errors.push({ field: path, code: "maximum", message: `${field.label} deve ter no máximo ${field.maximum} caracteres.` });
   } else if (field.type === "select") {
-    if (!field.options?.some(option => option.value === value)) errors.push({ field: field.key, code: "invalid_option", message: `${field.label} possui uma opção inválida.` });
+    if (!field.options?.some(option => option.value === value)) errors.push({ field: path, code: "invalid_option", message: `${field.label} possui uma opção inválida.` });
   } else if (field.type === "number") {
-    if (typeof value !== "number" || !Number.isFinite(value)) errors.push({ field: field.key, code: "invalid_type", message: `${field.label} deve ser numérico.` });
+    if (typeof value !== "number" || !Number.isFinite(value)) errors.push({ field: path, code: "invalid_type", message: `${field.label} deve ser numérico.` });
     else {
-      if (field.minimum !== undefined && value < field.minimum) errors.push({ field: field.key, code: "minimum", message: `${field.label} está abaixo do mínimo.` });
-      if (field.maximum !== undefined && value > field.maximum) errors.push({ field: field.key, code: "maximum", message: `${field.label} está acima do máximo.` });
+      if (field.minimum !== undefined && value < field.minimum) errors.push({ field: path, code: "minimum", message: `${field.label} está abaixo do mínimo.` });
+      if (field.maximum !== undefined && value > field.maximum) errors.push({ field: path, code: "maximum", message: `${field.label} está acima do máximo.` });
     }
   } else if (field.type === "boolean" && typeof value !== "boolean") {
-    errors.push({ field: field.key, code: "invalid_type", message: `${field.label} deve ser booleano.` });
+    errors.push({ field: path, code: "invalid_type", message: `${field.label} deve ser booleano.` });
   } else if (field.type === "list") {
-    if (!Array.isArray(value)) errors.push({ field: field.key, code: "invalid_type", message: `${field.label} deve ser uma lista.` });
+    if (!Array.isArray(value)) errors.push({ field: path, code: "invalid_type", message: `${field.label} deve ser uma lista.` });
     else {
-      if (field.minimumItems !== undefined && value.length < field.minimumItems) errors.push({ field: field.key, code: "minimum_items", message: `${field.label} deve ter ao menos ${field.minimumItems} itens.` });
-      if (field.maximumItems !== undefined && value.length > field.maximumItems) errors.push({ field: field.key, code: "maximum_items", message: `${field.label} deve ter no máximo ${field.maximumItems} itens.` });
+      if (field.minimumItems !== undefined && value.length < field.minimumItems) errors.push({ field: path, code: "minimum_items", message: `${field.label} deve ter ao menos ${field.minimumItems} itens.` });
+      if (field.maximumItems !== undefined && value.length > field.maximumItems) errors.push({ field: path, code: "maximum_items", message: `${field.label} deve ter no máximo ${field.maximumItems} itens.` });
+      value.forEach((item, index) => {
+        if (field.itemField) errors.push(...validateField(field.itemField, item, `${path}.${index}`, depth + 1));
+        if (field.fields) {
+          if (!plainObject(item)) {
+            errors.push({ field: `${path}.${index}`, code: "invalid_type", message: `O item ${index + 1} de ${field.label} deve ser um objeto.` });
+          } else {
+            field.fields.forEach(child => errors.push(
+              ...validateField(child, item[child.key], `${path}.${index}.${child.key}`, depth + 1),
+            ));
+          }
+        }
+      });
     }
-  } else if (field.type === "object" && !plainObject(value)) {
-    errors.push({ field: field.key, code: "invalid_type", message: `${field.label} deve ser um objeto.` });
+  } else if (field.type === "object") {
+    if (!plainObject(value)) errors.push({ field: path, code: "invalid_type", message: `${field.label} deve ser um objeto.` });
+    else field.fields?.forEach(child => errors.push(
+      ...validateField(child, value[child.key], `${path}.${child.key}`, depth + 1),
+    ));
   }
   return errors;
 }

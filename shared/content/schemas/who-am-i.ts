@@ -7,8 +7,16 @@ export const whoAmIContentSchema: ContentSchema = {
   description: "Personagens bíblicos descobertos por dicas progressivas.",
   fields: [
     field("name", "Personagem", "text", true, { minimum: 2, maximum: 80 }),
-    field("hints", "Dicas", "list", true, { minimumItems: 3, maximumItems: 8 }),
-    field("options", "Alternativas", "list", true, { minimumItems: 4, maximumItems: 6 }),
+    field("hints", "Dicas", "list", true, {
+      minimumItems: 3,
+      maximumItems: 8,
+      itemField: field("hint", "Dica", "text", true),
+    }),
+    field("options", "Alternativas", "list", true, {
+      minimumItems: 4,
+      maximumItems: 6,
+      itemField: field("option", "Alternativa", "text", true),
+    }),
   ],
   templates: [
     { id: "old-testament", label: "Antigo Testamento", description: "Personagem do Antigo Testamento.", values: { category: "Antigo Testamento" } },

@@ -149,11 +149,10 @@ export const adminNavigation: NavigationGroup[] = [
       },
       {
         label: "Criar conteúdo",
-        href: "",
+        href: "/admin/conteudo/editor",
         icon: "sparkles",
-        description: "Editor universal em uma etapa futura.",
+        description: "Montar e validar rascunhos locais para todos os jogos.",
         permissions: ["questions.edit"],
-        disabled: true,
       },
       {
         label: "Revisão",

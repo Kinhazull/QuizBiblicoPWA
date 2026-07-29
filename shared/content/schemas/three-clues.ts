@@ -7,7 +7,11 @@ export const threeCluesContentSchema: ContentSchema = {
   description: "Respostas bíblicas descobertas com até três pistas.",
   fields: [
     field("answer", "Resposta", "text", true, { minimum: 2, maximum: 100 }),
-    field("clues", "Pistas", "list", true, { minimumItems: 3, maximumItems: 3 }),
+    field("clues", "Pistas", "list", true, {
+      minimumItems: 3,
+      maximumItems: 3,
+      itemField: field("clue", "Pista", "text", true),
+    }),
   ],
   templates: [
     { id: "character", label: "Personagem", description: "Adivinhar um personagem.", values: { category: "Personagens" } },

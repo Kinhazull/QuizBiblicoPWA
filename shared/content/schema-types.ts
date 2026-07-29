@@ -113,6 +113,8 @@ export type ContentField = {
   maximumItems?: number;
   placeholder?: string;
   importColumn?: string;
+  itemField?: ContentField;
+  fields?: readonly ContentField[];
 };
 export type ContentTemplate = {
   id: string;
