@@ -3,12 +3,14 @@ import {
   ContentStatus,
   Difficulty,
   GameType,
+  getContentSchema,
   type LegacyQuizQuestion,
 } from "../../shared/content";
 import type { AppEnv } from "./auth";
 
 export type UniversalContentSummary = {
   id: string;
+  source: "LEGACY_QUIZ" | "UNIVERSAL_CMS";
   gameType: GameType;
   title: string;
   biblicalReference: string | null;
@@ -21,7 +23,7 @@ export type UniversalContentSummary = {
   timesUsed: number;
   tags: readonly { id: string; label: string }[];
   indicators: readonly string[];
-  links: { edit: string; review: string; history: string };
+  links: { edit: string; review: string | null; history: string };
 };
 
 const statusSql: Record<ContentStatus, string> = {
@@ -73,6 +75,7 @@ export function adaptLegacyQuizSummary(
   ];
   return {
     id: universal.id,
+    source: "LEGACY_QUIZ",
     gameType: GameType.QUIZ,
     title: universal.content.payload.prompt,
     biblicalReference: universal.biblicalReference,
@@ -100,18 +103,35 @@ export async function loadContentDashboard(env: AppEnv, organizationId: string) 
     env.DB.prepare("SELECT COUNT(*) total FROM question_bank WHERE organization_id=?1 AND status<>'archived' AND review_status='in_review'").bind(organizationId).first<{ total: number }>(),
     ...Object.values(ContentStatus).map(status =>
       env.DB.prepare(`SELECT COUNT(*) total FROM question_bank qb WHERE qb.organization_id=?1 AND ${statusSql[status]}`).bind(organizationId).first<{ total: number }>()),
+    env.DB.prepare("SELECT COUNT(*) total FROM content_items WHERE organization_id=?1").bind(organizationId).first<{ total: number }>(),
+    env.DB.prepare("SELECT COUNT(*) total FROM content_items WHERE organization_id=?1 AND status='DRAFT'").bind(organizationId).first<{ total: number }>(),
+    env.DB.prepare("SELECT COUNT(*) total FROM content_items WHERE organization_id=?1 AND status='PUBLISHED'").bind(organizationId).first<{ total: number }>(),
+    env.DB.prepare("SELECT game_type AS gameType,COUNT(*) total FROM content_items WHERE organization_id=?1 GROUP BY game_type")
+      .bind(organizationId).all<{ gameType: GameType; total: number }>(),
   ]);
-  const count = (index: number) => Number(results[index]?.total || 0);
-  const byStatus = Object.fromEntries(Object.values(ContentStatus).map((status, index) => [status, count(index + 3)]));
+  const count = (index: number) => Number((results[index] as { total?: number } | null)?.total || 0);
+  const legacyStatusCount = Object.fromEntries(Object.values(ContentStatus).map((status, index) => [status, count(index + 3)]));
+  const universalTotalIndex = 3 + Object.values(ContentStatus).length;
+  const universalTotal = count(universalTotalIndex);
+  const universalDrafts = count(universalTotalIndex + 1);
+  const universalPublished = count(universalTotalIndex + 2);
+  const gameRows = (results[universalTotalIndex + 3] as D1Result<{ gameType: GameType; total: number }>).results || [];
+  const byGameCount = new Map(gameRows.map(row => [row.gameType, Number(row.total)]));
+  const byStatus = {
+    ...legacyStatusCount,
+    DRAFT: Number(legacyStatusCount.DRAFT) + universalDrafts,
+    PUBLISHED: Number(legacyStatusCount.PUBLISHED) + universalPublished,
+  };
   return {
-    total: count(0),
+    total: count(0) + universalTotal,
     archived: count(1),
     needsReview: count(2),
     byStatus,
     byGame: Object.values(GameType).map(gameType => ({
       gameType,
-      count: gameType === GameType.QUIZ ? count(0) : 0,
+      count: (gameType === GameType.QUIZ ? count(0) : 0) + (byGameCount.get(gameType) || 0),
       integrated: gameType === GameType.QUIZ,
+      editorialPersisted: byGameCount.get(gameType) || 0,
     })),
   };
 }
@@ -121,19 +141,14 @@ export async function loadUniversalContent(
   organizationId: string,
   searchParams: URLSearchParams,
 ) {
+  const source = String(searchParams.get("source") || "");
   const gameType = searchParams.get("game") || "";
-  const page = Math.max(1, Number(searchParams.get("page")) || 1);
+  const page = Math.max(1, Math.min(100, Number(searchParams.get("page")) || 1));
   const pageSize = Math.max(10, Math.min(50, Number(searchParams.get("pageSize")) || 20));
+  const fetchLimit = page * pageSize;
   const dashboard = await loadContentDashboard(env, organizationId);
-  if (gameType && gameType !== GameType.QUIZ) return {
-    items: [], facets: { categories: [], books: [], tags: [], difficulties: Object.values(Difficulty), statuses: Object.values(ContentStatus) },
-    pagination: { page, pageSize, total: 0, totalPages: 1, hasMore: false },
-    totals: dashboard,
-  };
-
-  const filters = ["qb.organization_id=?1"];
-  const values: unknown[] = [organizationId];
-  const add = (sql: string, value: unknown) => { values.push(value); filters.push(sql.replace("?", `?${values.length}`)); };
+  const includeLegacy = source !== "UNIVERSAL_CMS" && (!gameType || gameType === GameType.QUIZ);
+  const includeUniversal = source !== "LEGACY_QUIZ";
   const q = String(searchParams.get("q") || "").trim().slice(0, 100);
   const status = String(searchParams.get("status") || "");
   const difficulty = String(searchParams.get("difficulty") || "");
@@ -142,6 +157,12 @@ export async function loadUniversalContent(
   const reference = String(searchParams.get("reference") || "").trim().slice(0, 120);
   const tag = String(searchParams.get("tag") || "").trim().slice(0, 80);
   const onlyArchived = searchParams.get("archived") === "1";
+
+  let legacyTotal = 0;
+  let legacyItems: UniversalContentSummary[] = [];
+  const filters = ["qb.organization_id=?1"];
+  const values: unknown[] = [organizationId];
+  const add = (sql: string, value: unknown) => { values.push(value); filters.push(sql.replace("?", `?${values.length}`)); };
   if (onlyArchived) filters.push(statusSql.ARCHIVED);
   else if (Object.values(ContentStatus).includes(status as ContentStatus)) filters.push(statusSql[status as ContentStatus]);
   else filters.push("qb.status<>'archived'");
@@ -161,34 +182,127 @@ export async function loadUniversalContent(
     values.push(`%${q}%`);
     filters.push(`(qb.prompt LIKE ?${values.length} OR qb.reference LIKE ?${values.length} OR qb.theme LIKE ?${values.length})`);
   }
-  const countValues = [...values];
-  const count = await env.DB.prepare(`SELECT COUNT(*) total FROM question_bank qb WHERE ${filters.join(" AND ")}`).bind(...countValues).first<{ total: number }>();
-  values.push(pageSize, (page - 1) * pageSize);
-  const rows = await env.DB.prepare(
-    `SELECT qb.* FROM question_bank qb WHERE ${filters.join(" AND ")} ORDER BY qb.updated_at DESC, qb.id LIMIT ?${values.length - 1} OFFSET ?${values.length}`,
-  ).bind(...values).all<Record<string, unknown>>();
-  const ids = rows.results.map(row => String(row.id));
-  const choices = ids.length
-    ? await env.DB.prepare(`SELECT * FROM question_bank_choices WHERE question_id IN (${ids.map((_, index) => `?${index + 1}`).join(",")}) ORDER BY question_id,position`).bind(...ids).all<Record<string, unknown>>()
-    : { results: [] as Record<string, unknown>[] };
-  const byQuestion = new Map<string, Record<string, unknown>[]>();
-  choices.results.forEach(choice => {
-    const id = String(choice.question_id);
-    byQuestion.set(id, [...(byQuestion.get(id) || []), choice]);
-  });
-  const facets = await env.DB.prepare(
-    "SELECT DISTINCT category,book,theme FROM question_bank WHERE organization_id=?1 AND status<>'archived' ORDER BY category,book,theme",
-  ).bind(organizationId).all<{ category: string | null; book: string | null; theme: string | null }>();
-  const total = Number(count?.total || 0);
-  const unique = (key: "category" | "book" | "theme") => [...new Set(facets.results.map(row => row[key]).filter((value): value is string => Boolean(value)))];
+  if (includeLegacy) {
+    const count = await env.DB.prepare(`SELECT COUNT(*) total FROM question_bank qb WHERE ${filters.join(" AND ")}`)
+      .bind(...values).first<{ total: number }>();
+    legacyTotal = Number(count?.total || 0);
+    const rowValues = [...values, fetchLimit];
+    const rows = await env.DB.prepare(
+      `SELECT qb.* FROM question_bank qb WHERE ${filters.join(" AND ")} ORDER BY qb.updated_at DESC,qb.id LIMIT ?${rowValues.length}`,
+    ).bind(...rowValues).all<Record<string, unknown>>();
+    const ids = rows.results.map(row => String(row.id));
+    const choices = ids.length
+      ? await env.DB.prepare(`SELECT * FROM question_bank_choices WHERE question_id IN (${ids.map((_, index) => `?${index + 1}`).join(",")}) ORDER BY question_id,position`).bind(...ids).all<Record<string, unknown>>()
+      : { results: [] as Record<string, unknown>[] };
+    const byQuestion = new Map<string, Record<string, unknown>[]>();
+    choices.results.forEach(choice => {
+      const id = String(choice.question_id);
+      byQuestion.set(id, [...(byQuestion.get(id) || []), choice]);
+    });
+    legacyItems = rows.results.map(row => adaptLegacyQuizSummary(row, byQuestion.get(String(row.id)) || []));
+  }
+
+  let universalTotal = 0;
+  let universalItems: UniversalContentSummary[] = [];
+  const universalFilters = ["organization_id=?1"];
+  const universalValues: unknown[] = [organizationId];
+  const addUniversal = (sql: string, value: unknown) => {
+    universalValues.push(value);
+    universalFilters.push(sql.replace("?", `?${universalValues.length}`));
+  };
+  if (gameType) addUniversal("game_type=?", gameType);
+  if (onlyArchived || status === ContentStatus.ARCHIVED) universalFilters.push("0=1");
+  else if (
+    status
+    && status !== ContentStatus.DRAFT
+    && status !== ContentStatus.PUBLISHED
+  ) universalFilters.push("0=1");
+  else if (status) addUniversal("status=?", status);
+  if (difficulty) addUniversal("difficulty=?", difficulty);
+  if (category) addUniversal("category=?", category);
+  if (reference) addUniversal("biblical_reference LIKE ?", `%${reference}%`);
+  if (tag) addUniversal("tags_json LIKE ?", `%"${tag.replaceAll("\"", "\\\"")}"%`);
+  if (book) addUniversal("payload_json LIKE ?", `%"book":"${book.replaceAll("\"", "\\\"")}"%`);
+  if (q) {
+    universalValues.push(`%${q}%`);
+    universalFilters.push(`(payload_json LIKE ?${universalValues.length} OR biblical_reference LIKE ?${universalValues.length} OR category LIKE ?${universalValues.length})`);
+  }
+  if (includeUniversal) {
+    const count = await env.DB.prepare(`SELECT COUNT(*) total FROM content_items WHERE ${universalFilters.join(" AND ")}`)
+      .bind(...universalValues).first<{ total: number }>();
+    universalTotal = Number(count?.total || 0);
+    const rowValues = [...universalValues, fetchLimit];
+    const rows = await env.DB.prepare(
+      `SELECT * FROM content_items WHERE ${universalFilters.join(" AND ")} ORDER BY updated_at DESC,id LIMIT ?${rowValues.length}`,
+    ).bind(...rowValues).all<Record<string, unknown>>();
+    universalItems = rows.results.map(row => {
+      let payload: Record<string, unknown> = {};
+      let tags: string[] = [];
+      try { payload = JSON.parse(String(row.payload_json)); } catch { payload = {}; }
+      try { tags = JSON.parse(String(row.tags_json)); } catch { tags = []; }
+      const schema = getContentSchema(String(row.game_type));
+      const titleField = schema?.fields.find(field => typeof payload[field.key] === "string" && String(payload[field.key]).trim());
+      const id = String(row.id);
+      return {
+        id,
+        source: "UNIVERSAL_CMS",
+        gameType: String(row.game_type) as GameType,
+        title: titleField ? String(payload[titleField.key]) : schema?.label || "Rascunho universal",
+        biblicalReference: typeof row.biblical_reference === "string" ? row.biblical_reference : null,
+        book: typeof payload.book === "string" ? payload.book : null,
+        category: String(row.category),
+        difficulty: String(row.difficulty) as Difficulty,
+        status: row.status === ContentStatus.PUBLISHED
+          ? ContentStatus.PUBLISHED
+          : ContentStatus.DRAFT,
+        version: Number(row.version),
+        updatedAt: Number(row.updated_at),
+        timesUsed: 0,
+        tags: tags.filter(value => typeof value === "string").map(label => ({ id: label, label })),
+        indicators: ["Conteúdo editorial persistido", "Integração com o jogo pendente"],
+        links: {
+          edit: `/admin/conteudo/editor?id=${encodeURIComponent(id)}`,
+          review: null,
+          history: `/api/admin/content/${encodeURIComponent(id)}/versions`,
+        },
+      };
+    });
+  }
+
+  const facetRows = await Promise.all([
+    env.DB.prepare("SELECT DISTINCT category,book,theme FROM question_bank WHERE organization_id=?1 AND status<>'archived' ORDER BY category,book,theme")
+      .bind(organizationId).all<{ category: string | null; book: string | null; theme: string | null }>(),
+    env.DB.prepare("SELECT DISTINCT category,tags_json,payload_json FROM content_items WHERE organization_id=?1 ORDER BY category")
+      .bind(organizationId).all<{ category: string; tags_json: string; payload_json: string }>(),
+  ]);
+  const legacyFacets = facetRows[0].results;
+  const cmsFacets = facetRows[1].results;
+  const safeArray = (value: string) => {
+    try { const parsed = JSON.parse(value); return Array.isArray(parsed) ? parsed.filter(item => typeof item === "string") : []; }
+    catch { return []; }
+  };
+  const payloadBook = (value: string) => {
+    try { const parsed = JSON.parse(value); return typeof parsed.book === "string" ? parsed.book : null; }
+    catch { return null; }
+  };
+  const combined = [...legacyItems, ...universalItems]
+    .sort((left, right) => right.updatedAt - left.updatedAt || left.id.localeCompare(right.id));
+  const offset = (page - 1) * pageSize;
+  const total = legacyTotal + universalTotal;
+  const unique = (values: (string | null | undefined)[]) => [...new Set(values.filter((value): value is string => Boolean(value)))];
   return {
-    items: rows.results.map(row => adaptLegacyQuizSummary(row, byQuestion.get(String(row.id)) || [])),
+    items: combined.slice(offset, offset + pageSize),
     facets: {
-      categories: unique("category"),
-      books: unique("book"),
-      tags: [...new Set([...unique("theme"), ...unique("book")])],
+      categories: unique([...legacyFacets.map(row => row.category), ...cmsFacets.map(row => row.category)]),
+      books: unique([...legacyFacets.map(row => row.book), ...cmsFacets.map(row => payloadBook(row.payload_json))]),
+      tags: unique([
+        ...legacyFacets.map(row => row.theme),
+        ...legacyFacets.map(row => row.book),
+        ...cmsFacets.flatMap(row => safeArray(row.tags_json)),
+      ]),
       difficulties: Object.values(Difficulty),
       statuses: Object.values(ContentStatus),
+      sources: ["LEGACY_QUIZ", "UNIVERSAL_CMS"],
     },
     pagination: { page, pageSize, total, totalPages: Math.max(1, Math.ceil(total / pageSize)), hasMore: page * pageSize < total },
     totals: dashboard,

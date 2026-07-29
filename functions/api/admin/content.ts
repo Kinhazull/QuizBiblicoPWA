@@ -1,6 +1,7 @@
 import type { AppEnv } from "../../_lib/auth";
 import { loadContentDashboard, loadUniversalContent } from "../../_lib/content-cms";
-import { requireAnyPermission } from "../../_lib/permissions";
+import { createUniversalDraft } from "../../_lib/universal-content-store";
+import { requireAnyPermission, requirePermission } from "../../_lib/permissions";
 import { json } from "../../_lib/security";
 
 export const onRequestGet = async ({ request, env }: { request: Request; env: AppEnv }) => {
@@ -14,5 +15,25 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: Ap
   } catch (response) {
     if (response instanceof Response) return response;
     throw response;
+  }
+};
+
+export const onRequestPost = async ({ request, env }: { request: Request; env: AppEnv }) => {
+  try {
+    const user = await requirePermission(request, env, "questions.edit");
+    const result = await createUniversalDraft(
+      env,
+      String(user.organizationId),
+      String(user.id),
+      await request.json(),
+    );
+    if (!result.ok) return json({ error: "invalid_content", fields: result.errors }, 422);
+    return json({ content: result.content }, 201, { "cache-control": "no-store" });
+  } catch (response) {
+    if (response instanceof Response) return response;
+    if (response instanceof SyntaxError) return json({ error: "invalid_json" }, 400);
+    const supportId = crypto.randomUUID();
+    console.error("universal_content_create_failed", { supportId });
+    return json({ error: "unexpected_error", supportId }, 500);
   }
 };

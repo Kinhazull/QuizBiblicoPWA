@@ -70,7 +70,7 @@ test("validation runs live and manually with field and summary feedback", () => 
   assert.match(editor, /aria-live="polite"/);
 });
 
-test("preview and metadata remain local and start as DRAFT", () => {
+test("preview and metadata start as DRAFT and expose universal persistence", () => {
   assert.match(editor, /ContentPreview/);
   assert.match(editor, /Prévia editorial local/);
   assert.match(editor, /Metadados universais/);
@@ -78,15 +78,28 @@ test("preview and metadata remain local and start as DRAFT", () => {
   assert.match(model, /status: ContentStatus\.DRAFT/);
   assert.match(fields, /ID opcional/);
   assert.match(fields, /Tipo/);
-  assert.match(editor, /Salvar rascunho \(futuro\)/);
-  assert.match(editor, /disabled/);
+  assert.match(editor, /Salvar rascunho/);
+  assert.match(editor, /\/api\/admin\/content/);
 });
 
-test("editor does not persist or issue network writes", () => {
+test("editor persists only through authenticated CMS endpoints and never browser storage", () => {
   const source = `${editor}\n${fields}\n${model}`;
-  assert.doesNotMatch(source, /\bfetch\s*\(/);
+  assert.match(source, /\bfetch\s*\(/);
+  assert.match(source, /credentials: "same-origin"/);
+  assert.match(source, /cache: "no-store"/);
+  assert.match(source, /method: contentId \? "PATCH" : "POST"/);
   assert.doesNotMatch(source, /\blocalStorage\b|\bsessionStorage\b|\bindexedDB\b|document\.cookie/);
-  assert.doesNotMatch(source, /\bPOST\b|\bPATCH\b|\bDELETE\b/);
+  assert.doesNotMatch(source, /\bDELETE\b/);
+});
+
+test("editor exposes the DRAFT to PUBLISHED lifecycle without direct published editing", () => {
+  assert.match(editor, /Publicar/);
+  assert.match(editor, /Voltar para Draft/);
+  assert.match(editor, /"publish"/);
+  assert.match(editor, /"unpublish"/);
+  assert.match(editor, /disabled=\{isPublished\}/);
+  assert.match(editor, /status: persisted\.status/);
+  assert.doesNotMatch(editor, /IN_REVIEW|ARCHIVED/);
 });
 
 test("editor layout is responsive, bounded and keyboard accessible", () => {
@@ -101,8 +114,8 @@ test("editor layout is responsive, bounded and keyboard accessible", () => {
   assert.match(fields, /aria-label=/);
 });
 
-test("no migration was added by the local editor sprint", () => {
+test("universal content persistence migration is present and additive", () => {
   const migrations = readdirSync(new URL("../drizzle/", import.meta.url)).filter(name => name.endsWith(".sql"));
   assert.ok(migrations.length > 0);
-  assert.equal(migrations.some(name => name.includes("content_editor")), false);
+  assert.equal(migrations.includes("0031_universal_content_drafts.sql"), true);
 });

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
+  ContentStatus,
   Difficulty,
   contentSchemas,
   getContentSchema,
@@ -19,6 +20,25 @@ import {
   type EditorDraft,
 } from "./editor-model";
 import { ReferenceField, UniversalFieldRenderer } from "./UniversalFields";
+
+type PersistedContent = {
+  id: string;
+  gameType: GameType;
+  status: typeof ContentStatus.DRAFT | typeof ContentStatus.PUBLISHED;
+  category: string;
+  difficulty: EditorDraft["metadata"]["difficulty"];
+  biblicalReference: string | null;
+  tags: string[];
+  payload: Record<string, unknown>;
+  reference: EditorDraft["reference"] | null;
+  templateId: string | null;
+  version: number;
+  authorId: string;
+  reviewerId: string | null;
+  createdAt: number;
+  updatedAt: number;
+  internalNotes: string | null;
+};
 
 const difficultyLabels = {
   [Difficulty.VERY_EASY]: "Muito fácil",
@@ -39,10 +59,14 @@ function initialState() {
   };
 }
 
-function GameTypeSelector(props: { value: GameType; onChange: (value: GameType) => void }) {
+function GameTypeSelector(props: {
+  value: GameType;
+  disabled?: boolean;
+  onChange: (value: GameType) => void;
+}) {
   return <label className="editor-selector">
     Jogo
-    <select value={props.value} onChange={event => props.onChange(event.target.value as GameType)}>
+    <select disabled={props.disabled} value={props.value} onChange={event => props.onChange(event.target.value as GameType)}>
       {contentSchemas.map(schema => (
         <option value={schema.gameType} key={schema.gameType}>{schema.label}</option>
       ))}
@@ -53,11 +77,12 @@ function GameTypeSelector(props: { value: GameType; onChange: (value: GameType) 
 function ContentTemplateSelector(props: {
   templates: readonly ContentTemplate[];
   value: string;
+  disabled?: boolean;
   onChange: (value: string) => void;
 }) {
   return <label className="editor-selector">
     Template
-    <select value={props.value} onChange={event => props.onChange(event.target.value)}>
+    <select disabled={props.disabled} value={props.value} onChange={event => props.onChange(event.target.value)}>
       {props.templates.length === 0 && <option value="">Sem template</option>}
       {props.templates.map(template => (
         <option value={template.id} key={template.id}>{template.label}</option>
@@ -229,6 +254,10 @@ export default function UniversalContentEditor() {
   const [draft, setDraft] = useState(initial.draft);
   const [templateId, setTemplateId] = useState(initial.templateId);
   const [dirty, setDirty] = useState(false);
+  const [contentId, setContentId] = useState<string | null>(null);
+  const [loadingContent, setLoadingContent] = useState(false);
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error" | "conflict">("idle");
+  const [saveMessage, setSaveMessage] = useState("");
   const [warning, setWarning] = useState(
     initial.selection.invalid
       ? "O jogo informado não existe. O Quiz Bíblico foi carregado como padrão."
@@ -241,9 +270,63 @@ export default function UniversalContentEditor() {
   const validationTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const schema = useMemo(() => getContentSchema(draft.gameType), [draft.gameType]);
   const selectedTemplate = schema?.templates.find(template => template.id === templateId) ?? null;
+  const isPublished = draft.metadata.status === ContentStatus.PUBLISHED;
 
   useEffect(() => {
-    const selection = gameFromQuery(new URLSearchParams(window.location.search).get("game"));
+    const search = new URLSearchParams(window.location.search);
+    const existingId = search.get("id");
+    if (existingId) {
+      const controller = new AbortController();
+      setLoadingContent(true);
+      fetch(`/api/admin/content/${encodeURIComponent(existingId)}`, {
+        cache: "no-store",
+        credentials: "same-origin",
+        signal: controller.signal,
+      })
+        .then(async response => {
+          if (!response.ok) throw new Error(response.status === 404 ? "not_found" : "load_failed");
+          return response.json() as Promise<{ content: PersistedContent }>;
+        })
+        .then(({ content }) => {
+          setContentId(content.id);
+          setTemplateId(content.templateId ?? "");
+          setDraft({
+            gameType: content.gameType,
+            templateId: content.templateId,
+            metadata: {
+              id: content.id,
+              gameType: content.gameType,
+              category: content.category,
+              tags: content.tags,
+              difficulty: content.difficulty,
+              biblicalReference: content.biblicalReference,
+              status: content.status,
+              authorId: content.authorId,
+              reviewerId: content.reviewerId,
+              createdAt: content.createdAt,
+              updatedAt: content.updatedAt,
+              version: content.version,
+              internalNotes: content.internalNotes,
+            },
+            payload: content.payload,
+            reference: content.reference ?? { id: "", label: content.biblicalReference ?? "", type: "passage" },
+          });
+          setDirty(false);
+          setSaveState("saved");
+          setSaveMessage(`Rascunho carregado. Versão ${content.version}.`);
+        })
+        .catch(reason => {
+          if (!(reason instanceof DOMException && reason.name === "AbortError")) {
+            setSaveState("error");
+            setSaveMessage(reason instanceof Error && reason.message === "not_found"
+              ? "O rascunho não foi encontrado ou pertence a outra organização."
+              : "Não foi possível carregar o rascunho.");
+          }
+        })
+        .finally(() => { if (!controller.signal.aborted) setLoadingContent(false); });
+      return () => controller.abort();
+    }
+    const selection = gameFromQuery(search.get("game"));
     const initialSchema = getContentSchema(selection.gameType);
     const initialTemplate = initialSchema?.templates[0] ?? null;
     setDraft(createEditorDraft(selection.gameType, initialTemplate));
@@ -251,6 +334,7 @@ export default function UniversalContentEditor() {
     setWarning(selection.invalid
       ? "O jogo informado não existe. O Quiz Bíblico foi carregado como padrão."
       : "");
+    return undefined;
   }, []);
 
   useEffect(() => {
@@ -282,6 +366,8 @@ export default function UniversalContentEditor() {
   const setChangedDraft = (next: EditorDraft) => {
     setDraft(next);
     setDirty(true);
+    setSaveState("idle");
+    setSaveMessage("Alterações não salvas.");
   };
 
   const changeGame = (gameType: GameType) => {
@@ -291,6 +377,7 @@ export default function UniversalContentEditor() {
     if (!nextSchema) return;
     const nextTemplate = nextSchema.templates[0] ?? null;
     setDraft(createEditorDraft(gameType, nextTemplate));
+    setContentId(null);
     setTemplateId(nextTemplate?.id ?? "");
     setDirty(false);
     setWarning("");
@@ -334,34 +421,185 @@ export default function UniversalContentEditor() {
     setManualValidation(true);
   };
 
+  const saveDraft = async () => {
+    const currentValidation = validateContent(draft.gameType, draft.metadata, draft.payload);
+    setValidation(currentValidation);
+    if (!currentValidation.valid) {
+      setSaveState("error");
+      setSaveMessage("Corrija os campos indicados antes de salvar.");
+      return;
+    }
+    setSaveState("saving");
+    setSaveMessage("Salvando rascunho…");
+    try {
+      const response = await fetch(
+        contentId ? `/api/admin/content/${encodeURIComponent(contentId)}` : "/api/admin/content",
+        {
+          method: contentId ? "PATCH" : "POST",
+          cache: "no-store",
+          credentials: "same-origin",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            gameType: draft.gameType,
+            status: ContentStatus.DRAFT,
+            templateId: draft.templateId,
+            version: draft.metadata.version,
+            metadata: draft.metadata,
+            payload: draft.payload,
+            reference: draft.reference,
+          }),
+        },
+      );
+      const data = await response.json() as {
+        content?: PersistedContent;
+        error?: string;
+        currentVersion?: number;
+        fields?: ContentValidationIssue[];
+      };
+      if (response.status === 409) {
+        setSaveState("conflict");
+        setSaveMessage(`Conflito: o servidor já possui a versão ${data.currentVersion}. Recarregue antes de editar.`);
+        return;
+      }
+      if (!response.ok || !data.content) {
+        if (Array.isArray(data.fields)) {
+          setValidation({ valid: false, errors: data.fields, warnings: [], normalizedValue: null });
+        }
+        throw new Error(data.error || "save_failed");
+      }
+      const persisted = data.content;
+      setContentId(persisted.id);
+      setDraft(current => ({
+        ...current,
+        metadata: {
+          ...current.metadata,
+          id: persisted.id,
+          authorId: persisted.authorId,
+          createdAt: persisted.createdAt,
+          updatedAt: persisted.updatedAt,
+          version: persisted.version,
+          status: persisted.status,
+        },
+      }));
+      setDirty(false);
+      setSaveState("saved");
+      setSaveMessage(`Rascunho salvo. Versão ${persisted.version}.`);
+      window.history.replaceState({}, "", `/admin/conteudo/editor?id=${encodeURIComponent(persisted.id)}`);
+    } catch {
+      setSaveState("error");
+      setSaveMessage("Não foi possível salvar o rascunho. Tente novamente.");
+    }
+  };
+
+  const transitionStatus = async (
+    target: typeof ContentStatus.DRAFT | typeof ContentStatus.PUBLISHED,
+  ) => {
+    if (!contentId || dirty || saveState === "saving") return;
+    const currentValidation = validateContent(draft.gameType, {
+      ...draft.metadata,
+      status: target,
+    }, draft.payload);
+    setValidation(currentValidation);
+    if (target === ContentStatus.PUBLISHED && !currentValidation.valid) {
+      setSaveState("error");
+      setSaveMessage("Corrija os campos indicados antes de publicar.");
+      return;
+    }
+    setSaveState("saving");
+    setSaveMessage(target === ContentStatus.PUBLISHED
+      ? "Publicando conteúdo…"
+      : "Retornando para Draft…");
+    try {
+      const action = target === ContentStatus.PUBLISHED ? "publish" : "unpublish";
+      const response = await fetch(
+        `/api/admin/content/${encodeURIComponent(contentId)}/${action}`,
+        {
+          method: "POST",
+          cache: "no-store",
+          credentials: "same-origin",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ version: draft.metadata.version }),
+        },
+      );
+      const data = await response.json() as {
+        content?: PersistedContent;
+        error?: string;
+        currentVersion?: number;
+        fields?: ContentValidationIssue[];
+      };
+      if (response.status === 409) {
+        setSaveState("conflict");
+        setSaveMessage(`Conflito: o servidor já possui a versão ${data.currentVersion}. Recarregue antes de continuar.`);
+        return;
+      }
+      if (!response.ok || !data.content) {
+        if (Array.isArray(data.fields)) {
+          setValidation({ valid: false, errors: data.fields, warnings: [], normalizedValue: null });
+        }
+        throw new Error(data.error || "transition_failed");
+      }
+      const persisted = data.content;
+      setDraft(current => ({
+        ...current,
+        metadata: {
+          ...current.metadata,
+          status: persisted.status,
+          updatedAt: persisted.updatedAt,
+          version: persisted.version,
+        },
+      }));
+      setDirty(false);
+      setSaveState("saved");
+      setSaveMessage(target === ContentStatus.PUBLISHED
+        ? `Conteúdo publicado. Versão ${persisted.version}.`
+        : `Conteúdo voltou para Draft. Versão ${persisted.version}.`);
+    } catch {
+      setSaveState("error");
+      setSaveMessage(target === ContentStatus.PUBLISHED
+        ? "Não foi possível publicar o conteúdo."
+        : "Não foi possível retornar o conteúdo para Draft.");
+    }
+  };
+
   return <main className="admin-page content-editor-page">
     <header className="admin-title">
       <span className="eyebrow">Conteúdo</span>
       <h1>Editor universal</h1>
-      <p>Monte e valide uma prévia local orientada pelo Schema Registry. Nenhum dado é salvo.</p>
+      <p>Crie e edite rascunhos universais orientados pelo Schema Registry.</p>
     </header>
 
+    {loadingContent && (
+      <div className="editor-warning" role="status" aria-live="polite">
+        Carregando rascunho…
+      </div>
+    )}
     {warning && <div className="editor-warning" role="status">{warning}</div>}
 
     <section className="editor-controls" aria-label="Configuração do editor">
-      <GameTypeSelector value={draft.gameType} onChange={changeGame} />
+      <GameTypeSelector disabled={isPublished} value={draft.gameType} onChange={changeGame} />
       <ContentTemplateSelector
         templates={schema.templates}
         value={templateId}
+        disabled={isPublished}
         onChange={setTemplateId}
       />
-      <button type="button" onClick={applySelectedTemplate} disabled={!selectedTemplate}>
+      <button type="button" onClick={applySelectedTemplate} disabled={!selectedTemplate || isPublished}>
         Aplicar template
       </button>
       <p>{selectedTemplate?.description ?? "Este schema não possui templates."}</p>
     </section>
 
     <div className="editor-workspace">
+      <fieldset
+        disabled={isPublished}
+        aria-label="Conteúdo editorial"
+        style={{ display: "contents" }}
+      >
       <section className="editor-form" aria-labelledby="editor-form-title">
         <header>
           <div>
             <span>{schema.label}</span>
-            <h2 id="editor-form-title">Rascunho local</h2>
+            <h2 id="editor-form-title">Rascunho universal</h2>
           </div>
           {draft.templateId && <em>
             Template ativo: {schema.templates.find(item => item.id === draft.templateId)?.label}
@@ -396,21 +634,40 @@ export default function UniversalContentEditor() {
           result={validation}
         />
       </div>
+      </fieldset>
     </div>
 
     <footer className="editor-actions">
-      <button type="button" onClick={resetTemplate}>Reiniciar</button>
-      <button type="button" onClick={validateNow}>Validar conteúdo</button>
-      <button type="button" onClick={clearDraft}>Limpar rascunho local</button>
+      <button type="button" disabled={isPublished} onClick={resetTemplate}>Reiniciar</button>
+      <button type="button" disabled={isPublished} onClick={validateNow}>Validar conteúdo</button>
+      <button type="button" disabled={isPublished} onClick={clearDraft}>Limpar rascunho local</button>
       <button
         type="button"
-        disabled
-        title="Persistência será implementada em uma etapa futura"
+        disabled={saveState === "saving" || loadingContent || isPublished}
+        onClick={saveDraft}
       >
-        Salvar rascunho (futuro)
+        {saveState === "saving" ? "Salvando…" : "Salvar rascunho"}
       </button>
-      <span aria-live="polite">
-        {dirty ? "Alterações apenas nesta página." : "Rascunho local sem alterações."}
+      {!isPublished && contentId && (
+        <button
+          type="button"
+          disabled={dirty || saveState === "saving" || !validation.valid}
+          onClick={() => transitionStatus(ContentStatus.PUBLISHED)}
+        >
+          Publicar
+        </button>
+      )}
+      {isPublished && contentId && (
+        <button
+          type="button"
+          disabled={saveState === "saving"}
+          onClick={() => transitionStatus(ContentStatus.DRAFT)}
+        >
+          Voltar para Draft
+        </button>
+      )}
+      <span aria-live="polite" data-save-state={saveState}>
+        {saveMessage || (dirty ? "Alterações não salvas." : contentId ? `Rascunho ${contentId}.` : "Novo rascunho.")}
       </span>
     </footer>
   </main>;

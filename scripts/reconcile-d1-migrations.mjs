@@ -30,6 +30,7 @@ const foundationMigrations = [
   "0028_quiz_core_event_outbox.sql",
   "0029_quiz_core_event_outbox_leases.sql",
   "0030_achievement_statistics_projections.sql",
+  "0031_universal_content_drafts.sql",
 ];
 const expectedFinalLedger = [...baseline, targetMigration, ...foundationMigrations];
 
@@ -43,6 +44,7 @@ const requiredTables = [
   "user_platform_progress", "platform_xp_ledger", "platform_coin_ledger", "platform_achievement_definitions",
   "user_platform_achievements", "platform_mission_definitions", "user_platform_missions",
   "user_platform_mission_progress_events", "core_platform_events", "core_platform_event_processing",
+  "content_items", "content_versions",
   "user_platform_statistics", "user_platform_game_statistics", "user_platform_game_difficulty_statistics",
   "user_platform_statistics_active_days", "platform_statistics_event_checkpoints", "quiz_core_event_outbox",
   "user_platform_statistics_official_days_utc",

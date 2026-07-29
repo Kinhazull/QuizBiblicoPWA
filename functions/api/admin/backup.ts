@@ -43,6 +43,8 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
         seasons: await rows(env, "SELECT * FROM seasons WHERE organization_id=?1", organizationId),
         question_bank: await rows(env, "SELECT * FROM question_bank WHERE organization_id=?1", organizationId),
         question_bank_choices: await rows(env, "SELECT qbc.* FROM question_bank_choices qbc JOIN question_bank qb ON qb.id=qbc.question_id WHERE qb.organization_id=?1", organizationId),
+        content_items: await rows(env, "SELECT * FROM content_items WHERE organization_id=?1", organizationId),
+        content_versions: await rows(env, "SELECT * FROM content_versions WHERE organization_id=?1", organizationId),
         user_permissions: await rows(env, "SELECT up.* FROM user_permissions up JOIN users u ON u.id=up.user_id WHERE u.organization_id=?1", organizationId),
         ai_question_suggestions: await rows(env, "SELECT id,organization_id,requested_by,model,request_json,question_json,status,imported_question_id,created_at,reviewed_at,reviewed_by FROM ai_question_suggestions WHERE organization_id=?1", organizationId),
         batch_operations: await rows(env, "SELECT * FROM batch_operations WHERE organization_id=?1", organizationId),
