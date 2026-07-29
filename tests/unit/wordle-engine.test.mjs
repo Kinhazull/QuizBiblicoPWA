@@ -6,11 +6,9 @@ import {
   isWinningGuess,
   normalizeWord,
   WORDLE_MAX_ATTEMPTS,
-  WORDLE_TEMPORARY_ANSWER,
 } from "../../app/games/wordle/engine.ts";
 
-test("Wordle MVP uses a fixed answer and six attempts", () => {
-  assert.equal(WORDLE_TEMPORARY_ANSWER, "JESUS");
+test("Wordle uses six attempts without embedding a fixed answer", () => {
   assert.equal(WORDLE_MAX_ATTEMPTS, 6);
 });
 

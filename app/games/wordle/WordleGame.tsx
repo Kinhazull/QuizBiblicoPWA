@@ -8,7 +8,6 @@ import {
   normalizeWord,
   WORDLE_LENGTH,
   WORDLE_MAX_ATTEMPTS,
-  WORDLE_TEMPORARY_ANSWER,
   type LetterState,
 } from "./engine";
 import {
@@ -19,6 +18,13 @@ import {
 } from "../sdk";
 
 const KEYBOARD_ROWS = ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"];
+type WordleContent = {
+  id: string;
+  version: number;
+  word: string;
+  hint: string | null;
+  biblicalReference: string | null;
+};
 
 function strongerState(current: LetterState | undefined, next: LetterState) {
   const weight: Record<LetterState, number> = { absent: 1, present: 2, correct: 3 };
@@ -32,32 +38,60 @@ export function WordleGame() {
   const [currentGuess, setCurrentGuess] = useState("");
   const [status, setStatus] = useState<GamePlayStatus>("playing");
   const [message, setMessage] = useState("Digite uma palavra bíblica de cinco letras.");
+  const [content, setContent] = useState<WordleContent | null>(null);
+  const [contentState, setContentState] = useState<"loading" | "ready" | "error">("loading");
+  const answer = content?.word ?? "";
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch("/api/platform/games/wordle", {
+      credentials: "same-origin",
+      cache: "no-store",
+      signal: controller.signal,
+    })
+      .then(async response => {
+        if (!response.ok) throw new Error("wordle_content_unavailable");
+        const data = await response.json() as { content?: WordleContent };
+        if (!data.content || normalizeWord(data.content.word).length !== WORDLE_LENGTH) {
+          throw new Error("wordle_content_invalid");
+        }
+        setContent({ ...data.content, word: normalizeWord(data.content.word) });
+        setContentState("ready");
+      })
+      .catch(error => {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+        setContentState("error");
+        setMessage("Nenhum Wordle publicado está disponível no momento.");
+      });
+    return () => controller.abort();
+  }, []);
 
   const keyboardState = useMemo(() => {
     const states: Record<string, LetterState> = {};
+    if (!answer) return states;
     for (const guess of guesses) {
-      for (const item of evaluateGuess(guess, WORDLE_TEMPORARY_ANSWER)) {
+      for (const item of evaluateGuess(guess, answer)) {
         states[item.letter] = strongerState(states[item.letter], item.state);
       }
     }
     return states;
-  }, [guesses]);
+  }, [answer, guesses]);
 
   function addLetter(letter: string) {
-    if (status !== "playing" || currentGuessRef.current.length >= WORDLE_LENGTH) return;
+    if (contentState !== "ready" || status !== "playing" || currentGuessRef.current.length >= WORDLE_LENGTH) return;
     currentGuessRef.current = `${currentGuessRef.current}${letter}`;
     setCurrentGuess(currentGuessRef.current);
     setMessage("Complete a palavra e confirme.");
   }
 
   function removeLetter() {
-    if (status !== "playing") return;
+    if (contentState !== "ready" || status !== "playing") return;
     currentGuessRef.current = currentGuessRef.current.slice(0, -1);
     setCurrentGuess(currentGuessRef.current);
   }
 
   function submitGuess() {
-    if (status !== "playing") return;
+    if (!content || contentState !== "ready" || status !== "playing") return;
     const submittedGuess = currentGuessRef.current;
     if (!isValidGuess(submittedGuess)) {
       setMessage(`A palavra precisa ter ${WORDLE_LENGTH} letras.`);
@@ -70,20 +104,24 @@ export function WordleGame() {
     currentGuessRef.current = "";
     setCurrentGuess("");
 
-    if (isWinningGuess(normalized, WORDLE_TEMPORARY_ANSWER)) {
+    if (isWinningGuess(normalized, answer)) {
       setStatus("won");
       setMessage(`Você venceu em ${nextGuesses.length} tentativa${nextGuesses.length === 1 ? "" : "s"}!`);
       void recordPlatformGameCompletion({
         gameId: "wordle-biblico",
         sessionId: sessionId.current,
+        contentId: content.id,
+        contentVersion: content.version,
         guesses: nextGuesses,
       }).catch(() => undefined);
     } else if (nextGuesses.length === WORDLE_MAX_ATTEMPTS) {
       setStatus("lost");
-      setMessage(`Fim de jogo. A palavra era ${WORDLE_TEMPORARY_ANSWER}.`);
+      setMessage(`Fim de jogo. A palavra era ${answer}.`);
       void recordPlatformGameCompletion({
         gameId: "wordle-biblico",
         sessionId: sessionId.current,
+        contentId: content.id,
+        contentVersion: content.version,
         guesses: nextGuesses,
       }).catch(() => undefined);
     } else {
@@ -114,7 +152,9 @@ export function WordleGame() {
   const rows = Array.from({ length: WORDLE_MAX_ATTEMPTS }, (_, rowIndex) => {
     const submitted = guesses[rowIndex];
     const draft = rowIndex === guesses.length && status === "playing" ? currentGuess : "";
-    const letters = submitted ? evaluateGuess(submitted, WORDLE_TEMPORARY_ANSWER) : Array.from({ length: WORDLE_LENGTH }, (_, index) => ({ letter: draft[index] || "", state: undefined }));
+    const letters = submitted && answer
+      ? evaluateGuess(submitted, answer)
+      : Array.from({ length: WORDLE_LENGTH }, (_, index) => ({ letter: draft[index] || "", state: undefined }));
     return { submitted: Boolean(submitted), letters };
   });
 
@@ -130,6 +170,9 @@ export function WordleGame() {
       onRestart={restart}
     >
       <section className="wordle-game" aria-label="Wordle Bíblico">
+      {contentState === "loading" && <p className="wordle-message" role="status">Carregando desafio publicado...</p>}
+      {contentState === "error" && <p className="wordle-message lost" role="alert">{message}</p>}
+      {contentState === "ready" && content?.hint && <p className="wordle-message">Dica: {content.hint}</p>}
       <div className="wordle-board" aria-label="Tabuleiro do Wordle Bíblico">
         {rows.map((row, rowIndex) => (
           <div className="wordle-row" key={rowIndex} aria-label={`Tentativa ${rowIndex + 1}`}>
@@ -142,9 +185,9 @@ export function WordleGame() {
         ))}
       </div>
 
-      <p className={`wordle-message ${status}`} role="status" aria-live="polite">{message}</p>
+      {contentState === "ready" && <p className={`wordle-message ${status}`} role="status" aria-live="polite">{message}</p>}
 
-      {status === "playing" && (
+      {contentState === "ready" && status === "playing" && (
         <div className="wordle-keyboard" aria-label="Teclado virtual">
           {KEYBOARD_ROWS.map((row, index) => (
             <div className="wordle-keyboard-row" key={row}>

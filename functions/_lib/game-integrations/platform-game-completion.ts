@@ -3,7 +3,6 @@ import {
   isWinningGuess,
   normalizeWord,
   WORDLE_MAX_ATTEMPTS,
-  WORDLE_TEMPORARY_ANSWER,
 } from "../../../app/games/wordle/engine";
 import {
   isCorrectThreeCluesAnswer,
@@ -15,8 +14,8 @@ import {
   isCorrectTimelineOrder,
   timelineScore,
   TIMELINE_MAX_ATTEMPTS,
+  type TimelineRound,
 } from "../../../app/games/timeline/engine";
-import { TIMELINE_ROUNDS } from "../../../app/games/timeline/rounds";
 import { evaluateMemoryCompletion } from "../../../app/games/memory/engine";
 import { MEMORY_SETS } from "../../../app/games/memory/sets";
 import { evaluateThemeAssociationGame, type ThemeAssociationAttempt } from "../../../app/games/theme-association/engine";
@@ -32,11 +31,23 @@ type CompletionContext = {
   userId: string;
   organizationId: string;
   completedAt: number;
+  wordleContent?: {
+    id: string;
+    version: number;
+    answer: string;
+  };
+  timelineContent?: {
+    id: string;
+    version: number;
+    round: TimelineRound;
+  };
 };
 
 type WordleCompletion = {
   gameId: "wordle-biblico";
   sessionId: string;
+  contentId: string;
+  contentVersion: number;
   guesses: string[];
 };
 
@@ -51,7 +62,8 @@ type ThreeCluesCompletion = {
 type TimelineCompletion = {
   gameId: "linha-do-tempo-biblica";
   sessionId: string;
-  roundId: string;
+  contentId: string;
+  contentVersion: number;
   orderedEventIds: string[];
   attemptsUsed: number;
 };
@@ -91,7 +103,10 @@ function validateSessionId(value: unknown) {
   return sessionId;
 }
 
-function wordleResult(input: WordleCompletion) {
+function wordleResult(input: WordleCompletion, content: CompletionContext["wordleContent"]) {
+  if (!content || input.contentId !== content.id || input.contentVersion !== content.version) {
+    throw new Error("invalid_wordle_content");
+  }
   if (!Array.isArray(input.guesses) || input.guesses.length < 1 || input.guesses.length > WORDLE_MAX_ATTEMPTS) {
     throw new Error("invalid_wordle_guesses");
   }
@@ -99,7 +114,7 @@ function wordleResult(input: WordleCompletion) {
     if (typeof value !== "string" || !isValidGuess(value)) throw new Error("invalid_wordle_guess");
     return normalizeWord(value);
   });
-  const winningIndex = guesses.findIndex(guess => isWinningGuess(guess, WORDLE_TEMPORARY_ANSWER));
+  const winningIndex = guesses.findIndex(guess => isWinningGuess(guess, content.answer));
   if (winningIndex >= 0 && winningIndex !== guesses.length - 1) throw new Error("invalid_wordle_completion");
   if (winningIndex < 0 && guesses.length !== WORDLE_MAX_ATTEMPTS) throw new Error("incomplete_wordle_game");
   const won = winningIndex === guesses.length - 1;
@@ -107,7 +122,7 @@ function wordleResult(input: WordleCompletion) {
     score: won ? (WORDLE_MAX_ATTEMPTS - guesses.length + 1) * 100 : 0,
     correctAnswers: won ? 1 : 0,
     questionsAnswered: 1,
-    gameVersion: "wordle-mvp-v1",
+    gameVersion: `wordle-cms-v${content.version}`,
     service: "wordle-service",
   };
 }
@@ -131,9 +146,11 @@ function threeCluesResult(input: ThreeCluesCompletion) {
   };
 }
 
-function timelineResult(input: TimelineCompletion) {
-  const round = TIMELINE_ROUNDS.find(item => item.id === input.roundId);
-  if (!round) throw new Error("invalid_timeline_round");
+function timelineResult(input: TimelineCompletion, content: CompletionContext["timelineContent"]) {
+  if (!content || input.contentId !== content.id || input.contentVersion !== content.version) {
+    throw new Error("invalid_timeline_content");
+  }
+  const round = content.round;
   if (!Array.isArray(input.orderedEventIds) || input.orderedEventIds.some(id => typeof id !== "string")) {
     throw new Error("invalid_timeline_order");
   }
@@ -146,7 +163,7 @@ function timelineResult(input: TimelineCompletion) {
     score: won ? timelineScore(input.attemptsUsed) : 0,
     correctAnswers: won ? 1 : 0,
     questionsAnswered: 1,
-    gameVersion: "timeline-mvp-v1",
+    gameVersion: `timeline-cms-v${content.version}`,
     service: "timeline-service",
   };
 }
@@ -200,11 +217,11 @@ export function adaptPlatformGameCompletion(
     throw new Error("invalid_game_completion_time");
   }
   const result = input.gameId === "wordle-biblico"
-    ? wordleResult(input)
+    ? wordleResult(input, context.wordleContent)
     : input.gameId === "jogo-tres-pistas"
       ? threeCluesResult(input)
       : input.gameId === "linha-do-tempo-biblica"
-        ? timelineResult(input)
+        ? timelineResult(input, context.timelineContent)
       : input.gameId === "memoria-biblica"
         ? memoryResult(input)
       : input.gameId === "associacao-de-temas"

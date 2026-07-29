@@ -30,6 +30,19 @@ async function mockPublicApi(page: import("@playwright/test").Page, authenticate
     contentType: "application/json",
     body: JSON.stringify({ achievements: [], summary: { total: 0, unlocked: 0, pending: 0 } }),
   }));
+  await page.route("**/api/platform/games/wordle", route => route.fulfill({
+    status: authenticated ? 200 : 401,
+    contentType: "application/json",
+    body: JSON.stringify(authenticated ? {
+      content: {
+        id: "wordle-e2e",
+        version: 2,
+        word: "JESUS",
+        hint: "O Salvador",
+        biblicalReference: "Mateus 1:21",
+      },
+    } : { error: "unauthorized" }),
+  }));
   await page.route("**/api/platform/daily/check-in", route => route.fulfill({
     status: authenticated ? 200 : 401,
     contentType: "application/json",

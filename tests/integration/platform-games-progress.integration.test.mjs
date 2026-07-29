@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { onRequestPost as finishPlatformGame } from "../../functions/api/platform/games/finish.ts";
+import { timelineRoundFromContent } from "../../functions/_lib/game-integrations/timeline-content.ts";
 import {
   createAuthenticatedRequest,
   createSession,
@@ -29,6 +30,16 @@ async function setup(t) {
     target,progress,state,assigned_at,expires_at)
     VALUES('mission-assignment','player','org-1','mission-definition','daily_global_games_1',
       'daily','global','2026-07-25',1,0,'active',?,?)`).run(NOW - 1000, NOW + 86_400_000);
+  ctx.raw.prepare(`INSERT INTO content_items(
+    id,organization_id,game_type,status,category,difficulty,biblical_reference,tags_json,
+    payload_json,version,author_id,created_at,updated_at
+  ) VALUES('wordle-published','org-1','wordle-biblico','PUBLISHED','Personagens','EASY',
+    'Mateus 1:21','[]','{"word":"JESUS","hint":"O Salvador"}',2,'player',?,?)`).run(NOW, NOW);
+  ctx.raw.prepare(`INSERT INTO content_items(
+    id,organization_id,game_type,status,category,difficulty,biblical_reference,tags_json,
+    payload_json,version,author_id,created_at,updated_at
+  ) VALUES('timeline-published','org-1','linha-do-tempo-biblica','PUBLISHED','Eventos','EASY',
+    'Gênesis 1–12','[]','{"title":"Origens","events":[{"title":"Criação","position":1},{"title":"Dilúvio","position":2},{"title":"Abraão","position":3}]}',3,'player',?,?)`).run(NOW, NOW);
   return { ctx, token };
 }
 
@@ -45,6 +56,8 @@ test("Wordle completion updates Progress, Statistics, Achievements and Missions 
   const body = {
     gameId: "wordle-biblico",
     sessionId: "session-wordle-integration",
+    contentId: "wordle-published",
+    contentVersion: 2,
     guesses: ["JESUS"],
   };
   const first = await withFrozenTime(NOW, () => finishPlatformGame({ request: request(token, body), env: ctx.env }));
@@ -125,12 +138,21 @@ test("3 Pistas defeat is registered with minimum reward and game-specific statis
 
 test("Linha do Tempo victory reaches Progress, Statistics, Achievements and Missions", async t => {
   const { ctx, token } = await setup(t);
+  const timelineRound = await timelineRoundFromContent("timeline-published", {
+    title: "Origens",
+    events: [
+      { title: "Criação", position: 1 },
+      { title: "Dilúvio", position: 2 },
+      { title: "Abraão", position: 3 },
+    ],
+  });
   const response = await withFrozenTime(NOW, () => finishPlatformGame({
     request: request(token, {
       gameId: "linha-do-tempo-biblica",
       sessionId: "session-timeline-integration",
-      roundId: "origens-e-promessa",
-      orderedEventIds: ["criacao", "diluvio", "chamado-abraao", "exodo"],
+      contentId: "timeline-published",
+      contentVersion: 3,
+      orderedEventIds: timelineRound.events.map(event => event.id),
       attemptsUsed: 1,
     }),
     env: ctx.env,
@@ -282,6 +304,8 @@ test("completion endpoint requires authentication and rejects incomplete games w
     request: request(token, {
       gameId: "wordle-biblico",
       sessionId: "session-wordle-incomplete",
+      contentId: "wordle-published",
+      contentVersion: 2,
       guesses: ["PAULO"],
     }),
     env: ctx.env,

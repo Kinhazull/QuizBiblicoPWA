@@ -1,4 +1,15 @@
-import type { TimelineEvent, TimelineRound } from "./rounds";
+export type TimelineEvent = {
+  id: string;
+  title: string;
+  description?: string | null;
+  position: number;
+};
+
+export type TimelineRound = {
+  id: string;
+  title: string;
+  events: readonly TimelineEvent[];
+};
 
 export const TIMELINE_MAX_ATTEMPTS = 3;
 
@@ -12,7 +23,7 @@ export function isCorrectTimelineOrder(round: TimelineRound, eventIds: readonly 
   return expected.every((id, index) => eventIds[index] === id);
 }
 
-export function moveTimelineEvent(events: readonly TimelineEvent[], index: number, direction: -1 | 1) {
+export function moveTimelineEvent<T>(events: readonly T[], index: number, direction: -1 | 1) {
   const target = index + direction;
   if (!Number.isInteger(index) || index < 0 || index >= events.length || target < 0 || target >= events.length) {
     return [...events];
@@ -22,8 +33,8 @@ export function moveTimelineEvent(events: readonly TimelineEvent[], index: numbe
   return moved;
 }
 
-export function shuffleTimelineEvents(
-  events: readonly TimelineEvent[],
+export function shuffleTimelineEvents<T extends { id: string }>(
+  events: readonly T[],
   random: () => number = Math.random,
 ) {
   const shuffled = [...events];
@@ -42,10 +53,5 @@ export function timelineScore(attemptsUsed: number) {
     throw new Error("invalid_timeline_attempts");
   }
   return (TIMELINE_MAX_ATTEMPTS - attemptsUsed + 1) * 100;
-}
-
-export function nextTimelineRoundIndex(current: number, total: number) {
-  if (!Number.isInteger(total) || total < 1) throw new Error("invalid_timeline_round_total");
-  return (current + 1) % total;
 }
 

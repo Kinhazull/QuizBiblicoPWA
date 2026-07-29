@@ -123,6 +123,37 @@ test("generic validation identifies required fields, types and list limits", () 
 
   const wordle = validateContent(GameType.WORDLE, metadata(GameType.WORDLE), { word: 123, hint: null });
   assert.ok(wordle.errors.some(error => error.field === "word" && error.code === "invalid_type"));
+  for (const word of ["REI", "APOSTOLO"]) {
+    const invalidLength = validateContent(
+      GameType.WORDLE,
+      metadata(GameType.WORDLE),
+      { word, hint: null },
+    );
+    assert.equal(invalidLength.valid, false);
+    assert.ok(invalidLength.errors.some(error => error.field === "word"));
+  }
+});
+
+test("Timeline accepts 3 to 8 events and requires a unique contiguous sequence", () => {
+  const threeEvents = {
+    title: "Origens",
+    events: [
+      { title: "Criação", description: "Deus cria todas as coisas.", position: 1 },
+      { title: "Dilúvio", position: 2 },
+      { title: "Chamado de Abraão", position: 3 },
+    ],
+  };
+  assert.equal(validateContent(GameType.TIMELINE, metadata(GameType.TIMELINE), threeEvents).valid, true);
+  const gap = validateContent(GameType.TIMELINE, metadata(GameType.TIMELINE), {
+    ...threeEvents,
+    events: threeEvents.events.map((event, index) => ({ ...event, position: index === 2 ? 4 : event.position })),
+  });
+  assert.ok(gap.errors.some(error => error.code === "invalid_sequence"));
+  const duplicate = validateContent(GameType.TIMELINE, metadata(GameType.TIMELINE), {
+    ...threeEvents,
+    events: threeEvents.events.map((event, index) => ({ ...event, position: index === 2 ? 2 : event.position })),
+  });
+  assert.ok(duplicate.errors.some(error => error.code === "duplicate_positions"));
 });
 
 test("published content requires a biblical reference while drafts do not", () => {

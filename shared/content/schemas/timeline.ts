@@ -8,10 +8,11 @@ export const timelineContentSchema: ContentSchema = {
   fields: [
     field("title", "Título", "text", true, { minimum: 3, maximum: 120 }),
     field("events", "Acontecimentos", "list", true, {
-      minimumItems: 4,
+      minimumItems: 3,
       maximumItems: 8,
       fields: [
         field("title", "Acontecimento", "text", true),
+        field("description", "Descrição curta", "textarea", false, { maximum: 240 }),
         field("position", "Posição cronológica", "number", true, { minimum: 1 }),
       ],
     }),
@@ -31,6 +32,10 @@ export const timelineContentSchema: ContentSchema = {
       ...(!Number.isInteger(event.position) || Number(event.position) < 1 ? [issue(`events.${index}.position`, "invalid_number", "A posição deve ser um inteiro positivo.")] : []),
     ]);
     if (new Set(positions).size !== positions.length) errors.push(issue("events", "duplicate_positions", "As posições cronológicas devem ser únicas."));
+    const orderedPositions = [...positions].sort((left, right) => Number(left) - Number(right));
+    if (!orderedPositions.every((position, index) => position === index + 1)) {
+      errors.push(issue("events", "invalid_sequence", "As posições devem formar uma sequência contínua iniciando em 1."));
+    }
     return errors;
   },
   duplicateStrategy: {

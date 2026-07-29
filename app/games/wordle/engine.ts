@@ -1,6 +1,5 @@
 export const WORDLE_MAX_ATTEMPTS = 6;
 export const WORDLE_LENGTH = 5;
-export const WORDLE_TEMPORARY_ANSWER = "JESUS";
 
 export type LetterState = "correct" | "present" | "absent";
 

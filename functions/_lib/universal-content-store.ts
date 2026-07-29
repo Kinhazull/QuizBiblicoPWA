@@ -170,6 +170,25 @@ export async function findUniversalContent(env: AppEnv, organizationId: string, 
   return row ? rowToUniversalContent(row) : null;
 }
 
+export async function findPublishedUniversalContent(
+  env: AppEnv,
+  organizationId: string,
+  gameType: GameType,
+  id?: string,
+) {
+  const row = id
+    ? await env.DB.prepare(
+      `SELECT * FROM content_items
+       WHERE id=?1 AND organization_id=?2 AND game_type=?3 AND status='PUBLISHED'`,
+    ).bind(id, organizationId, gameType).first<ContentRow>()
+    : await env.DB.prepare(
+      `SELECT * FROM content_items
+       WHERE organization_id=?1 AND game_type=?2 AND status='PUBLISHED'
+       ORDER BY updated_at DESC,id LIMIT 1`,
+    ).bind(organizationId, gameType).first<ContentRow>();
+  return row ? rowToUniversalContent(row) : null;
+}
+
 export async function createUniversalDraft(
   env: AppEnv,
   organizationId: string,
@@ -303,7 +322,7 @@ export async function transitionUniversalContentStatus(
   if (!allowed) return { ok: false as const, invalidTransition: true as const };
 
   const nextVersion = current.version + 1;
-  const now = Date.now();
+  const now = Math.max(Date.now(), current.updatedAt + 1);
   const validation = validateContent(current.gameType, {
     id: current.id,
     gameType: current.gameType,

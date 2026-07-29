@@ -6,7 +6,7 @@ export const wordleContentSchema: ContentSchema = {
   label: "Wordle Bíblico",
   description: "Palavras bíblicas descobertas por tentativas de letras.",
   fields: [
-    field("word", "Palavra", "text", true, { minimum: 4, maximum: 12, placeholder: "Ex.: GRAÇA" }),
+    field("word", "Palavra", "text", true, { minimum: 5, maximum: 5, placeholder: "Ex.: GRAÇA" }),
     field("hint", "Dica", "textarea", false, { maximum: 240 }),
   ],
   templates: [

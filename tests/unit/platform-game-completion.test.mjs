@@ -6,12 +6,29 @@ const context = {
   userId: "player",
   organizationId: "org-1",
   completedAt: Date.UTC(2026, 6, 25, 12),
+  wordleContent: { id: "wordle-1", version: 3, answer: "JESUS" },
+  timelineContent: {
+    id: "timeline-1",
+    version: 4,
+    round: {
+      id: "timeline-1",
+      title: "Vida de Jesus",
+      events: [
+        { id: "event-1", title: "Nascimento", position: 1 },
+        { id: "event-2", title: "Batismo", position: 2 },
+        { id: "event-3", title: "Crucificação", position: 3 },
+        { id: "event-4", title: "Ressurreição", position: 4 },
+      ],
+    },
+  },
 };
 
 test("Wordle victory is normalized to a deterministic GAME_FINISHED v2", () => {
   const input = {
     gameId: "wordle-biblico",
     sessionId: "session-wordle-001",
+    contentId: "wordle-1",
+    contentVersion: 3,
     guesses: ["PAULO", "JESUS"],
   };
   const first = adaptPlatformGameCompletion(input, context);
@@ -30,6 +47,8 @@ test("Wordle loss requires all six valid attempts", () => {
   const loss = adaptPlatformGameCompletion({
     gameId: "wordle-biblico",
     sessionId: "session-wordle-002",
+    contentId: "wordle-1",
+    contentVersion: 3,
     guesses: ["PAULO", "PEDRO", "MARIA", "SAULO", "TIAGO", "LIVRO"],
   }, context);
   assert.equal(loss.payload.correctAnswers, 0);
@@ -37,6 +56,8 @@ test("Wordle loss requires all six valid attempts", () => {
   assert.throws(() => adaptPlatformGameCompletion({
     gameId: "wordle-biblico",
     sessionId: "session-wordle-003",
+    contentId: "wordle-1",
+    contentVersion: 3,
     guesses: ["PAULO"],
   }, context), /incomplete_wordle_game/);
 });
@@ -64,12 +85,13 @@ test("3 Pistas result is recalculated from the official static bank", () => {
   assert.equal(loss.payload.correctAnswers, 0);
 });
 
-test("Linha do Tempo result is recalculated from the official chronological bank", () => {
+test("Linha do Tempo result is recalculated from the published CMS content", () => {
   const win = adaptPlatformGameCompletion({
     gameId: "linha-do-tempo-biblica",
     sessionId: "session-timeline-001",
-    roundId: "vida-de-jesus",
-    orderedEventIds: ["nascimento-jesus", "batismo-jesus", "crucificacao", "ressurreicao"],
+    contentId: "timeline-1",
+    contentVersion: 4,
+    orderedEventIds: ["event-1", "event-2", "event-3", "event-4"],
     attemptsUsed: 2,
   }, context);
   assert.equal(win.source.service, "timeline-service");
@@ -79,8 +101,9 @@ test("Linha do Tempo result is recalculated from the official chronological bank
   const loss = adaptPlatformGameCompletion({
     gameId: "linha-do-tempo-biblica",
     sessionId: "session-timeline-002",
-    roundId: "vida-de-jesus",
-    orderedEventIds: ["ressurreicao", "crucificacao", "batismo-jesus", "nascimento-jesus"],
+    contentId: "timeline-1",
+    contentVersion: 4,
+    orderedEventIds: ["event-4", "event-3", "event-2", "event-1"],
     attemptsUsed: 3,
   }, context);
   assert.equal(loss.payload.score, 0);
@@ -88,8 +111,9 @@ test("Linha do Tempo result is recalculated from the official chronological bank
   assert.throws(() => adaptPlatformGameCompletion({
     gameId: "linha-do-tempo-biblica",
     sessionId: "session-timeline-003",
-    roundId: "vida-de-jesus",
-    orderedEventIds: ["ressurreicao", "crucificacao", "batismo-jesus", "nascimento-jesus"],
+    contentId: "timeline-1",
+    contentVersion: 4,
+    orderedEventIds: ["event-4", "event-3", "event-2", "event-1"],
     attemptsUsed: 1,
   }, context), /incomplete_timeline_game/);
 });
@@ -168,6 +192,8 @@ test("invalid or tampered completions are rejected", () => {
   assert.throws(() => adaptPlatformGameCompletion({
     gameId: "wordle-biblico",
     sessionId: "bad",
+    contentId: "wordle-1",
+    contentVersion: 3,
     guesses: ["JESUS"],
   }, context), /invalid_game_session/);
   assert.throws(() => adaptPlatformGameCompletion({
@@ -180,10 +206,11 @@ test("invalid or tampered completions are rejected", () => {
   assert.throws(() => adaptPlatformGameCompletion({
     gameId: "linha-do-tempo-biblica",
     sessionId: "session-timeline-004",
-    roundId: "unknown",
+    contentId: "unknown",
+    contentVersion: 4,
     orderedEventIds: ["one", "two", "three", "four"],
     attemptsUsed: 3,
-  }, context), /invalid_timeline_round/);
+  }, context), /invalid_timeline_content/);
   assert.throws(() => adaptPlatformGameCompletion({
     gameId: "memoria-biblica",
     sessionId: "session-memory-003",

@@ -1,6 +1,8 @@
 export type WordleCompletionSubmission = {
   gameId: "wordle-biblico";
   sessionId: string;
+  contentId: string;
+  contentVersion: number;
   guesses: string[];
 };
 
@@ -15,7 +17,8 @@ export type ThreeCluesCompletionSubmission = {
 export type TimelineCompletionSubmission = {
   gameId: "linha-do-tempo-biblica";
   sessionId: string;
-  roundId: string;
+  contentId: string;
+  contentVersion: number;
   orderedEventIds: string[];
   attemptsUsed: number;
 };

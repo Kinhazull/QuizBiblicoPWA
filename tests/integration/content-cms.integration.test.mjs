@@ -17,6 +17,11 @@ import {
 import { onRequestGet as getContentVersions } from "../../functions/api/admin/content/[id]/versions.ts";
 import { onRequestPost as publishContent } from "../../functions/api/admin/content/[id]/publish.ts";
 import { onRequestPost as unpublishContent } from "../../functions/api/admin/content/[id]/unpublish.ts";
+import { onRequestGet as getPublishedWordle } from "../../functions/api/platform/games/wordle.ts";
+import {
+  onRequestGet as getPublishedTimeline,
+  onRequestPost as validatePublishedTimeline,
+} from "../../functions/api/platform/games/timeline.ts";
 import { GameType } from "../../shared/content.ts";
 
 const payloads = {
@@ -158,6 +163,171 @@ test("universal content endpoint requires authentication and an existing content
   });
   assert.equal(permitted.status, 200);
   assert.equal(permitted.headers.get("cache-control"), "no-store");
+});
+
+test("published Wordle flows from the universal CMS to the authenticated player", async t => {
+  const { ctx, tokens } = await fixture(t);
+  const createdResponse = await post(ctx, tokens.admin, universalBody(GameType.WORDLE));
+  assert.equal(createdResponse.status, 201);
+  const { content: draft } = await responseJson(createdResponse);
+
+  const publishedResponse = await transition(
+    publishContent,
+    ctx,
+    tokens.admin,
+    draft.id,
+    draft.version,
+  );
+  assert.equal(publishedResponse.status, 200);
+  const { content: published } = await responseJson(publishedResponse);
+  assert.equal(published.status, "PUBLISHED");
+
+  const playerResponse = await getPublishedWordle({
+    request: createAuthenticatedRequest("https://test/api/platform/games/wordle", {
+      token: tokens.member,
+    }),
+    env: ctx.env,
+  });
+  assert.equal(playerResponse.status, 200);
+  assert.equal(playerResponse.headers.get("cache-control"), "no-store, private");
+  const playerData = await responseJson(playerResponse);
+  assert.deepEqual(playerData.content, {
+    id: published.id,
+    version: published.version,
+    word: "GRACA",
+    hint: "Favor imerecido",
+    biblicalReference: "Gênesis 6",
+  });
+});
+
+test("published Timeline flows from the universal CMS to the authenticated player", async t => {
+  const { ctx, tokens } = await fixture(t);
+  const createdResponse = await post(ctx, tokens.admin, universalBody(GameType.TIMELINE));
+  assert.equal(createdResponse.status, 201);
+  const { content: draft } = await responseJson(createdResponse);
+  const publishedResponse = await transition(
+    publishContent,
+    ctx,
+    tokens.admin,
+    draft.id,
+    draft.version,
+  );
+  assert.equal(publishedResponse.status, 200);
+  const { content: published } = await responseJson(publishedResponse);
+
+  const playerResponse = await getPublishedTimeline({
+    request: createAuthenticatedRequest("https://test/api/platform/games/timeline", {
+      token: tokens.member,
+    }),
+    env: ctx.env,
+  });
+  assert.equal(playerResponse.status, 200);
+  assert.equal(playerResponse.headers.get("cache-control"), "no-store, private");
+  const playerData = await responseJson(playerResponse);
+  assert.equal(playerData.content.id, published.id);
+  assert.equal(playerData.content.version, published.version);
+  assert.equal(playerData.content.title, "Eventos bíblicos");
+  assert.equal(playerData.content.events.length, 4);
+  assert.ok(playerData.content.events.every(event => /^event-[A-Za-z0-9_-]{20}$/.test(event.id)));
+  assert.ok(playerData.content.events.every(event => !("position" in event)));
+
+  const correctIds = [...playerData.content.events]
+    .sort((left, right) => Number(left.title.match(/\d+/)?.[0]) - Number(right.title.match(/\d+/)?.[0]))
+    .map(event => event.id);
+  const validationResponse = await validatePublishedTimeline({
+    request: createAuthenticatedRequest("https://test/api/platform/games/timeline", {
+      token: tokens.member,
+      method: "POST",
+      body: {
+        contentId: published.id,
+        contentVersion: published.version,
+        orderedEventIds: correctIds,
+      },
+    }),
+    env: ctx.env,
+  });
+  assert.equal(validationResponse.status, 200);
+  assert.equal((await responseJson(validationResponse)).correct, true);
+
+  const wrongResponse = await validatePublishedTimeline({
+    request: createAuthenticatedRequest("https://test/api/platform/games/timeline", {
+      token: tokens.member,
+      method: "POST",
+      body: {
+        contentId: published.id,
+        contentVersion: published.version,
+        orderedEventIds: [...correctIds].reverse(),
+      },
+    }),
+    env: ctx.env,
+  });
+  assert.equal((await responseJson(wrongResponse)).correct, false);
+});
+
+test("Timeline player endpoint ignores drafts and content from another organization", async t => {
+  const { ctx, tokens } = await fixture(t);
+  await post(ctx, tokens.admin, universalBody(GameType.TIMELINE));
+  const unavailable = await getPublishedTimeline({
+    request: createAuthenticatedRequest("https://test/api/platform/games/timeline", {
+      token: tokens.member,
+    }),
+    env: ctx.env,
+  });
+  assert.equal(unavailable.status, 404);
+
+  const otherOrganizationToken = await createSession(ctx, "org-2-admin");
+  const otherDraft = await responseJson(await post(
+    ctx,
+    otherOrganizationToken,
+    universalBody(GameType.TIMELINE),
+  ));
+  await transition(
+    publishContent,
+    ctx,
+    otherOrganizationToken,
+    otherDraft.content.id,
+    otherDraft.content.version,
+  );
+  const stillUnavailable = await getPublishedTimeline({
+    request: createAuthenticatedRequest("https://test/api/platform/games/timeline", {
+      token: tokens.member,
+    }),
+    env: ctx.env,
+  });
+  assert.equal(stillUnavailable.status, 404);
+});
+
+test("Wordle player endpoint ignores drafts and content from another organization", async t => {
+  const { ctx, tokens } = await fixture(t);
+  await post(ctx, tokens.admin, universalBody(GameType.WORDLE));
+  const unavailable = await getPublishedWordle({
+    request: createAuthenticatedRequest("https://test/api/platform/games/wordle", {
+      token: tokens.member,
+    }),
+    env: ctx.env,
+  });
+  assert.equal(unavailable.status, 404);
+
+  const otherOrganizationToken = await createSession(ctx, "org-2-admin");
+  const otherOrganizationDraft = await responseJson(await post(
+    ctx,
+    otherOrganizationToken,
+    universalBody(GameType.WORDLE),
+  ));
+  await transition(
+    publishContent,
+    ctx,
+    otherOrganizationToken,
+    otherOrganizationDraft.content.id,
+    otherOrganizationDraft.content.version,
+  );
+  const stillUnavailable = await getPublishedWordle({
+    request: createAuthenticatedRequest("https://test/api/platform/games/wordle", {
+      token: tokens.member,
+    }),
+    env: ctx.env,
+  });
+  assert.equal(stillUnavailable.status, 404);
 });
 
 test("legacy Quiz questions become universal summaries with safe statuses and tenant isolation", async t => {

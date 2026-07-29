@@ -57,7 +57,7 @@ export type QuizContentPayload = {
 export type WordleContentPayload = { word: string; hint: string | null };
 export type TimelineContentPayload = {
   title: string;
-  events: readonly { title: string; position: number }[];
+  events: readonly { title: string; description?: string | null; position: number }[];
 };
 export type MemoryContentPayload = {
   title: string;
