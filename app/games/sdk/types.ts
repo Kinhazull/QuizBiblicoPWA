@@ -1,4 +1,6 @@
 import type { ReactNode } from "react";
+import type { GameType } from "../../../shared/content";
+import type { GameMode } from "../../../shared/game-modes";
 
 export type GamePlayStatus = "playing" | "won" | "lost";
 export type GameModuleStatus = "available" | "development";
@@ -26,6 +28,8 @@ export type GameLayoutProps = {
   currentAttempt: number;
   maxAttempts: number;
   progressLabel?: string;
+  gameType: GameType;
+  mode?: GameMode;
   onRestart: () => void;
   children: ReactNode;
 };

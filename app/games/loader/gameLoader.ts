@@ -37,6 +37,28 @@ export async function loadGameContent<TPayload>(
   return provider.load<TPayload>({ ...request, mode });
 }
 
+export async function generateFreePlayGame(gameType: GameContentRequest["gameType"]) {
+  const response = await fetch("/api/platform/free-play/generate", {
+    method: "POST",
+    credentials: "same-origin",
+    cache: "no-store",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      gameType,
+      idempotencyKey: crypto.randomUUID(),
+      filters: {},
+    }),
+  });
+  const data = await response.json().catch(() => null) as {
+    game?: { playHref?: string };
+    error?: string;
+  } | null;
+  if (!response.ok || !data?.game?.playHref) {
+    throw new Error(data?.error || "free_play_generation_failed");
+  }
+  return data.game.playHref;
+}
+
 export async function validateGameContentAction<TResponse>(
   content: Pick<LoadedGameContent, "mode" | "selectionId" | "gameType" | "contentId" | "contentVersion">,
   action: string,

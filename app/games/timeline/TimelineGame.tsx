@@ -144,6 +144,8 @@ export function TimelineGame() {
         ? Math.min(attemptsUsed + 1, TIMELINE_MAX_ATTEMPTS)
         : attemptsUsed}
       maxAttempts={TIMELINE_MAX_ATTEMPTS}
+      gameType={GameType.TIMELINE}
+      mode={loadedContent?.mode}
       onRestart={restart}
     >
       <section className="timeline-game" aria-label="Linha do Tempo Bíblica" aria-busy={loading}>

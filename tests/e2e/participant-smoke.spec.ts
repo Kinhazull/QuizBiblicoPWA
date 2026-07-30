@@ -197,10 +197,10 @@ for (const { width, height } of responsiveViewports) {
 
     const layout = await page.evaluate(() => {
       const viewportWidth = document.documentElement.clientWidth;
-      const carousel = document.querySelector(".platform-game-grid");
       const selectors = [
-        ".platform-continue-card>header a",
-        ".platform-mission-card aside",
+        ".platform-daily-summary>header a",
+        ".platform-daily-milestones",
+        ".platform-play-hub>a",
         ".platform-daily-chest",
         ".platform-achievements",
         ".participant-bottom-nav",
@@ -210,17 +210,6 @@ for (const { width, height } of responsiveViewports) {
         scrollWidth: document.documentElement.scrollWidth,
         homeBottom: document.querySelector(".platform-home")?.getBoundingClientRect().bottom,
         navigationTop: document.querySelector(".participant-bottom-nav")?.getBoundingClientRect().top,
-        carouselScrollsInternally: carousel instanceof HTMLElement && carousel.scrollWidth > carousel.clientWidth,
-        carousel: carousel instanceof HTMLElement ? (() => {
-          const firstTile = carousel.querySelector(".platform-game-tile")?.getBoundingClientRect();
-          const styles = getComputedStyle(carousel);
-          const gap = Number.parseFloat(styles.columnGap || styles.gap || "0");
-          return firstTile ? {
-            clientWidth: carousel.clientWidth,
-            firstTileWidth: firstTile.width,
-            nextCardPreview: carousel.clientWidth - firstTile.width - gap,
-          } : null;
-        })() : null,
         bounds: selectors.map(selector => {
           const element = document.querySelector(selector);
           if (!(element instanceof HTMLElement)) return { selector, missing: true };
@@ -234,13 +223,6 @@ for (const { width, height } of responsiveViewports) {
     expect(layout.homeBottom, "scrollable Home area is missing").toBeDefined();
     expect(layout.navigationTop, "bottom navigation is missing").toBeDefined();
     expect(layout.homeBottom!, "scrollable Home area extends behind bottom navigation").toBeLessThanOrEqual(layout.navigationTop! + 0.5);
-    if (width <= 760) expect(layout.carouselScrollsInternally).toBe(true);
-    if (width <= 375) {
-      expect(layout.carousel, "mobile games carousel metrics are missing").not.toBeNull();
-      expect(layout.carousel!.firstTileWidth, "first game card must be fully readable").toBeGreaterThan(layout.carousel!.clientWidth * 0.75);
-      expect(layout.carousel!.nextCardPreview, "next game preview must remain visible").toBeGreaterThanOrEqual(24);
-      expect(layout.carousel!.nextCardPreview, "next game preview must remain controlled").toBeLessThanOrEqual(48);
-    }
     for (const bound of layout.bounds) {
       expect(bound).not.toHaveProperty("missing", true);
       expect(bound.left, `${bound.selector} starts outside viewport`).toBeGreaterThanOrEqual(-0.5);
@@ -248,7 +230,7 @@ for (const { width, height } of responsiveViewports) {
     }
     if (process.env.CAPTURE_HOME_EVIDENCE === "1" && [320, 360, 390, 430].includes(width)) {
       await page.screenshot({ path: `.wrangler/platform-home-${width}x${height}.png`, fullPage: false });
-      await page.locator(".platform-mission-card").evaluate(element => element.scrollIntoView({ block: "start", inline: "nearest" }));
+      await page.locator(".platform-daily-summary").evaluate(element => element.scrollIntoView({ block: "start", inline: "nearest" }));
       await page.screenshot({ path: `.wrangler/platform-home-${width}x${height}-details.png`, fullPage: false });
     }
   });
@@ -261,11 +243,10 @@ for (const { width, height } of responsiveViewports.filter(viewport => [320, 360
     await page.goto("/");
 
     const importantSections = [
-      ".platform-mission-card",
-      ".platform-games",
+      ".platform-daily-summary",
+      ".platform-play-hub",
       ".platform-daily-chest",
       ".platform-achievements",
-      ".platform-preview-note",
     ];
 
     for (const selector of importantSections) {
@@ -319,7 +300,7 @@ test("catalog and Game SDK keep both platform games playable on mobile", async (
   }
   await page.getByRole("button", { name: "Enter", exact: true }).click();
   await expect(page.locator(".game-sdk-result.won")).toBeVisible();
-  await expect(page.getByRole("link", { name: /voltar para home/i })).toBeVisible();
+  await expect(page.getByRole("link", { name: /voltar aos jogos/i })).toBeVisible();
 
   await page.goto("/jogos/jogo-das-3-pistas");
   await page.getByLabel(/qual .* resposta/i).fill("Noé");
@@ -332,11 +313,12 @@ test("catalog and Game SDK keep both platform games playable on mobile", async (
     window.scrollTo(0, document.documentElement.scrollHeight);
     const result = document.querySelector(".game-sdk-result")?.getBoundingClientRect();
     const navigation = document.querySelector(".participant-bottom-nav")?.getBoundingClientRect();
-    return result && navigation
-      ? { resultBottom: result.bottom, navigationTop: navigation.top, pageWidth: document.documentElement.scrollWidth, viewportWidth: document.documentElement.clientWidth }
+    return result
+      ? { resultBottom: result.bottom, navigationVisible: Boolean(navigation), viewportHeight: window.innerHeight, pageWidth: document.documentElement.scrollWidth, viewportWidth: document.documentElement.clientWidth }
       : null;
   });
   expect(resultClearance).not.toBeNull();
-  expect(resultClearance!.resultBottom).toBeLessThanOrEqual(resultClearance!.navigationTop + 0.5);
+  expect(resultClearance!.navigationVisible).toBe(false);
+  expect(resultClearance!.resultBottom).toBeLessThanOrEqual(resultClearance!.viewportHeight + 0.5);
   expect(resultClearance!.pageWidth).toBe(resultClearance!.viewportWidth);
 });

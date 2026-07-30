@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import {
   GameContentMode,
+  generateFreePlayGame,
   gameContentRequestFromLocation,
   loadGameContent,
   validateGameContentAction,
@@ -63,12 +64,21 @@ export default function PlayPage() {
   const started = useRef(Date.now());
   const answerRef = useRef<(choiceId: string) => void>(() => undefined);
   const sendPendingRef = useRef<() => Promise<void>>(async () => undefined);
+  const startRef = useRef<(mode?: string) => Promise<void>>(async () => undefined);
   const dailyAnswers = useRef<Array<{ questionId: string; choiceId: string }>>([]);
+  const autoStarted = useRef(false);
 
   useEffect(() => {
     const controller = new AbortController();
+    const request = gameContentRequestFromLocation(GameType.QUIZ);
+    if (request.mode === GameContentMode.NORMAL) {
+      generateFreePlayGame(GameType.QUIZ)
+        .then(href => location.replace(href))
+        .catch(() => setError("Não foi possível preparar o Quiz. Tente novamente."));
+      return () => controller.abort();
+    }
     loadGameContent<DailyQuizPayload | Record<string, unknown>>({
-      ...gameContentRequestFromLocation(GameType.QUIZ),
+      ...request,
       signal: controller.signal,
     })
       .then((loaded) => {
@@ -172,6 +182,13 @@ export default function PlayPage() {
       setError("Sem conexão. Verifique sua internet e tente novamente.");
     }
   }
+  startRef.current = start;
+
+  useEffect(() => {
+    if (!round?.generated || !loadedContent || attempt || autoStarted.current) return;
+    autoStarted.current = true;
+    void startRef.current();
+  }, [round, loadedContent, attempt]);
 
   async function finish(id: string) {
     if (loadedContent && loadedContent.mode !== GameContentMode.NORMAL) {
@@ -333,13 +350,23 @@ export default function PlayPage() {
           </div>
           <button
             className="primary"
-            onClick={() => (location.href = loadedContent?.mode === GameContentMode.FREE_PLAY ? "/jogos/modo-livre" : "/rankings")}
+            onClick={async () => {
+              if (loadedContent?.mode === GameContentMode.FREE_PLAY) {
+                try {
+                  location.href = await generateFreePlayGame(GameType.QUIZ);
+                } catch {
+                  setError("Não foi possível preparar outra partida.");
+                }
+                return;
+              }
+              location.href = "/desafios-diarios";
+            }}
           >
-            {loadedContent?.mode === GameContentMode.FREE_PLAY ? "NOVA PARTIDA LIVRE" : "VER RANKINGS"} <span>→</span>
+            {loadedContent?.mode === GameContentMode.FREE_PLAY ? "JOGAR NOVAMENTE" : "VOLTAR AOS DESAFIOS"} <span>→</span>
           </button>
-          <button className="auth-switch" onClick={() => (location.href = "/")}>
-            Voltar ao início
-          </button>
+          {loadedContent?.mode === GameContentMode.FREE_PLAY ? <button className="auth-switch" onClick={() => (location.href = "/jogos")}>
+            Voltar aos Jogos
+          </button> : null}
         </section>
       </main>
     );

@@ -141,7 +141,8 @@ export function WhoAmIGame() {
     <GameLayout eyebrow="Descubra o personagem" title="Quem Sou" highlightedTitle="Eu?"
       description="Use as pistas para identificar personagens bíblicos."
       status={status} currentAttempt={Math.min(challengeIndex + 1, challengeCount || 1)}
-      maxAttempts={challengeCount || 1} progressLabel="Desafios" onRestart={restart}>
+      maxAttempts={challengeCount || 1} progressLabel="Desafios"
+      gameType={GameType.WHO_AM_I} mode={loadedContent?.mode} onRestart={restart}>
       <section className="who-am-i-game" aria-label="Quem Sou Eu?" aria-busy={loading || validating}>
         {loading && <p className="who-am-i-message" role="status">Carregando Quem Sou Eu...</p>}
         {loadError && <p className="who-am-i-message" role="alert">Nenhum conjunto Quem Sou Eu publicado está disponível agora.</p>}

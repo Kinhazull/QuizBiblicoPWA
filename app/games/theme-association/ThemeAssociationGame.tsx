@@ -152,7 +152,8 @@ export function ThemeAssociationGame() {
     <GameLayout eyebrow="Conecte os conhecimentos" title="Associação de" highlightedTitle="Temas"
       description="Combine cada item bíblico com sua associação correta."
       status={status} currentAttempt={matchedLeftIds.length}
-      maxAttempts={pairCount || 1} progressLabel="Pares encontrados" onRestart={restart}>
+      maxAttempts={pairCount || 1} progressLabel="Pares encontrados"
+      gameType={GameType.ASSOCIATION} mode={loadedContent?.mode} onRestart={restart}>
       <section className="theme-association-game" aria-label="Associação de Temas" aria-busy={loading}>
         {loading && <p className="theme-association-message" role="status">Carregando Associação de Temas...</p>}
         {loadError && <p className="theme-association-message" role="alert">Nenhuma Associação publicada está disponível agora.</p>}

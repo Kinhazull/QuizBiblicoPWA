@@ -196,6 +196,8 @@ export function WordleGame() {
       status={status}
       currentAttempt={status === "playing" ? guesses.length + 1 : guesses.length}
       maxAttempts={WORDLE_MAX_ATTEMPTS}
+      gameType={GameType.WORDLE}
+      mode={loadedContent?.mode}
       onRestart={restart}
     >
       <section className="wordle-game" aria-label="Wordle Bíblico">

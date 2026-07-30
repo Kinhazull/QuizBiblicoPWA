@@ -1,6 +1,4 @@
-import { getJourneyCardView, type JourneyCardData } from "./journey-card-state";
 import { PLATFORM_HOME_PREVIEW } from "./platform-home-config";
-import { gameCatalog } from "./data/gameCatalog";
 import { EquippedAvatar, type EquipmentView } from "./EquippedAvatar";
 
 type PlatformAchievement = {
@@ -13,36 +11,6 @@ type PlatformAchievement = {
   unlockedAt: number | null;
 };
 export type PlatformAchievementData = { achievements?: PlatformAchievement[] };
-
-type PlatformHomeProps = {
-  displayName: string;
-  journey: JourneyCardData | null;
-  achievementData: PlatformAchievementData | null;
-  progress: PlatformProgressData | null;
-  mission: PlatformMissionData | null;
-  missionLoaded: boolean;
-  daily: DailyRetentionData | null;
-  dailyObjectives: DailyObjectiveData[] | null;
-  dailyBusy: boolean;
-  dailyError: string;
-  equipment: EquipmentView | null;
-  onOpenChest: () => void;
-  onStartDailyObjective: (objective: DailyObjectiveData) => void;
-  remaining: (target?: number) => string;
-};
-
-export type PlatformMissionData = {
-  id: string;
-  name: string;
-  description: string;
-  icon: string | null;
-  state: "active" | "completed" | "claimed" | "expired";
-  progress: number;
-  target: number;
-  progressUnit: string;
-  expiresAt: number;
-  reward: { xp: number; coins: number; label: string };
-};
 
 export type PlatformProgressData = {
   level: number;
@@ -81,14 +49,20 @@ export type DailyObjectiveData = {
   playHref: string | null;
 };
 
+type PlatformHomeProps = {
+  displayName: string;
+  achievementData: PlatformAchievementData | null;
+  progress: PlatformProgressData | null;
+  daily: DailyRetentionData | null;
+  dailyObjectives: DailyObjectiveData[] | null;
+  dailyBusy: boolean;
+  dailyError: string;
+  equipment: EquipmentView | null;
+  onOpenChest: () => void;
+};
+
 function firstName(displayName: string) {
   return displayName.trim().split(/\s+/)[0] || "participante";
-}
-
-function progressFor(journey: JourneyCardData | null) {
-  if (journey?.completion?.completed) return 100;
-  if (journey?.completion?.inProgress) return 58;
-  return 0;
 }
 
 function recentAchievements(data: PlatformAchievementData | null) {
@@ -99,14 +73,21 @@ function recentAchievements(data: PlatformAchievementData | null) {
 }
 
 export function PlatformHome({
-  displayName, journey, achievementData, progress, mission, missionLoaded,
-  daily, dailyObjectives, dailyBusy, dailyError, equipment, onOpenChest, onStartDailyObjective, remaining,
+  displayName,
+  achievementData,
+  progress,
+  daily,
+  dailyObjectives,
+  dailyBusy,
+  dailyError,
+  equipment,
+  onOpenChest,
 }: PlatformHomeProps) {
-  const view = getJourneyCardView(journey, remaining);
-  const quizProgress = progressFor(journey);
   const achievements = recentAchievements(achievementData);
   const platformProgress = progress || PLATFORM_HOME_PREVIEW.progress;
-  const xpPercent = platformProgress.levelProgress.percent;
+  const objectives = dailyObjectives || [];
+  const completedObjectives = objectives.filter(item => item.status === "FINISHED").length;
+  const objectivePercent = Math.round((completedObjectives / 7) * 100);
 
   return <main className="platform-home">
     <div className="platform-ambient platform-ambient-one" aria-hidden="true" />
@@ -128,11 +109,14 @@ export function PlatformHome({
         <div className="platform-player-copy">
           <h1 id="platform-greeting">Fala, {firstName(displayName)}! <span aria-hidden="true">👋</span></h1>
           <p>Que bom ter você por aqui!</p>
-          <div className="platform-level-line"><span>Nível {platformProgress.level}</span><div className="platform-progress"><i style={{ width: `${xpPercent}%` }} /></div><small>{platformProgress.levelProgress.currentXp.toLocaleString("pt-BR")} / {platformProgress.levelProgress.targetXp.toLocaleString("pt-BR")} XP</small></div>
+          <div className="platform-level-line">
+            <span>Nível {platformProgress.level}</span>
+            <div className="platform-progress"><i style={{ width: `${platformProgress.levelProgress.percent}%` }} /></div>
+            <small>{platformProgress.levelProgress.currentXp.toLocaleString("pt-BR")} / {platformProgress.levelProgress.targetXp.toLocaleString("pt-BR")} XP</small>
+          </div>
         </div>
-        <div className="platform-currencies" aria-label="Recursos da plataforma em prévia visual">
+        <div className="platform-currencies" aria-label="Saldo da plataforma">
           <span><b aria-hidden="true">🪙</b><strong>{platformProgress.coins.toLocaleString("pt-BR")}</strong><small>Moedas</small></span>
-          <span><b aria-hidden="true">💎</b><strong>{PLATFORM_HOME_PREVIEW.gems}</strong><small>Gemas</small></span>
         </div>
         <div className="platform-daily-login" role="status">
           <span aria-hidden="true">🔥</span>
@@ -143,55 +127,29 @@ export function PlatformHome({
         </div>
       </section>
 
-      <section className="platform-continue-card" aria-labelledby="continue-title">
-        <header><p>Continuar jogando</p><a href="/jornada">Ver progresso <span aria-hidden="true">›</span></a></header>
-        <div className="platform-continue-content">
-          <div className="platform-game-art" aria-hidden="true">📖</div>
-          <div>
-            <h2 id="continue-title">Quiz Bíblico</h2>
-            <p>{view.eyebrow.toLocaleLowerCase("pt-BR")} · {quizProgress ? `${quizProgress}% concluído` : "pronto para começar"}</p>
-            <div className="platform-progress platform-quiz-progress"><i style={{ width: `${quizProgress}%` }} /></div>
-            <a className={view.href === "#" ? "platform-primary-action disabled" : "platform-primary-action"} href={view.href} aria-disabled={view.href === "#"}><span aria-hidden="true">▶</span>{view.action === "AGUARDE" ? "Preparando" : view.action}</a>
-          </div>
-          <div className="platform-trophy-watermark" aria-hidden="true">🏆</div>
+      <section className="platform-daily-summary" aria-labelledby="daily-summary-title">
+        <header>
+          <div><p>Desafios diários</p><h2 id="daily-summary-title">{completedObjectives} de 7 concluídos</h2></div>
+          <a href="/desafios-diarios">Ir para Desafios Diários <span aria-hidden="true">→</span></a>
+        </header>
+        <div className="platform-progress" role="progressbar" aria-label="Progresso dos desafios diários" aria-valuemin={0} aria-valuemax={7} aria-valuenow={completedObjectives}>
+          <i style={{ width: `${objectivePercent}%` }} />
+        </div>
+        <div className="platform-daily-dots" role="img" aria-label={`${completedObjectives} de 7 desafios concluídos`}>
+          {Array.from({ length: 7 }, (_, index) =>
+            <i className={index < completedObjectives ? "complete" : ""} key={index} aria-hidden="true" />,
+          )}
+        </div>
+        <div className="platform-daily-milestones">
+          <span className={completedObjectives >= 3 ? "complete" : ""}><b>3 desafios</b><small>Recompensa intermediária</small></span>
+          <span className={completedObjectives >= 7 ? "complete" : ""}><b>7 desafios</b><small>Recompensa completa</small></span>
         </div>
       </section>
 
-      <section className="platform-daily-objectives" aria-labelledby="daily-objective-title">
-        <header><p>Objetivos diários</p><h2 id="daily-objective-title">Desafios de hoje</h2></header>
-        <div className="platform-daily-objective-grid">
-          {(dailyObjectives || []).map(objective => {
-            const status = objective.availability === "UNAVAILABLE"
-              ? "Indisponível"
-              : objective.status === "FINISHED" ? "Concluído"
-                : objective.status === "STARTED" ? "Em andamento" : "Não iniciado";
-            return <article className="platform-daily-objective" key={objective.gameType}>
-              <div aria-hidden="true">📅</div>
-              <div><h3>{objective.title}</h3><span>{status}</span></div>
-              {objective.availability === "AVAILABLE" && objective.selectionId && objective.playHref
-                ? <button type="button" onClick={() => onStartDailyObjective(objective)}>
-                  {objective.status === "FINISHED" ? "Ver resultado" : objective.status === "STARTED" ? "Continuar" : "Iniciar"}
-                </button>
-                : <small>{objective.unavailableReason === "insufficient_catalog" ? "Catálogo insuficiente" : "Conteúdo indisponível"}</small>}
-            </article>;
-          })}
-          {!dailyObjectives && <p role="status">Carregando objetivos...</p>}
-        </div>
-      </section>
-
-      <section className="platform-mission-card" aria-labelledby="mission-title">
-        <div className="platform-mission-icon" aria-hidden="true">{mission?.icon || "🎯"}</div>
-        <div><p>Missão do dia</p><h2 id="mission-title">{!missionLoaded ? "Carregando missão..." : mission?.name || "Novas missões em breve"}</h2><span>{mission ? `${mission.progress}/${mission.target} ${mission.progressUnit}` : "Nenhuma missão diária disponível"}</span></div>
-        <aside><small>Recompensa</small><strong>{mission?.reward.label || "—"}</strong><span>{mission?.state === "claimed" ? "Resgatada" : mission?.state === "completed" ? "Missão concluída · cofre liberado" : mission ? `Expira em ${remaining(mission.expiresAt)}` : "Aguarde o próximo catálogo"}</span></aside>
-      </section>
-
-      <section className="platform-section platform-games" id="jogos" aria-labelledby="games-title">
-        <header><h2 id="games-title">Seus jogos</h2><span>Novos desafios chegarão em breve</span></header>
-        <div className="platform-game-grid">
-          {gameCatalog.map(game => game.status === "available"
-            ? <a className="platform-game-tile available" href={game.route} key={game.id}><span className="platform-chip">Disponível</span><b aria-hidden="true">{game.image}</b><strong>{game.name}</strong><small>{game.shortDescription}</small><i>Jogar agora</i></a>
-            : <article className="platform-game-tile locked" key={game.id}><span className="platform-chip">Em breve</span><b aria-hidden="true">{game.image}</b><strong>{game.name}</strong><small>{game.shortDescription}</small><i>🔒 Em breve</i></article>)}
-        </div>
+      <section className="platform-play-hub" aria-labelledby="play-hub-title">
+        <div aria-hidden="true">🎮</div>
+        <div><p>Jogar</p><h2 id="play-hub-title">Escolha seu próximo desafio</h2><span>Todos os jogos da plataforma em um só lugar.</span></div>
+        <a href="/jogos">Ver jogos <span aria-hidden="true">→</span></a>
       </section>
 
       <section className="platform-daily-chest" id="recompensas" aria-labelledby="chest-title">
@@ -206,10 +164,10 @@ export function PlatformHome({
 
       <section className="platform-section platform-achievements" aria-labelledby="achievements-title">
         <header><h2 id="achievements-title">Conquistas recentes</h2><a href="/perfil">Ver no perfil <span aria-hidden="true">›</span></a></header>
-        {achievements.length > 0 ? <div className="platform-achievement-grid">{achievements.map(item => <article key={item.code}><b aria-hidden="true">{item.icon || "⭐"}</b><div><strong>{item.name}</strong><small>{item.scopeType === "game" ? "Conquista de jogo" : "Conquista da plataforma"}</small></div></article>)}</div> : <div className="platform-empty-achievements"><span aria-hidden="true">✦</span><div><strong>Suas conquistas aparecerão aqui</strong><small>Jogue e complete desafios para desbloquear conquistas.</small></div></div>}
+        {achievements.length > 0
+          ? <div className="platform-achievement-grid">{achievements.map(item => <article key={item.code}><b aria-hidden="true">{item.icon || "⭐"}</b><div><strong>{item.name}</strong><small>{item.scopeType === "game" ? "Conquista de jogo" : "Conquista da plataforma"}</small></div></article>)}</div>
+          : <div className="platform-empty-achievements"><span aria-hidden="true">✦</span><div><strong>Suas conquistas aparecerão aqui</strong><small>Jogue e complete desafios para desbloquear conquistas.</small></div></div>}
       </section>
-
-      <p className="platform-preview-note">Gemas permanecem como prévia visual. O ciclo diário é validado pelo Core Platform.</p>
     </div>
   </main>;
 }

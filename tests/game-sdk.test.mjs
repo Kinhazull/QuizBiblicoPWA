@@ -31,7 +31,8 @@ test("Game SDK exposes shared layout, HUD and final states", async () => {
   assert.match(layout, /progressLabel=\{progressLabel\}/);
   assert.match(memory, /progressLabel="Pares encontrados"/);
   assert.match(result, /Jogar novamente/);
-  assert.match(result, /Voltar para Home/);
+  assert.match(result, /Voltar aos Jogos/);
+  assert.doesNotMatch(result, /Nova partida livre/);
 });
 
 test("Wordle consumes the shared Game SDK without changing its engine", async () => {

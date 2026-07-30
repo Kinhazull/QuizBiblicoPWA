@@ -161,6 +161,8 @@ export function ThreeCluesGame() {
       currentAttempt={Math.min(challengeIndex + 1, challengeCount || 1)}
       maxAttempts={challengeCount || 1}
       progressLabel="Desafios"
+      gameType={GameType.THREE_CLUES}
+      mode={loadedContent?.mode}
       onRestart={restart}
     >
       <section className="three-clues-game" aria-label="Jogo das 3 Pistas" aria-busy={loading || validating}>

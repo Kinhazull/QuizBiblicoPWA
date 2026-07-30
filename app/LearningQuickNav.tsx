@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useAuth } from "./AuthProvider";
+import { isGamePlayRoute } from "./games/sdk/gameModules";
 import { BrandIcon, participantNavigation, platformHomeNavigation } from "./navigation";
 
 const participantRoutes = new Set(["/", "/jornada", "/rankings", "/medalhas", "/perfil"]);
@@ -9,7 +10,8 @@ const participantRoutes = new Set(["/", "/jornada", "/rankings", "/medalhas", "/
 export function LearningQuickNav() {
   const path = usePathname();
   const { user } = useAuth();
-  const platformRoute = path === "/" || path === "/jogos" || path.startsWith("/jogos/");
+  if (isGamePlayRoute(path)) return null;
+  const platformRoute = path === "/" || path === "/desafios-diarios" || path === "/jogos" || path.startsWith("/jogos/");
   if (!user || (!participantRoutes.has(path) && !platformRoute)) return null;
   const items = platformRoute ? platformHomeNavigation : participantNavigation;
   return <nav className={`participant-bottom-nav ${platformRoute ? "platform-bottom-nav" : ""}`} aria-label="Navegação principal">{items.map(item => {

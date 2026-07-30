@@ -5,10 +5,10 @@ export const gameModules: readonly GameModuleContract[] = [
     id: "quiz-biblico",
     slug: "quiz-biblico",
     name: "Quiz Bíblico",
-    shortDescription: "Teste seus conhecimentos e participe das Jornadas semanais.",
-    description: "Responda perguntas de toda a Bíblia, melhore seu resultado e acompanhe sua classificação.",
-    objective: "Aprender, recordar e compartilhar a Palavra por meio de desafios semanais.",
-    mechanics: ["Dez perguntas por Jornada", "Pontuação por acerto, agilidade e sequência", "Ranking e medalhas competitivas"],
+    shortDescription: "Teste seus conhecimentos com perguntas de toda a Bíblia.",
+    description: "Responda perguntas bíblicas em partidas geradas pela plataforma.",
+    objective: "Aprender, recordar e compartilhar a Palavra por meio de desafios bíblicos.",
+    mechanics: ["Perguntas selecionadas pela plataforma", "Pontuação por acertos", "Resultado validado no servidor"],
     status: "available",
     primaryButton: "Jogar",
     route: "/jogar",
@@ -96,4 +96,9 @@ export const gameModules: readonly GameModuleContract[] = [
 
 export function getGameModule(slug: string) {
   return gameModules.find(module => module.slug === slug);
+}
+
+export function isGamePlayRoute(pathname: string) {
+  const normalizedPath = pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname;
+  return normalizedPath === "/jogar" || gameModules.some(module => module.route === normalizedPath);
 }

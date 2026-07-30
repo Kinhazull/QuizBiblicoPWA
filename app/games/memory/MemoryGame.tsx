@@ -150,7 +150,7 @@ export function MemoryGame() {
     <GameLayout eyebrow="Exercite sua memória" title="Memória" highlightedTitle="Bíblica"
       description="Vire as cartas e encontre os pares relacionados à Bíblia."
       status={status} currentAttempt={matchedCardIds.length / 2} maxAttempts={pairCount || 1}
-      progressLabel="Pares encontrados" onRestart={restart}>
+      progressLabel="Pares encontrados" gameType={GameType.MEMORY} mode={loadedContent?.mode} onRestart={restart}>
       <section className="memory-game" aria-label="Memória Bíblica" aria-busy={loading}>
         {loading && <p className="memory-message" role="status">Carregando Jogo da Memória...</p>}
         {loadError && <p className="memory-message" role="alert">Nenhum Jogo da Memória publicado está disponível agora.</p>}
