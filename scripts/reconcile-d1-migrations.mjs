@@ -8,7 +8,13 @@ import {
   pendingMigrationNames,
   schemaTablesForLedger,
 } from "./lib/d1-migration-promotion-policy.mjs";
-import { assertSnapshotTableAllowlist, buildApplicationSchemaQuery } from "./lib/d1-snapshot-policy.mjs";
+import {
+  assertSnapshotTableAllowlist,
+  authorizedSchemaChanges,
+  buildApplicationSchemaQuery,
+  compareSchemaObjects,
+  migrationsAppliedAfterSnapshot,
+} from "./lib/d1-snapshot-policy.mjs";
 import { buildAtomicBaselineInsert } from "./lib/d1-ledger-policy.mjs";
 
 const config = "workers/journey-awards/wrangler.jsonc";
@@ -68,8 +74,12 @@ const introducedIndexesByMigration = {
   "0034_daily_objective_participations.sql": [
     "generated_game_participations_user_status_idx",
   ],
+};
+const modifiedSchemaObjectsByMigration = {
   "0035_free_play_participations.sql": [
-    "generated_game_participations_user_status_idx",
+    { type: "table", name: "generated_game_participations" },
+    { type: "table", name: "generated_game_participation_usage" },
+    { type: "index", name: "generated_game_participations_user_status_idx" },
   ],
 };
 
@@ -318,6 +328,17 @@ function createSnapshot(path) {
 function compareSnapshot(path) {
   const snapshot = JSON.parse(readFileSync(path, "utf8"));
   assertMigrationLedgerPrefix(snapshot.ledger, expectedFinalLedger);
+  const currentLedger = ledgerNames();
+  assertMigrationLedgerPrefix(currentLedger, expectedFinalLedger);
+  const appliedMigrations = migrationsAppliedAfterSnapshot(
+    snapshot.ledger,
+    currentLedger,
+    expectedFinalLedger,
+  );
+  const authorizedChanges = authorizedSchemaChanges(
+    appliedMigrations,
+    modifiedSchemaObjectsByMigration,
+  );
   const snapshotTables = schemaTablesForLedger(
     snapshot.ledger,
     expectedFinalLedger,
@@ -325,6 +346,7 @@ function compareSnapshot(path) {
     introducedTablesByMigration,
   );
   assertSnapshotTableAllowlist(snapshot.rowCounts, snapshotTables);
+  let rowRegressions = 0;
   for (const [table, before] of Object.entries(snapshot.rowCounts || {})) {
     const exists = scalar(
       `SELECT COUNT(*) AS value FROM sqlite_master WHERE type='table' AND name=${quoteValue(table)}`,
@@ -333,18 +355,38 @@ function compareSnapshot(path) {
     if (exists !== 1) throw new Error(`Pre-existing table ${table} disappeared.`);
     const after = scalar(`SELECT COUNT(*) AS value FROM ${quoteIdentifier(table)}`, "value");
     if (after < Number(before)) {
+      rowRegressions += 1;
       throw new Error(`Row count decreased in ${table}: before=${before}, after=${after}.`);
     }
   }
-  const currentSchema = new Map(rows(buildApplicationSchemaQuery(snapshotTables))
-    .map((item) => [`${item.type}:${item.name}`, item]));
-  for (const object of snapshot.schemaObjects || []) {
-    const current = currentSchema.get(`${object.type}:${object.name}`);
-    if (!current || current.tbl_name !== object.tbl_name || current.sql !== object.sql) {
-      throw new Error(`Pre-existing schema object changed unexpectedly: ${object.type} ${object.name}.`);
-    }
+  const currentTables = schemaTablesForLedger(
+    currentLedger,
+    expectedFinalLedger,
+    requiredTables,
+    introducedTablesByMigration,
+  );
+  const currentSchema = rows(buildApplicationSchemaQuery(currentTables));
+  const comparison = compareSchemaObjects(
+    snapshot.schemaObjects || [],
+    currentSchema,
+    authorizedChanges,
+  );
+  for (const change of comparison.expectedModified) {
+    console.log(
+      `Allowed schema modification: ${change.object.type} ${change.object.name}; ` +
+      `modified by: ${change.migrations.join(", ")}.`,
+    );
   }
-  console.log(`Integrity preserved: ${Object.keys(snapshot.rowCounts || {}).length} pre-existing tables remain without row loss.`);
+  console.log("Snapshot comparison");
+  console.log(`Created objects: ${comparison.created.length}`);
+  console.log(`Expected modified objects: ${comparison.expectedModified.length}`);
+  console.log(`Unexpected modifications: ${comparison.unexpectedModified.length}`);
+  console.log(`Removed objects: ${comparison.removed.length}`);
+  console.log(`Row regressions: ${rowRegressions}`);
+  console.log(
+    `Integrity preserved: ${Object.keys(snapshot.rowCounts || {}).length} ` +
+    "pre-existing tables remain without row loss.",
+  );
 }
 
 const snapshotIndex = process.argv.indexOf("--snapshot");
