@@ -1,25 +1,31 @@
-import { DailyContentProvider, NormalContentProvider } from "./providers";
+import { DailyContentProvider, FreePlayContentProvider, NormalContentProvider } from "./providers";
+import { GameContentProviderRegistry } from "./providerRegistry";
 import {
   GameContentMode,
-  type GameContentProvider,
   type GameContentRequest,
   type LoadedGameContent,
 } from "./types";
 
-const providers = new Map<GameContentMode, GameContentProvider>([
-  [GameContentMode.NORMAL, new NormalContentProvider()],
-  [GameContentMode.DAILY, new DailyContentProvider()],
-]);
+export const gameContentProviders = new GameContentProviderRegistry()
+  .register(new NormalContentProvider())
+  .register(new DailyContentProvider())
+  .register(new FreePlayContentProvider());
 
 export function gameContentRequestFromLocation(
   gameType: GameContentRequest["gameType"],
   locationSearch = typeof window === "undefined" ? "" : window.location.search,
 ): GameContentRequest {
-  const selectionId = new URLSearchParams(locationSearch).get("daily");
+  const parameters = new URLSearchParams(locationSearch);
+  const dailySelectionId = parameters.get("daily");
+  const freePlaySelectionId = parameters.get("freePlay");
   return {
     gameType,
-    mode: selectionId ? GameContentMode.DAILY : GameContentMode.NORMAL,
-    selectionId,
+    mode: dailySelectionId
+      ? GameContentMode.DAILY
+      : freePlaySelectionId
+        ? GameContentMode.FREE_PLAY
+        : GameContentMode.NORMAL,
+    selectionId: dailySelectionId ?? freePlaySelectionId,
   };
 }
 
@@ -27,8 +33,7 @@ export async function loadGameContent<TPayload>(
   request: GameContentRequest,
 ): Promise<LoadedGameContent<TPayload>> {
   const mode = request.mode ?? GameContentMode.NORMAL;
-  const provider = providers.get(mode);
-  if (!provider) throw new Error(`game_content_provider_unavailable:${mode}`);
+  const provider = gameContentProviders.resolve(mode);
   return provider.load<TPayload>({ ...request, mode });
 }
 
@@ -37,8 +42,12 @@ export async function validateGameContentAction<TResponse>(
   action: string,
   input: Record<string, unknown>,
 ): Promise<TResponse> {
-  if (content.mode === GameContentMode.DAILY) {
-    const response = await fetch("/api/platform/daily-objectives/action", {
+  if (content.mode === GameContentMode.DAILY || content.mode === GameContentMode.FREE_PLAY) {
+    const response = await fetch(
+      content.mode === GameContentMode.DAILY
+        ? "/api/platform/daily-objectives/action"
+        : "/api/platform/free-play/action",
+      {
       method: "POST",
       credentials: "same-origin",
       cache: "no-store",
@@ -49,8 +58,9 @@ export async function validateGameContentAction<TResponse>(
         action,
         input,
       }),
-    });
-    if (!response.ok) throw new Error("daily_game_action_failed");
+      },
+    );
+    if (!response.ok) throw new Error("generated_game_action_failed");
     return response.json() as Promise<TResponse>;
   }
   if (content.gameType === "linha-do-tempo-biblica" && action === "validate_order") {

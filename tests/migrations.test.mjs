@@ -5,7 +5,7 @@ import { DatabaseSync } from "node:sqlite";
 
 test("all migrations are sequential and apply to an empty SQLite database", async () => {
   const files = (await readdir(new URL("../drizzle/", import.meta.url))).filter(file => file.endsWith(".sql")).sort();
-  assert.equal(files.length, 35);
+  assert.equal(files.length, 36);
   files.forEach((file, index) => assert.equal(file.slice(0, 4), String(index).padStart(4, "0")));
   const db = new DatabaseSync(":memory:");
   for (const file of files) db.exec(await readFile(new URL(`../drizzle/${file}`, import.meta.url), "utf8"));
@@ -25,6 +25,8 @@ test("all migrations are sequential and apply to an empty SQLite database", asyn
   assert.ok(selectionItemsIndexes.includes("generated_game_selection_items_content_idx"));
   const participationIndexes = db.prepare("PRAGMA index_list('generated_game_participations')").all().map(row => row.name);
   assert.ok(participationIndexes.includes("generated_game_participations_user_status_idx"));
+  const participationSql = db.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='generated_game_participations'").get().sql;
+  assert.match(participationSql, /'DAILY', 'FREE_PLAY'/);
   const contentItemsSql = db.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='content_items'").get().sql;
   assert.match(contentItemsSql, /status IN \('DRAFT', 'PUBLISHED'\)/);
   const sessionColumns = db.prepare("PRAGMA table_info(sessions)").all().map(row => row.name);

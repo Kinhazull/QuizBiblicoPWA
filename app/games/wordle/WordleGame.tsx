@@ -115,7 +115,7 @@ export function WordleGame() {
     }
 
     const normalized = normalizeWord(submittedGuess);
-    const evaluation = loadedContent.mode === GameContentMode.DAILY || !answer
+    const evaluation = loadedContent.mode !== GameContentMode.NORMAL || !answer
       ? await validateGameContentAction<{ evaluation: ReturnType<typeof evaluateGuess>; correct: boolean }>(
         loadedContent,
         "validate_guess",

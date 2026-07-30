@@ -1,13 +1,8 @@
 import type { GameType } from "../../../shared/content";
+import { GameMode } from "../../../shared/game-modes";
 
-export const GameContentMode = {
-  NORMAL: "NORMAL",
-  DAILY: "DAILY",
-  FREE_PLAY: "FREE_PLAY",
-  EVENT: "EVENT",
-} as const;
-
-export type GameContentMode = typeof GameContentMode[keyof typeof GameContentMode];
+export const GameContentMode = GameMode;
+export type GameContentMode = GameMode;
 
 export type LoadedGameContent<TPayload = unknown> = {
   mode: GameContentMode;
@@ -35,4 +30,3 @@ export interface GameContentProvider {
   readonly mode: GameContentMode;
   load<TPayload>(request: GameContentRequest): Promise<LoadedGameContent<TPayload>>;
 }
-

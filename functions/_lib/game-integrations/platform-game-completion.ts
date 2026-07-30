@@ -123,7 +123,7 @@ export type PlatformGameCompletion = (
   | MemoryCompletion
   | ThemeAssociationCompletion
   | WhoAmICompletion
-) & { dailySelectionId?: string };
+) & { dailySelectionId?: string; freePlaySelectionId?: string };
 
 function validateSessionId(value: unknown) {
   const sessionId = String(value || "");
@@ -279,7 +279,7 @@ export function adaptPlatformGameCompletion(
     payload: {
       status: "completed",
       score: result.score,
-      mode: input.dailySelectionId ? "daily" : "official",
+      mode: input.dailySelectionId ? "daily" : input.freePlaySelectionId ? "free_play" : "official",
       correctAnswers: result.correctAnswers,
       questionsAnswered: result.questionsAnswered,
       completedAt: context.completedAt,

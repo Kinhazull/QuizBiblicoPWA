@@ -98,7 +98,7 @@ export function MemoryGame() {
     setRevealedCardIds(nextHistory);
     setMoves(nextMoves);
 
-    const isMatch = loadedContent.mode === GameContentMode.DAILY
+    const isMatch = loadedContent.mode !== GameContentMode.NORMAL
       ? (await validateGameContentAction<{ match: boolean }>(
         loadedContent,
         "validate_pair",

@@ -73,12 +73,15 @@ export default function PlayPage() {
     })
       .then((loaded) => {
         setLoadedContent(loaded);
-        if (loaded.mode === GameContentMode.DAILY) {
+        if (loaded.mode !== GameContentMode.NORMAL) {
           setRound({
             id: loaded.selectionId,
-            title: loaded.metadata.title ?? "Quiz Diário",
-            theme: "Cinco perguntas selecionadas para hoje.",
-            daily: true,
+            title: loaded.metadata.title ?? (loaded.mode === GameContentMode.DAILY ? "Quiz Diário" : "Quiz Livre"),
+            theme: loaded.mode === GameContentMode.DAILY
+              ? "Perguntas selecionadas para hoje."
+              : "Perguntas selecionadas para esta partida.",
+            generated: true,
+            daily: loaded.mode === GameContentMode.DAILY,
           });
         } else {
           setRound(loaded.payload);
@@ -111,11 +114,11 @@ export default function PlayPage() {
   async function start(mode = "official") {
     if (!round || !loadedContent) return;
     setError("");
-    if (loadedContent.mode === GameContentMode.DAILY) {
+    if (loadedContent.mode !== GameContentMode.NORMAL) {
       const payload = loadedContent.payload as DailyQuizPayload;
       dailyAnswers.current = [];
       setAttempt({
-        id: loadedContent.participationId ?? `daily-${loadedContent.selectionId}`,
+        id: loadedContent.participationId ?? `generated-${loadedContent.selectionId}`,
         attemptNumber: 1,
         mode: "daily",
         secondsPerQuestion: 20,
@@ -171,7 +174,7 @@ export default function PlayPage() {
   }
 
   async function finish(id: string) {
-    if (loadedContent?.mode === GameContentMode.DAILY) {
+    if (loadedContent && loadedContent.mode !== GameContentMode.NORMAL) {
       try {
         const dailyResult = await validateGameContentAction<{
           score: number;
@@ -225,7 +228,7 @@ export default function PlayPage() {
     const question = attempt.questions[index];
     const current = pending.current;
     try {
-      if (loadedContent?.mode === GameContentMode.DAILY) {
+      if (loadedContent && loadedContent.mode !== GameContentMode.NORMAL) {
         const data = await validateGameContentAction<{
           correct: boolean;
           explanation: string | null;
@@ -278,7 +281,7 @@ export default function PlayPage() {
   async function next() {
     if (!attempt || pending.current) return;
     if (index < attempt.questions.length - 1) {
-      if (loadedContent?.mode === GameContentMode.DAILY) {
+      if (loadedContent && loadedContent.mode !== GameContentMode.NORMAL) {
         setIndex(value => value + 1);
         setSelected(null);
         setFeedback(null);
@@ -330,9 +333,9 @@ export default function PlayPage() {
           </div>
           <button
             className="primary"
-            onClick={() => (location.href = "/rankings")}
+            onClick={() => (location.href = loadedContent?.mode === GameContentMode.FREE_PLAY ? "/jogos/modo-livre" : "/rankings")}
           >
-            VER RANKINGS <span>→</span>
+            {loadedContent?.mode === GameContentMode.FREE_PLAY ? "NOVA PARTIDA LIVRE" : "VER RANKINGS"} <span>→</span>
           </button>
           <button className="auth-switch" onClick={() => (location.href = "/")}>
             Voltar ao início
@@ -356,17 +359,19 @@ export default function PlayPage() {
           {round ? (
             <>
               <p className="eyebrow">
-                {requestedPractice ? "JORNADA DE TREINO" : "JORNADA DA SEMANA"}
+                {round.generated
+                  ? round.daily ? "OBJETIVO DIÁRIO" : "MODO LIVRE"
+                  : requestedPractice ? "JORNADA DE TREINO" : "JORNADA DA SEMANA"}
               </p>
               <h1>{round.title}</h1>
               <p className="intro">
-                {round.theme}
-                <br />
+                {round.generated ? round.theme : <>
+                {round.theme}<br />
                 {requestedPractice
                   ? "O treino não consome tentativas nem altera o Ranking oficial."
                   : round.resuming
                     ? "Você possui uma tentativa em andamento dentro do período de tolerância."
-                    : `${Math.max(0, round.attemptLimit - round.attemptsUsed)} tentativa(s) oficial(is) disponível(is). Partidas interrompidas são retomadas automaticamente.`}
+                    : `${Math.max(0, round.attemptLimit - round.attemptsUsed)} tentativa(s) oficial(is) disponível(is). Partidas interrompidas são retomadas automaticamente.`}</>}
               </p>
               <button
                 className="primary"
@@ -374,14 +379,18 @@ export default function PlayPage() {
                   start(requestedPractice ? "practice" : "official")
                 }
                 disabled={
-                  requestedPractice
+                  round.generated
+                    ? false
+                    : requestedPractice
                     ? !round.practiceAllowed
                     : !round.resuming &&
                       (round.attemptsUsed >= round.attemptLimit ||
                         !round.canStart)
                 }
               >
-                {requestedPractice
+                {round.generated
+                  ? "INICIAR PARTIDA"
+                  : requestedPractice
                   ? "INICIAR OU CONTINUAR TREINO"
                   : round.resuming
                     ? "CONTINUAR JORNADA"
@@ -390,13 +399,14 @@ export default function PlayPage() {
                       : "NOVAS TENTATIVAS ENCERRADAS"}{" "}
                 <span>→</span>
               </button>
-              {!requestedPractice && !round.resuming && !round.canStart && (
+              {!round.generated && !requestedPractice && !round.resuming && !round.canStart && (
                 <p className="auth-message">
                   A jornada continua aberta apenas para quem já iniciou uma
                   tentativa.
                 </p>
               )}
-              {!requestedPractice &&
+              {!round.generated &&
+                !requestedPractice &&
                 round.practiceAllowed &&
                 round.attemptsUsed >= round.attemptLimit &&
                 round.canStart && (

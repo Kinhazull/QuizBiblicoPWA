@@ -136,7 +136,7 @@ function generationRequest(
   };
 }
 
-async function historicalContents(
+export async function generatedSelectionHistoricalContents(
   env: AppEnv,
   organizationId: string,
   selection: GeneratedGameSelection,
@@ -184,7 +184,10 @@ export async function dailyMemoryCards(
   return { set, cards: await deterministicOrder(cards, seed, card => card.id) };
 }
 
-async function safePayload(selection: GeneratedGameSelection, contents: HistoricalContent[]) {
+export async function generatedSelectionSafePayload(
+  selection: GeneratedGameSelection,
+  contents: HistoricalContent[],
+) {
   const seed = selection.seedHash;
   if (selection.gameType === GameType.WORDLE) {
     const content = contents[0];
@@ -285,7 +288,7 @@ async function safePayload(selection: GeneratedGameSelection, contents: Historic
   throw new Error("unsupported_daily_game");
 }
 
-async function ensureParticipation(
+export async function ensureGeneratedParticipation(
   env: AppEnv,
   identity: Identity,
   selection: GeneratedGameSelection,
@@ -294,9 +297,17 @@ async function ensureParticipation(
   const id = `participation_${(await sha256(`${selection.id}:${identity.userId}`)).slice(0, 32)}`;
   await env.DB.prepare(`INSERT INTO generated_game_participations(
     id,selection_id,organization_id,user_id,game_type,mode,status,created_at,updated_at
-  ) VALUES(?1,?2,?3,?4,?5,'DAILY','CREATED',?6,?6)
+  ) VALUES(?1,?2,?3,?4,?5,?6,'CREATED',?7,?7)
   ON CONFLICT(selection_id,user_id) DO NOTHING`)
-    .bind(id, selection.id, identity.organizationId, identity.userId, selection.gameType, now).run();
+    .bind(
+      id,
+      selection.id,
+      identity.organizationId,
+      identity.userId,
+      selection.gameType,
+      selection.mode,
+      now,
+    ).run();
   return env.DB.prepare(`SELECT * FROM generated_game_participations
     WHERE selection_id=?1 AND user_id=?2 AND organization_id=?3`)
     .bind(selection.id, identity.userId, identity.organizationId).first<Record<string, unknown>>();
@@ -359,8 +370,8 @@ export async function getDailyObjective(
     now,
   );
   if (!generated.ok) throw new Error(generated.error.code);
-  const contents = await historicalContents(env, identity.organizationId, generated.selection);
-  const participation = await ensureParticipation(env, identity, generated.selection, now);
+  const contents = await generatedSelectionHistoricalContents(env, identity.organizationId, generated.selection);
+  const participation = await ensureGeneratedParticipation(env, identity, generated.selection, now);
   if (!participation) throw new Error("daily_participation_unavailable");
   const resolvedExpiry = generated.selection.expiresAt || expiresAt;
   return {
@@ -376,7 +387,7 @@ export async function getDailyObjective(
     availability: "AVAILABLE" as const,
     unavailableReason: null,
     expiresAt: resolvedExpiry,
-    content: await safePayload(generated.selection, contents),
+    content: await generatedSelectionSafePayload(generated.selection, contents),
     playHref: playHref(gameType, generated.selection.id),
   };
 }
@@ -429,15 +440,27 @@ export async function startDailyObjective(
     throw new Error("invalid_daily_selection");
   }
   if (selection.expiresAt === null || now >= selection.expiresAt) throw new Error("daily_selection_expired");
-  const participation = await ensureParticipation(env, identity, selection, now);
+  return startGeneratedSelection(env, identity, selection, GameGenerationMode.DAILY, now);
+}
+
+export async function startGeneratedSelection(
+  env: AppEnv,
+  identity: Identity,
+  selection: GeneratedGameSelection,
+  expectedMode: typeof GameGenerationMode.DAILY | typeof GameGenerationMode.FREE_PLAY,
+  now = Date.now(),
+) {
+  if (selection.mode !== expectedMode) throw new Error("invalid_generated_selection_mode");
+  const participation = await ensureGeneratedParticipation(env, identity, selection, now);
   if (!participation) throw new Error("daily_participation_unavailable");
   const status = String(participation.status);
   if (status === DailyObjectiveLifecycle.FINISHED) return { participationId: String(participation.id), status };
-  if (status === DailyObjectiveLifecycle.STARTED) {
-    return { participationId: String(participation.id), status };
-  }
-  const eventId = `daily:${selection.id}:${identity.userId}:started`;
-  const serviceByGame: Record<DailyGameType, string> = {
+  const modeName = expectedMode === GameGenerationMode.DAILY ? "daily" : "free_play";
+  const eventId = `${modeName}:${selection.id}:${identity.userId}:started`;
+  const eventOccurredAt = status === DailyObjectiveLifecycle.STARTED && Number(participation.started_at) > 0
+    ? Number(participation.started_at)
+    : now;
+  const serviceByGame: Record<string, string> = {
     [GameType.WORDLE]: "wordle-service",
     [GameType.QUIZ]: "quiz-service",
     [GameType.TIMELINE]: "timeline-service",
@@ -453,11 +476,18 @@ export async function startDailyObjective(
       .bind(String(participation.id), identity.organizationId, item.contentId, item.contentVersion));
   const usageUpdates = selection.items.flatMap(item => [
     env.DB.prepare(`UPDATE universal_content_library
-      SET usage_count=usage_count+1,last_used_at=?1,last_used_mode='DAILY',updated_at=?1
+      SET usage_count=usage_count+1,last_used_at=?1,last_used_mode=?6,updated_at=?1
       WHERE organization_id=?2 AND content_id=?3 AND content_version=?4
         AND EXISTS(SELECT 1 FROM generated_game_participation_usage
           WHERE participation_id=?5 AND content_id=?3 AND content_version=?4 AND recorded_at IS NULL)`)
-      .bind(now, identity.organizationId, item.contentId, item.contentVersion, String(participation.id)),
+      .bind(
+        now,
+        identity.organizationId,
+        item.contentId,
+        item.contentVersion,
+        String(participation.id),
+        expectedMode,
+      ),
     env.DB.prepare(`UPDATE generated_game_participation_usage SET recorded_at=?1
       WHERE participation_id=?2 AND content_id=?3 AND content_version=?4 AND recorded_at IS NULL`)
       .bind(now, String(participation.id), item.contentId, item.contentVersion),
@@ -470,19 +500,21 @@ export async function startDailyObjective(
       WHERE id=?3 AND organization_id=?4 AND user_id=?5 AND status IN ('CREATED','STARTED')`)
       .bind(now, eventId, String(participation.id), identity.organizationId, identity.userId),
   ]);
+  const service = serviceByGame[selection.gameType];
+  if (!service) throw new Error("unsupported_generated_game");
   await publishOfficialCoreEvent(env, {
     eventId,
     eventType: "GAME_STARTED",
-    occurredAt: now,
+    occurredAt: eventOccurredAt,
     organizationId: identity.organizationId,
     userId: identity.userId,
     source: {
       kind: "game",
-      service: serviceByGame[selection.gameType],
+      service,
       gameId: selection.gameType,
       sourceId: String(participation.id),
     },
-    payload: { sessionType: "daily" },
+    payload: { sessionType: modeName },
     version: 1,
   }, now);
   return { participationId: String(participation.id), status: DailyObjectiveLifecycle.STARTED };
@@ -503,14 +535,25 @@ export async function dailySelectionContext(
     || selection.expiresAt === null
     || now >= selection.expiresAt
   ) throw new Error("invalid_daily_selection");
-  const participation = await ensureParticipation(env, identity, selection, now);
+  return generatedSelectionContext(env, identity, selection, GameGenerationMode.DAILY, now);
+}
+
+export async function generatedSelectionContext(
+  env: AppEnv,
+  identity: Identity,
+  selection: GeneratedGameSelection,
+  expectedMode: typeof GameGenerationMode.DAILY | typeof GameGenerationMode.FREE_PLAY,
+  now = Date.now(),
+) {
+  if (selection.mode !== expectedMode) throw new Error("invalid_generated_selection_mode");
+  const participation = await ensureGeneratedParticipation(env, identity, selection, now);
   if (!participation || String(participation.status) !== DailyObjectiveLifecycle.STARTED) {
     throw new Error("daily_participation_not_started");
   }
   return {
     selection,
     participation,
-    contents: await historicalContents(env, identity.organizationId, selection),
+    contents: await generatedSelectionHistoricalContents(env, identity.organizationId, selection),
   };
 }
 
@@ -525,11 +568,30 @@ export async function validateDailyGameAction(
   },
   now = Date.now(),
 ) {
-  const context = await dailySelectionContext(
+  return validateGeneratedGameAction(env, identity, input, GameGenerationMode.DAILY, now);
+}
+
+export async function validateGeneratedGameAction(
+  env: AppEnv,
+  identity: Identity,
+  input: {
+    selectionId: string;
+    gameType: string;
+    action: string;
+    payload: Record<string, unknown>;
+  },
+  expectedMode: typeof GameGenerationMode.DAILY | typeof GameGenerationMode.FREE_PLAY,
+  now = Date.now(),
+) {
+  const selection = await findGeneratedSelectionById(env, identity.organizationId, input.selectionId);
+  if (!selection || selection.gameType !== input.gameType || selection.requestedByUserId && selection.requestedByUserId !== identity.userId) {
+    throw new Error("invalid_generated_selection");
+  }
+  const context = await generatedSelectionContext(
     env,
     identity,
-    input.selectionId,
-    input.gameType,
+    selection,
+    expectedMode,
     now,
   );
   if (input.gameType === GameType.WORDLE && input.action === "validate_guess") {
@@ -648,7 +710,8 @@ export async function validateDailyGameAction(
       seen.add(questionId);
     }
     const participationId = String(context.participation.id);
-    const eventId = `daily:${input.selectionId}:${identity.userId}:finished`;
+    const modeName = expectedMode === GameGenerationMode.DAILY ? "daily" : "free_play";
+    const eventId = `${modeName}:${input.selectionId}:${identity.userId}:finished`;
     await publishOfficialCoreEvent(env, {
       eventId,
       eventType: "GAME_FINISHED",
@@ -664,16 +727,16 @@ export async function validateDailyGameAction(
       payload: {
         status: "completed",
         score: correctAnswers * 100,
-        mode: "daily",
+        mode: modeName,
         correctAnswers,
         questionsAnswered: context.contents.length,
         completedAt: now,
         attemptId: participationId,
-        gameVersion: "daily-v1",
+        gameVersion: `${modeName}-v1`,
       },
       version: 2,
     }, now);
-    await finishDailyParticipation(env, identity, input.selectionId, eventId, now);
+    await finishGeneratedParticipation(env, identity, input.selectionId, expectedMode, eventId, now);
     return {
       score: correctAnswers * 100,
       correctAnswers,
@@ -690,12 +753,30 @@ export async function finishDailyParticipation(
   eventId: string,
   now = Date.now(),
 ) {
+  return finishGeneratedParticipation(
+    env,
+    identity,
+    selectionId,
+    GameGenerationMode.DAILY,
+    eventId,
+    now,
+  );
+}
+
+export async function finishGeneratedParticipation(
+  env: AppEnv,
+  identity: Identity,
+  selectionId: string,
+  expectedMode: typeof GameGenerationMode.DAILY | typeof GameGenerationMode.FREE_PLAY,
+  eventId: string,
+  now = Date.now(),
+) {
   const result = await env.DB.prepare(`UPDATE generated_game_participations
     SET status='FINISHED',finished_at=COALESCE(finished_at,?1),
       finish_event_id=COALESCE(finish_event_id,?2),updated_at=?1
-    WHERE selection_id=?3 AND organization_id=?4 AND user_id=?5
+    WHERE selection_id=?3 AND organization_id=?4 AND user_id=?5 AND mode=?6
       AND status IN ('STARTED','FINISHED')
       AND (finish_event_id IS NULL OR finish_event_id=?2)`)
-    .bind(now, eventId, selectionId, identity.organizationId, identity.userId).run();
+    .bind(now, eventId, selectionId, identity.organizationId, identity.userId, expectedMode).run();
   if (Number(result.meta.changes ?? 0) !== 1) throw new Error("daily_finish_conflict");
 }

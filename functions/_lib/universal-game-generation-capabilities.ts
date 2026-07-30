@@ -7,6 +7,10 @@ export type GameGenerationCapability = {
   maximumContents: number;
   supportedModes: readonly Mode[];
   supportsDifficulty: boolean;
+  supportsThemes: boolean;
+  supportsBooks: boolean;
+  supportsTestament: boolean;
+  allowedCounts: readonly number[];
   adapterVersion: number;
 };
 
@@ -15,16 +19,24 @@ const capabilities = new Map<string, GameGenerationCapability>([
     gameType: GameType.WORDLE,
     minimumContents: 1,
     maximumContents: 1,
-    supportedModes: [GameGenerationMode.INTERNAL_TEST, GameGenerationMode.DAILY],
+    supportedModes: [GameGenerationMode.INTERNAL_TEST, GameGenerationMode.DAILY, GameGenerationMode.FREE_PLAY],
     supportsDifficulty: true,
+    supportsThemes: true,
+    supportsBooks: true,
+    supportsTestament: false,
+    allowedCounts: [1],
     adapterVersion: 1,
   }],
   [GameType.QUIZ, {
     gameType: GameType.QUIZ,
     minimumContents: 5,
-    maximumContents: 5,
-    supportedModes: [GameGenerationMode.INTERNAL_TEST, GameGenerationMode.DAILY],
+    maximumContents: 20,
+    supportedModes: [GameGenerationMode.INTERNAL_TEST, GameGenerationMode.DAILY, GameGenerationMode.FREE_PLAY],
     supportsDifficulty: true,
+    supportsThemes: true,
+    supportsBooks: true,
+    supportsTestament: false,
+    allowedCounts: [5, 10, 20],
     adapterVersion: 1,
   }],
   ...[
@@ -37,8 +49,12 @@ const capabilities = new Map<string, GameGenerationCapability>([
     gameType,
     minimumContents: 1,
     maximumContents: 20,
-    supportedModes: [GameGenerationMode.INTERNAL_TEST, GameGenerationMode.DAILY],
+    supportedModes: [GameGenerationMode.INTERNAL_TEST, GameGenerationMode.DAILY, GameGenerationMode.FREE_PLAY],
     supportsDifficulty: true,
+    supportsThemes: true,
+    supportsBooks: true,
+    supportsTestament: false,
+    allowedCounts: [1],
     adapterVersion: 1,
   }] as const),
 ]);

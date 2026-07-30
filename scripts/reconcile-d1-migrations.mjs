@@ -39,6 +39,7 @@ const foundationMigrations = [
   "0032_universal_content_library.sql",
   "0033_universal_game_generator.sql",
   "0034_daily_objective_participations.sql",
+  "0035_free_play_participations.sql",
 ];
 const expectedFinalLedger = [...baseline, targetMigration, ...foundationMigrations];
 const introducedTablesByMigration = {
@@ -65,6 +66,9 @@ const introducedIndexesByMigration = {
     "generated_game_selection_items_content_idx",
   ],
   "0034_daily_objective_participations.sql": [
+    "generated_game_participations_user_status_idx",
+  ],
+  "0035_free_play_participations.sql": [
     "generated_game_participations_user_status_idx",
   ],
 };

@@ -15,6 +15,7 @@ export function GameResult({ status, onRestart }: {
       </div>
       <div className="game-sdk-result-actions">
         <button type="button" onClick={onRestart}>Jogar novamente</button>
+        <a href="/jogos/modo-livre">Nova partida livre</a>
         <a href="/">Voltar para Home</a>
       </div>
     </section>

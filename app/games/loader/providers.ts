@@ -138,3 +138,47 @@ export class DailyContentProvider implements GameContentProvider {
     };
   }
 }
+
+export class FreePlayContentProvider implements GameContentProvider {
+  readonly mode = GameContentMode.FREE_PLAY;
+
+  async load<TPayload>(request: GameContentRequest): Promise<LoadedGameContent<TPayload>> {
+    if (!request.selectionId) throw new Error("free_play_content_provider_invalid_request");
+    const start = await requestJson("/api/platform/free-play/start", {
+      method: "POST",
+      signal: request.signal,
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ selectionId: request.selectionId }),
+    });
+    const data = await requestJson(
+      `/api/platform/free-play/selection?selectionId=${encodeURIComponent(request.selectionId)}`,
+      { method: "GET", signal: request.signal },
+    );
+    const game = data.game as Record<string, unknown> | null;
+    if (!game || game.selectionId !== request.selectionId || game.gameType !== request.gameType) {
+      throw new Error("free_play_content_selection_mismatch");
+    }
+    const payload = game.content as Record<string, unknown> | null;
+    if (!payload) throw new Error("game_content_invalid");
+    const primary = request.gameType === GameType.QUIZ
+      ? ((payload.questions as Record<string, unknown>[] | undefined)?.[0] ?? null)
+      : payload;
+    if (!primary) throw new Error("game_content_invalid");
+    const identity = contentIdentity(primary);
+    const participation = start.participation as Record<string, unknown> | null;
+    return {
+      mode: this.mode,
+      gameType: request.gameType,
+      selectionId: String(game.selectionId),
+      participationId: String(participation?.participationId ?? game.participationId ?? ""),
+      contentId: identity.id,
+      contentVersion: identity.version,
+      payload: payload as TPayload,
+      metadata: {
+        title: typeof game.title === "string" ? game.title : null,
+        biblicalReference: typeof primary.biblicalReference === "string" ? primary.biblicalReference : null,
+        expiresAt: null,
+      },
+    };
+  }
+}

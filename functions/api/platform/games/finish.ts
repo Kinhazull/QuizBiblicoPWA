@@ -29,6 +29,10 @@ import {
   dailySelectionContext,
   finishDailyParticipation,
 } from "../../../_lib/platform-daily-objectives";
+import {
+  finishFreePlayParticipation,
+  freePlaySelectionContext,
+} from "../../../_lib/platform-free-play";
 
 const SAFE_ERROR = /^[a-z0-9_]{1,100}$/;
 
@@ -39,31 +43,41 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
     if (!body || typeof body !== "object" || Array.isArray(body)) {
       return json({ error: "invalid_game_completion" }, 400);
     }
+    if (body.dailySelectionId && body.freePlaySelectionId) {
+      throw new Error("invalid_game_selection_mode");
+    }
     const daily = body.dailySelectionId
       ? await dailySelectionContext(env, {
         organizationId: String(user.organizationId),
         userId: String(user.id),
       }, body.dailySelectionId, body.gameId)
       : null;
-    const dailyContent = daily?.contents.length === 1 ? daily.contents[0] : null;
-    const resolvedDailyContent = dailyContent ? {
-      id: dailyContent.id,
-      version: dailyContent.version,
+    const freePlay = body.freePlaySelectionId
+      ? await freePlaySelectionContext(env, {
+        organizationId: String(user.organizationId),
+        userId: String(user.id),
+      }, body.freePlaySelectionId, body.gameId)
+      : null;
+    const generated = daily ?? freePlay;
+    const generatedContent = generated?.contents.length === 1 ? generated.contents[0] : null;
+    const resolvedGeneratedContent = generatedContent ? {
+      id: generatedContent.id,
+      version: generatedContent.version,
       gameType: body.gameId,
-      category: String(dailyContent.metadata.category ?? ""),
-      tags: Array.isArray(dailyContent.metadata.tags) ? dailyContent.metadata.tags as string[] : [],
-      difficulty: dailyContent.metadata.difficulty,
-      biblicalReference: typeof dailyContent.metadata.biblicalReference === "string" ? dailyContent.metadata.biblicalReference : null,
-      status: dailyContent.metadata.status,
-      authorId: String(dailyContent.metadata.authorId ?? ""),
-      reviewerId: typeof dailyContent.metadata.reviewerId === "string" ? dailyContent.metadata.reviewerId : null,
-      createdAt: Number(dailyContent.metadata.createdAt ?? 0),
-      updatedAt: Number(dailyContent.metadata.updatedAt ?? 0),
-      internalNotes: typeof dailyContent.metadata.internalNotes === "string" ? dailyContent.metadata.internalNotes : null,
-      payload: dailyContent.payload,
+      category: String(generatedContent.metadata.category ?? ""),
+      tags: Array.isArray(generatedContent.metadata.tags) ? generatedContent.metadata.tags as string[] : [],
+      difficulty: generatedContent.metadata.difficulty,
+      biblicalReference: typeof generatedContent.metadata.biblicalReference === "string" ? generatedContent.metadata.biblicalReference : null,
+      status: generatedContent.metadata.status,
+      authorId: String(generatedContent.metadata.authorId ?? ""),
+      reviewerId: typeof generatedContent.metadata.reviewerId === "string" ? generatedContent.metadata.reviewerId : null,
+      createdAt: Number(generatedContent.metadata.createdAt ?? 0),
+      updatedAt: Number(generatedContent.metadata.updatedAt ?? 0),
+      internalNotes: typeof generatedContent.metadata.internalNotes === "string" ? generatedContent.metadata.internalNotes : null,
+      payload: generatedContent.payload,
     } as any : null;
     const wordleContent = body.gameId === "wordle-biblico"
-      ? resolvedDailyContent ?? await findPublishedUniversalContent(
+      ? resolvedGeneratedContent ?? await findPublishedUniversalContent(
         env,
         String(user.organizationId),
         GameType.WORDLE,
@@ -77,7 +91,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
       throw new Error("invalid_wordle_content");
     }
     const timelineContent = body.gameId === "linha-do-tempo-biblica"
-      ? resolvedDailyContent ?? await findPublishedUniversalContent(
+      ? resolvedGeneratedContent ?? await findPublishedUniversalContent(
         env,
         String(user.organizationId),
         GameType.TIMELINE,
@@ -108,7 +122,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
       );
     }
     const memoryContent = body.gameId === "memoria-biblica"
-      ? resolvedDailyContent ?? await findPublishedUniversalContent(
+      ? resolvedGeneratedContent ?? await findPublishedUniversalContent(
         env,
         String(user.organizationId),
         GameType.MEMORY,
@@ -139,7 +153,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
       );
     }
     const associationContent = body.gameId === "associacao-de-temas"
-      ? resolvedDailyContent ?? await findPublishedUniversalContent(
+      ? resolvedGeneratedContent ?? await findPublishedUniversalContent(
         env,
         String(user.organizationId),
         GameType.ASSOCIATION,
@@ -170,7 +184,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
       );
     }
     const whoAmIContent = body.gameId === "quem-sou-eu"
-      ? resolvedDailyContent ?? await findPublishedUniversalContent(
+      ? resolvedGeneratedContent ?? await findPublishedUniversalContent(
         env,
         String(user.organizationId),
         GameType.WHO_AM_I,
@@ -201,7 +215,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
       );
     }
     const threeCluesContent = body.gameId === "jogo-tres-pistas"
-      ? resolvedDailyContent ?? await findPublishedUniversalContent(
+      ? resolvedGeneratedContent ?? await findPublishedUniversalContent(
         env,
         String(user.organizationId),
         GameType.THREE_CLUES,
@@ -233,13 +247,13 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
     }
     let completionBody = body;
     if (
-      daily
+      generated
       && body.gameId === GameType.MEMORY
       && memoryContent
       && Array.isArray(body.revealedCardIds)
     ) {
       const { cards } = await dailyMemoryCards(
-        daily.selection.seedHash,
+        generated.selection.seedHash,
         memoryContent.id,
         memoryContent.payload as MemoryContentPayload,
       );
@@ -290,6 +304,12 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
         organizationId: String(user.organizationId),
         userId: String(user.id),
       }, body.dailySelectionId, event.eventId, event.occurredAt);
+    }
+    if (body.freePlaySelectionId) {
+      await finishFreePlayParticipation(env, {
+        organizationId: String(user.organizationId),
+        userId: String(user.id),
+      }, body.freePlaySelectionId, event.eventId, event.occurredAt);
     }
     return json({
       ok: true,

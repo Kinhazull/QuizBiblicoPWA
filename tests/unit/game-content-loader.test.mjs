@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import {
   GameContentMode,
+  GameContentProviderRegistry,
   gameContentRequestFromLocation,
   loadGameContent,
 } from "../../app/games/loader/index.ts";
@@ -124,6 +125,10 @@ test("daily provider starts and loads the selected objective through one contrac
 
 test("loader selects DAILY only from an explicit daily selection", () => {
   assert.deepEqual(
+    gameContentRequestFromLocation(GameType.WORDLE, "?freePlay=selection-2"),
+    { gameType: GameType.WORDLE, mode: GameContentMode.FREE_PLAY, selectionId: "selection-2" },
+  );
+  assert.deepEqual(
     gameContentRequestFromLocation(GameType.WORDLE, "?daily=selection-1"),
     { gameType: GameType.WORDLE, mode: GameContentMode.DAILY, selectionId: "selection-1" },
   );
@@ -133,11 +138,50 @@ test("loader selects DAILY only from an explicit daily selection", () => {
   );
 });
 
-test("all seven game capabilities support deterministic DAILY generation", () => {
+test("free play provider starts and reloads the same immutable selection", async () => {
+  const calls = [];
+  globalThis.fetch = async (url) => {
+    calls.push(String(url));
+    if (url === "/api/platform/free-play/start") {
+      return jsonResponse({ participation: { participationId: "participation-free", status: "STARTED" } });
+    }
+    return jsonResponse({
+      game: {
+        selectionId: "selection-free",
+        participationId: "participation-free",
+        gameType: GameType.WORDLE,
+        title: "Modo Livre",
+        content: { id: "wordle-free", version: 2, hint: "Pista", wordLength: 5 },
+      },
+    });
+  };
+  const loaded = await loadGameContent({
+    gameType: GameType.WORDLE,
+    mode: GameContentMode.FREE_PLAY,
+    selectionId: "selection-free",
+  });
+  assert.equal(loaded.mode, GameContentMode.FREE_PLAY);
+  assert.equal(loaded.selectionId, "selection-free");
+  assert.equal(loaded.participationId, "participation-free");
+  assert.deepEqual(calls, [
+    "/api/platform/free-play/start",
+    "/api/platform/free-play/selection?selectionId=selection-free",
+  ]);
+});
+
+test("provider registry rejects duplicates and disabled EVENT mode", () => {
+  const provider = { mode: GameContentMode.NORMAL, async load() { return {}; } };
+  const registry = new GameContentProviderRegistry().register(provider);
+  assert.throws(() => registry.register(provider), /game_content_provider_duplicate/);
+  assert.throws(() => registry.resolve(GameContentMode.EVENT), /game_content_provider_unavailable/);
+});
+
+test("all seven game capabilities support deterministic DAILY and FREE_PLAY generation", () => {
   for (const gameType of Object.values(GameType)) {
     const capability = getGameGenerationCapability(gameType);
     assert.ok(capability);
     assert.equal(capability.supportedModes.includes(GameGenerationMode.DAILY), true);
+    assert.equal(capability.supportedModes.includes(GameGenerationMode.FREE_PLAY), true);
   }
 });
 
@@ -154,6 +198,7 @@ test("migrated games do not know content or daily endpoints", async () => {
   for (const file of files) {
     const source = await readFile(file, "utf8");
     assert.doesNotMatch(source, /\/api\/platform\/daily-objectives/);
+    assert.doesNotMatch(source, /\/api\/platform\/free-play/);
     assert.doesNotMatch(source, /\/api\/platform\/games\/(?:wordle|timeline|memory|association|who-am-i|three-clues)/);
     assert.doesNotMatch(source, /\/api\/rounds\/current/);
     assert.match(source, /loadGameContent/);

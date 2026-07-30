@@ -70,12 +70,21 @@ export async function recordPlatformGameCompletion(input: PlatformGameCompletion
   const dailySelectionId = typeof window === "undefined"
     ? null
     : new URLSearchParams(window.location.search).get("daily");
+  const freePlaySelectionId = typeof window === "undefined"
+    ? null
+    : new URLSearchParams(window.location.search).get("freePlay");
   const response = await fetch("/api/platform/games/finish", {
     method: "POST",
     credentials: "same-origin",
     cache: "no-store",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify(dailySelectionId ? { ...input, dailySelectionId } : input),
+    body: JSON.stringify(
+      dailySelectionId
+        ? { ...input, dailySelectionId }
+        : freePlaySelectionId
+          ? { ...input, freePlaySelectionId }
+          : input,
+    ),
   });
   if (!response.ok) throw new Error("game_completion_not_recorded");
   return response.json();
