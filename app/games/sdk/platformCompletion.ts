@@ -77,6 +77,7 @@ export async function recordPlatformGameCompletion(input: PlatformGameCompletion
     method: "POST",
     credentials: "same-origin",
     cache: "no-store",
+    keepalive: true,
     headers: { "content-type": "application/json" },
     body: JSON.stringify(
       dailySelectionId

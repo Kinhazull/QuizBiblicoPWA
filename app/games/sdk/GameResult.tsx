@@ -28,7 +28,7 @@ export function GameResult({ status, mode = GameMode.NORMAL, gameType, onRestart
     setBusy(true);
     setError("");
     try {
-      location.href = await generateFreePlayGame(gameType);
+      location.replace(await generateFreePlayGame(gameType));
     } catch {
       setError("Não foi possível preparar outra partida.");
       setBusy(false);

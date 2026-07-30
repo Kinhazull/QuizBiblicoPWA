@@ -117,6 +117,62 @@ async function mockPublicApi(page: import("@playwright/test").Page, authenticate
   }));
 }
 
+async function mockGeneratedWordle(
+  page: import("@playwright/test").Page,
+  mode: "freePlay" | "daily",
+) {
+  const selectionId = `selection-${mode}-exit`;
+  const prefix = mode === "daily"
+    ? "/api/platform/daily-objectives"
+    : "/api/platform/free-play";
+  await page.route(`**${prefix}/start`, route => route.fulfill({
+    status: 200,
+    contentType: "application/json",
+    body: JSON.stringify({
+      participation: { participationId: `participation-${mode}`, status: "STARTED" },
+    }),
+  }));
+  await page.route(
+    mode === "daily"
+      ? `**/api/platform/daily-objectives/wordle`
+      : `**/api/platform/free-play/selection?*`,
+    route => route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify(mode === "daily" ? {
+        objective: {
+          selectionId,
+          participationId: `participation-${mode}`,
+          gameType: "wordle-biblico",
+          title: "Wordle Diário",
+          content: {
+            id: "wordle-exit",
+            version: 1,
+            wordLength: 5,
+            hint: "Teste",
+            biblicalReference: "João 1:1",
+          },
+        },
+      } : {
+        game: {
+          selectionId,
+          participationId: `participation-${mode}`,
+          gameType: "wordle-biblico",
+          title: "Wordle Livre",
+          content: {
+            id: "wordle-exit",
+            version: 1,
+            wordLength: 5,
+            hint: "Teste",
+            biblicalReference: "João 1:1",
+          },
+        },
+      }),
+    }),
+  );
+  return selectionId;
+}
+
 test("daily retention stays readable and idempotent across a Home reload", async ({ page }) => {
   let checkIns = 0;
   await mockPublicApi(page, true);
@@ -279,6 +335,7 @@ test("catalog and Game SDK keep both platform games playable on mobile", async (
   await page.setViewportSize({ width: 320, height: 700 });
   await mockPublicApi(page, true);
   const completions: Array<Record<string, unknown>> = [];
+  let resultAbandonments = 0;
   await page.route("**/api/platform/games/finish", async route => {
     completions.push(JSON.parse(route.request().postData() || "{}"));
     await route.fulfill({
@@ -286,6 +343,10 @@ test("catalog and Game SDK keep both platform games playable on mobile", async (
       contentType: "application/json",
       body: JSON.stringify({ ok: true, processing: "completed" }),
     });
+  });
+  await page.route("**/api/platform/games/abandon", async route => {
+    resultAbandonments += 1;
+    await route.fulfill({ status: 200, contentType: "application/json", body: "{}" });
   });
 
   await page.goto("/jogos");
@@ -301,6 +362,9 @@ test("catalog and Game SDK keep both platform games playable on mobile", async (
   await page.getByRole("button", { name: "Enter", exact: true }).click();
   await expect(page.locator(".game-sdk-result.won")).toBeVisible();
   await expect(page.getByRole("link", { name: /voltar aos jogos/i })).toBeVisible();
+  await page.getByRole("button", { name: /Voltar para a tela anterior/i }).click();
+  await expect(page).toHaveURL(/\/jogos\/?$/);
+  expect(resultAbandonments).toBe(0);
 
   await page.goto("/jogos/jogo-das-3-pistas");
   await page.getByLabel(/qual .* resposta/i).fill("Noé");
@@ -321,4 +385,57 @@ test("catalog and Game SDK keep both platform games playable on mobile", async (
   expect(resultClearance!.navigationVisible).toBe(false);
   expect(resultClearance!.resultBottom).toBeLessThanOrEqual(resultClearance!.viewportHeight + 0.5);
   expect(resultClearance!.pageWidth).toBe(resultClearance!.viewportWidth);
+});
+
+for (const scenario of [
+  { mode: "freePlay" as const, destination: "/jogos", title: /Sair da partida/i },
+  { mode: "daily" as const, destination: "/desafios-diarios", title: /Abandonar o desafio diário/i },
+]) {
+  test(`${scenario.mode} active game confirms abandonment and uses an explicit destination`, async ({ page }) => {
+    await mockPublicApi(page, true);
+    const selectionId = await mockGeneratedWordle(page, scenario.mode);
+    let abandonments = 0;
+    await page.route("**/api/platform/games/abandon", async route => {
+      abandonments += 1;
+      await new Promise(resolve => setTimeout(resolve, 40));
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ ok: true, outcome: "lost", duplicate: abandonments > 1 }),
+      });
+    });
+    await page.goto(`/jogos/wordle-biblico?${scenario.mode}=${selectionId}`);
+    await expect(page.getByText(/Digite uma palavra bíblica/i)).toBeVisible();
+
+    await page.getByRole("button", { name: /Voltar para a tela anterior/i }).click();
+    await expect(page.getByRole("heading", { name: scenario.title })).toBeVisible();
+    await page.getByRole("button", { name: /Continuar jogando/i }).click();
+    await expect(page.getByRole("heading", { name: scenario.title })).toHaveCount(0);
+    expect(abandonments).toBe(0);
+
+    await page.getByRole("button", { name: /Voltar para a tela anterior/i }).click();
+    const exit = page.getByRole("button", { name: /Sair da partida/i });
+    await exit.dblclick();
+    await expect(page).toHaveURL(new RegExp(`${scenario.destination}/?$`));
+    expect(abandonments).toBe(1);
+  });
+}
+
+test("browser Back cannot bypass the active-game confirmation", async ({ page }) => {
+  await mockPublicApi(page, true);
+  const selectionId = await mockGeneratedWordle(page, "freePlay");
+  let abandonments = 0;
+  await page.route("**/api/platform/games/abandon", route => {
+    abandonments += 1;
+    return route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ ok: true, outcome: "lost", duplicate: false }),
+    });
+  });
+  await page.goto(`/jogos/wordle-biblico?freePlay=${selectionId}`);
+  await expect(page.getByText(/Digite uma palavra bíblica/i)).toBeVisible();
+  await page.goBack();
+  await expect(page.getByRole("heading", { name: /Sair da partida/i })).toBeVisible();
+  expect(abandonments).toBe(0);
 });

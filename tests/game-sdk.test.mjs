@@ -41,3 +41,26 @@ test("Wordle consumes the shared Game SDK without changing its engine", async ()
   assert.match(wordle, /WORDLE_MAX_ATTEMPTS/);
   assert.doesNotMatch(wordle, /wordle-restart/);
 });
+
+test("all seven games inherit the centralized safe-exit contract", async () => {
+  const sdkGames = [
+    "wordle/WordleGame.tsx",
+    "three-clues/ThreeCluesGame.tsx",
+    "timeline/TimelineGame.tsx",
+    "memory/MemoryGame.tsx",
+    "theme-association/ThemeAssociationGame.tsx",
+    "who-am-i/WhoAmIGame.tsx",
+  ];
+  for (const file of sdkGames) {
+    assert.match(await read(`app/games/${file}`), /GameLayout/);
+  }
+  const [layout, quiz, navigation] = await Promise.all([
+    read("app/games/sdk/GameLayout.tsx"),
+    read("app/jogar/page.tsx"),
+    read("app/BackNavigation.tsx"),
+  ]);
+  assert.match(layout, /useRegisterActiveGame/);
+  assert.match(quiz, /useRegisterActiveGame/);
+  assert.match(navigation, /exitActiveGame/);
+  assert.doesNotMatch(navigation, /router\.back|history\.back/);
+});

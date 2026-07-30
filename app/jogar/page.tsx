@@ -10,6 +10,7 @@ import {
   type LoadedGameContent,
 } from "../games/loader";
 import { GameType } from "../../shared/content";
+import { useRegisterActiveGame } from "../GameNavigationContext";
 
 type Choice = { id: string; text: string };
 type Question = {
@@ -67,6 +68,11 @@ export default function PlayPage() {
   const startRef = useRef<(mode?: string) => Promise<void>>(async () => undefined);
   const dailyAnswers = useRef<Array<{ questionId: string; choiceId: string }>>([]);
   const autoStarted = useRef(false);
+  useRegisterActiveGame(
+    GameType.QUIZ,
+    loadedContent?.mode,
+    result ? "finished" : attempt ? "active" : "idle",
+  );
 
   useEffect(() => {
     const controller = new AbortController();
@@ -353,7 +359,7 @@ export default function PlayPage() {
             onClick={async () => {
               if (loadedContent?.mode === GameContentMode.FREE_PLAY) {
                 try {
-                  location.href = await generateFreePlayGame(GameType.QUIZ);
+                  location.replace(await generateFreePlayGame(GameType.QUIZ));
                 } catch {
                   setError("Não foi possível preparar outra partida.");
                 }

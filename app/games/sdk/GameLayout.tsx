@@ -1,6 +1,9 @@
+"use client";
+
 import { GameHud } from "./GameHud";
 import { GameResult } from "./GameResult";
 import type { GameLayoutProps } from "./types";
+import { useRegisterActiveGame } from "../../GameNavigationContext";
 
 export function GameLayout({
   eyebrow,
@@ -16,6 +19,11 @@ export function GameLayout({
   onRestart,
   children,
 }: GameLayoutProps) {
+  useRegisterActiveGame(
+    gameType,
+    mode,
+    status === "playing" ? "active" : "finished",
+  );
   return <main className="game-sdk-page">
     <div className="game-sdk-ambient game-sdk-ambient-one" aria-hidden="true" />
     <div className="game-sdk-ambient game-sdk-ambient-two" aria-hidden="true" />
