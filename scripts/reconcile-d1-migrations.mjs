@@ -6,6 +6,7 @@ import { validateMigration0021, validateMigration0022 } from "./lib/d1-migration
 import {
   assertMigrationLedgerPrefix,
   pendingMigrationNames,
+  promotionPreflightMessage,
   schemaTablesForLedger,
 } from "./lib/d1-migration-promotion-policy.mjs";
 import {
@@ -209,9 +210,6 @@ function promotableState() {
   const ledger = ledgerNames();
   assertMigrationLedgerPrefix(ledger, expectedFinalLedger);
   const pending = pendingMigrationNames(ledger, expectedFinalLedger);
-  if (pending.length === 0) {
-    throw new Error("No migration is pending; production already matches the approved local ledger.");
-  }
   if (ledger.length === 0) {
     throw new Error("Remote migration history is empty; use the historical reconciliation procedure first.");
   }
@@ -231,10 +229,7 @@ function promotableState() {
 
 function verifyPromotable() {
   const { ledger, pending } = promotableState();
-  console.log(
-    `Promotion preflight verified: ${ledger.length} applied migration(s); ` +
-    `${pending.length} exact pending migration(s): ${pending.join(", ")}.`,
-  );
+  console.log(promotionPreflightMessage(ledger.length, pending));
 }
 
 function dryRun() {

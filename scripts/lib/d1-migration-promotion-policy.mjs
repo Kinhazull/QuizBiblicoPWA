@@ -26,3 +26,14 @@ export function schemaTablesForLedger(actual, expected, finalTables, introducedT
   const pendingTables = new Set(pending.flatMap((name) => introducedTablesByMigration[name] || []));
   return finalTables.filter((table) => !pendingTables.has(table));
 }
+
+export function promotionPreflightMessage(appliedCount, pending) {
+  if (!Array.isArray(pending)) throw new Error("Pending migrations must be an array.");
+  if (pending.length === 0) {
+    return "Promotion preflight verified:\n" +
+      "Production already matches the approved local ledger.\n" +
+      "No migrations are pending.";
+  }
+  return `Promotion preflight verified: ${appliedCount} applied migration(s); ` +
+    `${pending.length} exact pending migration(s): ${pending.join(", ")}.`;
+}
