@@ -1,6 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import {
+  GameContentMode,
+  gameContentRequestFromLocation,
+  loadGameContent,
+  validateGameContentAction,
+  type LoadedGameContent,
+} from "../games/loader";
+import { GameType } from "../../shared/content";
 
 type Choice = { id: string; text: string };
 type Question = {
@@ -25,6 +33,15 @@ type PendingAnswer = {
   timedOut: boolean;
   responseTimeMs: number;
 };
+type DailyQuizPayload = {
+  questions: Array<{
+    id: string;
+    version: number;
+    prompt: string;
+    choices: Choice[];
+    biblicalReference: string | null;
+  }>;
+};
 
 export default function PlayPage() {
   const requestedPractice =
@@ -32,6 +49,7 @@ export default function PlayPage() {
     new URLSearchParams(window.location.search).get("modo") === "treino";
   const [attempt, setAttempt] = useState<Attempt | null>(null);
   const [round, setRound] = useState<any>(null);
+  const [loadedContent, setLoadedContent] = useState<LoadedGameContent<DailyQuizPayload | Record<string, unknown>> | null>(null);
   const [index, setIndex] = useState(0);
   const [time, setTime] = useState(20);
   const [selected, setSelected] = useState<string | null>(null);
@@ -45,20 +63,31 @@ export default function PlayPage() {
   const started = useRef(Date.now());
   const answerRef = useRef<(choiceId: string) => void>(() => undefined);
   const sendPendingRef = useRef<() => Promise<void>>(async () => undefined);
+  const dailyAnswers = useRef<Array<{ questionId: string; choiceId: string }>>([]);
 
   useEffect(() => {
-    fetch("/api/rounds/current")
-      .then(async (response) => {
-        if (response.status === 401) {
-          location.href = "/";
-          return;
+    const controller = new AbortController();
+    loadGameContent<DailyQuizPayload | Record<string, unknown>>({
+      ...gameContentRequestFromLocation(GameType.QUIZ),
+      signal: controller.signal,
+    })
+      .then((loaded) => {
+        setLoadedContent(loaded);
+        if (loaded.mode === GameContentMode.DAILY) {
+          setRound({
+            id: loaded.selectionId,
+            title: loaded.metadata.title ?? "Quiz Diário",
+            theme: "Cinco perguntas selecionadas para hoje.",
+            daily: true,
+          });
+        } else {
+          setRound(loaded.payload);
         }
-        const data = await response.json();
-        setRound(data.round);
       })
       .catch(() =>
         setError("Sem conexão. Verifique sua internet e tente novamente."),
       );
+    return () => controller.abort();
   }, []);
 
   useEffect(() => {
@@ -80,8 +109,29 @@ export default function PlayPage() {
   }, [networkError, attempt, index]);
 
   async function start(mode = "official") {
-    if (!round) return;
+    if (!round || !loadedContent) return;
     setError("");
+    if (loadedContent.mode === GameContentMode.DAILY) {
+      const payload = loadedContent.payload as DailyQuizPayload;
+      dailyAnswers.current = [];
+      setAttempt({
+        id: loadedContent.participationId ?? `daily-${loadedContent.selectionId}`,
+        attemptNumber: 1,
+        mode: "daily",
+        secondsPerQuestion: 20,
+        questions: payload.questions.map(question => ({
+          id: question.id,
+          reference: question.biblicalReference ?? undefined,
+          prompt: question.prompt,
+          choices: question.choices,
+        })),
+      });
+      setIndex(0);
+      setScore(0);
+      setTime(20);
+      started.current = Date.now();
+      return;
+    }
     try {
       const response = await fetch("/api/attempts/start", {
         method: "POST",
@@ -121,6 +171,24 @@ export default function PlayPage() {
   }
 
   async function finish(id: string) {
+    if (loadedContent?.mode === GameContentMode.DAILY) {
+      try {
+        const dailyResult = await validateGameContentAction<{
+          score: number;
+          correctAnswers: number;
+          questionsAnswered: number;
+        }>(loadedContent, "finish_quiz", { answers: dailyAnswers.current });
+        setResult({
+          score: dailyResult.score,
+          correctAnswers: dailyResult.correctAnswers,
+          questionsAnswered: dailyResult.questionsAnswered,
+          maxStreak: 0,
+        });
+      } catch {
+        setError("Não foi possível concluir o objetivo diário.");
+      }
+      return;
+    }
     try {
       const response = await fetch(`/api/attempts/${id}/finish`, {
         method: "POST",
@@ -157,6 +225,32 @@ export default function PlayPage() {
     const question = attempt.questions[index];
     const current = pending.current;
     try {
+      if (loadedContent?.mode === GameContentMode.DAILY) {
+        const data = await validateGameContentAction<{
+          correct: boolean;
+          explanation: string | null;
+        }>(loadedContent, "validate_answer", {
+          questionId: question.id,
+          choiceId: current.choiceId || question.choices[0].id,
+        });
+        if (!dailyAnswers.current.some(item => item.questionId === question.id)) {
+          dailyAnswers.current.push({
+            questionId: question.id,
+            choiceId: current.choiceId || question.choices[0].id,
+          });
+        }
+        const totalScore = score + (data.correct ? 100 : 0);
+        setFeedback({
+          correct: data.correct,
+          commentary: data.explanation ?? (data.correct ? "Resposta correta." : "Continue firme!"),
+          points: data.correct ? 100 : 0,
+          totalScore,
+          chosen: current.choiceId,
+        });
+        setScore(totalScore);
+        pending.current = null;
+        return;
+      }
       const response = await fetch(`/api/attempts/${attempt.id}/answer`, {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -184,6 +278,15 @@ export default function PlayPage() {
   async function next() {
     if (!attempt || pending.current) return;
     if (index < attempt.questions.length - 1) {
+      if (loadedContent?.mode === GameContentMode.DAILY) {
+        setIndex(value => value + 1);
+        setSelected(null);
+        setFeedback(null);
+        setNetworkError(false);
+        setTime(attempt.secondsPerQuestion);
+        started.current = Date.now();
+        return;
+      }
       const response = await fetch(`/api/attempts/${attempt.id}/advance`, {
         method: "POST",
       });
@@ -203,8 +306,10 @@ export default function PlayPage() {
     await finish(attempt.id);
   }
 
-  answerRef.current = answer;
-  sendPendingRef.current = sendPending;
+  useEffect(() => {
+    answerRef.current = answer;
+    sendPendingRef.current = sendPending;
+  });
 
   if (result)
     return (
@@ -220,7 +325,7 @@ export default function PlayPage() {
           </h1>
           <div className="score-block">
             <small>ACERTOS</small>
-            <strong>{result.correctAnswers}/10</strong>
+            <strong>{result.correctAnswers}/{result.questionsAnswered ?? 10}</strong>
             <span>maior sequência: {result.maxStreak}</span>
           </div>
           <button

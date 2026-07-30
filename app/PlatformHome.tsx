@@ -22,10 +22,12 @@ type PlatformHomeProps = {
   mission: PlatformMissionData | null;
   missionLoaded: boolean;
   daily: DailyRetentionData | null;
+  dailyObjectives: DailyObjectiveData[] | null;
   dailyBusy: boolean;
   dailyError: string;
   equipment: EquipmentView | null;
   onOpenChest: () => void;
+  onStartDailyObjective: (objective: DailyObjectiveData) => void;
   remaining: (target?: number) => string;
 };
 
@@ -62,6 +64,23 @@ export type DailyRetentionData = {
   };
 };
 
+export type DailyObjectiveData = {
+  selectionId: string | null;
+  gameType:
+    | "wordle-biblico"
+    | "quiz-biblico"
+    | "linha-do-tempo-biblica"
+    | "memoria-biblica"
+    | "associacao-de-temas"
+    | "quem-sou-eu"
+    | "jogo-tres-pistas";
+  title: string;
+  status: "CREATED" | "STARTED" | "FINISHED" | "EXPIRED";
+  availability: "AVAILABLE" | "UNAVAILABLE";
+  unavailableReason: "insufficient_catalog" | "no_published_content" | "unsupported_game" | "generation_failed" | null;
+  playHref: string | null;
+};
+
 function firstName(displayName: string) {
   return displayName.trim().split(/\s+/)[0] || "participante";
 }
@@ -81,7 +100,7 @@ function recentAchievements(data: PlatformAchievementData | null) {
 
 export function PlatformHome({
   displayName, journey, achievementData, progress, mission, missionLoaded,
-  daily, dailyBusy, dailyError, equipment, onOpenChest, remaining,
+  daily, dailyObjectives, dailyBusy, dailyError, equipment, onOpenChest, onStartDailyObjective, remaining,
 }: PlatformHomeProps) {
   const view = getJourneyCardView(journey, remaining);
   const quizProgress = progressFor(journey);
@@ -135,6 +154,28 @@ export function PlatformHome({
             <a className={view.href === "#" ? "platform-primary-action disabled" : "platform-primary-action"} href={view.href} aria-disabled={view.href === "#"}><span aria-hidden="true">▶</span>{view.action === "AGUARDE" ? "Preparando" : view.action}</a>
           </div>
           <div className="platform-trophy-watermark" aria-hidden="true">🏆</div>
+        </div>
+      </section>
+
+      <section className="platform-daily-objectives" aria-labelledby="daily-objective-title">
+        <header><p>Objetivos diários</p><h2 id="daily-objective-title">Desafios de hoje</h2></header>
+        <div className="platform-daily-objective-grid">
+          {(dailyObjectives || []).map(objective => {
+            const status = objective.availability === "UNAVAILABLE"
+              ? "Indisponível"
+              : objective.status === "FINISHED" ? "Concluído"
+                : objective.status === "STARTED" ? "Em andamento" : "Não iniciado";
+            return <article className="platform-daily-objective" key={objective.gameType}>
+              <div aria-hidden="true">📅</div>
+              <div><h3>{objective.title}</h3><span>{status}</span></div>
+              {objective.availability === "AVAILABLE" && objective.selectionId && objective.playHref
+                ? <button type="button" onClick={() => onStartDailyObjective(objective)}>
+                  {objective.status === "FINISHED" ? "Ver resultado" : objective.status === "STARTED" ? "Continuar" : "Iniciar"}
+                </button>
+                : <small>{objective.unavailableReason === "insufficient_catalog" ? "Catálogo insuficiente" : "Conteúdo indisponível"}</small>}
+            </article>;
+          })}
+          {!dailyObjectives && <p role="status">Carregando objetivos...</p>}
         </div>
       </section>
 

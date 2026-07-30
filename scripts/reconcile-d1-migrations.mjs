@@ -38,6 +38,7 @@ const foundationMigrations = [
   "0031_universal_content_drafts.sql",
   "0032_universal_content_library.sql",
   "0033_universal_game_generator.sql",
+  "0034_daily_objective_participations.sql",
 ];
 const expectedFinalLedger = [...baseline, targetMigration, ...foundationMigrations];
 const introducedTablesByMigration = {
@@ -46,6 +47,10 @@ const introducedTablesByMigration = {
   "0033_universal_game_generator.sql": [
     "generated_game_selections",
     "generated_game_selection_items",
+  ],
+  "0034_daily_objective_participations.sql": [
+    "generated_game_participations",
+    "generated_game_participation_usage",
   ],
 };
 const introducedIndexesByMigration = {
@@ -58,6 +63,9 @@ const introducedIndexesByMigration = {
     "generated_game_selections_mode_key_idx",
     "generated_game_selections_expiration_idx",
     "generated_game_selection_items_content_idx",
+  ],
+  "0034_daily_objective_participations.sql": [
+    "generated_game_participations_user_status_idx",
   ],
 };
 
@@ -73,6 +81,7 @@ const requiredTables = [
   "user_platform_mission_progress_events", "core_platform_events", "core_platform_event_processing",
   "content_items", "content_versions", "universal_content_library",
   "generated_game_selections", "generated_game_selection_items",
+  "generated_game_participations", "generated_game_participation_usage",
   "user_platform_statistics", "user_platform_game_statistics", "user_platform_game_difficulty_statistics",
   "user_platform_statistics_active_days", "platform_statistics_event_checkpoints", "quiz_core_event_outbox",
   "user_platform_statistics_official_days_utc",
@@ -108,6 +117,7 @@ const requiredIndexes = [
   "universal_content_library_eligible_idx", "universal_content_library_publication_idx",
   "generated_game_selections_org_created_idx", "generated_game_selections_mode_key_idx",
   "generated_game_selections_expiration_idx", "generated_game_selection_items_content_idx",
+  "generated_game_participations_user_status_idx",
 ];
 
 function runWrangler(command) {

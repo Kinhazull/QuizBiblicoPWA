@@ -116,13 +116,14 @@ type ThemeAssociationCompletion = {
   attempts: ThemeAssociationAttempt[];
 };
 
-export type PlatformGameCompletion =
+export type PlatformGameCompletion = (
   | WordleCompletion
   | ThreeCluesCompletion
   | TimelineCompletion
   | MemoryCompletion
   | ThemeAssociationCompletion
-  | WhoAmICompletion;
+  | WhoAmICompletion
+) & { dailySelectionId?: string };
 
 function validateSessionId(value: unknown) {
   const sessionId = String(value || "");
@@ -278,7 +279,7 @@ export function adaptPlatformGameCompletion(
     payload: {
       status: "completed",
       score: result.score,
-      mode: "official",
+      mode: input.dailySelectionId ? "daily" : "official",
       correctAnswers: result.correctAnswers,
       questionsAnswered: result.questionsAnswered,
       completedAt: context.completedAt,

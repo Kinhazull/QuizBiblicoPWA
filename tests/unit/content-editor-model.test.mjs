@@ -62,7 +62,8 @@ test("quiz template materializes structured alternatives from declarative item f
 
 test("list item factories cover simple and object items without shared references", () => {
   const quizChoices = getContentSchema(GameType.QUIZ).fields.find(field => field.key === "choices");
-  const whoHints = getContentSchema(GameType.WHO_AM_I).fields.find(field => field.key === "hints");
+  const whoChallenges = getContentSchema(GameType.WHO_AM_I).fields.find(field => field.key === "challenges");
+  const whoHints = whoChallenges.fields.find(field => field.key === "hints");
   const first = defaultListItem(quizChoices);
   const second = defaultListItem(quizChoices);
   assert.deepEqual(first, { text: "", correct: false });

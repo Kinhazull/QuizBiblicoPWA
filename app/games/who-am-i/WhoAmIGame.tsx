@@ -2,6 +2,9 @@
 
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { createGameSessionId, GameLayout, recordPlatformGameCompletion, type GamePlayStatus } from "../sdk";
+import { gameContentRequestFromLocation, loadGameContent, validateGameContentAction } from "../loader";
+import type { LoadedGameContent } from "../loader";
+import { GameType } from "../../../shared/content";
 import type { WhoAmIAction, WhoAmIChallengeHistory } from "./engine";
 
 type PublishedChallenge = { id: string; hints: string[] };
@@ -17,6 +20,7 @@ export function WhoAmIGame() {
   const sessionId = useRef(createGameSessionId());
   const completionRecorded = useRef(false);
   const [content, setContent] = useState<PublishedWhoAmI | null>(null);
+  const [loadedContent, setLoadedContent] = useState<LoadedGameContent<PublishedWhoAmI> | null>(null);
   const [challengeIndex, setChallengeIndex] = useState(0);
   const [hintsVisible, setHintsVisible] = useState(1);
   const [actions, setActions] = useState<WhoAmIAction[]>([]);
@@ -33,15 +37,13 @@ export function WhoAmIGame() {
     setLoading(true);
     setLoadError(false);
     try {
-      const response = await fetch("/api/platform/games/who-am-i", {
-        credentials: "same-origin",
-        cache: "no-store",
+      const loaded = await loadGameContent<PublishedWhoAmI>({
+        ...gameContentRequestFromLocation(GameType.WHO_AM_I),
         signal,
       });
-      if (!response.ok) throw new Error("who_am_i_content_unavailable");
-      const data = await response.json() as { content: PublishedWhoAmI };
-      setContent(data.content);
-      setMessage(`Desafio 1 de ${data.content.challenges.length}. Leia a primeira pista.`);
+      setLoadedContent(loaded);
+      setContent(loaded.payload);
+      setMessage(`Desafio 1 de ${loaded.payload.challenges.length}. Leia a primeira pista.`);
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") return;
       setLoadError(true);
@@ -89,23 +91,14 @@ export function WhoAmIGame() {
 
   async function submitAnswer(event: FormEvent) {
     event.preventDefault();
-    if (!content || !challenge || !answer.trim() || validating || status !== "playing") return;
+    if (!content || !loadedContent || !challenge || !answer.trim() || validating || status !== "playing") return;
     setValidating(true);
     try {
-      const response = await fetch("/api/platform/games/who-am-i", {
-        method: "POST",
-        credentials: "same-origin",
-        cache: "no-store",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          contentId: content.id,
-          contentVersion: content.version,
-          challengeId: challenge.id,
-          answer,
-        }),
-      });
-      if (!response.ok) throw new Error("who_am_i_validation_failed");
-      const result = await response.json() as { correct: boolean };
+      const result = await validateGameContentAction<{ correct: boolean }>(
+        loadedContent,
+        "validate_answer",
+        { challengeId: challenge.id, answer },
+      );
       const challengeActions: WhoAmIAction[] = [...actions, { type: "guess", answer }];
       const nextHistories = [...histories, { challengeId: challenge.id, actions: challengeActions }];
       const nextCorrectCount = correctCount + (result.correct ? 1 : 0);

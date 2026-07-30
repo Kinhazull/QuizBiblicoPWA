@@ -16,12 +16,21 @@ import {
   recordPlatformGameCompletion,
   type GamePlayStatus,
 } from "../sdk";
+import {
+  GameContentMode,
+  gameContentRequestFromLocation,
+  loadGameContent,
+  validateGameContentAction,
+  type LoadedGameContent,
+} from "../loader";
+import { GameType } from "../../../shared/content";
 
 const KEYBOARD_ROWS = ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"];
 type WordleContent = {
   id: string;
   version: number;
-  word: string;
+  word?: string;
+  wordLength?: number;
   hint: string | null;
   biblicalReference: string | null;
 };
@@ -39,23 +48,31 @@ export function WordleGame() {
   const [status, setStatus] = useState<GamePlayStatus>("playing");
   const [message, setMessage] = useState("Digite uma palavra bíblica de cinco letras.");
   const [content, setContent] = useState<WordleContent | null>(null);
+  const [loadedContent, setLoadedContent] = useState<LoadedGameContent<WordleContent> | null>(null);
+  const [guessEvaluations, setGuessEvaluations] = useState<ReturnType<typeof evaluateGuess>[]>([]);
   const [contentState, setContentState] = useState<"loading" | "ready" | "error">("loading");
   const answer = content?.word ?? "";
 
   useEffect(() => {
     const controller = new AbortController();
-    fetch("/api/platform/games/wordle", {
-      credentials: "same-origin",
-      cache: "no-store",
+    loadGameContent<WordleContent>({
+      ...gameContentRequestFromLocation(GameType.WORDLE),
       signal: controller.signal,
     })
-      .then(async response => {
-        if (!response.ok) throw new Error("wordle_content_unavailable");
-        const data = await response.json() as { content?: WordleContent };
-        if (!data.content || normalizeWord(data.content.word).length !== WORDLE_LENGTH) {
+      .then(loaded => {
+        const word = loaded.payload.word ? normalizeWord(loaded.payload.word) : undefined;
+        const wordLength = word?.length ?? loaded.payload.wordLength;
+        if (wordLength !== WORDLE_LENGTH) {
           throw new Error("wordle_content_invalid");
         }
-        setContent({ ...data.content, word: normalizeWord(data.content.word) });
+        setLoadedContent(loaded);
+        setContent({
+          ...loaded.payload,
+          id: loaded.contentId,
+          version: loaded.contentVersion,
+          word,
+          wordLength,
+        });
         setContentState("ready");
       })
       .catch(error => {
@@ -68,14 +85,13 @@ export function WordleGame() {
 
   const keyboardState = useMemo(() => {
     const states: Record<string, LetterState> = {};
-    if (!answer) return states;
-    for (const guess of guesses) {
-      for (const item of evaluateGuess(guess, answer)) {
+    for (const evaluation of guessEvaluations) {
+      for (const item of evaluation) {
         states[item.letter] = strongerState(states[item.letter], item.state);
       }
     }
     return states;
-  }, [answer, guesses]);
+  }, [guessEvaluations]);
 
   function addLetter(letter: string) {
     if (contentState !== "ready" || status !== "playing" || currentGuessRef.current.length >= WORDLE_LENGTH) return;
@@ -90,8 +106,8 @@ export function WordleGame() {
     setCurrentGuess(currentGuessRef.current);
   }
 
-  function submitGuess() {
-    if (!content || contentState !== "ready" || status !== "playing") return;
+  async function submitGuess() {
+    if (!content || !loadedContent || contentState !== "ready" || status !== "playing") return;
     const submittedGuess = currentGuessRef.current;
     if (!isValidGuess(submittedGuess)) {
       setMessage(`A palavra precisa ter ${WORDLE_LENGTH} letras.`);
@@ -99,12 +115,24 @@ export function WordleGame() {
     }
 
     const normalized = normalizeWord(submittedGuess);
+    const evaluation = loadedContent.mode === GameContentMode.DAILY || !answer
+      ? await validateGameContentAction<{ evaluation: ReturnType<typeof evaluateGuess>; correct: boolean }>(
+        loadedContent,
+        "validate_guess",
+        { guess: normalized },
+      ).catch(() => null)
+      : { evaluation: evaluateGuess(normalized, answer), correct: isWinningGuess(normalized, answer) };
+    if (!evaluation) {
+      setMessage("Não foi possível validar a palavra. Tente novamente.");
+      return;
+    }
     const nextGuesses = [...guesses, normalized];
     setGuesses(nextGuesses);
+    setGuessEvaluations(current => [...current, evaluation.evaluation]);
     currentGuessRef.current = "";
     setCurrentGuess("");
 
-    if (isWinningGuess(normalized, answer)) {
+    if (evaluation.correct) {
       setStatus("won");
       setMessage(`Você venceu em ${nextGuesses.length} tentativa${nextGuesses.length === 1 ? "" : "s"}!`);
       void recordPlatformGameCompletion({
@@ -116,7 +144,7 @@ export function WordleGame() {
       }).catch(() => undefined);
     } else if (nextGuesses.length === WORDLE_MAX_ATTEMPTS) {
       setStatus("lost");
-      setMessage(`Fim de jogo. A palavra era ${answer}.`);
+      setMessage(answer ? `Fim de jogo. A palavra era ${answer}.` : "Fim de jogo. Tente novamente amanhã.");
       void recordPlatformGameCompletion({
         gameId: "wordle-biblico",
         sessionId: sessionId.current,
@@ -133,6 +161,7 @@ export function WordleGame() {
     sessionId.current = createGameSessionId();
     currentGuessRef.current = "";
     setGuesses([]);
+    setGuessEvaluations([]);
     setCurrentGuess("");
     setStatus("playing");
     setMessage("Digite uma palavra bíblica de cinco letras.");
@@ -141,7 +170,7 @@ export function WordleGame() {
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
       if (event.ctrlKey || event.metaKey || event.altKey) return;
-      if (event.key === "Enter") submitGuess();
+      if (event.key === "Enter") void submitGuess();
       else if (event.key === "Backspace") removeLetter();
       else if (/^[a-zA-Z]$/.test(event.key)) addLetter(event.key.toUpperCase());
     }
@@ -152,8 +181,8 @@ export function WordleGame() {
   const rows = Array.from({ length: WORDLE_MAX_ATTEMPTS }, (_, rowIndex) => {
     const submitted = guesses[rowIndex];
     const draft = rowIndex === guesses.length && status === "playing" ? currentGuess : "";
-    const letters = submitted && answer
-      ? evaluateGuess(submitted, answer)
+    const letters = submitted && guessEvaluations[rowIndex]
+      ? guessEvaluations[rowIndex]
       : Array.from({ length: WORDLE_LENGTH }, (_, index) => ({ letter: draft[index] || "", state: undefined }));
     return { submitted: Boolean(submitted), letters };
   });

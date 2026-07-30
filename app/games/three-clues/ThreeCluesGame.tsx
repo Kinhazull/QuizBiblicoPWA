@@ -2,6 +2,9 @@
 
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { createGameSessionId, GameLayout, recordPlatformGameCompletion, type GamePlayStatus } from "../sdk";
+import { gameContentRequestFromLocation, loadGameContent, validateGameContentAction } from "../loader";
+import type { LoadedGameContent } from "../loader";
+import { GameType } from "../../../shared/content";
 import {
   scoreForCluesUsed,
   THREE_CLUES_MAX,
@@ -22,6 +25,7 @@ export function ThreeCluesGame() {
   const sessionId = useRef(createGameSessionId());
   const completionRecorded = useRef(false);
   const [content, setContent] = useState<PublishedThreeClues | null>(null);
+  const [loadedContent, setLoadedContent] = useState<LoadedGameContent<PublishedThreeClues> | null>(null);
   const [challengeIndex, setChallengeIndex] = useState(0);
   const [revealedClues, setRevealedClues] = useState(1);
   const [actions, setActions] = useState<ThreeCluesAction[]>([]);
@@ -39,15 +43,13 @@ export function ThreeCluesGame() {
     setLoading(true);
     setLoadError(false);
     try {
-      const response = await fetch("/api/platform/games/three-clues", {
-        credentials: "same-origin",
-        cache: "no-store",
+      const loaded = await loadGameContent<PublishedThreeClues>({
+        ...gameContentRequestFromLocation(GameType.THREE_CLUES),
         signal,
       });
-      if (!response.ok) throw new Error("three_clues_content_unavailable");
-      const data = await response.json() as { content: PublishedThreeClues };
-      setContent(data.content);
-      setMessage(`Desafio 1 de ${data.content.challenges.length}. Leia a primeira pista.`);
+      setLoadedContent(loaded);
+      setContent(loaded.payload);
+      setMessage(`Desafio 1 de ${loaded.payload.challenges.length}. Leia a primeira pista.`);
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") return;
       setLoadError(true);
@@ -100,23 +102,14 @@ export function ThreeCluesGame() {
 
   async function submitAnswer(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!content || !challenge || !answer.trim() || validating || status !== "playing") return;
+    if (!content || !loadedContent || !challenge || !answer.trim() || validating || status !== "playing") return;
     setValidating(true);
     try {
-      const response = await fetch("/api/platform/games/three-clues", {
-        method: "POST",
-        credentials: "same-origin",
-        cache: "no-store",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          contentId: content.id,
-          contentVersion: content.version,
-          challengeId: challenge.id,
-          answer,
-        }),
-      });
-      if (!response.ok) throw new Error("three_clues_validation_failed");
-      const result = await response.json() as { correct: boolean };
+      const result = await validateGameContentAction<{ correct: boolean }>(
+        loadedContent,
+        "validate_answer",
+        { challengeId: challenge.id, answer },
+      );
       const challengeActions: ThreeCluesAction[] = [...actions, { type: "guess", answer }];
       const nextHistories = [...histories, { challengeId: challenge.id, actions: challengeActions }];
       const nextCorrectCount = correctCount + (result.correct ? 1 : 0);

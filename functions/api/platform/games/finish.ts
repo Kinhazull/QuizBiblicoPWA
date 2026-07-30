@@ -24,6 +24,11 @@ import type { WhoAmIChallenge } from "../../../../app/games/who-am-i/engine";
 import { whoAmIChallengesFromContent } from "../../../_lib/game-integrations/who-am-i-content";
 import type { ThreeCluesChallenge } from "../../../../app/games/three-clues/engine";
 import { threeCluesChallengesFromContent } from "../../../_lib/game-integrations/three-clues-content";
+import {
+  dailyMemoryCards,
+  dailySelectionContext,
+  finishDailyParticipation,
+} from "../../../_lib/platform-daily-objectives";
 
 const SAFE_ERROR = /^[a-z0-9_]{1,100}$/;
 
@@ -34,8 +39,31 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
     if (!body || typeof body !== "object" || Array.isArray(body)) {
       return json({ error: "invalid_game_completion" }, 400);
     }
+    const daily = body.dailySelectionId
+      ? await dailySelectionContext(env, {
+        organizationId: String(user.organizationId),
+        userId: String(user.id),
+      }, body.dailySelectionId, body.gameId)
+      : null;
+    const dailyContent = daily?.contents.length === 1 ? daily.contents[0] : null;
+    const resolvedDailyContent = dailyContent ? {
+      id: dailyContent.id,
+      version: dailyContent.version,
+      gameType: body.gameId,
+      category: String(dailyContent.metadata.category ?? ""),
+      tags: Array.isArray(dailyContent.metadata.tags) ? dailyContent.metadata.tags as string[] : [],
+      difficulty: dailyContent.metadata.difficulty,
+      biblicalReference: typeof dailyContent.metadata.biblicalReference === "string" ? dailyContent.metadata.biblicalReference : null,
+      status: dailyContent.metadata.status,
+      authorId: String(dailyContent.metadata.authorId ?? ""),
+      reviewerId: typeof dailyContent.metadata.reviewerId === "string" ? dailyContent.metadata.reviewerId : null,
+      createdAt: Number(dailyContent.metadata.createdAt ?? 0),
+      updatedAt: Number(dailyContent.metadata.updatedAt ?? 0),
+      internalNotes: typeof dailyContent.metadata.internalNotes === "string" ? dailyContent.metadata.internalNotes : null,
+      payload: dailyContent.payload,
+    } as any : null;
     const wordleContent = body.gameId === "wordle-biblico"
-      ? await findPublishedUniversalContent(
+      ? resolvedDailyContent ?? await findPublishedUniversalContent(
         env,
         String(user.organizationId),
         GameType.WORDLE,
@@ -49,7 +77,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
       throw new Error("invalid_wordle_content");
     }
     const timelineContent = body.gameId === "linha-do-tempo-biblica"
-      ? await findPublishedUniversalContent(
+      ? resolvedDailyContent ?? await findPublishedUniversalContent(
         env,
         String(user.organizationId),
         GameType.TIMELINE,
@@ -80,7 +108,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
       );
     }
     const memoryContent = body.gameId === "memoria-biblica"
-      ? await findPublishedUniversalContent(
+      ? resolvedDailyContent ?? await findPublishedUniversalContent(
         env,
         String(user.organizationId),
         GameType.MEMORY,
@@ -111,7 +139,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
       );
     }
     const associationContent = body.gameId === "associacao-de-temas"
-      ? await findPublishedUniversalContent(
+      ? resolvedDailyContent ?? await findPublishedUniversalContent(
         env,
         String(user.organizationId),
         GameType.ASSOCIATION,
@@ -142,7 +170,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
       );
     }
     const whoAmIContent = body.gameId === "quem-sou-eu"
-      ? await findPublishedUniversalContent(
+      ? resolvedDailyContent ?? await findPublishedUniversalContent(
         env,
         String(user.organizationId),
         GameType.WHO_AM_I,
@@ -173,7 +201,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
       );
     }
     const threeCluesContent = body.gameId === "jogo-tres-pistas"
-      ? await findPublishedUniversalContent(
+      ? resolvedDailyContent ?? await findPublishedUniversalContent(
         env,
         String(user.organizationId),
         GameType.THREE_CLUES,
@@ -203,7 +231,25 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
         threeCluesContent.payload as ThreeCluesContentPayload,
       );
     }
-    const event = adaptPlatformGameCompletion(body, {
+    let completionBody = body;
+    if (
+      daily
+      && body.gameId === GameType.MEMORY
+      && memoryContent
+      && Array.isArray(body.revealedCardIds)
+    ) {
+      const { cards } = await dailyMemoryCards(
+        daily.selection.seedHash,
+        memoryContent.id,
+        memoryContent.payload as MemoryContentPayload,
+      );
+      const actualIds = new Map(cards.map(card => [card.id, `${card.pairId}:${card.side}`]));
+      completionBody = {
+        ...body,
+        revealedCardIds: body.revealedCardIds.map(id => actualIds.get(id) ?? ""),
+      };
+    }
+    const event = adaptPlatformGameCompletion(completionBody, {
       userId: user.id,
       organizationId: user.organizationId,
       completedAt: Date.now(),
@@ -239,6 +285,12 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
       } : undefined,
     });
     const result = await publishOfficialCoreEvent(env, event, event.occurredAt);
+    if (body.dailySelectionId) {
+      await finishDailyParticipation(env, {
+        organizationId: String(user.organizationId),
+        userId: String(user.id),
+      }, body.dailySelectionId, event.eventId, event.occurredAt);
+    }
     return json({
       ok: true,
       eventId: event.eventId,

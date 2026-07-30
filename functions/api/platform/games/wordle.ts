@@ -2,6 +2,7 @@ import { GameType, validateContent, type WordleContentPayload } from "../../../.
 import { requireUser, type AppEnv } from "../../../_lib/auth";
 import { json } from "../../../_lib/security";
 import { findPublishedUniversalContent } from "../../../_lib/universal-content-store";
+import { evaluateGuess, normalizeWord, WORDLE_LENGTH } from "../../../../app/games/wordle/engine";
 
 export const onRequestGet = async ({ request, env }: { request: Request; env: AppEnv }) => {
   try {
@@ -42,10 +43,42 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: Ap
       content: {
         id: content.id,
         version: content.version,
-        word: payload.word,
+        wordLength: normalizeWord(payload.word).length,
         hint: payload.hint,
         biblicalReference: content.biblicalReference,
       },
+    }, 200, { "cache-control": "no-store, private" });
+  } catch (response) {
+    if (response instanceof Response) return response;
+    throw response;
+  }
+};
+
+export const onRequestPost = async ({ request, env }: { request: Request; env: AppEnv }) => {
+  try {
+    const user: any = await requireUser(request, env);
+    const body = await request.json().catch(() => null) as Record<string, unknown> | null;
+    if (
+      !body
+      || typeof body.contentId !== "string"
+      || !Number.isInteger(body.contentVersion)
+      || typeof body.guess !== "string"
+    ) return json({ error: "invalid_wordle_guess" }, 400);
+    const content = await findPublishedUniversalContent(
+      env,
+      String(user.organizationId),
+      GameType.WORDLE,
+      body.contentId,
+    );
+    if (!content || content.version !== body.contentVersion) {
+      return json({ error: "invalid_wordle_content" }, 400);
+    }
+    const answer = normalizeWord((content.payload as WordleContentPayload).word);
+    const guess = normalizeWord(body.guess);
+    if (guess.length !== WORDLE_LENGTH) return json({ error: "invalid_wordle_guess" }, 400);
+    return json({
+      evaluation: evaluateGuess(guess, answer),
+      correct: guess === answer,
     }, 200, { "cache-control": "no-store, private" });
   } catch (response) {
     if (response instanceof Response) return response;

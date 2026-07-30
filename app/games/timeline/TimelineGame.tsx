@@ -8,6 +8,13 @@ import {
   type GamePlayStatus,
 } from "../sdk";
 import {
+  gameContentRequestFromLocation,
+  loadGameContent,
+  validateGameContentAction,
+  type LoadedGameContent,
+} from "../loader";
+import { GameType } from "../../../shared/content";
+import {
   moveTimelineEvent,
   shuffleTimelineEvents,
   timelineScore,
@@ -31,6 +38,7 @@ type PublishedTimeline = {
 export function TimelineGame() {
   const sessionId = useRef(createGameSessionId());
   const [round, setRound] = useState<PublishedTimeline | null>(null);
+  const [loadedContent, setLoadedContent] = useState<LoadedGameContent<PublishedTimeline> | null>(null);
   const [events, setEvents] = useState<PublishedTimelineEvent[]>([]);
   const [attemptsUsed, setAttemptsUsed] = useState(0);
   const [status, setStatus] = useState<GamePlayStatus>("playing");
@@ -45,15 +53,18 @@ export function TimelineGame() {
       setLoading(true);
       setLoadError(false);
       try {
-        const response = await fetch("/api/platform/games/timeline", {
-          credentials: "same-origin",
-          cache: "no-store",
+        const loaded = await loadGameContent<PublishedTimeline>({
+          ...gameContentRequestFromLocation(GameType.TIMELINE),
           signal: controller.signal,
         });
-        if (!response.ok) throw new Error("timeline_content_unavailable");
-        const data = await response.json() as { content: PublishedTimeline };
-        setRound(data.content);
-        setEvents(shuffleTimelineEvents(data.content.events));
+        const content = {
+          ...loaded.payload,
+          id: loaded.contentId,
+          version: loaded.contentVersion,
+        };
+        setLoadedContent(loaded);
+        setRound(content);
+        setEvents(shuffleTimelineEvents(content.events));
       } catch (error) {
         if (error instanceof DOMException && error.name === "AbortError") return;
         setLoadError(true);
@@ -71,25 +82,17 @@ export function TimelineGame() {
   }
 
   async function confirmOrder() {
-    if (status !== "playing" || !round || validating) return;
+    if (status !== "playing" || !round || !loadedContent || validating) return;
     const nextAttempt = attemptsUsed + 1;
     const eventIds = events.map(event => event.id);
     setValidating(true);
     let won = false;
     try {
-      const response = await fetch("/api/platform/games/timeline", {
-        method: "POST",
-        credentials: "same-origin",
-        cache: "no-store",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          contentId: round.id,
-          contentVersion: round.version,
-          orderedEventIds: eventIds,
-        }),
-      });
-      if (!response.ok) throw new Error("timeline_validation_failed");
-      const data = await response.json() as { correct: boolean };
+      const data = await validateGameContentAction<{ correct: boolean }>(
+        loadedContent,
+        "validate_order",
+        { orderedEventIds: eventIds },
+      );
       won = data.correct === true;
       setAttemptsUsed(nextAttempt);
     } catch {

@@ -217,7 +217,7 @@ test("published Wordle flows from the universal CMS to the authenticated player"
   assert.deepEqual(playerData.content, {
     id: published.id,
     version: published.version,
-    word: "GRACA",
+    wordLength: 5,
     hint: "Favor imerecido",
     biblicalReference: "Gênesis 6",
   });

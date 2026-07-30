@@ -67,12 +67,15 @@ export function createGameSessionId() {
 }
 
 export async function recordPlatformGameCompletion(input: PlatformGameCompletionSubmission) {
+  const dailySelectionId = typeof window === "undefined"
+    ? null
+    : new URLSearchParams(window.location.search).get("daily");
   const response = await fetch("/api/platform/games/finish", {
     method: "POST",
     credentials: "same-origin",
     cache: "no-store",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify(input),
+    body: JSON.stringify(dailySelectionId ? { ...input, dailySelectionId } : input),
   });
   if (!response.ok) throw new Error("game_completion_not_recorded");
   return response.json();

@@ -2,7 +2,15 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createGameSessionId, GameLayout, recordPlatformGameCompletion, type GamePlayStatus } from "../sdk";
+import {
+  GameContentMode,
+  gameContentRequestFromLocation,
+  loadGameContent,
+  validateGameContentAction,
+  type LoadedGameContent,
+} from "../loader";
 import { areMatchingMemoryCards, memoryScore, type MemoryCard } from "./engine";
+import { GameType } from "../../../shared/content";
 
 const HIDE_DELAY_MS = 650;
 
@@ -10,7 +18,7 @@ type PublishedMemory = {
   id: string;
   version: number;
   title: string;
-  cards: MemoryCard[];
+  cards: Array<MemoryCard | { id: string; label: string }>;
   pairCount: number;
   biblicalReference: string | null;
 };
@@ -28,9 +36,10 @@ export function MemoryGame() {
   const sessionId = useRef(createGameSessionId());
   const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [content, setContent] = useState<PublishedMemory | null>(null);
+  const [loadedContent, setLoadedContent] = useState<LoadedGameContent<PublishedMemory> | null>(null);
   const [deck, setDeck] = useState<MemoryCard[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [matchedPairIds, setMatchedPairIds] = useState<string[]>([]);
+  const [matchedCardIds, setMatchedCardIds] = useState<string[]>([]);
   const [revealedCardIds, setRevealedCardIds] = useState<string[]>([]);
   const [moves, setMoves] = useState(0);
   const [locked, setLocked] = useState(false);
@@ -45,16 +54,22 @@ export function MemoryGame() {
       setLoading(true);
       setLoadError(false);
       try {
-        const response = await fetch("/api/platform/games/memory", {
-          credentials: "same-origin",
-          cache: "no-store",
+        const loaded = await loadGameContent<PublishedMemory>({
+          ...gameContentRequestFromLocation(GameType.MEMORY),
           signal: controller.signal,
         });
-        if (!response.ok) throw new Error("memory_content_unavailable");
-        const data = await response.json() as { content: PublishedMemory };
-        setContent(data.content);
-        setDeck(shuffledCards(data.content.cards));
-        setMessage(`Encontre os ${data.content.pairCount} pares bíblicos.`);
+        const normalized = {
+          ...loaded.payload,
+          id: loaded.contentId,
+          version: loaded.contentVersion,
+          cards: loaded.payload.cards.map(card => "cardId" in card
+            ? card
+            : { cardId: card.id, pairId: "", label: card.label }),
+        };
+        setLoadedContent(loaded);
+        setContent(normalized);
+        setDeck(shuffledCards(normalized.cards as MemoryCard[]));
+        setMessage(`Encontre os ${normalized.pairCount} pares bíblicos.`);
       } catch (error) {
         if (error instanceof DOMException && error.name === "AbortError") return;
         setLoadError(true);
@@ -69,10 +84,10 @@ export function MemoryGame() {
     };
   }, []);
 
-  function reveal(cardId: string) {
-    if (!content || status !== "playing" || locked || selectedIds.includes(cardId)) return;
+  async function reveal(cardId: string) {
+    if (!content || !loadedContent || status !== "playing" || locked || selectedIds.includes(cardId)) return;
     const card = deck.find(item => item.cardId === cardId);
-    if (!card || matchedPairIds.includes(card.pairId)) return;
+    if (!card || matchedCardIds.includes(card.cardId)) return;
     if (selectedIds.length === 0) return setSelectedIds([cardId]);
 
     const first = deck.find(item => item.cardId === selectedIds[0]);
@@ -83,12 +98,19 @@ export function MemoryGame() {
     setRevealedCardIds(nextHistory);
     setMoves(nextMoves);
 
-    if (areMatchingMemoryCards(first, card)) {
-      const nextMatched = [...matchedPairIds, card.pairId];
-      setMatchedPairIds(nextMatched);
+    const isMatch = loadedContent.mode === GameContentMode.DAILY
+      ? (await validateGameContentAction<{ match: boolean }>(
+        loadedContent,
+        "validate_pair",
+        { cardIds: [first.cardId, card.cardId] },
+      ).catch(() => ({ match: false }))).match
+      : areMatchingMemoryCards(first, card);
+    if (isMatch) {
+      const nextMatched = [...matchedCardIds, first.cardId, card.cardId];
+      setMatchedCardIds(nextMatched);
       setMessage("Par encontrado.");
       hideTimer.current = setTimeout(() => setSelectedIds([]), 250);
-      if (nextMatched.length === content.pairCount) {
+      if (nextMatched.length / 2 === content.pairCount) {
         setStatus("won");
         setMessage(`Todos os pares encontrados! Você fez ${memoryScore(nextMoves, content.pairCount)} pontos.`);
         void recordPlatformGameCompletion({
@@ -113,9 +135,9 @@ export function MemoryGame() {
     if (!content) return;
     if (hideTimer.current) clearTimeout(hideTimer.current);
     sessionId.current = createGameSessionId();
-    setDeck(shuffledCards(content.cards));
+    setDeck(shuffledCards(content.cards as MemoryCard[]));
     setSelectedIds([]);
-    setMatchedPairIds([]);
+    setMatchedCardIds([]);
     setRevealedCardIds([]);
     setMoves(0);
     setLocked(false);
@@ -127,7 +149,7 @@ export function MemoryGame() {
   return (
     <GameLayout eyebrow="Exercite sua memória" title="Memória" highlightedTitle="Bíblica"
       description="Vire as cartas e encontre os pares relacionados à Bíblia."
-      status={status} currentAttempt={matchedPairIds.length} maxAttempts={pairCount || 1}
+      status={status} currentAttempt={matchedCardIds.length / 2} maxAttempts={pairCount || 1}
       progressLabel="Pares encontrados" onRestart={restart}>
       <section className="memory-game" aria-label="Memória Bíblica" aria-busy={loading}>
         {loading && <p className="memory-message" role="status">Carregando Jogo da Memória...</p>}
@@ -140,14 +162,14 @@ export function MemoryGame() {
                 <h2>{content.title}</h2>
                 {content.biblicalReference && <small>{content.biblicalReference}</small>}
               </div>
-              <p><strong>{matchedPairIds.length}</strong> de {pairCount} pares · {moves} jogada(s)</p>
+              <p><strong>{matchedCardIds.length / 2}</strong> de {pairCount} pares · {moves} jogada(s)</p>
             </header>
             <div className="memory-board" role="group" aria-label={`Tabuleiro com ${deck.length} cartas`}>
               {deck.map(card => {
-                const visible = selectedIds.includes(card.cardId) || matchedPairIds.includes(card.pairId);
-                const matched = matchedPairIds.includes(card.pairId);
+                const visible = selectedIds.includes(card.cardId) || matchedCardIds.includes(card.cardId);
+                const matched = matchedCardIds.includes(card.cardId);
                 return <button className={`memory-card${visible ? " is-visible" : ""}${matched ? " is-matched" : ""}`}
-                  key={card.cardId} type="button" onClick={() => reveal(card.cardId)}
+                  key={card.cardId} type="button" onClick={() => void reveal(card.cardId)}
                   disabled={status !== "playing" || locked || matched}
                   aria-label={visible ? card.label : "Carta oculta"} aria-pressed={visible}>
                   <span className="memory-card-back" aria-hidden="true">✦</span>

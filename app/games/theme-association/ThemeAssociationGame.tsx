@@ -2,6 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createGameSessionId, GameLayout, recordPlatformGameCompletion, type GamePlayStatus } from "../sdk";
+import { gameContentRequestFromLocation, loadGameContent, validateGameContentAction } from "../loader";
+import type { LoadedGameContent } from "../loader";
+import { GameType } from "../../../shared/content";
 import { THEME_ASSOCIATION_MAX_ERRORS, type ThemeAssociationAttempt } from "./engine";
 
 type AssociationItem = { id: string; label: string; category?: string | null };
@@ -19,6 +22,7 @@ export function ThemeAssociationGame() {
   const sessionId = useRef(createGameSessionId());
   const completionRecorded = useRef(false);
   const [content, setContent] = useState<PublishedAssociation | null>(null);
+  const [loadedContent, setLoadedContent] = useState<LoadedGameContent<PublishedAssociation> | null>(null);
   const [attempts, setAttempts] = useState<ThemeAssociationAttempt[]>([]);
   const [matchedLeftIds, setMatchedLeftIds] = useState<string[]>([]);
   const [matchedRightIds, setMatchedRightIds] = useState<string[]>([]);
@@ -36,15 +40,13 @@ export function ThemeAssociationGame() {
     setLoading(true);
     setLoadError(false);
     try {
-      const response = await fetch("/api/platform/games/association", {
-        credentials: "same-origin",
-        cache: "no-store",
+      const loaded = await loadGameContent<PublishedAssociation>({
+        ...gameContentRequestFromLocation(GameType.ASSOCIATION),
         signal,
       });
-      if (!response.ok) throw new Error("association_content_unavailable");
-      const data = await response.json() as { content: PublishedAssociation };
-      setContent(data.content);
-      setMessage(`Associe corretamente os ${data.content.pairCount} pares.`);
+      setLoadedContent(loaded);
+      setContent(loaded.payload);
+      setMessage(`Associe corretamente os ${loaded.payload.pairCount} pares.`);
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") return;
       setLoadError(true);
@@ -80,24 +82,15 @@ export function ThemeAssociationGame() {
   }
 
   async function resolvePair(leftId: string, rightId: string) {
-    if (!content || locked || status !== "playing") return;
+    if (!content || !loadedContent || locked || status !== "playing") return;
     setLocked(true);
     const attempt = { leftId, rightId };
     try {
-      const response = await fetch("/api/platform/games/association", {
-        method: "POST",
-        credentials: "same-origin",
-        cache: "no-store",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          contentId: content.id,
-          contentVersion: content.version,
-          leftId,
-          rightId,
-        }),
-      });
-      if (!response.ok) throw new Error("association_validation_failed");
-      const result = await response.json() as { correct: boolean };
+      const result = await validateGameContentAction<{ correct: boolean }>(
+        loadedContent,
+        "validate_pair",
+        { leftId, rightId },
+      );
       const nextAttempts = [...attempts, attempt];
       setAttempts(nextAttempts);
       if (result.correct) {

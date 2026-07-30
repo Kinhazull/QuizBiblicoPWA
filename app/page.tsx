@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "./AuthProvider";
-import { PlatformHome, type DailyRetentionData, type PlatformAchievementData, type PlatformMissionData, type PlatformProgressData } from "./PlatformHome";
+import { PlatformHome, type DailyObjectiveData, type DailyRetentionData, type PlatformAchievementData, type PlatformMissionData, type PlatformProgressData } from "./PlatformHome";
 import type { JourneyCardData } from "./journey-card-state";
 import type { EquipmentView } from "./EquippedAvatar";
 
@@ -20,6 +20,7 @@ export default function Home() {
   const [mission, setMission] = useState<PlatformMissionData | null>(null);
   const [missionLoaded, setMissionLoaded] = useState(false);
   const [daily, setDaily] = useState<DailyRetentionData | null>(null);
+  const [dailyObjectives, setDailyObjectives] = useState<DailyObjectiveData[] | null>(null);
   const [dailyBusy, setDailyBusy] = useState(false);
   const [dailyError, setDailyError] = useState("");
   const [equipment, setEquipment] = useState<EquipmentView | null>(null);
@@ -42,12 +43,17 @@ export default function Home() {
     setMission(null);
     setMissionLoaded(false);
     setDaily(null);
+    setDailyObjectives(null);
     setDailyError("");
     fetch("/api/rounds/status", { signal: controller.signal }).then(response => response.ok ? response.json() : null)
       .then(data => { if (active) setJourney(data); }).catch(() => undefined);
     fetch("/api/platform/achievements", { cache: "no-store", signal: controller.signal })
       .then(response => response.ok ? response.json() : null)
       .then(data => { if (active && data) setAchievementData(data); }).catch(() => undefined);
+    fetch("/api/platform/daily-objectives", { cache: "no-store", signal: controller.signal })
+      .then(response => response.ok ? response.json() : null)
+      .then(data => { if (active && Array.isArray(data?.objectives)) setDailyObjectives(data.objectives); })
+      .catch(() => undefined);
     void (async () => {
       try {
         const response = await fetch("/api/platform/daily/check-in", {
@@ -142,6 +148,26 @@ export default function Home() {
     }
   }
 
+  async function startDailyObjective(objective: DailyObjectiveData) {
+    if (!objective.selectionId || !objective.playHref || objective.status === "FINISHED") {
+      if (objective.playHref) location.href = objective.playHref;
+      return;
+    }
+    setDailyError("");
+    try {
+      const response = await fetch("/api/platform/daily-objectives/start", {
+        method: "POST",
+        cache: "no-store",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ selectionId: objective.selectionId }),
+      });
+      if (!response.ok) throw new Error("daily_start_failed");
+      location.href = objective.playHref;
+    } catch {
+      setDailyError("Não foi possível iniciar o objetivo diário.");
+    }
+  }
+
   async function submitAuth(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setAuthBusy(true);
@@ -179,5 +205,6 @@ export default function Home() {
 
   return <PlatformHome displayName={user.displayName} journey={journey} achievementData={achievementData}
     progress={progress} mission={mission} missionLoaded={missionLoaded} daily={daily} dailyBusy={dailyBusy}
-    dailyError={dailyError} equipment={equipment} onOpenChest={openDailyChest} remaining={remaining} />;
+    dailyObjectives={dailyObjectives} dailyError={dailyError} equipment={equipment}
+    onOpenChest={openDailyChest} onStartDailyObjective={startDailyObjective} remaining={remaining} />;
 }

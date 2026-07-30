@@ -71,10 +71,16 @@ async function mockPublicApi(page: import("@playwright/test").Page, authenticate
   await mockCmsGameApi(page, "/api/platform/games/wordle", {
     id: "wordle-e2e",
     version: 2,
-    word: "JESUS",
+    wordLength: 5,
     hint: "O Salvador",
     biblicalReference: "Mateus 1:21",
-  }, authenticated);
+  }, authenticated, body => ({
+    evaluation: String(body.guess ?? "").split("").map((letter, index) => ({
+      letter,
+      state: "JESUS"[index] === letter ? "correct" : "absent",
+    })),
+    correct: body.guess === "JESUS",
+  }));
   await mockCmsGameApi(page, "/api/platform/games/three-clues", {
     id: "three-clues-e2e",
     version: 1,
