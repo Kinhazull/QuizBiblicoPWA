@@ -46,9 +46,9 @@ type DailyQuizPayload = {
 };
 
 export default function PlayPage() {
-  const requestedPractice =
+  const requestedLegacy =
     typeof window !== "undefined" &&
-    new URLSearchParams(window.location.search).get("modo") === "treino";
+    new URLSearchParams(window.location.search).get("legacy") === "1";
   const [attempt, setAttempt] = useState<Attempt | null>(null);
   const [round, setRound] = useState<any>(null);
   const [loadedContent, setLoadedContent] = useState<LoadedGameContent<DailyQuizPayload | Record<string, unknown>> | null>(null);
@@ -77,7 +77,7 @@ export default function PlayPage() {
   useEffect(() => {
     const controller = new AbortController();
     const request = gameContentRequestFromLocation(GameType.QUIZ);
-    if (request.mode === GameContentMode.NORMAL) {
+    if (request.mode === GameContentMode.NORMAL && !requestedLegacy) {
       generateFreePlayGame(GameType.QUIZ)
         .then(href => location.replace(href))
         .catch(() => setError("Não foi possível preparar o Quiz. Tente novamente."));
@@ -107,7 +107,7 @@ export default function PlayPage() {
         setError("Sem conexão. Verifique sua internet e tente novamente."),
       );
     return () => controller.abort();
-  }, []);
+  }, [requestedLegacy]);
 
   useEffect(() => {
     if (!attempt || selected) return;
@@ -392,30 +392,24 @@ export default function PlayPage() {
           {round ? (
             <>
               <p className="eyebrow">
-                {round.generated
-                  ? round.daily ? "OBJETIVO DIÁRIO" : "MODO LIVRE"
-                  : requestedPractice ? "JORNADA DE TREINO" : "JORNADA DA SEMANA"}
+                {round.generated ? round.daily ? "OBJETIVO DIÁRIO" : "MODO LIVRE" : "QUIZ BÍBLICO"}
               </p>
               <h1>{round.title}</h1>
               <p className="intro">
                 {round.generated ? round.theme : <>
                 {round.theme}<br />
-                {requestedPractice
-                  ? "O treino não consome tentativas nem altera o Ranking oficial."
-                  : round.resuming
-                    ? "Você possui uma tentativa em andamento dentro do período de tolerância."
-                    : `${Math.max(0, round.attemptLimit - round.attemptsUsed)} tentativa(s) oficial(is) disponível(is). Partidas interrompidas são retomadas automaticamente.`}</>}
+                {round.resuming
+                  ? "Você possui uma partida em andamento."
+                  : `${Math.max(0, round.attemptLimit - round.attemptsUsed)} tentativa(s) disponível(is). Partidas interrompidas são retomadas automaticamente.`}</>}
               </p>
               <button
                 className="primary"
                 onClick={() =>
-                  start(requestedPractice ? "practice" : "official")
+                  start("official")
                 }
                 disabled={
                   round.generated
                     ? false
-                    : requestedPractice
-                    ? !round.practiceAllowed
                     : !round.resuming &&
                       (round.attemptsUsed >= round.attemptLimit ||
                         !round.canStart)
@@ -423,42 +417,27 @@ export default function PlayPage() {
               >
                 {round.generated
                   ? "INICIAR PARTIDA"
-                  : requestedPractice
-                  ? "INICIAR OU CONTINUAR TREINO"
                   : round.resuming
-                    ? "CONTINUAR JORNADA"
+                    ? "CONTINUAR PARTIDA"
                     : round.canStart
-                      ? "INICIAR JORNADA"
+                      ? "INICIAR PARTIDA"
                       : "NOVAS TENTATIVAS ENCERRADAS"}{" "}
                 <span>→</span>
               </button>
-              {!round.generated && !requestedPractice && !round.resuming && !round.canStart && (
+              {!round.generated && !round.resuming && !round.canStart && (
                 <p className="auth-message">
-                  A jornada continua aberta apenas para quem já iniciou uma
-                  tentativa.
+                  Esta partida está disponível apenas para quem já iniciou uma tentativa.
                 </p>
               )}
-              {!round.generated &&
-                !requestedPractice &&
-                round.practiceAllowed &&
-                round.attemptsUsed >= round.attemptLimit &&
-                round.canStart && (
-                  <button
-                    className="auth-switch"
-                    onClick={() => (location.href = "/jogar?modo=treino")}
-                  >
-                    Iniciar Jornada de Treino
-                  </button>
-                )}
             </>
           ) : (
             <>
               <p className="eyebrow">AGUARDE</p>
               <h1>
-                Nenhuma jornada <em>ativa</em>
+                Nenhuma partida <em>disponível</em>
               </h1>
               <p className="intro">
-                A próxima jornada aparecerá aqui no horário programado.
+                O Quiz voltará a aparecer quando houver conteúdo disponível.
               </p>
             </>
           )}

@@ -26,6 +26,8 @@ test("game catalog starts free play directly and the legacy setup route redirect
 
   assert.match(card, /generateFreePlayGame/);
   assert.match(catalog, /gameCatalog\.map/);
+  assert.match(catalog, /href="\/"/);
+  assert.doesNotMatch(catalog, /router\.back|history\.back/);
   assert.doesNotMatch(catalog, /Gerar Partida|Modo Livre/);
   assert.match(legacyRoute, /redirect\("\/jogos"\)/);
   assert.match(loader, /\/api\/platform\/free-play\/generate/);
@@ -46,4 +48,16 @@ test("results and navigation respect mode capabilities", async () => {
   assert.match(routes, /pathname\.replace\(\/\\\/\+\$\/, ""\)/);
   assert.match(routes, /normalizedPath === "\/jogar"/);
   assert.match(quiz, /generateFreePlayGame\(GameType\.QUIZ\)/);
+});
+
+test("player Quiz paths cannot invoke the administrative legacy importer", async () => {
+  const sources = await Promise.all([
+    read("functions/_lib/platform-free-play.ts"),
+    read("functions/_lib/platform-daily-objectives.ts"),
+    read("functions/api/platform/free-play/generate.ts"),
+    read("app/games/loader/providers.ts"),
+  ]);
+  for (const source of sources) {
+    assert.doesNotMatch(source, /migrateLegacyQuizArchive|universal-content-importer/);
+  }
 });

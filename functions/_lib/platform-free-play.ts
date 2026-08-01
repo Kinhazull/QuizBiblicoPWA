@@ -103,7 +103,7 @@ export async function generateFreePlaySelection(
   const request = normalizeFreePlayRequest(input);
   const recentContentIds = await recentFreePlayContentIds(env, identity, request.gameType);
   const selectionKey = `free:${identity.userId}:${request.idempotencyKey}`;
-  const generated = await generateUniversalGameSelection(env, {
+  const generationRequest = (includeRecent: boolean) => ({
     organizationId: identity.organizationId,
     requestedByUserId: identity.userId,
     gameType: request.gameType,
@@ -122,29 +122,11 @@ export async function generateFreePlaySelection(
     difficulty: request.filters.difficulty ?? undefined,
     themes: request.filters.theme ? [request.filters.theme] : undefined,
     books: request.filters.book ? [request.filters.book] : undefined,
-    repetitionWindow: { recentContentIds },
-  }, now);
+    ...(includeRecent ? { repetitionWindow: { recentContentIds } } : {}),
+  });
+  const generated = await generateUniversalGameSelection(env, generationRequest(true), now);
   if (!generated.ok && generated.error.code === "insufficient_eligible_content" && recentContentIds.length) {
-    const fallback = await generateUniversalGameSelection(env, {
-      organizationId: identity.organizationId,
-      requestedByUserId: identity.userId,
-      gameType: request.gameType,
-      mode: GameGenerationMode.FREE_PLAY,
-      selectionKey,
-      algorithmVersion: 1,
-      seed: [
-        identity.organizationId,
-        identity.userId,
-        request.gameType,
-        request.idempotencyKey,
-        "v1",
-        JSON.stringify(request.filters),
-      ].join("|"),
-      count: request.filters.count,
-      difficulty: request.filters.difficulty ?? undefined,
-      themes: request.filters.theme ? [request.filters.theme] : undefined,
-      books: request.filters.book ? [request.filters.book] : undefined,
-    }, now);
+    const fallback = await generateUniversalGameSelection(env, generationRequest(false), now);
     if (!fallback.ok) throw new Error(fallback.error.code);
     return freePlayGenerationResponse(fallback.selection, fallback.reused);
   }

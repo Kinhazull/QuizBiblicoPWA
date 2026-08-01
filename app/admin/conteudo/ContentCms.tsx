@@ -17,7 +17,7 @@ type DashboardData = {
 };
 type ContentItem = {
   id: string;
-  source: "LEGACY_QUIZ" | "UNIVERSAL_CMS";
+  source: "UNIVERSAL_CMS";
   gameType: GameType;
   title: string;
   biblicalReference: string | null;
@@ -94,7 +94,7 @@ export function CmsErrorState({ retry, forbidden = false }: { retry: () => void;
 }
 
 export function CmsEmptyState() {
-  return <div className="cms-state empty"><BrandIcon name="database" /><div><strong>Nenhum conteúdo encontrado</strong><p>Ajuste os filtros ou consulte o banco legado do Quiz.</p></div></div>;
+  return <div className="cms-state empty"><BrandIcon name="database" /><div><strong>Nenhum conteúdo encontrado</strong><p>Ajuste os filtros do Acervo Universal.</p></div></div>;
 }
 
 function useCmsRequest<T>(url: string, validate: (value: unknown) => value is T, reloadKey = 0) {
@@ -159,7 +159,7 @@ export function ContentDashboard() {
 
 const initialFilters = {
   q: "", game: "", status: "", difficulty: "", category: "", book: "",
-  reference: "", tag: "", source: "", archived: false, pageSize: "20",
+  reference: "", tag: "", archived: false, pageSize: "20",
 };
 
 export function UniversalContentArchive() {
@@ -198,7 +198,6 @@ export function UniversalContentArchive() {
       <label className="wide">Busca textual<input value={draft.q} onChange={event => setDraft({ ...draft, q: event.target.value })} placeholder="Enunciado, referência ou tema" /></label>
       <label>Jogo<select value={draft.game} onChange={event => setDraft({ ...draft, game: event.target.value })}><option value="">Todos os jogos</option>{Object.entries(gameLabels).map(([value, label]) => <option value={value} key={value}>{label}</option>)}</select></label>
       <label>Status<select value={draft.status} onChange={event => setDraft({ ...draft, status: event.target.value })}><option value="">Todos ativos</option>{Object.entries(statusLabels).map(([value, label]) => <option value={value} key={value}>{label}</option>)}</select></label>
-      <label>Origem<select value={draft.source} onChange={event => setDraft({ ...draft, source: event.target.value })}><option value="">Todas</option><option value="UNIVERSAL_CMS">CMS universal</option><option value="LEGACY_QUIZ">Quiz legado</option></select></label>
       <label>Dificuldade<select value={draft.difficulty} onChange={event => setDraft({ ...draft, difficulty: event.target.value })}><option value="">Todas</option>{Object.entries(difficultyLabels).map(([value, label]) => <option value={value} key={value}>{label}</option>)}</select></label>
       <label>Categoria<select value={draft.category} onChange={event => setDraft({ ...draft, category: event.target.value })}><option value="">Todas</option>{data?.facets.categories.map(value => <option key={value}>{value}</option>)}</select></label>
       <label>Livro bíblico<select value={draft.book} onChange={event => setDraft({ ...draft, book: event.target.value })}><option value="">Todos</option>{data?.facets.books.map(value => <option key={value}>{value}</option>)}</select></label>
@@ -217,7 +216,7 @@ export function UniversalContentArchive() {
       {data.items.map(item => <article className="universal-content-card" key={`${item.source}:${item.id}`}>
         <header><ContentGameBadge gameType={item.gameType} /><ContentStatusBadge status={item.status} /></header>
         <h2>{item.title}</h2>
-        <p className="content-indicator">{item.source === "UNIVERSAL_CMS" ? "CMS universal" : "Quiz legado"}</p>
+        <p className="content-indicator">CMS universal</p>
         <dl>
           <div><dt>Referência</dt><dd>{item.biblicalReference || "Não informada"}</dd></div>
           <div><dt>Categoria</dt><dd>{item.category}</dd></div>
@@ -228,7 +227,7 @@ export function UniversalContentArchive() {
         </dl>
         {item.tags.length > 0 && <div className="content-tags" aria-label="Tags">{item.tags.map(tag => <span key={tag.id}>{tag.label}</span>)}</div>}
         {item.indicators.map(indicator => <p className="content-indicator" key={indicator}><BrandIcon name="health" />{indicator}</p>)}
-        <footer><a href={item.links.edit}>Abrir conteúdo</a>{item.links.review && <a href={item.links.review}>Revisão</a>}<a href={item.links.history}>{item.source === "UNIVERSAL_CMS" ? "Versões" : "Histórico e colaboração"}</a></footer>
+        <footer><a href={item.links.edit}>Abrir conteúdo</a>{item.links.review && <a href={item.links.review}>Revisão</a>}<a href={item.links.history}>Versões</a></footer>
       </article>)}
     </section>}
     {data && <nav className="content-pagination" aria-label="Paginação do Acervo">

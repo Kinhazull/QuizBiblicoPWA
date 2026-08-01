@@ -5,6 +5,7 @@ export default function GamesPage() {
   return <main className="games-catalog-page">
     <div className="games-page-ambient" aria-hidden="true" />
     <div className="games-page-inner">
+      <a className="games-home-link" href="/" aria-label="Voltar para a Home">← Voltar</a>
       <header className="games-page-heading">
         <p>Jogos e desafios bíblicos</p>
         <h1>Escolha e comece a <em>jogar</em></h1>

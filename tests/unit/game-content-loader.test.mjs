@@ -36,10 +36,6 @@ const normalFixtures = {
     endpoint: "/api/platform/games/memory",
     response: { content: { id: "memory-1", version: 4, title: "Memória", cards: [], pairCount: 0, biblicalReference: null } },
   },
-  [GameType.QUIZ]: {
-    endpoint: "/api/rounds/current",
-    response: { round: { id: "round-1", version: 5, title: "Jornada" } },
-  },
   [GameType.ASSOCIATION]: {
     endpoint: "/api/platform/games/association",
     response: { content: { id: "association-1", version: 1, title: "Associação", leftItems: [], rightItems: [], pairCount: 0 } },
@@ -54,7 +50,7 @@ const normalFixtures = {
   },
 };
 
-test("normal provider standardizes content for all seven games", async () => {
+test("normal provider standardizes content for games with a direct CMS endpoint", async () => {
   for (const [gameType, fixture] of Object.entries(normalFixtures)) {
     const calls = [];
     globalThis.fetch = async (url, init) => {
@@ -71,6 +67,17 @@ test("normal provider standardizes content for all seven games", async () => {
     assert.equal(calls.length, 1);
     assert.equal(calls[0].init.cache, "no-store");
   }
+});
+
+test("Quiz NORMAL provider exposes only the explicit transitional read bridge", async () => {
+  const calls = [];
+  globalThis.fetch = async url => {
+    calls.push(String(url));
+    return jsonResponse({ round: { id: "legacy-round-1", version: 1, title: "Quiz Bíblico" } });
+  };
+  const loaded = await loadGameContent({ gameType: GameType.QUIZ, mode: GameContentMode.NORMAL });
+  assert.equal(loaded.contentId, "legacy-round-1");
+  assert.deepEqual(calls, ["/api/rounds/current"]);
 });
 
 test("daily provider starts and loads the selected objective through one contract", async () => {

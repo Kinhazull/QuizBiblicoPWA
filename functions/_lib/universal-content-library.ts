@@ -70,9 +70,11 @@ function extractBook(reference: string | null) {
 }
 
 export function contentLibraryMetadata(content: PersistedUniversalContent) {
+  const theme = typeof content.payload.theme === "string" ? content.payload.theme : null;
+  const book = typeof content.payload.book === "string" ? content.payload.book : null;
   return {
-    themes: unique([content.category]),
-    books: unique([extractBook(content.biblicalReference)]),
+    themes: unique([theme, content.category]),
+    books: unique([book, extractBook(content.biblicalReference)]),
     tags: unique(content.tags),
   };
 }

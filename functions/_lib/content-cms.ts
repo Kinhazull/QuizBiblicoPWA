@@ -1,16 +1,14 @@
-import { legacyQuizToUniversal } from "../../shared/content/adapters/quiz-legacy";
 import {
   ContentStatus,
   Difficulty,
   GameType,
   getContentSchema,
-  type LegacyQuizQuestion,
 } from "../../shared/content";
 import type { AppEnv } from "./auth";
 
 export type UniversalContentSummary = {
   id: string;
-  source: "LEGACY_QUIZ" | "UNIVERSAL_CMS";
+  source: "UNIVERSAL_CMS";
   gameType: GameType;
   title: string;
   biblicalReference: string | null;
@@ -26,83 +24,8 @@ export type UniversalContentSummary = {
   links: { edit: string; review: string | null; history: string };
 };
 
-const statusSql: Record<ContentStatus, string> = {
-  DRAFT: "qb.status='draft' AND qb.review_status IN ('draft','changes_requested')",
-  IN_REVIEW: "qb.status<>'archived' AND qb.review_status='in_review'",
-  PUBLISHED: "qb.status<>'archived' AND qb.review_status NOT IN ('in_review','changes_requested') AND (qb.status='active' OR qb.review_status='approved')",
-  ARCHIVED: "qb.status='archived'",
-};
-
-const legacyDifficulty = (value: unknown): "easy" | "medium" | "hard" =>
-  value === "easy" || value === "hard" ? value : "medium";
-const legacyStatus = (value: unknown): "draft" | "active" | "archived" =>
-  value === "draft" || value === "archived" ? value : "active";
-const legacyReviewStatus = (value: unknown): "draft" | "in_review" | "approved" | "changes_requested" =>
-  value === "in_review" || value === "approved" || value === "changes_requested" ? value : "draft";
-
-export function adaptLegacyQuizSummary(
-  row: Record<string, unknown>,
-  choices: readonly Record<string, unknown>[],
-): UniversalContentSummary {
-  const legacy: LegacyQuizQuestion = {
-    id: String(row.id),
-    reference: typeof row.reference === "string" && row.reference ? row.reference : null,
-    book: typeof row.book === "string" && row.book ? row.book : null,
-    theme: typeof row.theme === "string" ? row.theme : "Sem tema",
-    category: typeof row.category === "string" && row.category ? row.category : null,
-    difficulty: legacyDifficulty(row.difficulty),
-    prompt: String(row.prompt ?? ""),
-    commentary: typeof row.commentary === "string" && row.commentary ? row.commentary : null,
-    status: legacyStatus(row.status),
-    reviewStatus: legacyReviewStatus(row.review_status),
-    version: Math.max(1, Number(row.version) || 1),
-    createdBy: typeof row.created_by === "string" ? row.created_by : "legacy",
-    updatedBy: typeof row.updated_by === "string" ? row.updated_by : null,
-    createdAt: Number(row.created_at) || 0,
-    updatedAt: Number(row.updated_at) || Number(row.created_at) || 0,
-    choices: choices.map(choice => ({
-      id: typeof choice.id === "string" ? choice.id : undefined,
-      text: String(choice.text ?? ""),
-      position: Number(choice.position) || 0,
-      correct: choice.correct === true || Number(choice.correct) === 1,
-    })),
-  };
-  const universal = legacyQuizToUniversal(legacy);
-  const indicators = [
-    ...(legacy.reviewStatus === "changes_requested" ? ["Ajustes solicitados"] : []),
-    ...(choices.length !== 4 || choices.filter(choice => Number(choice.correct) === 1).length !== 1
-      ? ["Alternativas inconsistentes"] : []),
-  ];
-  return {
-    id: universal.id,
-    source: "LEGACY_QUIZ",
-    gameType: GameType.QUIZ,
-    title: universal.content.payload.prompt,
-    biblicalReference: universal.biblicalReference,
-    book: universal.content.payload.book,
-    category: universal.category,
-    difficulty: universal.difficulty,
-    status: universal.status,
-    version: universal.version,
-    updatedAt: universal.updatedAt,
-    timesUsed: Math.max(0, Number(row.times_used) || 0),
-    tags: universal.tags.map(label => ({ id: label, label })),
-    indicators,
-    links: {
-      edit: `/admin/perguntas?question=${encodeURIComponent(universal.id)}`,
-      review: `/admin/perguntas/revisao?question=${encodeURIComponent(universal.id)}`,
-      history: `/admin/perguntas/colaboracao?question=${encodeURIComponent(universal.id)}`,
-    },
-  };
-}
-
 export async function loadContentDashboard(env: AppEnv, organizationId: string) {
   const results = await Promise.all([
-    env.DB.prepare("SELECT COUNT(*) total FROM question_bank WHERE organization_id=?1").bind(organizationId).first<{ total: number }>(),
-    env.DB.prepare("SELECT COUNT(*) total FROM question_bank WHERE organization_id=?1 AND status='archived'").bind(organizationId).first<{ total: number }>(),
-    env.DB.prepare("SELECT COUNT(*) total FROM question_bank WHERE organization_id=?1 AND status<>'archived' AND review_status='in_review'").bind(organizationId).first<{ total: number }>(),
-    ...Object.values(ContentStatus).map(status =>
-      env.DB.prepare(`SELECT COUNT(*) total FROM question_bank qb WHERE qb.organization_id=?1 AND ${statusSql[status]}`).bind(organizationId).first<{ total: number }>()),
     env.DB.prepare("SELECT COUNT(*) total FROM content_items WHERE organization_id=?1").bind(organizationId).first<{ total: number }>(),
     env.DB.prepare("SELECT COUNT(*) total FROM content_items WHERE organization_id=?1 AND status='DRAFT'").bind(organizationId).first<{ total: number }>(),
     env.DB.prepare("SELECT COUNT(*) total FROM content_items WHERE organization_id=?1 AND status='PUBLISHED'").bind(organizationId).first<{ total: number }>(),
@@ -110,27 +33,26 @@ export async function loadContentDashboard(env: AppEnv, organizationId: string) 
       .bind(organizationId).all<{ gameType: GameType; total: number }>(),
   ]);
   const count = (index: number) => Number((results[index] as { total?: number } | null)?.total || 0);
-  const legacyStatusCount = Object.fromEntries(Object.values(ContentStatus).map((status, index) => [status, count(index + 3)]));
-  const universalTotalIndex = 3 + Object.values(ContentStatus).length;
-  const universalTotal = count(universalTotalIndex);
-  const universalDrafts = count(universalTotalIndex + 1);
-  const universalPublished = count(universalTotalIndex + 2);
-  const gameRows = (results[universalTotalIndex + 3] as D1Result<{ gameType: GameType; total: number }>).results || [];
+  const universalTotal = count(0);
+  const universalDrafts = count(1);
+  const universalPublished = count(2);
+  const gameRows = (results[3] as D1Result<{ gameType: GameType; total: number }>).results || [];
   const byGameCount = new Map(gameRows.map(row => [row.gameType, Number(row.total)]));
   const byStatus = {
-    ...legacyStatusCount,
-    DRAFT: Number(legacyStatusCount.DRAFT) + universalDrafts,
-    PUBLISHED: Number(legacyStatusCount.PUBLISHED) + universalPublished,
+    DRAFT: universalDrafts,
+    IN_REVIEW: 0,
+    PUBLISHED: universalPublished,
+    ARCHIVED: 0,
   };
   return {
-    total: count(0) + universalTotal,
-    archived: count(1),
-    needsReview: count(2),
+    total: universalTotal,
+    archived: 0,
+    needsReview: 0,
     byStatus,
     byGame: Object.values(GameType).map(gameType => ({
       gameType,
-      count: (gameType === GameType.QUIZ ? count(0) : 0) + (byGameCount.get(gameType) || 0),
-      integrated: gameType === GameType.QUIZ,
+      count: byGameCount.get(gameType) || 0,
+      integrated: true,
       editorialPersisted: byGameCount.get(gameType) || 0,
     })),
   };
@@ -141,14 +63,11 @@ export async function loadUniversalContent(
   organizationId: string,
   searchParams: URLSearchParams,
 ) {
-  const source = String(searchParams.get("source") || "");
   const gameType = searchParams.get("game") || "";
   const page = Math.max(1, Math.min(100, Number(searchParams.get("page")) || 1));
   const pageSize = Math.max(10, Math.min(50, Number(searchParams.get("pageSize")) || 20));
   const fetchLimit = page * pageSize;
   const dashboard = await loadContentDashboard(env, organizationId);
-  const includeLegacy = source !== "UNIVERSAL_CMS" && (!gameType || gameType === GameType.QUIZ);
-  const includeUniversal = source !== "LEGACY_QUIZ";
   const q = String(searchParams.get("q") || "").trim().slice(0, 100);
   const status = String(searchParams.get("status") || "");
   const difficulty = String(searchParams.get("difficulty") || "");
@@ -157,50 +76,6 @@ export async function loadUniversalContent(
   const reference = String(searchParams.get("reference") || "").trim().slice(0, 120);
   const tag = String(searchParams.get("tag") || "").trim().slice(0, 80);
   const onlyArchived = searchParams.get("archived") === "1";
-
-  let legacyTotal = 0;
-  let legacyItems: UniversalContentSummary[] = [];
-  const filters = ["qb.organization_id=?1"];
-  const values: unknown[] = [organizationId];
-  const add = (sql: string, value: unknown) => { values.push(value); filters.push(sql.replace("?", `?${values.length}`)); };
-  if (onlyArchived) filters.push(statusSql.ARCHIVED);
-  else if (Object.values(ContentStatus).includes(status as ContentStatus)) filters.push(statusSql[status as ContentStatus]);
-  else filters.push("qb.status<>'archived'");
-  if (difficulty) {
-    const map: Record<string, string> = { EASY: "easy", MEDIUM: "medium", HARD: "hard", VERY_EASY: "easy", SPECIAL: "hard" };
-    if (map[difficulty]) add("qb.difficulty=?", map[difficulty]);
-  }
-  if (category) add("qb.category=?", category);
-  if (book) add("qb.book=?", book);
-  if (reference) add("qb.reference LIKE ?", `%${reference}%`);
-  if (tag) {
-    values.push(tag, tag, tag);
-    const first = values.length - 2;
-    filters.push(`(qb.theme=?${first} OR qb.book=?${first + 1} OR qb.category=?${first + 2})`);
-  }
-  if (q) {
-    values.push(`%${q}%`);
-    filters.push(`(qb.prompt LIKE ?${values.length} OR qb.reference LIKE ?${values.length} OR qb.theme LIKE ?${values.length})`);
-  }
-  if (includeLegacy) {
-    const count = await env.DB.prepare(`SELECT COUNT(*) total FROM question_bank qb WHERE ${filters.join(" AND ")}`)
-      .bind(...values).first<{ total: number }>();
-    legacyTotal = Number(count?.total || 0);
-    const rowValues = [...values, fetchLimit];
-    const rows = await env.DB.prepare(
-      `SELECT qb.* FROM question_bank qb WHERE ${filters.join(" AND ")} ORDER BY qb.updated_at DESC,qb.id LIMIT ?${rowValues.length}`,
-    ).bind(...rowValues).all<Record<string, unknown>>();
-    const ids = rows.results.map(row => String(row.id));
-    const choices = ids.length
-      ? await env.DB.prepare(`SELECT * FROM question_bank_choices WHERE question_id IN (${ids.map((_, index) => `?${index + 1}`).join(",")}) ORDER BY question_id,position`).bind(...ids).all<Record<string, unknown>>()
-      : { results: [] as Record<string, unknown>[] };
-    const byQuestion = new Map<string, Record<string, unknown>[]>();
-    choices.results.forEach(choice => {
-      const id = String(choice.question_id);
-      byQuestion.set(id, [...(byQuestion.get(id) || []), choice]);
-    });
-    legacyItems = rows.results.map(row => adaptLegacyQuizSummary(row, byQuestion.get(String(row.id)) || []));
-  }
 
   let universalTotal = 0;
   let universalItems: UniversalContentSummary[] = [];
@@ -227,15 +102,14 @@ export async function loadUniversalContent(
     universalValues.push(`%${q}%`);
     universalFilters.push(`(payload_json LIKE ?${universalValues.length} OR biblical_reference LIKE ?${universalValues.length} OR category LIKE ?${universalValues.length})`);
   }
-  if (includeUniversal) {
-    const count = await env.DB.prepare(`SELECT COUNT(*) total FROM content_items WHERE ${universalFilters.join(" AND ")}`)
-      .bind(...universalValues).first<{ total: number }>();
-    universalTotal = Number(count?.total || 0);
-    const rowValues = [...universalValues, fetchLimit];
-    const rows = await env.DB.prepare(
-      `SELECT * FROM content_items WHERE ${universalFilters.join(" AND ")} ORDER BY updated_at DESC,id LIMIT ?${rowValues.length}`,
-    ).bind(...rowValues).all<Record<string, unknown>>();
-    universalItems = rows.results.map(row => {
+  const count = await env.DB.prepare(`SELECT COUNT(*) total FROM content_items WHERE ${universalFilters.join(" AND ")}`)
+    .bind(...universalValues).first<{ total: number }>();
+  universalTotal = Number(count?.total || 0);
+  const rowValues = [...universalValues, fetchLimit];
+  const rows = await env.DB.prepare(
+    `SELECT * FROM content_items WHERE ${universalFilters.join(" AND ")} ORDER BY updated_at DESC,id LIMIT ?${rowValues.length}`,
+  ).bind(...rowValues).all<Record<string, unknown>>();
+  universalItems = rows.results.map(row => {
       let payload: Record<string, unknown> = {};
       let tags: string[] = [];
       try { payload = JSON.parse(String(row.payload_json)); } catch { payload = {}; }
@@ -266,17 +140,11 @@ export async function loadUniversalContent(
           history: `/api/admin/content/${encodeURIComponent(id)}/versions`,
         },
       };
-    });
-  }
+  });
 
-  const facetRows = await Promise.all([
-    env.DB.prepare("SELECT DISTINCT category,book,theme FROM question_bank WHERE organization_id=?1 AND status<>'archived' ORDER BY category,book,theme")
-      .bind(organizationId).all<{ category: string | null; book: string | null; theme: string | null }>(),
-    env.DB.prepare("SELECT DISTINCT category,tags_json,payload_json FROM content_items WHERE organization_id=?1 ORDER BY category")
-      .bind(organizationId).all<{ category: string; tags_json: string; payload_json: string }>(),
-  ]);
-  const legacyFacets = facetRows[0].results;
-  const cmsFacets = facetRows[1].results;
+  const cmsFacets = (await env.DB.prepare(
+    "SELECT DISTINCT category,tags_json,payload_json FROM content_items WHERE organization_id=?1 ORDER BY category",
+  ).bind(organizationId).all<{ category: string; tags_json: string; payload_json: string }>()).results;
   const safeArray = (value: string) => {
     try { const parsed = JSON.parse(value); return Array.isArray(parsed) ? parsed.filter(item => typeof item === "string") : []; }
     catch { return []; }
@@ -285,24 +153,22 @@ export async function loadUniversalContent(
     try { const parsed = JSON.parse(value); return typeof parsed.book === "string" ? parsed.book : null; }
     catch { return null; }
   };
-  const combined = [...legacyItems, ...universalItems]
+  const combined = universalItems
     .sort((left, right) => right.updatedAt - left.updatedAt || left.id.localeCompare(right.id));
   const offset = (page - 1) * pageSize;
-  const total = legacyTotal + universalTotal;
+  const total = universalTotal;
   const unique = (values: (string | null | undefined)[]) => [...new Set(values.filter((value): value is string => Boolean(value)))];
   return {
     items: combined.slice(offset, offset + pageSize),
     facets: {
-      categories: unique([...legacyFacets.map(row => row.category), ...cmsFacets.map(row => row.category)]),
-      books: unique([...legacyFacets.map(row => row.book), ...cmsFacets.map(row => payloadBook(row.payload_json))]),
+      categories: unique(cmsFacets.map(row => row.category)),
+      books: unique(cmsFacets.map(row => payloadBook(row.payload_json))),
       tags: unique([
-        ...legacyFacets.map(row => row.theme),
-        ...legacyFacets.map(row => row.book),
         ...cmsFacets.flatMap(row => safeArray(row.tags_json)),
       ]),
       difficulties: Object.values(Difficulty),
       statuses: Object.values(ContentStatus),
-      sources: ["LEGACY_QUIZ", "UNIVERSAL_CMS"],
+      sources: ["UNIVERSAL_CMS"],
     },
     pagination: { page, pageSize, total, totalPages: Math.max(1, Math.ceil(total / pageSize)), hasMore: page * pageSize < total },
     totals: dashboard,

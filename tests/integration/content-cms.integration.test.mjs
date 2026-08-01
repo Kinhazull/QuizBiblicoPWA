@@ -23,6 +23,7 @@ import {
   onRequestPost as validatePublishedTimeline,
 } from "../../functions/api/platform/games/timeline.ts";
 import { onRequestGet as getPublishedMemory } from "../../functions/api/platform/games/memory.ts";
+import { migrateLegacyQuizArchive } from "../../functions/_lib/universal-content-importer.ts";
 import {
   onRequestGet as getPublishedAssociation,
   onRequestPost as validatePublishedAssociation,
@@ -705,31 +706,26 @@ test("Wordle player endpoint ignores drafts and content from another organizatio
   assert.equal(stillUnavailable.status, 404);
 });
 
-test("legacy Quiz questions become universal summaries with safe statuses and tenant isolation", async t => {
+test("legacy Quiz questions enter the archive only through the universal migration", async t => {
   const { ctx, tokens } = await fixture(t);
   seedQuestion(ctx, { id: "published" });
   seedQuestion(ctx, { id: "review", status: "draft", reviewStatus: "in_review", prompt: "Revisar parábola" });
   seedQuestion(ctx, { id: "changes", status: "draft", reviewStatus: "changes_requested", prompt: "Ajustar referência" });
   seedQuestion(ctx, { id: "archived", status: "archived", prompt: "Conteúdo antigo" });
   seedQuestion(ctx, { id: "other-org", organizationId: "org-2", prompt: "Nunca expor" });
-  const response = await getContent({
+  const hidden = await responseJson(await getContent({
     request: createAuthenticatedRequest("https://test/api/admin/content?status=DRAFT", { token: tokens.admin }),
     env: ctx.env,
-  });
-  const data = await responseJson(response);
-  assert.equal(data.items.length, 1);
-  assert.equal(data.items[0].id, "changes");
-  assert.equal(data.items[0].gameType, "quiz-biblico");
-  assert.equal(data.items[0].status, "DRAFT");
-  assert.deepEqual(data.items[0].indicators, ["Ajustes solicitados"]);
-  assert.ok(!JSON.stringify(data).includes("Nunca expor"));
-
-  const archived = await responseJson(await getContent({
-    request: createAuthenticatedRequest("https://test/api/admin/content?archived=1", { token: tokens.admin }),
+  }));
+  assert.equal(hidden.items.length, 0);
+  await migrateLegacyQuizArchive(ctx.env, "org-1", "org-1-admin", true);
+  const data = await responseJson(await getContent({
+    request: createAuthenticatedRequest("https://test/api/admin/content?status=DRAFT", { token: tokens.admin }),
     env: ctx.env,
   }));
-  assert.deepEqual(archived.items.map(item => item.id), ["archived"]);
-  assert.equal(archived.items[0].status, "ARCHIVED");
+  assert.deepEqual(data.items.map(item => item.id).sort(), ["archived", "changes", "review"]);
+  assert.ok(data.items.every(item => item.source === "UNIVERSAL_CMS"));
+  assert.ok(!JSON.stringify(data).includes("Nunca expor"));
 });
 
 test("server-side game, status, difficulty, search and pagination filters remain deterministic", async t => {
@@ -740,6 +736,7 @@ test("server-side game, status, difficulty, search and pagination filters remain
     difficulty: index === 7 ? "hard" : "easy",
     updatedAt: 100 + index,
   });
+  await migrateLegacyQuizArchive(ctx.env, "org-1", "org-1-admin", true);
   const request = query => getContent({
     request: createAuthenticatedRequest(`https://test/api/admin/content?${query}`, { token: tokens.admin }),
     env: ctx.env,
@@ -761,22 +758,22 @@ test("server-side game, status, difficulty, search and pagination filters remain
   assert.equal(unsupportedGame.pagination.total, 0);
 });
 
-test("content dashboard counts Quiz persistence and reports exact zero for six pending integrations", async t => {
+test("content dashboard counts only universally persisted content", async t => {
   const { ctx, tokens } = await fixture(t);
   seedQuestion(ctx, { id: "published" });
   seedQuestion(ctx, { id: "review", status: "draft", reviewStatus: "in_review" });
   seedQuestion(ctx, { id: "archived", status: "archived" });
+  await migrateLegacyQuizArchive(ctx.env, "org-1", "org-1-admin", true);
   const response = await getContent({
     request: createAuthenticatedRequest("https://test/api/admin/content?view=dashboard", { token: tokens.admin }),
     env: ctx.env,
   });
   const data = await responseJson(response);
   assert.equal(data.total, 3);
-  assert.equal(data.archived, 1);
-  assert.equal(data.needsReview, 1);
+  assert.equal(data.archived, 0);
+  assert.equal(data.needsReview, 0);
   assert.equal(data.byGame.find(game => game.gameType === "quiz-biblico").count, 3);
-  assert.equal(data.byGame.filter(game => !game.integrated).length, 6);
-  assert.ok(data.byGame.filter(game => !game.integrated).every(game => game.count === 0));
+  assert.ok(data.byGame.every(game => game.integrated));
 });
 
 test("universal draft creation requires authentication and questions.edit", async t => {
@@ -917,9 +914,10 @@ test("version endpoint returns sanitized history for owned universal content", a
   assert.equal("payloadJson" in data.versions[0], false);
 });
 
-test("combined archive paginates both sources deterministically and filters source, game, status, difficulty and text", async t => {
+test("universal archive paginates migrated and native content deterministically", async t => {
   const { ctx, tokens } = await fixture(t);
   for (let index = 0; index < 11; index++) seedQuestion(ctx, { id: `legacy-${index}`, updatedAt: 100 + index });
+  await migrateLegacyQuizArchive(ctx.env, "org-1", "org-1-admin", true);
   for (let index = 0; index < 4; index++) {
     const body = universalBody(index % 2 ? GameType.WORDLE : GameType.QUIZ);
     body.metadata.category = index === 3 ? "Profetas" : "Teste editorial";
@@ -937,7 +935,7 @@ test("combined archive paginates both sources deterministically and filters sour
   assert.equal(page1.items.length, 10);
   assert.equal(page2.items.length, 5);
   assert.ok(page1.items.some(item => item.source === "UNIVERSAL_CMS"));
-  assert.ok([...page1.items, ...page2.items].some(item => item.source === "LEGACY_QUIZ"));
+  assert.ok([...page1.items, ...page2.items].every(item => item.source === "UNIVERSAL_CMS"));
   const cms = await responseJson(await request("source=UNIVERSAL_CMS&status=DRAFT"));
   assert.equal(cms.items.length, 4);
   assert.ok(cms.items.every(item => item.source === "UNIVERSAL_CMS"));
@@ -946,9 +944,10 @@ test("combined archive paginates both sources deterministically and filters sour
   assert.equal(filtered.items[0].title, "ELIAS");
 });
 
-test("dashboard combines sources without duplicating legacy questions", async t => {
+test("dashboard counts migrated Quiz content without consulting the legacy archive", async t => {
   const { ctx, tokens } = await fixture(t);
   seedQuestion(ctx, { id: "legacy" });
+  await migrateLegacyQuizArchive(ctx.env, "org-1", "org-1-admin", true);
   await post(ctx, tokens.admin, universalBody(GameType.QUIZ));
   await post(ctx, tokens.admin, universalBody(GameType.MEMORY));
   const data = await responseJson(await getContent({
@@ -1039,6 +1038,7 @@ test("return to Draft preserves history and writes a sanitized audit event", asy
 test("published universal content is reflected once in archive filters and dashboard totals", async t => {
   const { ctx, tokens } = await fixture(t);
   seedQuestion(ctx, { id: "legacy-published" });
+  await migrateLegacyQuizArchive(ctx.env, "org-1", "org-1-admin", true);
   const { content } = await responseJson(await post(ctx, tokens.admin, universalBody(GameType.MEMORY)));
   await transition(publishContent, ctx, tokens.admin, content.id, 1);
   const archive = await responseJson(await getContent({
@@ -1048,9 +1048,9 @@ test("published universal content is reflected once in archive filters and dashb
     ),
     env: ctx.env,
   }));
-  assert.equal(archive.pagination.total, 1);
-  assert.equal(archive.items[0].id, content.id);
-  assert.equal(archive.items[0].status, "PUBLISHED");
+  assert.equal(archive.pagination.total, 2);
+  assert.equal(archive.items.some(item => item.id === content.id), true);
+  assert.equal(archive.items.every(item => item.status === "PUBLISHED"), true);
   const dashboard = await responseJson(await getContent({
     request: createAuthenticatedRequest("https://test/api/admin/content?view=dashboard", {
       token: tokens.admin,

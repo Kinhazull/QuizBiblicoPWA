@@ -49,6 +49,20 @@
   max-width: 760px;
   margin-bottom: 21px;
 }
+.games-home-link {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  margin-bottom: 14px;
+  color: #dce8f7;
+  font-weight: 700;
+  text-decoration: none;
+}
+.games-home-link:focus-visible {
+  border-radius: 8px;
+  outline: 3px solid var(--games-gold);
+  outline-offset: 3px;
+}
 .games-page-heading > p {
   margin: 0 0 8px;
   color: var(--games-green);
