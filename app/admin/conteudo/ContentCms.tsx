@@ -38,6 +38,25 @@ type ContentResponse = {
   pagination: { page: number; pageSize: number; total: number; totalPages: number; hasMore: boolean };
   totals: DashboardData;
 };
+type QuizCatalogDiagnosticsData = {
+  generatedAt: number;
+  cms: { published: number; totalQuiz: number };
+  library: { total: number; byAvailabilityStatus: Record<string, number> };
+  crossCheck: { contentIdMatches: number; gameTypeMatches: number; versionMatches: number; publishedAvailable: number };
+  eligibleCatalog: { total: number; byDifficulty: Record<string, number>; failedSchemaValidation: number };
+  exclusions: {
+    reasons: Record<string, number>;
+    examples: Array<{
+      contentId: string; cmsVersion: number; libraryVersion: number | null; difficulty: string;
+      status: string; errorCode: string; invalidField: string | null;
+    }>;
+  };
+  generatorWindow: {
+    limit: number; libraryCandidates: number; eligible: number; byDifficulty: Record<string, number>;
+    satisfiesDailyDistribution: boolean; completeCatalogSatisfiesDailyDistribution: boolean;
+  };
+  conclusion: string;
+};
 
 const gameLabels: Record<GameType, string> = {
   "quiz-biblico": "Quiz Bíblico",
@@ -75,6 +94,44 @@ const isContentResponse = (value: unknown): value is ContentResponse => {
     && Boolean(data.facets)
     && Boolean(data.pagination)
     && isDashboardData(data.totals);
+};
+const isQuizCatalogDiagnostics = (value: unknown): value is QuizCatalogDiagnosticsData => {
+  if (!value || typeof value !== "object") return false;
+  const data = value as Partial<QuizCatalogDiagnosticsData>;
+  return typeof data.generatedAt === "number"
+    && Boolean(data.cms)
+    && Boolean(data.library)
+    && Boolean(data.crossCheck)
+    && Boolean(data.eligibleCatalog)
+    && Boolean(data.exclusions)
+    && Boolean(data.generatorWindow)
+    && typeof data.conclusion === "string";
+};
+
+const diagnosticConclusions: Record<string, string> = {
+  library_not_populated: "A Biblioteca Universal não foi populada para o Quiz.",
+  library_not_available: "Os itens do Quiz existem na Biblioteca, mas não estão disponíveis.",
+  version_mismatch: "As versões do CMS e da Biblioteca não coincidem.",
+  schema_registry_failure: "Os conteúdos não passam pela validação atual do Schema Registry.",
+  eligible_catalog_generator_failure: "O catálogo elegível possui conteúdo suficiente; a falha ocorre depois dele, no Gerador.",
+  first_200_affects_daily_only: "O limite inicial de 200 itens prejudica apenas a distribuição exigida pelo Quiz Diário.",
+  no_inconsistency_detected: "Nenhuma inconsistência conclusiva foi detectada neste pipeline.",
+};
+
+const diagnosticReasonLabels: Record<string, string> = {
+  missing_library_projection: "Sem projeção na Biblioteca",
+  unavailable_library_status: "Status indisponível na Biblioteca",
+  game_type_mismatch: "Jogo divergente",
+  version_mismatch: "Versão divergente",
+  cms_not_published: "Não publicado no CMS",
+  invalid_metadata: "Metadados inválidos",
+  invalid_payload: "Conteúdo específico inválido",
+  invalid_biblical_reference: "Referência bíblica inválida",
+  invalid_difficulty: "Dificuldade inválida",
+  insufficient_choices: "Quantidade de alternativas inválida",
+  duplicate_choices: "Alternativas duplicadas",
+  invalid_correct_answer_count: "Quantidade de respostas corretas inválida",
+  unknown_reason: "Motivo não classificado",
 };
 
 export function ContentStatusBadge({ status }: { status: ContentStatus }) {
@@ -155,6 +212,52 @@ export function ContentDashboard() {
       </section>
     </>}
   </>;
+}
+
+export function QuizCatalogDiagnostics() {
+  const [data, setData] = useState<QuizCatalogDiagnosticsData | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<"forbidden" | "request" | null>(null);
+  const run = () => {
+    const controller = new AbortController();
+    setLoading(true);
+    setError(null);
+    fetch("/api/admin/content/quiz-catalog-diagnostics", {
+      method: "GET", cache: "no-store", credentials: "same-origin", signal: controller.signal,
+    }).then(async response => {
+      if (response.status === 401 || response.status === 403) throw new Error("forbidden");
+      if (!response.ok) throw new Error("request_failed");
+      return response.json() as Promise<unknown>;
+    }).then(payload => {
+      if (!isQuizCatalogDiagnostics(payload)) throw new Error("invalid_response");
+      setData(payload);
+    }).catch(reason => {
+      if (!(reason instanceof DOMException && reason.name === "AbortError")) {
+        setError(reason instanceof Error && reason.message === "forbidden" ? "forbidden" : "request");
+      }
+    }).finally(() => setLoading(false));
+  };
+  const counts = (values: Record<string, number>) => Object.entries(values)
+    .filter(([, value]) => value > 0);
+  return <section className="admin-panel quiz-catalog-diagnostics" aria-labelledby="quiz-catalog-diagnostics-title">
+    <header>
+      <div><p className="eyebrow">VERIFICAÇÃO SOMENTE LEITURA</p><h2 id="quiz-catalog-diagnostics-title">Catálogo elegível do Quiz</h2></div>
+      <button type="button" onClick={run} disabled={loading}>{loading ? "Diagnosticando…" : "Diagnosticar catálogo do Quiz"}</button>
+    </header>
+    <p>Confere CMS, Biblioteca e Catálogo Elegível sem importar, publicar ou alterar conteúdos.</p>
+    {loading && <CmsLoadingState label="Analisando o pipeline do Quiz…" />}
+    {error && <CmsErrorState forbidden={error === "forbidden"} retry={run} />}
+    {data && !loading && <div className="quiz-catalog-diagnostics-grid" aria-live="polite">
+      <article><h3>1. CMS Universal</h3><dl><div><dt>Quiz publicados</dt><dd>{number.format(data.cms.published)}</dd></div><div><dt>Total do Quiz</dt><dd>{number.format(data.cms.totalQuiz)}</dd></div></dl></article>
+      <article><h3>2. Biblioteca Universal</h3><dl><div><dt>Total do Quiz</dt><dd>{number.format(data.library.total)}</dd></div>{counts(data.library.byAvailabilityStatus).map(([key, value]) => <div key={key}><dt>{key}</dt><dd>{number.format(value)}</dd></div>)}</dl></article>
+      <article><h3>3. Catálogo Elegível</h3><dl><div><dt>Elegíveis</dt><dd>{number.format(data.eligibleCatalog.total)}</dd></div><div><dt>Falhas no Schema</dt><dd>{number.format(data.eligibleCatalog.failedSchemaValidation)}</dd></div><div><dt>IDs cruzados</dt><dd>{number.format(data.crossCheck.contentIdMatches)}</dd></div><div><dt>Versões coincidentes</dt><dd>{number.format(data.crossCheck.versionMatches)}</dd></div></dl></article>
+      <article><h3>4. Distribuição por dificuldade</h3><dl>{counts(data.eligibleCatalog.byDifficulty).map(([key, value]) => <div key={key}><dt>{difficultyLabels[key as Difficulty] ?? key}</dt><dd>{number.format(value)}</dd></div>)}</dl></article>
+      <article><h3>5. Motivos de exclusão</h3><dl>{counts(data.exclusions.reasons).map(([key, value]) => <div key={key}><dt>{diagnosticReasonLabels[key] ?? key}</dt><dd>{number.format(value)}</dd></div>)}</dl>{counts(data.exclusions.reasons).length === 0 && <p>Nenhuma exclusão encontrada.</p>}</article>
+      <article><h3>6. Primeiros 200 registros</h3><dl><div><dt>Candidatos da Biblioteca</dt><dd>{number.format(data.generatorWindow.libraryCandidates)}</dd></div><div><dt>Elegíveis na janela</dt><dd>{number.format(data.generatorWindow.eligible)}</dd></div>{counts(data.generatorWindow.byDifficulty).map(([key, value]) => <div key={key}><dt>{difficultyLabels[key as Difficulty] ?? key}</dt><dd>{number.format(value)}</dd></div>)}<div><dt>Atende 2/2/1 diário</dt><dd>{data.generatorWindow.satisfiesDailyDistribution ? "Sim" : "Não"}</dd></div><div><dt>Catálogo completo atende</dt><dd>{data.generatorWindow.completeCatalogSatisfiesDailyDistribution ? "Sim" : "Não"}</dd></div></dl></article>
+      <article className="diagnostic-conclusion"><h3>7. Conclusão automática</h3><p><strong>{diagnosticConclusions[data.conclusion] ?? data.conclusion}</strong></p></article>
+      {data.exclusions.examples.length > 0 && <article className="diagnostic-examples"><h3>Exemplos seguros</h3><div className="diagnostic-table-wrap"><table><thead><tr><th>Conteúdo</th><th>CMS</th><th>Biblioteca</th><th>Dificuldade</th><th>Erro</th><th>Campo</th></tr></thead><tbody>{data.exclusions.examples.map(example => <tr key={example.contentId}><td>{example.contentId}</td><td>{example.cmsVersion}</td><td>{example.libraryVersion ?? "—"}</td><td>{example.difficulty}</td><td>{example.errorCode}</td><td>{example.invalidField ?? "—"}</td></tr>)}</tbody></table></div></article>}
+    </div>}
+  </section>;
 }
 
 const initialFilters = {

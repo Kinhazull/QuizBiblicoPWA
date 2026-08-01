@@ -24,6 +24,7 @@ test("admin navigation promotes universal content without deleting legacy operat
 
 test("content dashboard and archive expose loading, error and empty accessible states", () => {
   assert.match(dashboard, /ContentDashboard/);
+  assert.match(dashboard, /QuizCatalogDiagnostics/);
   assert.match(archive, /UniversalContentArchive/);
   assert.match(components, /CmsLoadingState/);
   assert.match(components, /CmsErrorState/);
@@ -33,6 +34,14 @@ test("content dashboard and archive expose loading, error and empty accessible s
   assert.match(components, /role="status"/);
   assert.match(components, /role="alert"/);
   assert.match(components, /aria-label="Filtros do Acervo"/);
+});
+
+test("content dashboard exposes the read-only Quiz catalog diagnostic", () => {
+  assert.match(components, /Diagnosticar catálogo do Quiz/);
+  assert.match(components, /\/api\/admin\/content\/quiz-catalog-diagnostics/);
+  assert.match(components, /method: "GET"/);
+  assert.match(components, /Conclusão automática/);
+  assert.doesNotMatch(components, /MIGRAR_ACERVO_QUIZ_PARA_CMS/);
 });
 
 test("universal archive is responsive and contains no universal mutation controls", () => {

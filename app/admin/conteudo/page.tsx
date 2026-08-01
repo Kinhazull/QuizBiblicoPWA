@@ -1,4 +1,4 @@
-import { ContentDashboard } from "./ContentCms";
+import { ContentDashboard, QuizCatalogDiagnostics } from "./ContentCms";
 
 export default function ContentDashboardPage() {
   return <main className="admin-shell content-cms-page">
@@ -8,6 +8,7 @@ export default function ContentDashboardPage() {
       <p>Acompanhe o acervo editorial da plataforma sem alterar os fluxos operacionais do Quiz.</p>
     </section>
     <ContentDashboard />
+    <QuizCatalogDiagnostics />
     <section className="content-shortcuts admin-panel" aria-labelledby="content-shortcuts-title">
       <header><div><p className="eyebrow">ATALHOS OPERACIONAIS</p><h2 id="content-shortcuts-title">Ferramentas existentes</h2></div></header>
       <nav>
