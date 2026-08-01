@@ -56,6 +56,24 @@ type QuizCatalogDiagnosticsData = {
     satisfiesDailyDistribution: boolean; completeCatalogSatisfiesDailyDistribution: boolean;
   };
   conclusion: string;
+  generation: null | {
+    freePlay: {
+      catalogCandidates: number; repetitionExclusions: number; candidatesAfterExclusions: number;
+      finalDistribution: Record<string, number>; capabilityAccepted: boolean; selectionKeyConflict: boolean;
+      repetitionFallbackNeeded: boolean; canSelectFive: boolean; success: boolean;
+      failureStage: string; technicalCode: string | null; explanation: string;
+      historicalResolution: { sampled: number; resolved: number; missing: number; invalid: number; safePayloadCreatable: boolean };
+    };
+    daily: {
+      dayKey: string; selectionKey: string; existingSelection: null | { id: string; status: string; items: number; contentVersions: number[] };
+      fingerprintConflict: boolean; expired: boolean; partial: boolean; newGenerationPossible: boolean;
+      finalDistribution: Record<string, number>; success: boolean; failureStage: string;
+      technicalCode: string | null; explanation: string;
+      historicalResolution: { sampled: number; resolved: number; missing: number; invalid: number; safePayloadCreatable: boolean };
+    };
+    persistence: { selections: number; byMode: Record<string, number>; byStatus: Record<string, number>; algorithmVersions: number[]; crossModeSelectionKeys: number; incompleteSelections: number; missingCurrentContent: number; missingHistoricalVersions: number };
+    participations: { total: number; conflicting: number; currentUserActive: number; blocksNewSelection: boolean };
+  };
 };
 
 const gameLabels: Record<GameType, string> = {
@@ -255,6 +273,25 @@ export function QuizCatalogDiagnostics() {
       <article><h3>5. Motivos de exclusão</h3><dl>{counts(data.exclusions.reasons).map(([key, value]) => <div key={key}><dt>{diagnosticReasonLabels[key] ?? key}</dt><dd>{number.format(value)}</dd></div>)}</dl>{counts(data.exclusions.reasons).length === 0 && <p>Nenhuma exclusão encontrada.</p>}</article>
       <article><h3>6. Primeiros 200 registros</h3><dl><div><dt>Candidatos da Biblioteca</dt><dd>{number.format(data.generatorWindow.libraryCandidates)}</dd></div><div><dt>Elegíveis na janela</dt><dd>{number.format(data.generatorWindow.eligible)}</dd></div>{counts(data.generatorWindow.byDifficulty).map(([key, value]) => <div key={key}><dt>{difficultyLabels[key as Difficulty] ?? key}</dt><dd>{number.format(value)}</dd></div>)}<div><dt>Atende 2/2/1 diário</dt><dd>{data.generatorWindow.satisfiesDailyDistribution ? "Sim" : "Não"}</dd></div><div><dt>Catálogo completo atende</dt><dd>{data.generatorWindow.completeCatalogSatisfiesDailyDistribution ? "Sim" : "Não"}</dd></div></dl></article>
       <article className="diagnostic-conclusion"><h3>7. Conclusão automática</h3><p><strong>{diagnosticConclusions[data.conclusion] ?? data.conclusion}</strong></p></article>
+      {data.generation && <article className="diagnostic-generation"><h3>Geração de partidas</h3>
+        <div className="diagnostic-generation-modes">
+          <section aria-labelledby="diagnostic-free-play"><h4 id="diagnostic-free-play">FREE PLAY · {data.generation.freePlay.success ? "Pronto" : "Falha"}</h4>
+            <p>{data.generation.freePlay.explanation}</p><dl>
+              <div><dt>Etapa</dt><dd>{data.generation.freePlay.failureStage}</dd></div><div><dt>Código técnico</dt><dd>{data.generation.freePlay.technicalCode ?? "nenhum"}</dd></div>
+              <div><dt>Candidatos</dt><dd>{number.format(data.generation.freePlay.catalogCandidates)}</dd></div><div><dt>Exclusões recentes</dt><dd>{number.format(data.generation.freePlay.repetitionExclusions)}</dd></div>
+              <div><dt>Após exclusões</dt><dd>{number.format(data.generation.freePlay.candidatesAfterExclusions)}</dd></div><div><dt>Seleciona cinco</dt><dd>{data.generation.freePlay.canSelectFive ? "Sim" : "Não"}</dd></div>
+              <div><dt>Versões históricas resolvidas</dt><dd>{data.generation.freePlay.historicalResolution.resolved}/{data.generation.freePlay.historicalResolution.sampled}</dd></div><div><dt>Payload seguro</dt><dd>{data.generation.freePlay.historicalResolution.safePayloadCreatable ? "Sim" : "Não"}</dd></div>
+            </dl></section>
+          <section aria-labelledby="diagnostic-daily"><h4 id="diagnostic-daily">DAILY · {data.generation.daily.success ? "Pronto" : "Falha"}</h4>
+            <p>{data.generation.daily.explanation}</p><dl>
+              <div><dt>Etapa</dt><dd>{data.generation.daily.failureStage}</dd></div><div><dt>Código técnico</dt><dd>{data.generation.daily.technicalCode ?? "nenhum"}</dd></div>
+              <div><dt>Dia</dt><dd>{data.generation.daily.dayKey}</dd></div><div><dt>Seleção existente</dt><dd>{data.generation.daily.existingSelection ? `${data.generation.daily.existingSelection.items} itens · ${data.generation.daily.existingSelection.status}` : "Não"}</dd></div>
+              <div><dt>Fingerprint conflitante</dt><dd>{data.generation.daily.fingerprintConflict ? "Sim" : "Não"}</dd></div><div><dt>Nova geração possível</dt><dd>{data.generation.daily.newGenerationPossible ? "Sim" : "Não"}</dd></div>
+              <div><dt>Versões históricas resolvidas</dt><dd>{data.generation.daily.historicalResolution.resolved}/{data.generation.daily.historicalResolution.sampled}</dd></div><div><dt>Payload seguro</dt><dd>{data.generation.daily.historicalResolution.safePayloadCreatable ? "Sim" : "Não"}</dd></div>
+            </dl></section>
+        </div>
+        <div className="diagnostic-integrity"><strong>Integridade persistida</strong><span>{data.generation.persistence.selections} seleções</span><span>{data.generation.persistence.incompleteSelections} incompletas</span><span>{data.generation.persistence.missingHistoricalVersions} versões históricas ausentes</span><span>{data.generation.participations.conflicting} participações conflitantes</span></div>
+      </article>}
       {data.exclusions.examples.length > 0 && <article className="diagnostic-examples"><h3>Exemplos seguros</h3><div className="diagnostic-table-wrap"><table><thead><tr><th>Conteúdo</th><th>CMS</th><th>Biblioteca</th><th>Dificuldade</th><th>Erro</th><th>Campo</th></tr></thead><tbody>{data.exclusions.examples.map(example => <tr key={example.contentId}><td>{example.contentId}</td><td>{example.cmsVersion}</td><td>{example.libraryVersion ?? "—"}</td><td>{example.difficulty}</td><td>{example.errorCode}</td><td>{example.invalidField ?? "—"}</td></tr>)}</tbody></table></div></article>}
     </div>}
   </section>;

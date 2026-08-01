@@ -9,6 +9,9 @@ import {
   seedUser,
 } from "../helpers/integration.mjs";
 import { loadQuizCatalogDiagnostics } from "../../functions/_lib/quiz-catalog-diagnostics.ts";
+import { loadQuizGenerationDiagnostics } from "../../functions/_lib/quiz-generation-diagnostics.ts";
+import { dailySelectionKey, organizationDayKey } from "../../functions/_lib/platform-daily-objectives.ts";
+import { GameType } from "../../shared/content.ts";
 import { onRequestGet } from "../../functions/api/admin/content/quiz-catalog-diagnostics.ts";
 
 function fixture(t) {
@@ -44,6 +47,7 @@ function insertQuiz(ctx, {
   version = 1, payload = quizPayload(id), library = true,
   libraryGameType = "quiz-biblico", libraryVersion = version, availability = "AVAILABLE",
   priority = 0, firstPublishedAt = Number(String(id).replace(/\D/g, "")) || 1,
+  historical = true,
 } = {}) {
   ctx.raw.prepare(`INSERT INTO content_items(
     id,organization_id,game_type,status,category,difficulty,biblical_reference,tags_json,payload_json,
@@ -51,6 +55,16 @@ function insertQuiz(ctx, {
   ) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,'UNIVERSAL_CMS')`).run(
     id, organizationId, "quiz-biblico", status, "Evangelhos", difficulty, "João 3:16", "[]",
     JSON.stringify(payload), version, organizationId === "org-1" ? "admin-1" : "admin-2", 1, 1,
+  );
+  if (historical) ctx.raw.prepare(`INSERT INTO content_versions(
+    id,content_id,organization_id,version,metadata_json,payload_json,changed_by,created_at
+  ) VALUES(?,?,?,?,?,?,?,1)`).run(
+    `version-${id}-${version}`, id, organizationId, version,
+    JSON.stringify({
+      id, gameType: "quiz-biblico", category: "Evangelhos", tags: [], difficulty,
+      biblicalReference: "JoÃ£o 3:16", status, authorId: organizationId === "org-1" ? "admin-1" : "admin-2",
+      reviewerId: null, createdAt: 1, updatedAt: 1, version, internalNotes: null,
+    }), JSON.stringify(payload), organizationId === "org-1" ? "admin-1" : "admin-2",
   );
   if (library) ctx.raw.prepare(`INSERT INTO universal_content_library(
     organization_id,content_id,game_type,content_version,difficulty,themes_json,books_json,tags_json,
@@ -115,7 +129,7 @@ test("distinguishes an empty library from a populated but unavailable library", 
   assert.equal(unavailableResult.conclusion, "library_not_available");
 });
 
-test("diagnostic service prepares SELECT statements only", async t => {
+test("diagnostic service prepares SELECT statements only, including generation simulation", async t => {
   const ctx = fixture(t);
   insertQuiz(ctx, { id: "read-only" });
   const statements = [];
@@ -133,8 +147,8 @@ test("diagnostic service prepares SELECT statements only", async t => {
       return typeof value === "function" ? value.bind(target) : value;
     },
   });
-  await loadQuizCatalogDiagnostics({ ...ctx.env, DB: db }, "org-1");
-  assert.equal(statements.length, 2);
+  await loadQuizCatalogDiagnostics({ ...ctx.env, DB: db }, "org-1", "editor-1");
+  assert.ok(statements.length > 2);
 });
 
 test("reports a fully eligible catalog and its daily difficulty distribution", async t => {
@@ -166,4 +180,64 @@ test("detects when the real first-200 window alone cannot satisfy the daily prof
   assert.equal(result.generatorWindow.satisfiesDailyDistribution, false);
   assert.equal(result.generatorWindow.completeCatalogSatisfiesDailyDistribution, true);
   assert.equal(result.conclusion, "first_200_affects_daily_only");
+});
+
+test("generation diagnostic succeeds in memory for Free Play and Daily with historical content", async t => {
+  const ctx = fixture(t);
+  ["EASY", "EASY", "MEDIUM", "MEDIUM", "HARD"].forEach((difficulty, index) =>
+    insertQuiz(ctx, { id: `generation-${index}`, difficulty }));
+  const result = await loadQuizGenerationDiagnostics(ctx.env, { organizationId: "org-1", userId: "editor-1" }, Date.UTC(2026, 7, 1, 12));
+  assert.equal(result.freePlay.success, true);
+  assert.equal(result.freePlay.canSelectFive, true);
+  assert.equal(result.freePlay.historicalResolution.safePayloadCreatable, true);
+  assert.equal(result.daily.success, true);
+  assert.deepEqual(result.daily.finalDistribution, { EASY: 2, MEDIUM: 2, HARD: 1 });
+  assert.equal(JSON.stringify(result).includes("Correta"), false);
+});
+
+test("generation diagnostic detects selection identity, partial selection and missing history", async t => {
+  const ctx = fixture(t);
+  ["EASY", "EASY", "MEDIUM", "MEDIUM", "HARD"].forEach((difficulty, index) =>
+    insertQuiz(ctx, { id: `integrity-${index}`, difficulty, historical: index !== 4 }));
+  const now = Date.UTC(2026, 7, 1, 12);
+  const dayKey = organizationDayKey(now, "America/Sao_Paulo");
+  const key = dailySelectionKey(dayKey, GameType.QUIZ);
+  ctx.raw.prepare(`INSERT INTO generated_game_selections(
+    id,organization_id,game_type,mode,selection_key,algorithm_version,seed_hash,request_fingerprint,
+    status,filters_json,created_at,expires_at
+  ) VALUES('daily-broken','org-1','quiz-biblico','DAILY',?,1,'wrong','wrong','ACTIVE','{"count":5}',1,?)`)
+    .run(key, now + 86_400_000);
+  ctx.raw.prepare(`INSERT INTO generated_game_selection_items(
+    selection_id,organization_id,content_id,content_version,position,audit_metadata_json,created_at
+  ) VALUES('daily-broken','org-1','integrity-0',1,1,'{}',1)`).run();
+  const result = await loadQuizGenerationDiagnostics(ctx.env, { organizationId: "org-1", userId: "editor-1" }, now);
+  assert.equal(result.daily.fingerprintConflict, true);
+  assert.equal(result.daily.partial, true);
+  assert.equal(result.persistence.incompleteSelections, 1);
+  assert.equal(result.persistence.missingHistoricalVersions, 0);
+  assert.equal(result.freePlay.technicalCode, "historical_content_unavailable");
+});
+
+test("generation diagnostic reports repetition exclusions and conflicting participation without blocking a new key", async t => {
+  const ctx = fixture(t);
+  ["EASY", "EASY", "MEDIUM", "MEDIUM", "HARD", "MEDIUM"].forEach((difficulty, index) =>
+    insertQuiz(ctx, { id: `repeat-${index}`, difficulty }));
+  ctx.raw.prepare(`INSERT INTO generated_game_selections(
+    id,organization_id,requested_by_user_id,game_type,mode,selection_key,algorithm_version,seed_hash,
+    request_fingerprint,status,filters_json,created_at
+  ) VALUES('repeat-selection','org-1','editor-1','quiz-biblico','DAILY','old-daily',1,'seed','fingerprint','ACTIVE','{"count":1}',1)`).run();
+  ctx.raw.prepare(`INSERT INTO generated_game_selection_items(
+    selection_id,organization_id,content_id,content_version,position,audit_metadata_json,created_at
+  ) VALUES('repeat-selection','org-1','repeat-0',1,1,'{}',1)`).run();
+  ctx.raw.prepare(`INSERT INTO generated_game_participations(
+    id,selection_id,organization_id,user_id,game_type,mode,status,created_at,updated_at
+  ) VALUES('repeat-participation','repeat-selection','org-1','editor-1','quiz-biblico','FREE_PLAY','STARTED',1,1)`).run();
+  ctx.raw.prepare(`INSERT INTO generated_game_participation_usage(
+    participation_id,organization_id,content_id,content_version,recorded_at
+  ) VALUES('repeat-participation','org-1','repeat-0',1,1)`).run();
+  const result = await loadQuizGenerationDiagnostics(ctx.env, { organizationId: "org-1", userId: "editor-1" });
+  assert.equal(result.freePlay.repetitionExclusions, 1);
+  assert.equal(result.freePlay.candidatesAfterExclusions, 5);
+  assert.equal(result.participations.conflicting, 1);
+  assert.equal(result.participations.blocksNewSelection, false);
 });

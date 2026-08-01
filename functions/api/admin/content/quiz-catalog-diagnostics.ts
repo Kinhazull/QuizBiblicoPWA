@@ -7,7 +7,7 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: Ap
   try {
     const user = await requirePermission(request, env, "questions.edit");
     return json(
-      await loadQuizCatalogDiagnostics(env, String(user.organizationId)),
+      await loadQuizCatalogDiagnostics(env, String(user.organizationId), String(user.id)),
       200,
       { "cache-control": "no-store, private" },
     );

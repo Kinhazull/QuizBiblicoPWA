@@ -6,6 +6,7 @@ import {
   type ContentValidationIssue,
 } from "../../shared/content";
 import type { AppEnv } from "./auth";
+import { loadQuizGenerationDiagnostics } from "./quiz-generation-diagnostics";
 
 const reasonCodes = [
   "missing_library_projection",
@@ -101,7 +102,7 @@ function automaticConclusion(input: {
   return "no_inconsistency_detected";
 }
 
-export async function loadQuizCatalogDiagnostics(env: AppEnv, organizationId: string) {
+export async function loadQuizCatalogDiagnostics(env: AppEnv, organizationId: string, userId?: string) {
   const [cmsResult, libraryResult] = await Promise.all([
     env.DB.prepare(`SELECT id,game_type,status,category,difficulty,biblical_reference,tags_json,
         payload_json,version,author_id,reviewer_id,created_at,updated_at,internal_notes
@@ -226,5 +227,8 @@ export async function loadQuizCatalogDiagnostics(env: AppEnv, organizationId: st
       first200Daily: dailySatisfied(first200Distribution),
       completeDaily: dailySatisfied(eligibleDistribution),
     }),
+    generation: userId
+      ? await loadQuizGenerationDiagnostics(env, { organizationId, userId })
+      : null,
   };
 }
