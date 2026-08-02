@@ -1,4 +1,5 @@
 import { GameType, type ContentSchema } from "../schema-types.ts";
+import { EditorialCategory } from "../editorial-taxonomy.ts";
 import { field, issue, objectArray, standardCapabilities } from "./shared.ts";
 
 const normalized = (value: unknown) => String(value ?? "")
@@ -27,8 +28,8 @@ export const whoAmIContentSchema: ContentSchema = {
     }),
   ],
   templates: [
-    { id: "old-testament", label: "Antigo Testamento", description: "Personagens do Antigo Testamento.", values: { category: "Antigo Testamento" } },
-    { id: "new-testament", label: "Novo Testamento", description: "Personagens do Novo Testamento.", values: { category: "Novo Testamento" } },
+    { id: "old-testament", label: "Antigo Testamento", description: "Personagens do Antigo Testamento.", values: { category: EditorialCategory.OLD_TESTAMENT } },
+    { id: "new-testament", label: "Novo Testamento", description: "Personagens do Novo Testamento.", values: { category: EditorialCategory.NEW_TESTAMENT } },
     { id: "mixed-set", label: "Conjunto misto", description: "Personagens de diferentes períodos bíblicos.", values: { difficulty: "MEDIUM" } },
   ],
   validation: payload => {

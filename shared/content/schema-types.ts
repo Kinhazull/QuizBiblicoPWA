@@ -17,14 +17,10 @@ export const ContentStatus = {
 } as const;
 export type ContentStatus = typeof ContentStatus[keyof typeof ContentStatus];
 
-export const Difficulty = {
-  VERY_EASY: "VERY_EASY",
-  EASY: "EASY",
-  MEDIUM: "MEDIUM",
-  HARD: "HARD",
-  SPECIAL: "SPECIAL",
-} as const;
-export type Difficulty = typeof Difficulty[keyof typeof Difficulty];
+import { Difficulty as EditorialDifficulty } from "./editorial-taxonomy.ts";
+import type { Difficulty as DifficultyValue } from "./editorial-taxonomy.ts";
+export const Difficulty = EditorialDifficulty;
+export type Difficulty = DifficultyValue;
 
 export type SharedContentMetadata = {
   id: string;

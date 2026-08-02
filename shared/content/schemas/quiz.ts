@@ -3,6 +3,7 @@ import {
   type ContentSchema,
   type SharedContentMetadata,
 } from "../schema-types.ts";
+import { EditorialCategory } from "../editorial-taxonomy.ts";
 import { field, issue, objectArray, standardCapabilities } from "./shared.ts";
 
 export const quizContentSchema: ContentSchema = {
@@ -26,9 +27,9 @@ export const quizContentSchema: ContentSchema = {
   templates: [
     { id: "multiple-choice", label: "Múltipla escolha", description: "Quatro alternativas e uma correta.", values: { choices: 4 } },
     { id: "true-false", label: "Verdadeiro ou falso", description: "Afirmação bíblica com resposta binária.", values: { choices: ["Verdadeiro", "Falso"] } },
-    { id: "complete-verse", label: "Complete o versículo", description: "Completar um trecho bíblico.", values: { category: "Versículos" } },
-    { id: "character", label: "Personagem", description: "Pergunta sobre personagem bíblico.", values: { category: "Personagens" } },
-    { id: "book", label: "Livro bíblico", description: "Pergunta sobre um livro da Bíblia.", values: { category: "Livros" } },
+    { id: "complete-verse", label: "Complete o versículo", description: "Completar um trecho bíblico.", values: { category: EditorialCategory.VERSES } },
+    { id: "character", label: "Personagem", description: "Pergunta sobre personagem bíblico.", values: { category: EditorialCategory.CHARACTERS } },
+    { id: "book", label: "Livro bíblico", description: "Pergunta sobre um livro da Bíblia.", values: { category: EditorialCategory.BOOKS } },
   ],
   validation: payload => {
     const errors = [];

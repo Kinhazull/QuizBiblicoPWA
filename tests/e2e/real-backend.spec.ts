@@ -106,7 +106,7 @@ async function publishQuizQuestions(env: any) {
       },
     });
     expect(draft.ok).toBe(true);
-    if (!draft.ok) throw new Error("quiz_e2e_draft_failed");
+    if (!draft.ok || !draft.content) throw new Error("quiz_e2e_draft_failed");
     const published = await transitionUniversalContentStatus(
       env,
       "org-1",

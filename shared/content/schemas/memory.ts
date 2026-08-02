@@ -1,4 +1,5 @@
 import { GameType, type ContentSchema } from "../schema-types.ts";
+import { EditorialCategory } from "../editorial-taxonomy.ts";
 import { field, issue, objectArray, standardCapabilities } from "./shared.ts";
 
 export const memoryContentSchema: ContentSchema = {
@@ -17,9 +18,9 @@ export const memoryContentSchema: ContentSchema = {
     }),
   ],
   templates: [
-    { id: "characters", label: "Personagens", description: "Pares de personagens e símbolos.", values: { category: "Personagens" } },
-    { id: "books", label: "Livros", description: "Pares relacionados a livros bíblicos.", values: { category: "Livros" } },
-    { id: "symbols", label: "Símbolos", description: "Pares de símbolos e significados.", values: { category: "Símbolos" } },
+    { id: "characters", label: "Personagens", description: "Pares de personagens e símbolos.", values: { category: EditorialCategory.CHARACTERS } },
+    { id: "books", label: "Livros", description: "Pares relacionados a livros bíblicos.", values: { category: EditorialCategory.BOOKS } },
+    { id: "symbols", label: "Símbolos", description: "Pares de símbolos e significados.", values: { category: EditorialCategory.SYMBOLS } },
   ],
   validation: payload => {
     const pairs = objectArray(payload.pairs);

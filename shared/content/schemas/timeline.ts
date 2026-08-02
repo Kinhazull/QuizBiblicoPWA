@@ -1,4 +1,5 @@
 import { GameType, type ContentSchema } from "../schema-types.ts";
+import { EditorialCategory } from "../editorial-taxonomy.ts";
 import { field, issue, objectArray, standardCapabilities } from "./shared.ts";
 
 export const timelineContentSchema: ContentSchema = {
@@ -18,10 +19,10 @@ export const timelineContentSchema: ContentSchema = {
     }),
   ],
   templates: [
-    { id: "biblical-event", label: "Evento bíblico", description: "Sequência geral de eventos.", values: { category: "Eventos" } },
-    { id: "king", label: "Reis", description: "Sequência de reis bíblicos.", values: { category: "Reis" } },
-    { id: "prophet", label: "Profetas", description: "Sequência de profetas e ministérios.", values: { category: "Profetas" } },
-    { id: "missionary-journey", label: "Viagem missionária", description: "Etapas de uma viagem missionária.", values: { category: "Atos" } },
+    { id: "biblical-event", label: "Evento bíblico", description: "Sequência geral de eventos.", values: { category: EditorialCategory.EVENTS } },
+    { id: "king", label: "Reis", description: "Sequência de reis bíblicos.", values: { category: EditorialCategory.KINGS } },
+    { id: "prophet", label: "Profetas", description: "Sequência de profetas e ministérios.", values: { category: EditorialCategory.PROPHETS } },
+    { id: "missionary-journey", label: "Viagem missionária", description: "Etapas de uma viagem missionária.", values: { category: EditorialCategory.ACTS } },
   ],
   validation: payload => {
     const events = objectArray(payload.events);

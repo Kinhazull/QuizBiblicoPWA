@@ -288,3 +288,19 @@ test("eligible catalog supports every registered GameType and excludes stale or 
   assert.equal(afterCorruption.some(entry => entry.contentId === stale.contentId), false);
   assert.equal(afterCorruption.some(entry => entry.contentId === invalid.contentId), false);
 });
+
+test("published Quiz content keeps historical open-vocabulary editorial values eligible", async t => {
+  const ctx = fixture(t);
+  const published = await publish(ctx, GameType.QUIZ, {
+    category: "Criação e patriarcas",
+    tags: ["História e Origens", "Gênesis"],
+    biblicalReference: "Gn 1:1",
+  });
+  const eligible = await listEligibleUniversalContent(ctx.env, {
+    organizationId: "org-1",
+    gameType: GameType.QUIZ,
+  });
+  assert.equal(eligible.length, 1);
+  assert.equal(eligible[0].contentId, published.id);
+  assert.deepEqual(eligible[0].tags, ["História e Origens", "Gênesis"]);
+});

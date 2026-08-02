@@ -1,4 +1,5 @@
 import { GameType, type ContentSchema } from "../schema-types.ts";
+import { EditorialCategory } from "../editorial-taxonomy.ts";
 import { field, issue, standardCapabilities } from "./shared.ts";
 
 export const threeCluesContentSchema: ContentSchema = {
@@ -23,9 +24,9 @@ export const threeCluesContentSchema: ContentSchema = {
     }),
   ],
   templates: [
-    { id: "characters", label: "Personagens", description: "Conjunto sobre personagens bíblicos.", values: { category: "Personagens" } },
-    { id: "places", label: "Lugares", description: "Conjunto sobre lugares bíblicos.", values: { category: "Lugares" } },
-    { id: "events", label: "Acontecimentos", description: "Conjunto sobre acontecimentos bíblicos.", values: { category: "Eventos" } },
+    { id: "characters", label: "Personagens", description: "Conjunto sobre personagens bíblicos.", values: { category: EditorialCategory.CHARACTERS } },
+    { id: "places", label: "Lugares", description: "Conjunto sobre lugares bíblicos.", values: { category: EditorialCategory.PLACES } },
+    { id: "events", label: "Acontecimentos", description: "Conjunto sobre acontecimentos bíblicos.", values: { category: EditorialCategory.EVENTS } },
   ],
   validation: payload => {
     const challenges = Array.isArray(payload.challenges) ? payload.challenges : [];

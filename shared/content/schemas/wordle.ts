@@ -1,4 +1,5 @@
 import { GameType, type ContentSchema } from "../schema-types.ts";
+import { EditorialCategory } from "../editorial-taxonomy.ts";
 import { field, issue, standardCapabilities } from "./shared.ts";
 
 export const wordleContentSchema: ContentSchema = {
@@ -10,9 +11,9 @@ export const wordleContentSchema: ContentSchema = {
     field("hint", "Dica", "textarea", false, { maximum: 240 }),
   ],
   templates: [
-    { id: "character", label: "Personagem", description: "Nome de personagem bíblico.", values: { category: "Personagens" } },
-    { id: "place", label: "Lugar", description: "Lugar mencionado na Bíblia.", values: { category: "Lugares" } },
-    { id: "concept", label: "Conceito", description: "Palavra ou conceito bíblico.", values: { category: "Conceitos" } },
+    { id: "character", label: "Personagem", description: "Nome de personagem bíblico.", values: { category: EditorialCategory.CHARACTERS } },
+    { id: "place", label: "Lugar", description: "Lugar mencionado na Bíblia.", values: { category: EditorialCategory.PLACES } },
+    { id: "concept", label: "Conceito", description: "Palavra ou conceito bíblico.", values: { category: EditorialCategory.CONCEPTS } },
   ],
   validation: payload => /^[\p{L}]+$/u.test(String(payload.word ?? ""))
     ? []

@@ -1,4 +1,5 @@
 import { GameType, type ContentSchema } from "../schema-types.ts";
+import { EditorialCategory } from "../editorial-taxonomy.ts";
 import { field, issue, objectArray, standardCapabilities } from "./shared.ts";
 
 export const associationContentSchema: ContentSchema = {
@@ -17,9 +18,9 @@ export const associationContentSchema: ContentSchema = {
     }),
   ],
   templates: [
-    { id: "character-event", label: "Personagem e acontecimento", description: "Liga personagens a acontecimentos.", values: { category: "Personagens" } },
-    { id: "book-character", label: "Livro e personagem", description: "Liga livros a personagens.", values: { category: "Livros" } },
-    { id: "place-event", label: "Lugar e acontecimento", description: "Liga lugares a acontecimentos.", values: { category: "Lugares" } },
+    { id: "character-event", label: "Personagem e acontecimento", description: "Liga personagens a acontecimentos.", values: { category: EditorialCategory.CHARACTERS } },
+    { id: "book-character", label: "Livro e personagem", description: "Liga livros a personagens.", values: { category: EditorialCategory.BOOKS } },
+    { id: "place-event", label: "Lugar e acontecimento", description: "Liga lugares a acontecimentos.", values: { category: EditorialCategory.PLACES } },
   ],
   validation: payload => {
     const pairs = objectArray(payload.pairs);
