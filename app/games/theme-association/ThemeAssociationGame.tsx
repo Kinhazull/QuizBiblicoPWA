@@ -148,6 +148,9 @@ export function ThemeAssociationGame() {
   }
 
   const pairCount = content?.pairCount ?? 0;
+  const roundTitle = content?.title && !/^Associações bíblicas\s+\d+$/i.test(content.title)
+    ? content.title
+    : "Rodada de associações";
   return (
     <GameLayout eyebrow="Conecte os conhecimentos" title="Associação de" highlightedTitle="Temas"
       description="Combine cada item bíblico com sua associação correta."
@@ -161,14 +164,13 @@ export function ThemeAssociationGame() {
           <>
             <header className="theme-association-heading">
               <div>
-                <span>Conteúdo</span><h2>{content.title}</h2>
-                {content.biblicalReference && <small>{content.biblicalReference}</small>}
+                <span>Tema da rodada</span><h2>{roundTitle}</h2>
               </div>
               <p><strong>{errors}</strong> de {THEME_ASSOCIATION_MAX_ERRORS} erros</p>
             </header>
             <div className="theme-association-board">
-              <div className="theme-association-column" role="group" aria-label="Itens A">
-                <h3>Itens</h3>
+              <div className="theme-association-column" role="group" aria-label="Primeiro grupo">
+                <h3>Escolha uma referência</h3>
                 {content.leftItems.map(item => {
                   const matched = matchedLeftIds.includes(item.id);
                   return <button key={item.id} type="button" onClick={() => chooseLeft(item.id)}
@@ -179,8 +181,8 @@ export function ThemeAssociationGame() {
                   </button>;
                 })}
               </div>
-              <div className="theme-association-column" role="group" aria-label="Itens B">
-                <h3>Associações</h3>
+              <div className="theme-association-column" role="group" aria-label="Segundo grupo">
+                <h3>Encontre a relação</h3>
                 {content.rightItems.map(item => {
                   const matched = matchedRightIds.includes(item.id);
                   return <button key={item.id} type="button" onClick={() => chooseRight(item.id)}

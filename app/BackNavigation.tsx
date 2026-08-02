@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   exitActiveGame,
   gameReturnDestination,
@@ -23,7 +23,6 @@ function explicitDestination(pathname: string) {
 
 export function BackNavigation() {
   const pathname = usePathname();
-  const router = useRouter();
   const activeGame = useActiveGameNavigation();
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -66,12 +65,12 @@ export function BackNavigation() {
       setConfirming(true);
       return;
     }
-    router.replace(destination);
+    location.assign(destination);
   }
 
   async function confirmExit() {
     if (!activeGame) {
-      router.replace(destination);
+      location.assign(destination);
       return;
     }
     if (leaving.current) return leaving.current;

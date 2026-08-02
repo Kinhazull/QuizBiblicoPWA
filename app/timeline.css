@@ -116,9 +116,11 @@
   margin: 0;
   border-radius: 11px;
   padding: 11px 13px;
-  background: #0a192a;
-  color: #b8c5d5;
-  font-size: 12px;
+  border: 1px solid #5d92c842;
+  background: #102840;
+  color: #e5eef8;
+  font-size: 13px;
+  font-weight: 700;
   line-height: 1.45;
 }
 .timeline-message.won { color: #77e5aa; }

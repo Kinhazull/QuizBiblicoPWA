@@ -15,21 +15,39 @@ export default function DailyChallengesPage() {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState("");
 
+  async function loadObjectives(signal?: AbortSignal) {
+    return fetch("/api/platform/daily-objectives", { cache: "no-store", signal })
+      .then(response => response.ok ? response.json() : Promise.reject(new Error("load_failed")))
+      .then(data => {
+        setObjectives(Array.isArray(data.objectives) ? data.objectives : []);
+        setError("");
+      });
+  }
+
   useEffect(() => {
     const controller = new AbortController();
-    fetch("/api/platform/daily-objectives", { cache: "no-store", signal: controller.signal })
-      .then(response => response.ok ? response.json() : Promise.reject(new Error("load_failed")))
-      .then(data => setObjectives(Array.isArray(data.objectives) ? data.objectives : []))
-      .catch(cause => {
+    const refresh = () => void loadObjectives(controller.signal).catch(cause => {
         if (!(cause instanceof DOMException && cause.name === "AbortError")) {
           setError("Não foi possível carregar os desafios de hoje.");
         }
       });
-    return () => controller.abort();
+    refresh();
+    const onVisible = () => document.visibilityState === "visible" && refresh();
+    window.addEventListener("pageshow", refresh);
+    document.addEventListener("visibilitychange", onVisible);
+    const interval = window.setInterval(() => {
+      if (document.visibilityState === "visible") refresh();
+    }, 4000);
+    return () => {
+      controller.abort();
+      window.clearInterval(interval);
+      window.removeEventListener("pageshow", refresh);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
   }, []);
 
   async function start(objective: DailyObjectiveData) {
-    if (!objective.selectionId || !objective.playHref || objective.status === "FINISHED") return;
+    if (!objective.selectionId || !objective.playHref || objective.status !== "CREATED") return;
     setBusyId(objective.gameType);
     setError("");
     try {
@@ -69,17 +87,18 @@ export default function DailyChallengesPage() {
       <section className="daily-challenges-grid" aria-label="Jogos disponíveis hoje">
         {(objectives || []).map(objective => {
           const finished = objective.status === "FINISHED";
-          const playable = objective.availability === "AVAILABLE" && Boolean(objective.selectionId && objective.playHref);
+          const started = objective.status === "STARTED";
+          const playable = objective.status === "CREATED" && objective.availability === "AVAILABLE" && Boolean(objective.selectionId && objective.playHref);
           return <article key={objective.gameType}>
             <span className={`daily-status ${finished ? "complete" : ""}`}>{objectiveStatus(objective)}</span>
             <h2>{objective.title}</h2>
-            <p>{finished ? "Resultado registrado para hoje." : "Uma partida única selecionada para você."}</p>
+            <p>{finished ? "Resultado registrado para hoje." : started ? "A partida iniciada está sendo finalizada. Este desafio não pode ser retomado." : "Uma partida única selecionada para você."}</p>
             <button
               disabled={!playable || finished || busyId === objective.gameType}
               onClick={() => start(objective)}
               type="button"
             >
-              {finished ? "Concluído" : busyId === objective.gameType ? "Preparando..." : objective.status === "STARTED" ? "Continuar" : "Jogar"}
+              {finished ? "Concluído" : started ? "Finalizando..." : busyId === objective.gameType ? "Preparando..." : "Jogar"}
             </button>
           </article>;
         })}

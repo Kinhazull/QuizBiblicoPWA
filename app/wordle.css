@@ -1,7 +1,7 @@
 .wordle-game {
   --wordle-green: #2f9d62;
   --wordle-gold: #d59a00;
-  --wordle-absent: #34465a;
+  --wordle-absent: #596b7e;
   width: 100%;
 }
 .wordle-board { display: grid; width: min(100%, 350px); gap: 7px; margin: 0 auto; }
@@ -10,7 +10,8 @@
 .wordle-cell.filled { border-color: #6f8fac; transform: scale(1.02); }
 .wordle-cell.correct,.wordle-key.correct,.wordle-legend .correct { border-color: #2f9d62; background: #2f9d62; }
 .wordle-cell.present,.wordle-key.present,.wordle-legend .present { border-color: #d59a00; background: #d59a00; }
-.wordle-cell.absent,.wordle-key.absent,.wordle-legend .absent { border-color: #34465a; background: #34465a; }
+.wordle-cell.absent,.wordle-key.absent,.wordle-legend .absent { border-color: #9aabba; background: var(--wordle-absent); color:#f3f7fa; box-shadow:inset 0 0 0 2px #26384a; }
+.wordle-key.absent { opacity:.72; }
 .wordle-message { min-height: 24px; margin: 18px 0 14px; color: #c3cfdb; text-align: center; font-size: 14px; }
 .wordle-message.won { color: #6ee7a3; font-weight: 700; }
 .wordle-message.lost { color: #ffc166; font-weight: 700; }

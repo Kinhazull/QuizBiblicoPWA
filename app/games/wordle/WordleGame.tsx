@@ -4,7 +4,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   evaluateGuess,
   isValidGuess,
-  isWinningGuess,
   normalizeWord,
   WORDLE_LENGTH,
   WORDLE_MAX_ATTEMPTS,
@@ -17,7 +16,6 @@ import {
   type GamePlayStatus,
 } from "../sdk";
 import {
-  GameContentMode,
   gameContentRequestFromLocation,
   loadGameContent,
   validateGameContentAction,
@@ -43,6 +41,7 @@ function strongerState(current: LetterState | undefined, next: LetterState) {
 export function WordleGame() {
   const sessionId = useRef(createGameSessionId());
   const currentGuessRef = useRef("");
+  const submittingRef = useRef(false);
   const [guesses, setGuesses] = useState<string[]>([]);
   const [currentGuess, setCurrentGuess] = useState("");
   const [status, setStatus] = useState<GamePlayStatus>("playing");
@@ -114,16 +113,23 @@ export function WordleGame() {
       return;
     }
 
+    if (submittingRef.current) return;
+    submittingRef.current = true;
     const normalized = normalizeWord(submittedGuess);
-    const evaluation = loadedContent.mode !== GameContentMode.NORMAL || !answer
-      ? await validateGameContentAction<{ evaluation: ReturnType<typeof evaluateGuess>; correct: boolean }>(
+    let validationError = "";
+    const evaluation = await validateGameContentAction<{ evaluation: ReturnType<typeof evaluateGuess>; correct: boolean }>(
         loadedContent,
         "validate_guess",
         { guess: normalized },
-      ).catch(() => null)
-      : { evaluation: evaluateGuess(normalized, answer), correct: isWinningGuess(normalized, answer) };
+      ).catch(error => {
+        validationError = error instanceof Error ? error.message : "";
+        return null;
+      });
     if (!evaluation) {
-      setMessage("Não foi possível validar a palavra. Tente novamente.");
+      setMessage(validationError === "invalid_wordle_word"
+        ? "Palavra não reconhecida no vocabulário bíblico. Tente outra."
+        : "Não foi possível validar a palavra. Tente novamente.");
+      submittingRef.current = false;
       return;
     }
     const nextGuesses = [...guesses, normalized];
@@ -133,32 +139,50 @@ export function WordleGame() {
     setCurrentGuess("");
 
     if (evaluation.correct) {
-      setStatus("won");
-      setMessage(`Você venceu em ${nextGuesses.length} tentativa${nextGuesses.length === 1 ? "" : "s"}!`);
-      void recordPlatformGameCompletion({
+      setMessage("Palavra correta! Registrando resultado…");
+      await recordPlatformGameCompletion({
         gameId: "wordle-biblico",
         sessionId: sessionId.current,
         contentId: content.id,
         contentVersion: content.version,
         guesses: nextGuesses,
-      }).catch(() => undefined);
+      }).then(() => {
+        setStatus("won");
+        setMessage(`Você venceu em ${nextGuesses.length} tentativa${nextGuesses.length === 1 ? "" : "s"}!`);
+      }).catch(() => {
+        setGuesses(guesses);
+        setGuessEvaluations(current => current.slice(0, -1));
+        currentGuessRef.current = normalized;
+        setCurrentGuess(normalized);
+        setMessage("Não foi possível registrar o resultado. Confirme a palavra novamente.");
+      });
     } else if (nextGuesses.length === WORDLE_MAX_ATTEMPTS) {
-      setStatus("lost");
-      setMessage(answer ? `Fim de jogo. A palavra era ${answer}.` : "Fim de jogo. Tente novamente amanhã.");
-      void recordPlatformGameCompletion({
+      setMessage("Tentativas encerradas. Registrando resultado…");
+      await recordPlatformGameCompletion({
         gameId: "wordle-biblico",
         sessionId: sessionId.current,
         contentId: content.id,
         contentVersion: content.version,
         guesses: nextGuesses,
-      }).catch(() => undefined);
+      }).then(() => {
+        setStatus("lost");
+        setMessage(answer ? `Fim de jogo. A palavra era ${answer}.` : "Fim de jogo. Tente novamente amanhã.");
+      }).catch(() => {
+        setGuesses(guesses);
+        setGuessEvaluations(current => current.slice(0, -1));
+        currentGuessRef.current = normalized;
+        setCurrentGuess(normalized);
+        setMessage("Não foi possível registrar o resultado. Confirme a palavra novamente.");
+      });
     } else {
       setMessage(`Tentativa ${nextGuesses.length} de ${WORDLE_MAX_ATTEMPTS}. Continue!`);
     }
+    submittingRef.current = false;
   }
 
   function restart() {
     sessionId.current = createGameSessionId();
+    submittingRef.current = false;
     currentGuessRef.current = "";
     setGuesses([]);
     setGuessEvaluations([]);

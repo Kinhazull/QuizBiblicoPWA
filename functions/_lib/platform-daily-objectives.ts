@@ -19,6 +19,7 @@ import { threeCluesChallengesFromContent } from "./game-integrations/three-clues
 import { timelineRoundFromContent } from "./game-integrations/timeline-content";
 import { whoAmIChallengesFromContent } from "./game-integrations/who-am-i-content";
 import { evaluateGuess, normalizeWord } from "../../app/games/wordle/engine";
+import { isPublishedWordleGuess } from "./wordle-lexicon";
 import { isCorrectTimelineOrder } from "../../app/games/timeline/engine";
 import { normalizeThreeCluesAnswer } from "../../app/games/three-clues/engine";
 import { normalizeWhoAmIAnswer } from "../../app/games/who-am-i/engine";
@@ -599,6 +600,9 @@ export async function validateGeneratedGameAction(
     const answer = normalizeWord((content.payload as WordleContentPayload).word);
     const guess = normalizeWord(String(input.payload.guess ?? ""));
     if (!guess || guess.length !== answer.length) throw new Error("invalid_wordle_guess");
+    if (!await isPublishedWordleGuess(env, identity.organizationId, guess)) {
+      throw new Error("invalid_wordle_word");
+    }
     return {
       evaluation: evaluateGuess(guess, answer),
       correct: guess === answer,
@@ -675,7 +679,11 @@ export async function validateGeneratedGameAction(
     const questionId = String(input.payload.questionId ?? "");
     const choiceId = String(input.payload.choiceId ?? "");
     const content = context.contents.find(item => item.id === questionId);
-    if (!content || !/^choice-\d+$/.test(choiceId)) throw new Error("invalid_quiz_answer");
+    if (!content) throw new Error("invalid_quiz_answer");
+    if (input.payload.timedOut === true && !choiceId) {
+      return { correct: false, explanation: "Tempo encerrado para esta pergunta." };
+    }
+    if (!/^choice-\d+$/.test(choiceId)) throw new Error("invalid_quiz_answer");
     const index = Number(choiceId.slice("choice-".length)) - 1;
     const quiz = content.payload as QuizContentPayload;
     if (!quiz.choices[index]) throw new Error("invalid_quiz_answer");
@@ -698,11 +706,16 @@ export async function validateGeneratedGameAction(
       const record = answer as Record<string, unknown>;
       const questionId = String(record.questionId ?? "");
       const choiceId = String(record.choiceId ?? "");
-      if (seen.has(questionId) || !/^choice-\d+$/.test(choiceId)) {
+      const timedOut = record.timedOut === true;
+      if (seen.has(questionId) || (!timedOut && !/^choice-\d+$/.test(choiceId))) {
         throw new Error("invalid_quiz_completion");
       }
       const content = context.contents.find(item => item.id === questionId);
       if (!content) throw new Error("invalid_quiz_completion");
+      if (timedOut && !choiceId) {
+        seen.add(questionId);
+        continue;
+      }
       const index = Number(choiceId.slice("choice-".length)) - 1;
       const quiz = content.payload as QuizContentPayload;
       if (!quiz.choices[index]) throw new Error("invalid_quiz_completion");

@@ -38,6 +38,7 @@ export function ThreeCluesGame() {
   const [loadError, setLoadError] = useState(false);
   const [validating, setValidating] = useState(false);
   const [message, setMessage] = useState("Leia a primeira pista e responda quando estiver pronto.");
+  const [feedbackTone, setFeedbackTone] = useState<"correct" | "incorrect" | "">("");
 
   const loadContent = useCallback(async (signal?: AbortSignal) => {
     setLoading(true);
@@ -72,6 +73,7 @@ export function ThreeCluesGame() {
     setRevealedClues(next);
     setActions(current => [...current, { type: "reveal" }]);
     setMessage(`Pista ${next} de ${THREE_CLUES_MAX} revelada.`);
+    setFeedbackTone("");
   }
 
   async function registerCompletion(
@@ -114,6 +116,7 @@ export function ThreeCluesGame() {
       const nextHistories = [...histories, { challengeId: challenge.id, actions: challengeActions }];
       const nextCorrectCount = correctCount + (result.correct ? 1 : 0);
       const nextScore = score + (result.correct ? scoreForCluesUsed(revealedClues) : 0);
+      setFeedbackTone(result.correct ? "correct" : "incorrect");
       setHistories(nextHistories);
       setCorrectCount(nextCorrectCount);
       setScore(nextScore);
@@ -147,6 +150,7 @@ export function ThreeCluesGame() {
     setStatus("playing");
     setValidating(false);
     setMessage("Leia a primeira pista e responda quando estiver pronto.");
+    setFeedbackTone("");
     void loadContent();
   }
 
@@ -204,7 +208,7 @@ export function ThreeCluesGame() {
                 </form>
               </>
             )}
-            <p className={`three-clues-message ${status}`} role="status" aria-live="polite">{message}</p>
+            <p className={`three-clues-message ${status} ${feedbackTone}`} role="status" aria-live="polite">{message}</p>
           </>
         )}
       </section>

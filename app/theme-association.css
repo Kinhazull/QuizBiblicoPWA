@@ -15,7 +15,7 @@
 .theme-association-column button.is-incorrect{border-color:#f06b76;background:#492435;animation:association-error .3s ease}
 .theme-association-column button:focus-visible{outline:3px solid #f4b400;outline-offset:2px}
 .theme-association-column button:disabled{cursor:default}
-.theme-association-message{min-height:42px;margin:0;border-radius:11px;padding:11px 13px;background:#0a192a;color:#b8c5d5;font-size:12px;line-height:1.45}.theme-association-message.won{color:#77e5aa}.theme-association-message.lost{color:#ffd067}
+.theme-association-message{min-height:42px;margin:0;border:1px solid #5d92c842;border-radius:11px;padding:12px 14px;background:#102840;color:#e5eef8;font-size:13px;font-weight:700;line-height:1.45}.theme-association-message.won{border-color:#43c77d;background:#123d2b;color:#9af0bd}.theme-association-message.lost{border-color:#ef6f75;background:#421e29;color:#ffc1c5}
 @keyframes association-error{50%{transform:translateX(3px)}}
 @media(max-width:350px){.theme-association-heading{align-items:start;flex-direction:column;gap:5px}.theme-association-column button{min-height:72px;padding:7px}.theme-association-board{gap:6px}}
 @media(prefers-reduced-motion:reduce){.theme-association-column button{transition:none;animation:none}}

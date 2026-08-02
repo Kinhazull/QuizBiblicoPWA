@@ -245,6 +245,16 @@ test("daily Wordle actions validate guesses without exposing the answer", async 
     objective.selectionId,
     DAY_ONE,
   );
+  await publish(ctx, "org-1", "user-1", "PEDRO");
+  await assert.rejects(() => validateDailyGameAction(ctx.env, {
+    organizationId: "org-1",
+    userId: "user-1",
+  }, {
+    selectionId: objective.selectionId,
+    gameType: GameType.WORDLE,
+    action: "validate_guess",
+    payload: { guess: "AEIOU" },
+  }, DAY_ONE), /invalid_wordle_word/);
   const wrong = await validateDailyGameAction(ctx.env, {
     organizationId: "org-1",
     userId: "user-1",

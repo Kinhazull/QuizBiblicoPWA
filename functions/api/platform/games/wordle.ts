@@ -3,6 +3,7 @@ import { requireUser, type AppEnv } from "../../../_lib/auth";
 import { json } from "../../../_lib/security";
 import { findPublishedUniversalContent } from "../../../_lib/universal-content-store";
 import { evaluateGuess, normalizeWord, WORDLE_LENGTH } from "../../../../app/games/wordle/engine";
+import { isPublishedWordleGuess } from "../../../_lib/wordle-lexicon";
 
 export const onRequestGet = async ({ request, env }: { request: Request; env: AppEnv }) => {
   try {
@@ -76,6 +77,9 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
     const answer = normalizeWord((content.payload as WordleContentPayload).word);
     const guess = normalizeWord(body.guess);
     if (guess.length !== WORDLE_LENGTH) return json({ error: "invalid_wordle_guess" }, 400);
+    if (!await isPublishedWordleGuess(env, String(user.organizationId), guess)) {
+      return json({ error: "invalid_wordle_word" }, 400);
+    }
     return json({
       evaluation: evaluateGuess(guess, answer),
       correct: guess === answer,

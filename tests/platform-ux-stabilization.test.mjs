@@ -17,17 +17,20 @@ test("Home is a platform hub with compact daily progress and no legacy game spot
 });
 
 test("game catalog starts free play directly and the legacy setup route redirects", async () => {
-  const [card, catalog, legacyRoute, loader] = await Promise.all([
+  const [card, catalog, legacyRoute, loader, backNavigation] = await Promise.all([
     read("app/GameCard.tsx"),
     read("app/jogos/page.tsx"),
     read("app/jogos/modo-livre/page.tsx"),
     read("app/games/loader/gameLoader.ts"),
+    read("app/BackNavigation.tsx"),
   ]);
 
   assert.match(card, /generateFreePlayGame/);
   assert.match(catalog, /gameCatalog\.map/);
-  assert.match(catalog, /href="\/"/);
+  assert.doesNotMatch(catalog, /games-home-link|href="\/"/);
   assert.doesNotMatch(catalog, /router\.back|history\.back/);
+  assert.match(backNavigation, /pathname === "\/jogos"/);
+  assert.match(backNavigation, /location\.assign\(destination\)/);
   assert.doesNotMatch(catalog, /Gerar Partida|Modo Livre/);
   assert.match(legacyRoute, /redirect\("\/jogos"\)/);
   assert.match(loader, /\/api\/platform\/free-play\/generate/);
@@ -48,6 +51,36 @@ test("results and navigation respect mode capabilities", async () => {
   assert.match(routes, /pathname\.replace\(\/\\\/\+\$\/, ""\)/);
   assert.match(routes, /normalizedPath === "\/jogar"/);
   assert.match(quiz, /generateFreePlayGame\(GameType\.QUIZ\)/);
+});
+
+test("daily challenges never expose resume and Quiz timeout cannot become a choice", async () => {
+  const [daily, quiz, validator] = await Promise.all([
+    read("app/desafios-diarios/page.tsx"),
+    read("app/jogar/page.tsx"),
+    read("functions/_lib/platform-daily-objectives.ts"),
+  ]);
+  assert.doesNotMatch(daily, />Continuar</);
+  assert.match(daily, /objective\.status !== "CREATED"/);
+  assert.match(daily, /Finalizando\.\.\./);
+  assert.match(quiz, /choiceId: current\.choiceId \|\| null/);
+  assert.match(quiz, /timedOut: current\.timedOut/);
+  assert.match(validator, /input\.payload\.timedOut === true && !choiceId/);
+});
+
+test("participant surfaces use the platform chrome and Wordle validates its vocabulary", async () => {
+  const [navigation, profile, notifications, wordle, lexicon] = await Promise.all([
+    read("app/LearningQuickNav.tsx"),
+    read("app/perfil/page.tsx"),
+    read("app/notificacoes/page.tsx"),
+    read("app/games/wordle/WordleGame.tsx"),
+    read("functions/_lib/wordle-lexicon.ts"),
+  ]);
+  assert.match(navigation, /path === "\/perfil"/);
+  assert.match(navigation, /path === "\/notificacoes"/);
+  assert.doesNotMatch(profile, /profile-stats/);
+  assert.doesNotMatch(notifications, /admin-shell/);
+  assert.match(wordle, /invalid_wordle_word/);
+  assert.match(lexicon, /status='PUBLISHED'/);
 });
 
 test("player Quiz paths cannot invoke the administrative legacy importer", async () => {

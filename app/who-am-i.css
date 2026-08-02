@@ -15,5 +15,6 @@
 .who-am-i-options button:disabled{cursor:default;opacity:.62}.who-am-i-options button.is-wrong:disabled,.who-am-i-options button.is-correct:disabled{opacity:1}
 .who-am-i-reveal:focus-visible,.who-am-i-options button:focus-visible{outline:3px solid #f4b400;outline-offset:2px}
 .who-am-i-message{min-height:42px;margin:0;border-radius:11px;padding:11px 13px;background:#0a192a;color:#b8c5d5;font-size:12px;line-height:1.45}.who-am-i-message.won{color:#77e5aa}.who-am-i-message.lost{color:#ffd067}
+.who-am-i-message.correct,.who-am-i-message.incorrect{border:2px solid;font-size:14px;font-weight:800}.who-am-i-message.correct{border-color:#43c77d;background:#123d2b;color:#9af0bd}.who-am-i-message.incorrect{border-color:#ef6f75;background:#421e29;color:#ffc1c5}
 @media(max-width:350px){.who-am-i-options{grid-template-columns:1fr}.who-am-i-hints li{grid-template-columns:26px minmax(0,1fr);padding:8px}.who-am-i-hints li span{width:24px;height:24px}}
 @media(prefers-reduced-motion:reduce){.who-am-i-game *{transition:none!important}}

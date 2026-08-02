@@ -19,6 +19,7 @@
 .three-clues-message { min-height: 22px; margin: 13px 0 0; color: #aebdca; text-align: center; font-size: 12px; }
 .three-clues-message.won { color: #6ee7a3; font-weight: 700; }
 .three-clues-message.lost { color: #ffc166; font-weight: 700; }
+.three-clues-message.correct,.three-clues-message.incorrect{min-height:48px;border:2px solid;border-radius:12px;padding:13px 15px;font-size:14px;font-weight:800}.three-clues-message.correct{border-color:#43c77d;background:#123d2b;color:#9af0bd}.three-clues-message.incorrect{border-color:#ef6f75;background:#421e29;color:#ffc1c5}
 .three-clues-reveal:focus-visible,.three-clues-answer input:focus-visible,.three-clues-answer button:focus-visible { outline: 3px solid #f4b400; outline-offset: 3px; }
 @media (max-width:380px) {
   .three-clues-score { align-items: flex-start; flex-direction: column; gap: 3px; }

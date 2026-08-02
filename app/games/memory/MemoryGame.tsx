@@ -111,15 +111,25 @@ export function MemoryGame() {
       setMessage("Par encontrado.");
       hideTimer.current = setTimeout(() => setSelectedIds([]), 250);
       if (nextMatched.length / 2 === content.pairCount) {
-        setStatus("won");
-        setMessage(`Todos os pares encontrados! Você fez ${memoryScore(nextMoves, content.pairCount)} pontos.`);
-        void recordPlatformGameCompletion({
-          gameId: "memoria-biblica",
-          sessionId: sessionId.current,
-          contentId: content.id,
-          contentVersion: content.version,
-          revealedCardIds: nextHistory,
-        }).catch(() => undefined);
+        setLocked(true);
+        setMessage("Todos os pares foram encontrados. Registrando resultado…");
+        try {
+          await recordPlatformGameCompletion({
+            gameId: "memoria-biblica",
+            sessionId: sessionId.current,
+            contentId: content.id,
+            contentVersion: content.version,
+            revealedCardIds: nextHistory,
+          });
+          setStatus("won");
+          setMessage(`Todos os pares encontrados! Você fez ${memoryScore(nextMoves, content.pairCount)} pontos.`);
+        } catch {
+          setMatchedCardIds(matchedCardIds);
+          setSelectedIds([]);
+          setMessage("Não foi possível registrar o resultado. Encontre o último par novamente.");
+        } finally {
+          setLocked(false);
+        }
       }
       return;
     }

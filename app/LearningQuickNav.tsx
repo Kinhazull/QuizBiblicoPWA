@@ -11,7 +11,15 @@ export function LearningQuickNav() {
   const path = usePathname();
   const { user } = useAuth();
   if (isGamePlayRoute(path)) return null;
-  const platformRoute = path === "/" || path === "/desafios-diarios" || path === "/jogos" || path.startsWith("/jogos/");
+  const platformRoute = path === "/"
+    || path === "/desafios-diarios"
+    || path === "/jogos"
+    || path.startsWith("/jogos/")
+    || path === "/perfil"
+    || path === "/recompensas"
+    || path === "/loja"
+    || path === "/inventario"
+    || path === "/notificacoes";
   if (!user || (!participantRoutes.has(path) && !platformRoute)) return null;
   const items = platformRoute ? platformHomeNavigation : participantNavigation;
   return <nav className={`participant-bottom-nav ${platformRoute ? "platform-bottom-nav" : ""}`} aria-label="Navegação principal">{items.map(item => {

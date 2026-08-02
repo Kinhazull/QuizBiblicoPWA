@@ -102,25 +102,29 @@ export function TimelineGame() {
       setValidating(false);
     }
 
-    if (won) {
-      setStatus("won");
-      setMessage(`Sequência correta! Você fez ${timelineScore(nextAttempt)} pontos.`);
-    } else if (nextAttempt >= TIMELINE_MAX_ATTEMPTS) {
-      setStatus("lost");
-      setMessage("A ordem ainda não estava correta. Reinicie para tentar novamente.");
-    } else {
+    if (!won && nextAttempt < TIMELINE_MAX_ATTEMPTS) {
       setMessage(`A sequência ainda não está correta. Restam ${TIMELINE_MAX_ATTEMPTS - nextAttempt} tentativa(s).`);
       return;
     }
-
-    await recordPlatformGameCompletion({
-      gameId: "linha-do-tempo-biblica",
-      sessionId: sessionId.current,
-      contentId: round.id,
-      contentVersion: round.version,
-      orderedEventIds: eventIds,
-      attemptsUsed: nextAttempt,
-    }).catch(() => undefined);
+    setValidating(true);
+    try {
+      await recordPlatformGameCompletion({
+        gameId: "linha-do-tempo-biblica",
+        sessionId: sessionId.current,
+        contentId: round.id,
+        contentVersion: round.version,
+        orderedEventIds: eventIds,
+        attemptsUsed: nextAttempt,
+      });
+      setStatus(won ? "won" : "lost");
+      setMessage(won
+        ? `Sequência correta! Você fez ${timelineScore(nextAttempt)} pontos.`
+        : "A ordem ainda não estava correta. Reinicie para tentar novamente.");
+    } catch {
+      setMessage("O resultado ainda não foi registrado. Tente confirmar novamente.");
+    } finally {
+      setValidating(false);
+    }
   }
 
   function restart() {

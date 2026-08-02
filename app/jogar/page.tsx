@@ -35,6 +35,11 @@ type PendingAnswer = {
   timedOut: boolean;
   responseTimeMs: number;
 };
+type GeneratedQuizAnswer = {
+  questionId: string;
+  choiceId: string | null;
+  timedOut?: boolean;
+};
 type DailyQuizPayload = {
   questions: Array<{
     id: string;
@@ -61,12 +66,13 @@ export default function PlayPage() {
   const [error, setError] = useState("");
   const [networkError, setNetworkError] = useState(false);
   const [sending, setSending] = useState(false);
+  const [loadingRound, setLoadingRound] = useState(true);
   const pending = useRef<PendingAnswer | null>(null);
   const started = useRef(Date.now());
   const answerRef = useRef<(choiceId: string) => void>(() => undefined);
   const sendPendingRef = useRef<() => Promise<void>>(async () => undefined);
   const startRef = useRef<(mode?: string) => Promise<void>>(async () => undefined);
-  const dailyAnswers = useRef<Array<{ questionId: string; choiceId: string }>>([]);
+  const dailyAnswers = useRef<GeneratedQuizAnswer[]>([]);
   const autoStarted = useRef(false);
   useRegisterActiveGame(
     GameType.QUIZ,
@@ -80,7 +86,10 @@ export default function PlayPage() {
     if (request.mode === GameContentMode.NORMAL && !requestedLegacy) {
       generateFreePlayGame(GameType.QUIZ)
         .then(href => location.replace(href))
-        .catch(() => setError("Não foi possível preparar o Quiz. Tente novamente."));
+        .catch(() => {
+          setError("Não foi possível preparar o Quiz. Tente novamente.");
+          setLoadingRound(false);
+        });
       return () => controller.abort();
     }
     loadGameContent<DailyQuizPayload | Record<string, unknown>>({
@@ -103,9 +112,8 @@ export default function PlayPage() {
           setRound(loaded.payload);
         }
       })
-      .catch(() =>
-        setError("Sem conexão. Verifique sua internet e tente novamente."),
-      );
+      .catch(() => setError("Sem conexão. Verifique sua internet e tente novamente."))
+      .finally(() => setLoadingRound(false));
     return () => controller.abort();
   }, [requestedLegacy]);
 
@@ -257,12 +265,14 @@ export default function PlayPage() {
           explanation: string | null;
         }>(loadedContent, "validate_answer", {
           questionId: question.id,
-          choiceId: current.choiceId || question.choices[0].id,
+          choiceId: current.choiceId || null,
+          timedOut: current.timedOut,
         });
         if (!dailyAnswers.current.some(item => item.questionId === question.id)) {
           dailyAnswers.current.push({
             questionId: question.id,
-            choiceId: current.choiceId || question.choices[0].id,
+            choiceId: current.choiceId || null,
+            timedOut: current.timedOut,
           });
         }
         const totalScore = score + (data.correct ? 100 : 0);
@@ -389,7 +399,14 @@ export default function PlayPage() {
             <i />
             <b />
           </div>
-          {round ? (
+          {loadingRound ? (
+            <div className="platform-game-loading" role="status" aria-live="polite">
+              <span aria-hidden="true" />
+              <p className="eyebrow">PREPARANDO PARTIDA</p>
+              <h1>Carregando o <em>Quiz</em></h1>
+              <p className="intro">Estamos selecionando as perguntas desta partida.</p>
+            </div>
+          ) : round ? (
             <>
               <p className="eyebrow">
                 {round.generated ? round.daily ? "OBJETIVO DIÁRIO" : "MODO LIVRE" : "QUIZ BÍBLICO"}

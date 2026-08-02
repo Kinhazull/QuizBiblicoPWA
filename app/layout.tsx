@@ -7,6 +7,7 @@ import "./profile.css";
 import "./navigation-cleanup.css";
 import "./journey.css";
 import "./notifications.css";
+import "./platform-polish.css";
 import "./legal.css";
 import "./brand-system.css";
 import "./quality.css";

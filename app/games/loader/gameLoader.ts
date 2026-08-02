@@ -82,7 +82,10 @@ export async function validateGameContentAction<TResponse>(
       }),
       },
     );
-    if (!response.ok) throw new Error("generated_game_action_failed");
+    if (!response.ok) {
+      const error = await response.json().catch(() => null) as { error?: string } | null;
+      throw new Error(error?.error || "generated_game_action_failed");
+    }
     return response.json() as Promise<TResponse>;
   }
   if (content.gameType === "linha-do-tempo-biblica" && action === "validate_order") {
@@ -97,7 +100,10 @@ export async function validateGameContentAction<TResponse>(
         orderedEventIds: input.orderedEventIds,
       }),
     });
-    if (!response.ok) throw new Error("normal_game_action_failed");
+    if (!response.ok) {
+      const error = await response.json().catch(() => null) as { error?: string } | null;
+      throw new Error(error?.error || "normal_game_action_failed");
+    }
     return response.json() as Promise<TResponse>;
   }
   if (content.gameType === "wordle-biblico" && action === "validate_guess") {
@@ -112,7 +118,10 @@ export async function validateGameContentAction<TResponse>(
         guess: input.guess,
       }),
     });
-    if (!response.ok) throw new Error("normal_game_action_failed");
+    if (!response.ok) {
+      const error = await response.json().catch(() => null) as { error?: string } | null;
+      throw new Error(error?.error || "normal_game_action_failed");
+    }
     return response.json() as Promise<TResponse>;
   }
   const endpointByGame: Partial<Record<typeof content.gameType, string>> = {

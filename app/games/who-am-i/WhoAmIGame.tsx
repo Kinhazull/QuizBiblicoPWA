@@ -32,6 +32,7 @@ export function WhoAmIGame() {
   const [loadError, setLoadError] = useState(false);
   const [validating, setValidating] = useState(false);
   const [message, setMessage] = useState("Leia a primeira pista e responda quando estiver pronto.");
+  const [feedbackTone, setFeedbackTone] = useState<"correct" | "incorrect" | "">("");
 
   const loadContent = useCallback(async (signal?: AbortSignal) => {
     setLoading(true);
@@ -65,6 +66,7 @@ export function WhoAmIGame() {
     setHintsVisible(value => value + 1);
     setActions(current => [...current, { type: "reveal" }]);
     setMessage(`Pista ${hintsVisible + 1} de ${challenge.hints.length} revelada.`);
+    setFeedbackTone("");
   }
 
   async function registerCompletion(nextHistories: WhoAmIChallengeHistory[], wonCount: number) {
@@ -102,6 +104,7 @@ export function WhoAmIGame() {
       const challengeActions: WhoAmIAction[] = [...actions, { type: "guess", answer }];
       const nextHistories = [...histories, { challengeId: challenge.id, actions: challengeActions }];
       const nextCorrectCount = correctCount + (result.correct ? 1 : 0);
+      setFeedbackTone(result.correct ? "correct" : "incorrect");
       setHistories(nextHistories);
       setCorrectCount(nextCorrectCount);
       setAnswer("");
@@ -133,6 +136,7 @@ export function WhoAmIGame() {
     setStatus("playing");
     setValidating(false);
     setMessage("Leia a primeira pista e responda quando estiver pronto.");
+    setFeedbackTone("");
     void loadContent();
   }
 
@@ -176,7 +180,7 @@ export function WhoAmIGame() {
                 </button>
               </form>
             )}
-            <p className={`who-am-i-message ${status}`} role="status" aria-live="polite">{message}</p>
+            <p className={`who-am-i-message ${status} ${feedbackTone}`} role="status" aria-live="polite">{message}</p>
           </>
         )}
       </section>
