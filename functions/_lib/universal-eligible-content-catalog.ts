@@ -19,6 +19,28 @@ const safeStrings = (value: unknown) => {
   }
 };
 
+// D1 accepts at most 100 bound parameters per statement. Keep ten slots free
+// for the organization and future fixed filters instead of relying on the edge.
+export const ELIGIBLE_CONTENT_IDS_PER_BATCH = 90;
+
+async function contentRowsById(
+  env: AppEnv,
+  organizationId: string,
+  contentIds: readonly string[],
+) {
+  const rowsById = new Map<string, Record<string, unknown>>();
+  for (let offset = 0; offset < contentIds.length; offset += ELIGIBLE_CONTENT_IDS_PER_BATCH) {
+    const ids = contentIds.slice(offset, offset + ELIGIBLE_CONTENT_IDS_PER_BATCH);
+    const placeholders = ids.map((_, index) => `?${index + 2}`).join(",");
+    const result = await env.DB.prepare(`SELECT * FROM content_items
+      WHERE organization_id=?1 AND status='PUBLISHED' AND id IN (${placeholders})`)
+      .bind(organizationId, ...ids)
+      .all<Record<string, unknown>>();
+    for (const row of result.results) rowsById.set(String(row.id), row);
+  }
+  return rowsById;
+}
+
 export async function listEligibleUniversalContent(
   env: AppEnv,
   filters: Omit<UniversalLibraryFilters, "availabilityStatus">,
@@ -29,12 +51,11 @@ export async function listEligibleUniversalContent(
   });
   if (candidates.length === 0) return [];
 
-  const placeholders = candidates.map((_, index) => `?${index + 2}`).join(",");
-  const contentRows = await env.DB.prepare(`SELECT * FROM content_items
-    WHERE organization_id=?1 AND status='PUBLISHED' AND id IN (${placeholders})`)
-    .bind(filters.organizationId, ...candidates.map(candidate => candidate.contentId))
-    .all<Record<string, unknown>>();
-  const rowsById = new Map(contentRows.results.map(row => [String(row.id), row]));
+  const rowsById = await contentRowsById(
+    env,
+    filters.organizationId,
+    candidates.map(candidate => candidate.contentId),
+  );
 
   return candidates.filter(candidate => {
     const row = rowsById.get(candidate.contentId);

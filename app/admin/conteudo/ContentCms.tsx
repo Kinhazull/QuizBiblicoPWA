@@ -57,6 +57,8 @@ type QuizCatalogDiagnosticsData = {
   };
   conclusion: string;
   generation: null | {
+    status: "OK";
+    stages: Record<string, { status: "OK" | "ERROR"; code?: string | null }>;
     freePlay: {
       catalogCandidates: number; repetitionExclusions: number; candidatesAfterExclusions: number;
       finalDistribution: Record<string, number>; capabilityAccepted: boolean; selectionKeyConflict: boolean;
@@ -73,6 +75,12 @@ type QuizCatalogDiagnosticsData = {
     };
     persistence: { selections: number; byMode: Record<string, number>; byStatus: Record<string, number>; algorithmVersions: number[]; crossModeSelectionKeys: number; incompleteSelections: number; missingCurrentContent: number; missingHistoricalVersions: number };
     participations: { total: number; conflicting: number; currentUserActive: number; blocksNewSelection: boolean };
+  } | {
+    status: "ERROR";
+    stage: string;
+    code: string;
+    message: string;
+    stages: Record<string, { status: "ERROR" | "SKIPPED"; code: string; message?: string }>;
   };
 };
 
@@ -273,7 +281,11 @@ export function QuizCatalogDiagnostics() {
       <article><h3>5. Motivos de exclusão</h3><dl>{counts(data.exclusions.reasons).map(([key, value]) => <div key={key}><dt>{diagnosticReasonLabels[key] ?? key}</dt><dd>{number.format(value)}</dd></div>)}</dl>{counts(data.exclusions.reasons).length === 0 && <p>Nenhuma exclusão encontrada.</p>}</article>
       <article><h3>6. Primeiros 200 registros</h3><dl><div><dt>Candidatos da Biblioteca</dt><dd>{number.format(data.generatorWindow.libraryCandidates)}</dd></div><div><dt>Elegíveis na janela</dt><dd>{number.format(data.generatorWindow.eligible)}</dd></div>{counts(data.generatorWindow.byDifficulty).map(([key, value]) => <div key={key}><dt>{difficultyLabels[key as Difficulty] ?? key}</dt><dd>{number.format(value)}</dd></div>)}<div><dt>Atende 2/2/1 diário</dt><dd>{data.generatorWindow.satisfiesDailyDistribution ? "Sim" : "Não"}</dd></div><div><dt>Catálogo completo atende</dt><dd>{data.generatorWindow.completeCatalogSatisfiesDailyDistribution ? "Sim" : "Não"}</dd></div></dl></article>
       <article className="diagnostic-conclusion"><h3>7. Conclusão automática</h3><p><strong>{diagnosticConclusions[data.conclusion] ?? data.conclusion}</strong></p></article>
-      {data.generation && <article className="diagnostic-generation"><h3>Geração de partidas</h3>
+      {data.generation?.status === "ERROR" && <article className="diagnostic-generation diagnostic-generation-error"><h3>Geração de partidas</h3>
+        <p><strong>Diagnóstico parcial disponível.</strong> {data.generation.message}</p>
+        <dl><div><dt>Etapa</dt><dd>{data.generation.stage}</dd></div><div><dt>Código seguro</dt><dd>{data.generation.code}</dd></div></dl>
+      </article>}
+      {data.generation?.status === "OK" && <article className="diagnostic-generation"><h3>Geração de partidas</h3>
         <div className="diagnostic-generation-modes">
           <section aria-labelledby="diagnostic-free-play"><h4 id="diagnostic-free-play">FREE PLAY · {data.generation.freePlay.success ? "Pronto" : "Falha"}</h4>
             <p>{data.generation.freePlay.explanation}</p><dl>

@@ -6,7 +6,7 @@ import {
   type ContentValidationIssue,
 } from "../../shared/content";
 import type { AppEnv } from "./auth";
-import { loadQuizGenerationDiagnostics } from "./quiz-generation-diagnostics";
+import { loadQuizGenerationDiagnostics, quizGenerationDiagnosticFailure } from "./quiz-generation-diagnostics";
 
 const reasonCodes = [
   "missing_library_projection",
@@ -195,6 +195,15 @@ export async function loadQuizCatalogDiagnostics(env: AppEnv, organizationId: st
   const first200Distribution = difficultyCounts(first200Eligible);
   const availableQuiz = availability.AVAILABLE ?? 0;
 
+  let generation = null;
+  if (userId) {
+    try {
+      generation = await loadQuizGenerationDiagnostics(env, { organizationId, userId });
+    } catch (error) {
+      generation = quizGenerationDiagnosticFailure(error);
+    }
+  }
+
   return {
     generatedAt: Date.now(),
     cms: { published: publishedRows.length, totalQuiz: cmsRows.length },
@@ -227,8 +236,6 @@ export async function loadQuizCatalogDiagnostics(env: AppEnv, organizationId: st
       first200Daily: dailySatisfied(first200Distribution),
       completeDaily: dailySatisfied(eligibleDistribution),
     }),
-    generation: userId
-      ? await loadQuizGenerationDiagnostics(env, { organizationId, userId })
-      : null,
+    generation,
   };
 }

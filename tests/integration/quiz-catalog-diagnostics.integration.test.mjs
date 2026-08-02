@@ -95,6 +95,76 @@ test("endpoint requires authentication and questions.edit while isolating the se
   assert.equal(data.eligibleCatalog.total, 1);
 });
 
+test("D1 parameter cap is respected and generation diagnostics complete with 120 candidates", async t => {
+  const ctx = fixture(t);
+  for (let index = 0; index < 120; index += 1) {
+    insertQuiz(ctx, { id: `d1-limit-${index}`, difficulty: index % 5 === 0 ? "HARD" : "MEDIUM" });
+  }
+  const limitedDb = new Proxy(ctx.env.DB, {
+    get(target, property) {
+      if (property === "prepare") return sql => {
+        const prepared = target.prepare(sql);
+        return new Proxy(prepared, {
+          get(statement, method) {
+            if (method === "bind") return (...values) => {
+              if (values.length > 100) throw new Error("too many SQL variables at offset 0");
+              return statement.bind(...values);
+            };
+            const value = statement[method];
+            return typeof value === "function" ? value.bind(statement) : value;
+          },
+        });
+      };
+      const value = target[property];
+      return typeof value === "function" ? value.bind(target) : value;
+    },
+  });
+  const token = await createSession(ctx, "editor-1");
+  const response = await onRequestGet({
+    request: createAuthenticatedRequest("https://test/api/admin/content/quiz-catalog-diagnostics", { token }),
+    env: { ...ctx.env, DB: limitedDb },
+  });
+  const data = await responseJson(response);
+  assert.equal(response.status, 200);
+  assert.equal(data.cms.published, 120);
+  assert.equal(data.eligibleCatalog.total, 120);
+  assert.equal(data.generation.status, "OK");
+  assert.equal(data.generation.stages.eligible_catalog_read.status, "OK");
+  assert.equal(data.generation.freePlay.success, true);
+  assert.equal(JSON.stringify(data).includes("Correta"), false);
+  assert.equal(JSON.stringify(data).includes("SELECT "), false);
+});
+
+test("a controlled generation failure remains isolated from the basic catalog diagnosis", async t => {
+  const ctx = fixture(t);
+  insertQuiz(ctx, { id: "isolated-generation-error" });
+  const failingDb = new Proxy(ctx.env.DB, {
+    get(target, property) {
+      if (property === "prepare") return sql => {
+        if (/\bgenerated_game_selections\b/i.test(sql)) {
+          throw new Error("simulated diagnostic read failure");
+        }
+        return target.prepare(sql);
+      };
+      const value = target[property];
+      return typeof value === "function" ? value.bind(target) : value;
+    },
+  });
+  const token = await createSession(ctx, "editor-1");
+  const response = await onRequestGet({
+    request: createAuthenticatedRequest("https://test/api/admin/content/quiz-catalog-diagnostics", { token }),
+    env: { ...ctx.env, DB: failingDb },
+  });
+  const data = await responseJson(response);
+  assert.equal(response.status, 200);
+  assert.equal(data.cms.published, 1);
+  assert.equal(data.eligibleCatalog.total, 1);
+  assert.equal(data.generation.status, "ERROR");
+  assert.equal(data.generation.stage, "selection_read");
+  assert.equal(data.generation.code, "generation_diagnostic_step_failed");
+  assert.equal(JSON.stringify(data).includes("simulated diagnostic"), false);
+});
+
 test("diagnoses missing, unavailable, mismatched and invalid records without writing", async t => {
   const ctx = fixture(t);
   insertQuiz(ctx, { id: "missing", library: false });
@@ -187,6 +257,7 @@ test("generation diagnostic succeeds in memory for Free Play and Daily with hist
   ["EASY", "EASY", "MEDIUM", "MEDIUM", "HARD"].forEach((difficulty, index) =>
     insertQuiz(ctx, { id: `generation-${index}`, difficulty }));
   const result = await loadQuizGenerationDiagnostics(ctx.env, { organizationId: "org-1", userId: "editor-1" }, Date.UTC(2026, 7, 1, 12));
+  assert.equal(result.status, "OK");
   assert.equal(result.freePlay.success, true);
   assert.equal(result.freePlay.canSelectFive, true);
   assert.equal(result.freePlay.historicalResolution.safePayloadCreatable, true);

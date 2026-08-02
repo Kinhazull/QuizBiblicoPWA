@@ -9,6 +9,64 @@ import { listEligibleUniversalContent } from "./universal-eligible-content-catal
 import { sha256 } from "./security";
 
 type Row = Record<string, unknown>;
+export type QuizGenerationDiagnosticStage =
+  | "eligible_catalog_read"
+  | "selection_read"
+  | "selection_items_read"
+  | "participation_read"
+  | "free_play_calculation"
+  | "daily_calculation"
+  | "historical_resolution"
+  | "safe_payload";
+
+class QuizGenerationDiagnosticError extends Error {
+  readonly stage: QuizGenerationDiagnosticStage;
+  readonly original: unknown;
+
+  constructor(stage: QuizGenerationDiagnosticStage, original: unknown) {
+    super("quiz_generation_diagnostic_step_failed");
+    this.stage = stage;
+    this.original = original;
+  }
+}
+
+async function atStage<T>(stage: QuizGenerationDiagnosticStage, operation: () => Promise<T>) {
+  try {
+    return await operation();
+  } catch (error) {
+    if (error instanceof QuizGenerationDiagnosticError) throw error;
+    throw new QuizGenerationDiagnosticError(stage, error);
+  }
+}
+
+const safeDiagnosticCode = (error: unknown) => {
+  const original = error instanceof QuizGenerationDiagnosticError ? error.original : error;
+  const message = original instanceof Error ? original.message : String(original ?? "");
+  if (/too many sql variables|SQLITE_MAX_VARIABLE_NUMBER|too many bound parameters/i.test(message)) {
+    return "d1_bound_parameter_limit";
+  }
+  return "generation_diagnostic_step_failed";
+};
+
+export function quizGenerationDiagnosticFailure(error: unknown) {
+  const stage = error instanceof QuizGenerationDiagnosticError ? error.stage : "free_play_calculation";
+  const code = safeDiagnosticCode(error);
+  const message = code === "d1_bound_parameter_limit"
+    ? "A consulta diagnóstica excedeu o limite de parâmetros vinculados do D1. O catálogo básico permanece válido."
+    : "A etapa diagnóstica não pôde ser concluída. O catálogo básico permanece disponível.";
+  return {
+    status: "ERROR" as const,
+    stage,
+    code,
+    message,
+    stages: Object.fromEntries(([
+      "eligible_catalog_read", "selection_read", "selection_items_read", "participation_read",
+      "free_play_calculation", "daily_calculation", "historical_resolution", "safe_payload",
+    ] satisfies QuizGenerationDiagnosticStage[]).map(item => [item, item === stage
+      ? { status: "ERROR" as const, code, message }
+      : { status: "SKIPPED" as const, code: "blocked_by_previous_stage" }])),
+  };
+}
 const QUIZ_COUNT = 5;
 const ALGORITHM_VERSION = 1;
 const FREE_PLAY_DIAGNOSTIC_KEY = "diagnostic-preview";
@@ -100,9 +158,9 @@ async function historicalCheck(env: AppEnv, organizationId: string, candidates: 
   let missing = 0;
   let invalid = 0;
   for (const candidate of candidates.slice(0, QUIZ_COUNT)) {
-    const row = await env.DB.prepare(`SELECT metadata_json,payload_json FROM content_versions
+    const row = await atStage("historical_resolution", () => env.DB.prepare(`SELECT metadata_json,payload_json FROM content_versions
       WHERE organization_id=?1 AND content_id=?2 AND version=?3`)
-      .bind(organizationId, candidate.contentId, candidate.contentVersion).first<Row>();
+      .bind(organizationId, candidate.contentId, candidate.contentVersion).first<Row>());
     if (!row) { missing += 1; continue; }
     const metadata = safeJson<Record<string, unknown>>(row.metadata_json, {});
     const payload = safeJson<Record<string, unknown>>(row.payload_json, {});
@@ -126,7 +184,7 @@ async function historicalCheck(env: AppEnv, organizationId: string, candidates: 
         auditMetadata: { difficulty: Difficulty.MEDIUM, themes: [], books: [], tags: [], priority: 0, usageCount: 0 },
       })),
     } as GeneratedGameSelection;
-    const payload = await generatedSelectionSafePayload(selection, contents);
+    const payload = await atStage("safe_payload", () => generatedSelectionSafePayload(selection, contents));
     safePayloadCreatable = Array.isArray((payload as { questions?: unknown[] }).questions);
   }
   return { sampled: Math.min(QUIZ_COUNT, candidates.length), resolved: contents.length, missing, invalid, safePayloadCreatable };
@@ -139,17 +197,17 @@ export async function loadQuizGenerationDiagnostics(
 ) {
   const capability = getGameGenerationCapability(GameType.QUIZ);
   const freeMode = getModeCapability(GameMode.FREE_PLAY);
-  const catalog = await listEligibleUniversalContent(env, {
+  const catalog = await atStage("eligible_catalog_read", () => listEligibleUniversalContent(env, {
     organizationId: identity.organizationId, gameType: GameType.QUIZ, limit: 200,
-  });
-  const recentRows = await env.DB.prepare(`SELECT usage.content_id
+  }));
+  const recentRows = await atStage("participation_read", () => env.DB.prepare(`SELECT usage.content_id
     FROM generated_game_participation_usage usage
     JOIN generated_game_participations participation ON participation.id=usage.participation_id
     WHERE participation.organization_id=?1 AND participation.user_id=?2
       AND participation.game_type=?3 AND participation.mode='FREE_PLAY'
       AND usage.recorded_at IS NOT NULL
     ORDER BY usage.recorded_at DESC LIMIT 20`)
-    .bind(identity.organizationId, identity.userId, GameType.QUIZ).all<Row>();
+    .bind(identity.organizationId, identity.userId, GameType.QUIZ).all<Row>());
   const recentIds = [...new Set(recentRows.results.map(row => String(row.content_id)))];
   const freeRequest: UniversalGameSelectionRequest = {
     organizationId: identity.organizationId,
@@ -164,27 +222,29 @@ export async function loadQuizGenerationDiagnostics(
     count: QUIZ_COUNT,
     repetitionWindow: { recentContentIds: recentIds },
   };
-  let freeSelection = await selectUniversalCandidates(catalog, freeRequest);
+  let freeSelection = await atStage("free_play_calculation", () => selectUniversalCandidates(catalog, freeRequest));
   let repetitionFallbackNeeded = false;
   let effectiveFreeRequest = freeRequest;
   if (!freeSelection.ok && freeSelection.error.code === "insufficient_eligible_content" && recentIds.length) {
     repetitionFallbackNeeded = true;
     effectiveFreeRequest = { ...freeRequest, repetitionWindow: undefined };
-    freeSelection = await selectUniversalCandidates(catalog, effectiveFreeRequest);
+    freeSelection = await atStage("free_play_calculation", () => selectUniversalCandidates(catalog, effectiveFreeRequest));
   }
-  const freeExisting = await env.DB.prepare(`SELECT id,request_fingerprint FROM generated_game_selections
+  const freeExisting = await atStage("selection_read", () => env.DB.prepare(`SELECT id,request_fingerprint FROM generated_game_selections
     WHERE organization_id=?1 AND game_type=?2 AND mode='FREE_PLAY' AND selection_key=?3 AND algorithm_version=?4`)
-    .bind(identity.organizationId, GameType.QUIZ, freeRequest.selectionKey, ALGORITHM_VERSION).first<Row>();
-  const freeFingerprint = await expectedFingerprint(effectiveFreeRequest);
+    .bind(identity.organizationId, GameType.QUIZ, freeRequest.selectionKey, ALGORITHM_VERSION).first<Row>());
+  const freeFingerprint = await atStage("free_play_calculation", () => expectedFingerprint(effectiveFreeRequest));
   const freeConflict = Boolean(freeExisting && String(freeExisting.request_fingerprint) !== freeFingerprint);
   const freeCandidates = freeSelection.ok ? freeSelection.candidates : [];
-  const freeHistory = await historicalCheck(env, identity.organizationId, freeCandidates, freeSelection.ok ? freeSelection.seedHash : "");
+  const freeHistory = await atStage("historical_resolution", () => historicalCheck(
+    env, identity.organizationId, freeCandidates, freeSelection.ok ? freeSelection.seedHash : "",
+  ));
   let freeCode = freeConflict ? "selection_key_conflict" : freeSelection.ok ? null : freeSelection.error.code;
   if (!freeCode && freeHistory.missing) freeCode = "historical_content_unavailable";
   if (!freeCode && freeHistory.invalid) freeCode = "historical_content_invalid";
 
-  const organization = await env.DB.prepare("SELECT timezone FROM organizations WHERE id=?1")
-    .bind(identity.organizationId).first<Row>();
+  const organization = await atStage("daily_calculation", () => env.DB.prepare("SELECT timezone FROM organizations WHERE id=?1")
+    .bind(identity.organizationId).first<Row>());
   const timeZone = String(organization?.timezone || DEFAULT_TIME_ZONE);
   const dayKey = organizationDayKey(now, timeZone);
   const expiresAt = nextOrganizationDayStart(now, timeZone);
@@ -199,19 +259,22 @@ export async function loadQuizGenerationDiagnostics(
     difficultyDistribution: { [Difficulty.EASY]: 2, [Difficulty.MEDIUM]: 2, [Difficulty.HARD]: 1 },
     expiresAt,
   };
-  const dailySelection = await selectUniversalCandidates(catalog, dailyRequest);
-  const expectedDailyFingerprint = await expectedFingerprint(dailyRequest);
-  const dailyExisting = await env.DB.prepare(`SELECT * FROM generated_game_selections
+  const dailySelection = await atStage("daily_calculation", () => selectUniversalCandidates(catalog, dailyRequest));
+  const expectedDailyFingerprint = await atStage("daily_calculation", () => expectedFingerprint(dailyRequest));
+  const dailyExisting = await atStage("selection_read", () => env.DB.prepare(`SELECT * FROM generated_game_selections
     WHERE organization_id=?1 AND game_type=?2 AND mode='DAILY' AND selection_key=?3 AND algorithm_version=?4`)
-    .bind(identity.organizationId, GameType.QUIZ, dailyRequest.selectionKey, ALGORITHM_VERSION).first<Row>();
-  const dailyItems = dailyExisting ? await env.DB.prepare(`SELECT content_id,content_version,position
+    .bind(identity.organizationId, GameType.QUIZ, dailyRequest.selectionKey, ALGORITHM_VERSION).first<Row>());
+  const dailyItems = dailyExisting ? await atStage("selection_items_read", () => env.DB.prepare(`SELECT content_id,content_version,position
     FROM generated_game_selection_items WHERE organization_id=?1 AND selection_id=?2 ORDER BY position`)
-    .bind(identity.organizationId, String(dailyExisting.id)).all<Row>() : { results: [] as Row[] };
+    .bind(identity.organizationId, String(dailyExisting.id)).all<Row>()) : { results: [] as Row[] };
   const dailyConflict = Boolean(dailyExisting && String(dailyExisting.request_fingerprint) !== expectedDailyFingerprint);
   const dailyCandidates = dailyExisting
     ? dailyItems.results.map(row => ({ contentId: String(row.content_id), contentVersion: Number(row.content_version) }))
     : dailySelection.ok ? dailySelection.candidates : [];
-  const dailyHistory = await historicalCheck(env, identity.organizationId, dailyCandidates, dailySelection.ok ? dailySelection.seedHash : String(dailyExisting?.seed_hash ?? ""));
+  const dailyHistory = await atStage("historical_resolution", () => historicalCheck(
+    env, identity.organizationId, dailyCandidates,
+    dailySelection.ok ? dailySelection.seedHash : String(dailyExisting?.seed_hash ?? ""),
+  ));
   const dailyPartial = Boolean(dailyExisting && dailyItems.results.length !== QUIZ_COUNT);
   const dailyExpired = Boolean(dailyExisting && (
     String(dailyExisting.status) === "EXPIRED" || Number(dailyExisting.expires_at ?? Number.MAX_SAFE_INTEGER) <= now
@@ -221,10 +284,10 @@ export async function loadQuizGenerationDiagnostics(
   if (!dailyCode && dailyHistory.missing) dailyCode = "historical_content_unavailable";
   if (!dailyCode && dailyHistory.invalid) dailyCode = "historical_content_invalid";
 
-  const selections = await env.DB.prepare(`SELECT * FROM generated_game_selections
+  const selections = await atStage("selection_read", () => env.DB.prepare(`SELECT * FROM generated_game_selections
     WHERE organization_id=?1 AND game_type=?2 ORDER BY created_at DESC`)
-    .bind(identity.organizationId, GameType.QUIZ).all<Row>();
-  const selectionItems = await env.DB.prepare(`SELECT item.selection_id,item.content_id,item.content_version,item.position,
+    .bind(identity.organizationId, GameType.QUIZ).all<Row>());
+  const selectionItems = await atStage("selection_items_read", () => env.DB.prepare(`SELECT item.selection_id,item.content_id,item.content_version,item.position,
       content.id AS current_content_id,version.id AS historical_version_id
     FROM generated_game_selection_items item
     JOIN generated_game_selections selection ON selection.id=item.selection_id
@@ -232,7 +295,7 @@ export async function loadQuizGenerationDiagnostics(
     LEFT JOIN content_versions version ON version.organization_id=item.organization_id
       AND version.content_id=item.content_id AND version.version=item.content_version
     WHERE selection.organization_id=?1 AND selection.game_type=?2`)
-    .bind(identity.organizationId, GameType.QUIZ).all<Row>();
+    .bind(identity.organizationId, GameType.QUIZ).all<Row>());
   const itemCountBySelection = new Map<string, number>();
   for (const item of selectionItems.results) {
     const id = String(item.selection_id);
@@ -242,7 +305,7 @@ export async function loadQuizGenerationDiagnostics(
     const filters = safeJson<{ count?: number }>(row.filters_json, {});
     return itemCountBySelection.get(String(row.id)) !== Number(filters.count ?? 0);
   }).length;
-  const participations = await env.DB.prepare(`SELECT participation.id,participation.selection_id,
+  const participations = await atStage("participation_read", () => env.DB.prepare(`SELECT participation.id,participation.selection_id,
       participation.user_id,participation.mode,participation.status,selection.mode AS selection_mode,
       selection.id AS valid_selection_id
     FROM generated_game_participations participation
@@ -250,7 +313,7 @@ export async function loadQuizGenerationDiagnostics(
       AND selection.organization_id=participation.organization_id
       AND selection.game_type=participation.game_type
     WHERE participation.organization_id=?1 AND participation.game_type=?2`)
-    .bind(identity.organizationId, GameType.QUIZ).all<Row>();
+    .bind(identity.organizationId, GameType.QUIZ).all<Row>());
   const participationConflicts = participations.results.filter(row =>
     !row.valid_selection_id || row.mode !== row.selection_mode).length;
   const currentUserActive = participations.results.filter(row =>
@@ -262,6 +325,17 @@ export async function loadQuizGenerationDiagnostics(
   }
 
   return {
+    status: "OK" as const,
+    stages: {
+      eligible_catalog_read: { status: "OK" as const },
+      selection_read: { status: "OK" as const },
+      selection_items_read: { status: "OK" as const },
+      participation_read: { status: "OK" as const },
+      free_play_calculation: { status: freeCode ? "ERROR" as const : "OK" as const, code: freeCode },
+      daily_calculation: { status: dailyCode || dailyExpired ? "ERROR" as const : "OK" as const, code: dailyExpired ? "expired_selection" : dailyCode },
+      historical_resolution: { status: freeHistory.missing || freeHistory.invalid || dailyHistory.missing || dailyHistory.invalid ? "ERROR" as const : "OK" as const },
+      safe_payload: { status: freeHistory.safePayloadCreatable && dailyHistory.safePayloadCreatable ? "OK" as const : "ERROR" as const },
+    },
     freePlay: {
       request: { gameType: GameType.QUIZ, mode: GameGenerationMode.FREE_PLAY, count: QUIZ_COUNT, filters: {} },
       catalogCandidates: catalog.length,

@@ -44,6 +44,8 @@ test("content dashboard exposes the read-only Quiz catalog diagnostic", () => {
   assert.match(components, /Geração de partidas/);
   assert.match(components, /FREE PLAY/);
   assert.match(components, /Fingerprint conflitante/);
+  assert.match(components, /Diagnóstico parcial disponível/);
+  assert.match(components, /Código seguro/);
   assert.doesNotMatch(components, /MIGRAR_ACERVO_QUIZ_PARA_CMS/);
 });
 
