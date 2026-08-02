@@ -37,6 +37,13 @@ export type UniversalImportReport = {
   byBook: Record<string, number>;
 };
 
+export type UniversalImportOptions = {
+  source?: string;
+  versionIdPrefix?: string;
+  changeSummary?: string;
+  auditAction?: string;
+};
+
 const safeJson = <T>(value: unknown, fallback: T): T => {
   try { return JSON.parse(String(value ?? "")) as T; } catch { return fallback; }
 };
@@ -145,6 +152,7 @@ export async function importUniversalContent(
   actorId: string,
   candidates: readonly UniversalImportCandidate[],
   commit = false,
+  options: UniversalImportOptions = {},
 ) {
   const { entries, existingById } = await planUniversalContentImport(env, candidates);
   const report = baseReport(entries);
@@ -173,24 +181,28 @@ export async function importUniversalContent(
     const theme = typeof payload.theme === "string" ? payload.theme : model.category;
     const book = typeof payload.book === "string" ? payload.book : null;
     const now = model.updatedAt;
+    const source = options.source ?? "UNIVERSAL_CMS";
+    const versionIdPrefix = options.versionIdPrefix ?? "legacy-quiz";
+    const changeSummary = options.changeSummary ?? "Migrado do acervo histórico do Quiz";
+    const auditAction = options.auditAction ?? "content.legacy_quiz_migrated";
     const statements = [
       env.DB.prepare(`INSERT INTO content_items(
         id,organization_id,game_type,status,category,difficulty,biblical_reference,tags_json,
         payload_json,reference_json,template_id,version,author_id,reviewer_id,created_at,updated_at,
         source,internal_notes
-      ) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,NULL,NULL,?10,?11,?12,?13,?14,'UNIVERSAL_CMS',?15)`)
+      ) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,NULL,NULL,?10,?11,?12,?13,?14,?15,?16)`)
         .bind(model.id, entry.organizationId, model.gameType, entry.targetStatus, model.category,
           model.difficulty, model.biblicalReference, JSON.stringify(model.tags), payloadJson,
-          model.version, model.authorId, model.reviewerId, model.createdAt, now, notes),
+          model.version, model.authorId, model.reviewerId, model.createdAt, now, source, notes),
       env.DB.prepare(`INSERT INTO content_versions(
         id,content_id,organization_id,version,metadata_json,payload_json,changed_by,change_summary,created_at
-      ) VALUES(?1,?2,?3,?4,?5,?6,?7,'Migrado do acervo histórico do Quiz',?8)`)
-        .bind(`legacy-quiz:${model.id}:v${model.version}`, model.id, entry.organizationId,
-          model.version, metadataSnapshot(entry), payloadJson, actorId, now),
+      ) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9)`)
+        .bind(`${versionIdPrefix}:${model.id}:v${model.version}`, model.id, entry.organizationId,
+          model.version, metadataSnapshot(entry), payloadJson, actorId, changeSummary, now),
       env.DB.prepare(`INSERT INTO audit_logs(
         id,organization_id,actor_user_id,action,entity_type,entity_id,details_json,created_at
-      ) VALUES(?1,?2,?3,'content.legacy_quiz_migrated','content_item',?4,?5,?6)`)
-        .bind(crypto.randomUUID(), entry.organizationId, actorId, model.id,
+      ) VALUES(?1,?2,?3,?4,'content_item',?5,?6,?7)`)
+        .bind(crypto.randomUUID(), entry.organizationId, actorId, auditAction, model.id,
           JSON.stringify({ externalId: entry.externalId, status: entry.targetStatus, version: model.version }), now),
     ];
     if (entry.targetStatus === ContentStatus.PUBLISHED) {
