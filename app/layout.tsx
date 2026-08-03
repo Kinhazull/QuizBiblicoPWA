@@ -14,6 +14,7 @@ import "./quality.css";
 import "./platform-home.css";
 import "./games.css";
 import "./free-play.css";
+import "./events.css";
 import "./wordle.css";
 import "./game-sdk.css";
 import "./three-clues.css";

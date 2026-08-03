@@ -16,8 +16,11 @@ export function GameResult({ status, mode = GameMode.NORMAL, gameType, onRestart
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const canReplay = getModeCapability(mode)?.replayable !== false;
-  const returnHref = mode === GameMode.DAILY || mode === GameMode.EVENT
-    ? "/desafios-diarios"
+  const eventId = typeof window === "undefined" ? null : new URLSearchParams(window.location.search).get("eventId");
+  const returnHref = mode === GameMode.EVENT
+    ? eventId ? `/eventos/detalhes?id=${encodeURIComponent(eventId)}` : "/eventos"
+    : mode === GameMode.DAILY
+      ? "/desafios-diarios"
     : "/jogos";
 
   async function replay() {
@@ -38,13 +41,13 @@ export function GameResult({ status, mode = GameMode.NORMAL, gameType, onRestart
   return <section className={`game-sdk-result ${status}`} aria-labelledby="game-result-title">
     <span className="game-sdk-result-icon" aria-hidden="true">{won ? "★" : "↻"}</span>
     <div>
-      <p>{mode === GameMode.DAILY ? "Resultado diário" : won ? "Desafio concluído" : "Tentativas encerradas"}</p>
+      <p>{mode === GameMode.DAILY ? "Resultado diário" : mode === GameMode.EVENT ? "Resultado do evento" : won ? "Desafio concluído" : "Tentativas encerradas"}</p>
       <h2 id="game-result-title">{won ? "Você venceu!" : "Não foi desta vez"}</h2>
       <span>{won ? "Muito bem! Seu resultado foi registrado." : "Seu resultado foi registrado. Continue explorando os desafios bíblicos."}</span>
     </div>
     <div className="game-sdk-result-actions">
       {canReplay ? <button disabled={busy} type="button" onClick={replay}>{busy ? "Preparando..." : "Jogar novamente"}</button> : null}
-      <a href={returnHref}>{mode === GameMode.DAILY || mode === GameMode.EVENT ? "Voltar aos desafios" : "Voltar aos Jogos"}</a>
+      <a href={returnHref}>{mode === GameMode.EVENT ? "Voltar ao evento" : mode === GameMode.DAILY ? "Voltar aos desafios" : "Voltar aos Jogos"}</a>
     </div>
     {error ? <p className="game-sdk-result-error" role="alert">{error}</p> : null}
   </section>;

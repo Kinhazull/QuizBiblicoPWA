@@ -83,7 +83,7 @@ export function useRegisterActiveGame(
 export function gameReturnDestination(mode: GameMode, eventId?: string | null) {
   if (mode === GameMode.DAILY) return "/desafios-diarios";
   if (mode === GameMode.EVENT) {
-    return eventId ? `/eventos/${encodeURIComponent(eventId)}` : "/eventos";
+    return eventId ? `/eventos/detalhes?id=${encodeURIComponent(eventId)}` : "/eventos";
   }
   return "/jogos";
 }

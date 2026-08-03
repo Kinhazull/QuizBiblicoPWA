@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "./AuthProvider";
-import { PlatformHome, type DailyObjectiveData, type DailyRetentionData, type PlatformAchievementData, type PlatformProgressData } from "./PlatformHome";
+import { PlatformHome, type DailyObjectiveData, type DailyRetentionData, type PlatformAchievementData, type PlatformEventSummary, type PlatformProgressData } from "./PlatformHome";
 import type { EquipmentView } from "./EquippedAvatar";
 
 const LEGAL_VERSION = "2026-07-13";
@@ -19,6 +19,7 @@ export default function Home() {
   const [dailyBusy, setDailyBusy] = useState(false);
   const [dailyError, setDailyError] = useState("");
   const [equipment, setEquipment] = useState<EquipmentView | null>(null);
+  const [events, setEvents] = useState<PlatformEventSummary[]>([]);
 
   useEffect(() => {
     const invite = new URLSearchParams(location.search).get("convite");
@@ -44,6 +45,10 @@ export default function Home() {
     fetch("/api/platform/daily-objectives", { cache: "no-store", signal: controller.signal })
       .then(response => response.ok ? response.json() : null)
       .then(data => { if (active && Array.isArray(data?.objectives)) setDailyObjectives(data.objectives); })
+      .catch(() => undefined);
+    fetch("/api/platform/events", { cache: "no-store", signal: controller.signal })
+      .then(response => response.ok ? response.json() : null)
+      .then(data => { if (active && Array.isArray(data?.events)) setEvents(data.events); })
       .catch(() => undefined);
     void (async () => {
       try {
@@ -154,6 +159,6 @@ export default function Home() {
 
   return <PlatformHome displayName={user.displayName} achievementData={achievementData}
     progress={progress} daily={daily} dailyBusy={dailyBusy}
-    dailyObjectives={dailyObjectives} dailyError={dailyError} equipment={equipment}
+    dailyObjectives={dailyObjectives} dailyError={dailyError} equipment={equipment} events={events}
     onOpenChest={openDailyChest} />;
 }

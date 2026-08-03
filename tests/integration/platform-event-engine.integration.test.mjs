@@ -172,5 +172,6 @@ test("retry does not silently substitute a different consumer handler version", 
 });
 
 test("there is no public event publication endpoint", () => {
-  assert.equal(existsSync(new URL("../../functions/api/platform/events", import.meta.url)), false);
+  assert.equal(existsSync(new URL("../../functions/api/platform/events/publish.ts", import.meta.url)), false);
+  assert.equal(existsSync(new URL("../../functions/api/platform/events/[id]/publish.ts", import.meta.url)), false);
 });

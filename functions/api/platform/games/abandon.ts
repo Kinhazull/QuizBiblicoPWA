@@ -3,6 +3,7 @@ import { finishDailyParticipation } from "../../../_lib/platform-daily-objective
 import { finishFreePlayParticipation } from "../../../_lib/platform-free-play";
 import { json } from "../../../_lib/security";
 import { GameMode } from "../../../../shared/game-modes";
+import { finishEventParticipation } from "../../../_lib/platform-events";
 
 const SAFE_ID = /^[a-zA-Z0-9._:-]{8,160}$/;
 
@@ -16,12 +17,18 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
     if (
       !SAFE_ID.test(selectionId)
       || !SAFE_ID.test(gameType)
-      || ![GameMode.DAILY, GameMode.FREE_PLAY].includes(mode as any)
+      || ![GameMode.DAILY, GameMode.FREE_PLAY, GameMode.EVENT].includes(mode as any)
     ) {
       return json({ error: "invalid_game_abandonment" }, 400);
     }
 
-    const participation = await env.DB.prepare(`SELECT participation.status
+    const participation = mode === GameMode.EVENT
+      ? await env.DB.prepare(`SELECT participation.status,participation.event_id eventId
+        FROM platform_event_participations participation
+        WHERE participation.selection_id=?1 AND participation.organization_id=?2 AND participation.user_id=?3
+          AND participation.game_type=?4 LIMIT 1`)
+        .bind(selectionId, String(user.organizationId), String(user.id), gameType).first<{ status: string; eventId: string }>()
+      : await env.DB.prepare(`SELECT participation.status
       FROM generated_game_participations participation
       JOIN generated_game_selections selection ON selection.id=participation.selection_id
       WHERE participation.selection_id=?1
@@ -34,7 +41,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
         AND selection.mode=participation.mode
       LIMIT 1`)
       .bind(selectionId, String(user.organizationId), String(user.id), gameType, mode)
-      .first<{ status: string }>();
+      .first<{ status: string; eventId?: string }>();
     if (!participation) return json({ error: "game_participation_not_found" }, 404);
     if (participation.status === "FINISHED") {
       return json({ ok: true, outcome: "lost", duplicate: true }, 200, {
@@ -50,7 +57,9 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
       organizationId: String(user.organizationId),
       userId: String(user.id),
     };
-    if (mode === GameMode.DAILY) {
+    if (mode === GameMode.EVENT && participation.eventId) {
+      await finishEventParticipation(env, identity, participation.eventId, selectionId, eventId, "lost");
+    } else if (mode === GameMode.DAILY) {
       await finishDailyParticipation(env, identity, selectionId, eventId);
     } else {
       await finishFreePlayParticipation(env, identity, selectionId, eventId);

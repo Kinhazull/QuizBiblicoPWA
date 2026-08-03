@@ -13,6 +13,8 @@ export function LearningQuickNav() {
   if (isGamePlayRoute(path)) return null;
   const platformRoute = path === "/"
     || path === "/desafios-diarios"
+    || path === "/eventos"
+    || path.startsWith("/eventos/")
     || path === "/jogos"
     || path.startsWith("/jogos/")
     || path === "/perfil"

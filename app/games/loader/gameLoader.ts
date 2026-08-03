@@ -1,4 +1,4 @@
-import { DailyContentProvider, FreePlayContentProvider, NormalContentProvider } from "./providers";
+import { DailyContentProvider, EventContentProvider, FreePlayContentProvider, NormalContentProvider } from "./providers";
 import { GameContentProviderRegistry } from "./providerRegistry";
 import {
   GameContentMode,
@@ -9,7 +9,8 @@ import {
 export const gameContentProviders = new GameContentProviderRegistry()
   .register(new NormalContentProvider())
   .register(new DailyContentProvider())
-  .register(new FreePlayContentProvider());
+  .register(new FreePlayContentProvider())
+  .register(new EventContentProvider());
 
 export function gameContentRequestFromLocation(
   gameType: GameContentRequest["gameType"],
@@ -18,14 +19,19 @@ export function gameContentRequestFromLocation(
   const parameters = new URLSearchParams(locationSearch);
   const dailySelectionId = parameters.get("daily");
   const freePlaySelectionId = parameters.get("freePlay");
+  const eventSelectionId = parameters.get("event");
+  const eventId = parameters.get("eventId");
   return {
     gameType,
     mode: dailySelectionId
       ? GameContentMode.DAILY
       : freePlaySelectionId
         ? GameContentMode.FREE_PLAY
+        : eventSelectionId
+          ? GameContentMode.EVENT
         : GameContentMode.NORMAL,
-    selectionId: dailySelectionId ?? freePlaySelectionId,
+    selectionId: dailySelectionId ?? freePlaySelectionId ?? eventSelectionId,
+    ...(eventId ? { eventId } : {}),
   };
 }
 
@@ -64,11 +70,13 @@ export async function validateGameContentAction<TResponse>(
   action: string,
   input: Record<string, unknown>,
 ): Promise<TResponse> {
-  if (content.mode === GameContentMode.DAILY || content.mode === GameContentMode.FREE_PLAY) {
+  if (content.mode === GameContentMode.DAILY || content.mode === GameContentMode.FREE_PLAY || content.mode === GameContentMode.EVENT) {
     const response = await fetch(
       content.mode === GameContentMode.DAILY
         ? "/api/platform/daily-objectives/action"
-        : "/api/platform/free-play/action",
+        : content.mode === GameContentMode.FREE_PLAY
+          ? "/api/platform/free-play/action"
+          : "/api/platform/events/action",
       {
       method: "POST",
       credentials: "same-origin",

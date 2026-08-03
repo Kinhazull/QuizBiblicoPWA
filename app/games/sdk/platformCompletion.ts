@@ -1,4 +1,5 @@
 export type WordleCompletionSubmission = {
+  eventSelectionId?: string;
   gameId: "wordle-biblico";
   sessionId: string;
   contentId: string;
@@ -7,6 +8,7 @@ export type WordleCompletionSubmission = {
 };
 
 export type ThreeCluesCompletionSubmission = {
+  eventSelectionId?: string;
   gameId: "jogo-tres-pistas";
   sessionId: string;
   contentId: string;
@@ -18,6 +20,7 @@ export type ThreeCluesCompletionSubmission = {
 };
 
 export type TimelineCompletionSubmission = {
+  eventSelectionId?: string;
   gameId: "linha-do-tempo-biblica";
   sessionId: string;
   contentId: string;
@@ -27,6 +30,7 @@ export type TimelineCompletionSubmission = {
 };
 
 export type MemoryCompletionSubmission = {
+  eventSelectionId?: string;
   gameId: "memoria-biblica";
   sessionId: string;
   contentId: string;
@@ -35,6 +39,7 @@ export type MemoryCompletionSubmission = {
 };
 
 export type WhoAmICompletionSubmission = {
+  eventSelectionId?: string;
   gameId: "quem-sou-eu";
   sessionId: string;
   contentId: string;
@@ -46,6 +51,7 @@ export type WhoAmICompletionSubmission = {
 };
 
 export type ThemeAssociationCompletionSubmission = {
+  eventSelectionId?: string;
   gameId: "associacao-de-temas";
   sessionId: string;
   contentId: string;
@@ -73,6 +79,9 @@ export async function recordPlatformGameCompletion(input: PlatformGameCompletion
   const freePlaySelectionId = typeof window === "undefined"
     ? null
     : new URLSearchParams(window.location.search).get("freePlay");
+  const eventSelectionId = typeof window === "undefined"
+    ? null
+    : new URLSearchParams(window.location.search).get("event");
   const response = await fetch("/api/platform/games/finish", {
     method: "POST",
     credentials: "same-origin",
@@ -84,6 +93,8 @@ export async function recordPlatformGameCompletion(input: PlatformGameCompletion
         ? { ...input, dailySelectionId }
         : freePlaySelectionId
           ? { ...input, freePlaySelectionId }
+          : eventSelectionId
+            ? { ...input, eventSelectionId }
           : input,
     ),
   });

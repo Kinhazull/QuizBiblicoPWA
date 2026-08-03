@@ -47,6 +47,7 @@ const foundationMigrations = [
   "0033_universal_game_generator.sql",
   "0034_daily_objective_participations.sql",
   "0035_free_play_participations.sql",
+  "0036_platform_events.sql",
 ];
 const expectedFinalLedger = [...baseline, targetMigration, ...foundationMigrations];
 const introducedTablesByMigration = {
@@ -59,6 +60,10 @@ const introducedTablesByMigration = {
   "0034_daily_objective_participations.sql": [
     "generated_game_participations",
     "generated_game_participation_usage",
+  ],
+  "0036_platform_events.sql": [
+    "platform_events", "platform_event_games", "platform_event_content_items",
+    "platform_event_content_reservations", "platform_event_participations", "platform_event_reward_ledger",
   ],
 };
 const introducedIndexesByMigration = {
@@ -74,6 +79,10 @@ const introducedIndexesByMigration = {
   ],
   "0034_daily_objective_participations.sql": [
     "generated_game_participations_user_status_idx",
+  ],
+  "0036_platform_events.sql": [
+    "platform_events_org_window_idx", "platform_event_games_org_event_idx", "platform_event_content_lookup_idx",
+    "platform_event_reservations_conflict_idx", "platform_event_participations_user_idx", "platform_event_rewards_user_idx",
   ],
 };
 const modifiedSchemaObjectsByMigration = {
@@ -97,6 +106,8 @@ const requiredTables = [
   "content_items", "content_versions", "universal_content_library",
   "generated_game_selections", "generated_game_selection_items",
   "generated_game_participations", "generated_game_participation_usage",
+  "platform_events", "platform_event_games", "platform_event_content_items", "platform_event_content_reservations",
+  "platform_event_participations", "platform_event_reward_ledger",
   "user_platform_statistics", "user_platform_game_statistics", "user_platform_game_difficulty_statistics",
   "user_platform_statistics_active_days", "platform_statistics_event_checkpoints", "quiz_core_event_outbox",
   "user_platform_statistics_official_days_utc",
@@ -133,6 +144,8 @@ const requiredIndexes = [
   "generated_game_selections_org_created_idx", "generated_game_selections_mode_key_idx",
   "generated_game_selections_expiration_idx", "generated_game_selection_items_content_idx",
   "generated_game_participations_user_status_idx",
+  "platform_events_org_window_idx", "platform_event_games_org_event_idx", "platform_event_content_lookup_idx",
+  "platform_event_reservations_conflict_idx", "platform_event_participations_user_idx", "platform_event_rewards_user_idx",
 ];
 
 function runWrangler(command) {

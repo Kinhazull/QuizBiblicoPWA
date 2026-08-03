@@ -51,3 +51,16 @@ test("validates the pre-migration schema without requiring tables from the pendi
   );
   assert.deepEqual(tables, ["users"]);
 });
+
+test("0036 preflight accepts the 0035 schema and final verification requires Event tables", () => {
+  const expected = ["0035_free_play_participations.sql", "0036_platform_events.sql"];
+  const eventTables = [
+    "platform_events", "platform_event_games", "platform_event_content_items",
+    "platform_event_content_reservations", "platform_event_participations", "platform_event_reward_ledger",
+  ];
+  const finalTables = ["users", ...eventTables];
+  const introduced = { "0036_platform_events.sql": eventTables };
+  assert.deepEqual(pendingMigrationNames([expected[0]], expected), [expected[1]]);
+  assert.deepEqual(schemaTablesForLedger([expected[0]], expected, finalTables, introduced), ["users"]);
+  assert.deepEqual(schemaTablesForLedger(expected, expected, finalTables, introduced), finalTables);
+});

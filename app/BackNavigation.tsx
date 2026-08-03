@@ -10,6 +10,8 @@ import {
 
 function explicitDestination(pathname: string) {
   if (pathname === "/jogos" || pathname === "/desafios-diarios") return "/";
+  if (pathname === "/eventos") return "/";
+  if (pathname.startsWith("/eventos/")) return "/eventos";
   if (
     pathname === "/perfil"
     || pathname === "/recompensas"
@@ -31,7 +33,7 @@ export function BackNavigation() {
   const allowNavigation = useRef(false);
 
   const gameDestination = activeGame
-    ? gameReturnDestination(activeGame.mode)
+    ? gameReturnDestination(activeGame.mode, typeof window === "undefined" ? null : new URLSearchParams(window.location.search).get("eventId"))
     : null;
   const destination = gameDestination ?? explicitDestination(pathname);
 

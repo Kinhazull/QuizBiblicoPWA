@@ -59,7 +59,7 @@ const capabilities: Readonly<Record<GameMode, ModeCapability>> = Object.freeze({
   }),
   [GameMode.EVENT]: Object.freeze({
     mode: GameMode.EVENT,
-    active: false,
+    active: true,
     usesGeneratedSelection: true,
     supportsUserFilters: false,
     sharedSelection: true,

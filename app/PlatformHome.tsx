@@ -49,6 +49,16 @@ export type DailyObjectiveData = {
   playHref: string | null;
 };
 
+export type PlatformEventSummary = {
+  id: string;
+  title: string;
+  description: string;
+  startsAt: number;
+  endsAt: number;
+  status: "SCHEDULED" | "ACTIVE" | "FINISHED";
+  games: unknown[];
+};
+
 type PlatformHomeProps = {
   displayName: string;
   achievementData: PlatformAchievementData | null;
@@ -58,6 +68,7 @@ type PlatformHomeProps = {
   dailyBusy: boolean;
   dailyError: string;
   equipment: EquipmentView | null;
+  events: PlatformEventSummary[];
   onOpenChest: () => void;
 };
 
@@ -81,6 +92,7 @@ export function PlatformHome({
   dailyBusy,
   dailyError,
   equipment,
+  events,
   onOpenChest,
 }: PlatformHomeProps) {
   const achievements = recentAchievements(achievementData);
@@ -88,6 +100,7 @@ export function PlatformHome({
   const objectives = dailyObjectives || [];
   const completedObjectives = objectives.filter(item => item.status === "FINISHED").length;
   const objectivePercent = Math.round((completedObjectives / 7) * 100);
+  const featuredEvent = events.find(item => item.status === "ACTIVE") || events.find(item => item.status === "SCHEDULED");
 
   return <main className="platform-home">
     <div className="platform-ambient platform-ambient-one" aria-hidden="true" />
@@ -151,6 +164,12 @@ export function PlatformHome({
         <div><p>Jogar</p><h2 id="play-hub-title">Escolha seu próximo desafio</h2><span>Todos os jogos da plataforma em um só lugar.</span></div>
         <a href="/jogos">Ver jogos <span aria-hidden="true">→</span></a>
       </section>
+
+      {featuredEvent ? <section className="platform-event-card" aria-labelledby="featured-event-title">
+        <div><p>{featuredEvent.status === "ACTIVE" ? "Evento ativo" : "Próximo evento"}</p>
+          <h2 id="featured-event-title">{featuredEvent.title}</h2><span>{featuredEvent.description}</span></div>
+        <a href={`/eventos/detalhes?id=${encodeURIComponent(featuredEvent.id)}`}>Ver evento <span aria-hidden="true">→</span></a>
+      </section> : null}
 
       <section className="platform-daily-chest" id="recompensas" aria-labelledby="chest-title">
         <div className="platform-chest-art" aria-hidden="true">🎁</div>

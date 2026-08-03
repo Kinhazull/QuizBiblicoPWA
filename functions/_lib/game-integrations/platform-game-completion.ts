@@ -123,7 +123,7 @@ export type PlatformGameCompletion = (
   | MemoryCompletion
   | ThemeAssociationCompletion
   | WhoAmICompletion
-) & { dailySelectionId?: string; freePlaySelectionId?: string };
+) & { dailySelectionId?: string; freePlaySelectionId?: string; eventSelectionId?: string };
 
 function validateSessionId(value: unknown) {
   const sessionId = String(value || "");

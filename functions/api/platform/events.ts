@@ -1,0 +1,2 @@
+import { requireUser, type AppEnv } from "../../_lib/auth"; import { listParticipantEvents } from "../../_lib/platform-events"; import { json } from "../../_lib/security";
+export const onRequestGet=async({request,env}:{request:Request;env:AppEnv})=>{try{const user:any=await requireUser(request,env);return json({events:await listParticipantEvents(env,{organizationId:user.organizationId,userId:user.id})},200,{"cache-control":"no-store, private"})}catch(error){if(error instanceof Response)return error;return json({error:"event_list_failed"},500)}};

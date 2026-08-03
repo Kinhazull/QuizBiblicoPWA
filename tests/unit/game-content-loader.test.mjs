@@ -143,6 +143,28 @@ test("loader selects DAILY only from an explicit daily selection", () => {
     gameContentRequestFromLocation(GameType.WORDLE, ""),
     { gameType: GameType.WORDLE, mode: GameContentMode.NORMAL, selectionId: null },
   );
+  assert.deepEqual(
+    gameContentRequestFromLocation(GameType.WORDLE, "?event=selection-event&eventId=event-1"),
+    { gameType: GameType.WORDLE, mode: GameContentMode.EVENT, selectionId: "selection-event", eventId: "event-1" },
+  );
+});
+
+test("event provider starts and loads the immutable event selection", async () => {
+  const calls = [];
+  globalThis.fetch = async (url) => {
+    calls.push(String(url));
+    if (String(url).endsWith("/start")) return jsonResponse({ participation: { participationId: "event-participation" } });
+    return jsonResponse({ game: { selectionId: "event-selection", gameType: GameType.WORDLE,
+      content: { id: "event-wordle", version: 4, hint: "Pista", wordLength: 5 }, expiresAt: 5000 } });
+  };
+  const loaded = await loadGameContent({ gameType: GameType.WORDLE, mode: GameContentMode.EVENT,
+    selectionId: "event-selection", eventId: "event-1" });
+  assert.equal(loaded.participationId, "event-participation");
+  assert.equal(loaded.contentId, "event-wordle");
+  assert.deepEqual(calls, [
+    "/api/platform/events/event-1/start",
+    "/api/platform/events/event-1/selection?selectionId=event-selection",
+  ]);
 });
 
 test("free play provider starts and reloads the same immutable selection", async () => {

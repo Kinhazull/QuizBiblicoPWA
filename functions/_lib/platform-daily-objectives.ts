@@ -543,11 +543,15 @@ export async function generatedSelectionContext(
   env: AppEnv,
   identity: Identity,
   selection: GeneratedGameSelection,
-  expectedMode: typeof GameGenerationMode.DAILY | typeof GameGenerationMode.FREE_PLAY,
+  expectedMode: typeof GameGenerationMode.DAILY | typeof GameGenerationMode.FREE_PLAY | typeof GameGenerationMode.EVENT,
   now = Date.now(),
 ) {
   if (selection.mode !== expectedMode) throw new Error("invalid_generated_selection_mode");
-  const participation = await ensureGeneratedParticipation(env, identity, selection, now);
+  const participation = expectedMode === GameGenerationMode.EVENT
+    ? await env.DB.prepare(`SELECT * FROM platform_event_participations
+      WHERE selection_id=?1 AND organization_id=?2 AND user_id=?3 AND game_type=?4`)
+      .bind(selection.id, identity.organizationId, identity.userId, selection.gameType).first<Record<string, unknown>>()
+    : await ensureGeneratedParticipation(env, identity, selection, now);
   if (!participation || String(participation.status) !== DailyObjectiveLifecycle.STARTED) {
     throw new Error("daily_participation_not_started");
   }
@@ -581,7 +585,7 @@ export async function validateGeneratedGameAction(
     action: string;
     payload: Record<string, unknown>;
   },
-  expectedMode: typeof GameGenerationMode.DAILY | typeof GameGenerationMode.FREE_PLAY,
+  expectedMode: typeof GameGenerationMode.DAILY | typeof GameGenerationMode.FREE_PLAY | typeof GameGenerationMode.EVENT,
   now = Date.now(),
 ) {
   const selection = await findGeneratedSelectionById(env, identity.organizationId, input.selectionId);
@@ -723,7 +727,7 @@ export async function validateGeneratedGameAction(
       seen.add(questionId);
     }
     const participationId = String(context.participation.id);
-    const modeName = expectedMode === GameGenerationMode.DAILY ? "daily" : "free_play";
+    const modeName = expectedMode === GameGenerationMode.DAILY ? "daily" : expectedMode === GameGenerationMode.EVENT ? "event" : "free_play";
     const eventId = `${modeName}:${input.selectionId}:${identity.userId}:finished`;
     await publishOfficialCoreEvent(env, {
       eventId,
@@ -749,7 +753,9 @@ export async function validateGeneratedGameAction(
       },
       version: 2,
     }, now);
-    await finishGeneratedParticipation(env, identity, input.selectionId, expectedMode, eventId, now);
+    if (expectedMode !== GameGenerationMode.EVENT) {
+      await finishGeneratedParticipation(env, identity, input.selectionId, expectedMode, eventId, now);
+    }
     return {
       score: correctAnswers * 100,
       correctAnswers,

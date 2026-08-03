@@ -33,6 +33,7 @@ import {
   finishFreePlayParticipation,
   freePlaySelectionContext,
 } from "../../../_lib/platform-free-play";
+import { eventSelectionContext, finishEventParticipation } from "../../../_lib/platform-events";
 
 const SAFE_ERROR = /^[a-z0-9_]{1,100}$/;
 
@@ -43,7 +44,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
     if (!body || typeof body !== "object" || Array.isArray(body)) {
       return json({ error: "invalid_game_completion" }, 400);
     }
-    if (body.dailySelectionId && body.freePlaySelectionId) {
+    if ([body.dailySelectionId, body.freePlaySelectionId, body.eventSelectionId].filter(Boolean).length > 1) {
       throw new Error("invalid_game_selection_mode");
     }
     const daily = body.dailySelectionId
@@ -58,7 +59,18 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
         userId: String(user.id),
       }, body.freePlaySelectionId, body.gameId)
       : null;
-    const generated = daily ?? freePlay;
+    const eventRow = body.eventSelectionId
+      ? await env.DB.prepare(`SELECT event_id eventId FROM platform_event_games
+        WHERE selection_id=?1 AND organization_id=?2 AND game_type=?3`)
+        .bind(body.eventSelectionId, String(user.organizationId), body.gameId).first<{ eventId: string }>()
+      : null;
+    const eventContext = body.eventSelectionId && eventRow
+      ? await eventSelectionContext(env, {
+        organizationId: String(user.organizationId), userId: String(user.id),
+      }, eventRow.eventId, body.eventSelectionId, body.gameId)
+      : null;
+    if (body.eventSelectionId && !eventContext) throw new Error("invalid_event_selection");
+    const generated = daily ?? freePlay ?? eventContext;
     const generatedContent = generated?.contents.length === 1 ? generated.contents[0] : null;
     const resolvedGeneratedContent = generatedContent ? {
       id: generatedContent.id,
@@ -310,6 +322,12 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
         organizationId: String(user.organizationId),
         userId: String(user.id),
       }, body.freePlaySelectionId, event.eventId, event.occurredAt);
+    }
+    if (body.eventSelectionId && eventRow) {
+      await finishEventParticipation(env, {
+        organizationId: String(user.organizationId), userId: String(user.id),
+      }, eventRow.eventId, body.eventSelectionId, event.eventId,
+      event.payload.correctAnswers > 0 ? "won" : "lost", event.occurredAt);
     }
     return json({
       ok: true,

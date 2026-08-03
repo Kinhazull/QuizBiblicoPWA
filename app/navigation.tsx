@@ -221,8 +221,13 @@ export const adminNavigation: NavigationGroup[] = [
   {
     label: "Jogos",
     icon: "gamepad",
-    items: [],
-    emptyLabel: "Catálogo e acompanhamento dos jogos em preparação.",
+    items: [{
+      label: "Eventos",
+      href: "/admin/eventos",
+      icon: "calendar",
+      description: "Criar, validar e acompanhar eventos da plataforma.",
+      permissions: ["rounds.manage"],
+    }],
   },
   {
     label: "Progressão",

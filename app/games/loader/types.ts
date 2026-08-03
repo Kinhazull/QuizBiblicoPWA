@@ -23,6 +23,7 @@ export type GameContentRequest = {
   gameType: GameType;
   mode?: GameContentMode;
   selectionId?: string | null;
+  eventId?: string | null;
   signal?: AbortSignal;
 };
 
