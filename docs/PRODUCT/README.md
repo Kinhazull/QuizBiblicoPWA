@@ -15,6 +15,8 @@ Esta pasta reúne as decisões que orientam a evolução do **Conte os Feitos** 
 | [DOMAIN_MODEL.md](DOMAIN_MODEL.md) | Modelo de domínio independente de persistência |
 | [CORE_PLATFORM_EVENT_ENGINE.md](CORE_PLATFORM_EVENT_ENGINE.md) | Contrato arquitetural do Event Engine |
 | [GAME_INTEGRATION_CONTRACT.md](GAME_INTEGRATION_CONTRACT.md) | Contrato oficial entre jogos e Core Platform |
+| [PHASE_4_RELEASE_CANDIDATE.md](PHASE_4_RELEASE_CANDIDATE.md) | Gate e arquitetura consolidada do candidato da Fase 4 |
+| [PHASE_5_LEGACY_AUDIT_BACKLOG.md](PHASE_5_LEGACY_AUDIT_BACKLOG.md) | Inventário classificado para a limpeza arquitetural da Fase 5 |
 | [GAME_CATALOG.md](GAME_CATALOG.md) | Catálogo oficial de jogos e seus estados |
 | [MISSION_SYSTEM_ARCHITECTURE.md](MISSION_SYSTEM_ARCHITECTURE.md) | Arquitetura oficial de missões |
 | [MISSION_CATALOG.md](MISSION_CATALOG.md) | Catálogo versionado de missões v1 |
