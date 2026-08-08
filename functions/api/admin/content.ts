@@ -6,7 +6,7 @@ import { json } from "../../_lib/security";
 
 export const onRequestGet = async ({ request, env }: { request: Request; env: AppEnv }) => {
   try {
-    const user = await requireAnyPermission(request, env, ["questions.edit", "questions.review", "rounds.manage"]);
+    const user = await requireAnyPermission(request, env, ["content.manage", "questions.review"]);
     const url = new URL(request.url);
     const data = url.searchParams.get("view") === "dashboard"
       ? await loadContentDashboard(env, String(user.organizationId))
@@ -20,7 +20,7 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: Ap
 
 export const onRequestPost = async ({ request, env }: { request: Request; env: AppEnv }) => {
   try {
-    const user = await requirePermission(request, env, "questions.edit");
+    const user = await requirePermission(request, env, "content.manage");
     const result = await createUniversalDraft(
       env,
       String(user.organizationId),

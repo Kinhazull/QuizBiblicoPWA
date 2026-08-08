@@ -14,6 +14,7 @@ Este registro acompanha estruturas ainda presentes, mas destinadas a substituiç
 | `/temporadas` e estruturas sazonais | **DEFERRED / HISTORICAL_PRESERVED**; fora da navegação | decisão futura explícita | política de produto e retenção | seasons, snapshots, awards e rounds | posterior |
 | Worker `journey-awards` como nome/domínio legado | **ACTIVE_BY_DECISION** | executor moderno no recurso técnico existente | eventual renome somente com plano operacional próprio | Cron, outbox, retry e Eventos | não renomear na Fase 5 |
 | `legacyLeader` | Compatibilidade | permissões explícitas | papéis migrados sem perda de acesso | autenticação e administração | 24.5 |
+| permissões históricas em recursos modernos (`questions.edit`, `rounds.manage`, `reports.view`, `members.manage`) | Ponte de compatibilidade ativa | `content.manage`, `events.manage`, `operations.view`, `privacy.manage`, `economy.manage`, `analytics.view` | grants administrativos migrados e telemetria de uso confirmada | `user_permissions`, `/api/auth/me`, navegação e guards server-side | posterior à 24.5 |
 | `GAME_FINISHED` v1 | Compatibilidade de contrato | `GAME_FINISHED` v2 | todos os produtores e eventos históricos tratados | Event Engine, outbox e consumers | posterior |
 | página de sugestões com IA | Redirect/dormente | decisão futura | reativação controlada ou retirada formal | flag, endpoint, tabela e CSS | 24.3 ou posterior |
 

@@ -5,6 +5,7 @@ import { visibleAdminNavigation } from "../../app/admin-navigation-access.ts";
 const adminNavigation = [
   { label: "Visão geral", items: [
     { label: "Painel", permissions: ["reports.view"] },
+    { label: "Analytics da plataforma", href: "/admin/analytics", permissions: ["analytics.view"] },
   ] },
   { label: "Usuários", items: [
     { label: "Usuários e membros", permissions: ["members.manage"] },
@@ -27,6 +28,13 @@ const adminNavigation = [
   ] },
 ];
 const visible = access => visibleAdminNavigation(adminNavigation, access);
+
+test("modern analytics permission exposes only the platform analytics entry", () => {
+  const groups = visible({ role: "participant", permissions: ["analytics.view"] });
+  const hrefs = groups.flatMap(group => group.items.map(item => item.href));
+  assert.ok(hrefs.includes("/admin/analytics"));
+  assert.ok(!hrefs.includes("/admin/analises"));
+});
 const items = groups => groups.flatMap(group => group.items);
 const labels = groups => items(groups).map(item => item.label);
 

@@ -5,6 +5,7 @@ type PermissionGroup<T extends PermissionItem> = { items: T[] };
 const leaderPermissions = new Set([
   "members.manage", "invitations.manage", "questions.edit", "questions.review",
   "rounds.manage", "reports.view", "audit.view",
+  "content.manage", "events.manage", "operations.view", "privacy.manage", "economy.manage", "analytics.view",
 ]);
 
 export function visibleAdminNavigation<T extends PermissionItem, G extends PermissionGroup<T>>(

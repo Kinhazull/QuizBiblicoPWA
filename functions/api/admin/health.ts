@@ -80,7 +80,7 @@ export const onRequestGet = async ({
   env: AppEnv;
 }) => {
   try {
-    const user: any = await requirePermission(request, env, "reports.view"),
+    const user: any = await requirePermission(request, env, "operations.view"),
       now = Date.now(),
       tables = await env.DB.prepare(
         "SELECT name FROM sqlite_master WHERE type='table'",

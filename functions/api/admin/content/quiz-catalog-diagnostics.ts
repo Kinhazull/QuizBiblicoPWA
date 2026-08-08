@@ -5,7 +5,7 @@ import { json } from "../../../_lib/security";
 
 export const onRequestGet = async ({ request, env }: { request: Request; env: AppEnv }) => {
   try {
-    const user = await requirePermission(request, env, "questions.edit");
+    const user = await requirePermission(request, env, "content.manage");
     return json(
       await loadQuizCatalogDiagnostics(env, String(user.organizationId), String(user.id)),
       200,

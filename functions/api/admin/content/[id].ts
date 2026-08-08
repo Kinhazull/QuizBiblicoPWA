@@ -11,7 +11,7 @@ type Context = { request: Request; env: AppEnv; params: { id: string } };
 export const onRequestGet = async ({ request, env, params }: Context) => {
   try {
     const user = await requireAnyPermission(request, env, [
-      "questions.edit", "questions.review", "rounds.manage",
+      "content.manage", "questions.review",
     ]);
     const content = await findUniversalContent(env, String(user.organizationId), params.id);
     if (!content) return json({ error: "not_found" }, 404);
@@ -24,7 +24,7 @@ export const onRequestGet = async ({ request, env, params }: Context) => {
 
 const update = async ({ request, env, params }: Context) => {
   try {
-    const user = await requirePermission(request, env, "questions.edit");
+    const user = await requirePermission(request, env, "content.manage");
     const result = await updateUniversalDraft(
       env,
       String(user.organizationId),

@@ -6,7 +6,7 @@ import { PublicErrorCategory, publicDomainError } from "../../../_lib/operationa
 
 export const onRequestPost = async ({ request, env }: { request: Request; env: AppEnv }) => {
   try {
-    const user: any = await requirePermission(request, env, "rounds.manage");
+    const user: any = await requirePermission(request, env, "events.manage");
     const suggestions = await suggestEventContent(env, user.organizationId, await request.json() as Record<string, unknown>);
     return json({ suggestions, requiresApproval: true }, 200, { "cache-control": "no-store, private" });
   } catch (error) {

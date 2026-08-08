@@ -5,7 +5,7 @@ import { json } from "../../../_lib/security";
 
 export const onRequestPost = async ({ request, env }: { request: Request; env: AppEnv }) => {
   try {
-    const user = await requirePermission(request, env, "questions.edit");
+    const user = await requirePermission(request, env, "content.manage");
     const body = await request.json().catch(() => ({})) as { commit?: unknown; confirmation?: unknown };
     const commit = body.commit === true;
     if (commit && body.confirmation !== "MIGRAR_ACERVO_QUIZ_PARA_CMS") {

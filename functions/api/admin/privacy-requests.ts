@@ -5,7 +5,7 @@ import { ACCOUNT_ANONYMIZATION_CONFIRMATION, anonymizeUserAccount } from "../../
 
 export const onRequestGet = async ({ request, env }: { request: Request; env: AppEnv }) => {
   try {
-    const admin: any = await requirePermission(request, env, "members.manage");
+    const admin: any = await requirePermission(request, env, "privacy.manage");
     const rows = await env.DB.prepare(`SELECT pr.id,pr.request_type requestType,pr.status,pr.requested_at requestedAt,
       u.display_name displayName,u.username FROM privacy_requests pr JOIN users u ON u.id=pr.user_id
       WHERE pr.organization_id=?1 ORDER BY CASE pr.status WHEN 'pending' THEN 0 ELSE 1 END,pr.requested_at DESC`)
@@ -21,7 +21,7 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: Ap
 
 export const onRequestPatch = async ({ request, env }: { request: Request; env: AppEnv }) => {
   try {
-    const admin: any = await requirePermission(request, env, "members.manage");
+    const admin: any = await requirePermission(request, env, "privacy.manage");
     const body: any = await request.json();
     const id = String(body.id || ""), action = String(body.action || "");
     if (!["approve", "reject"].includes(action)) return json({ error: "invalid_action" }, 400);
