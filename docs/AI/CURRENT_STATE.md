@@ -15,7 +15,7 @@ A tag `v1.0.0` permanece como referência histórica do piloto do produto anteri
 
 **Fase 5 — Consolidação, operação e desacoplamento progressivo do legado.**
 
-Sprint corrente: **24.0 — Governança do Repositório e Estado Oficial da Plataforma**.
+Sprint corrente: **24.2 — Privacidade e Ciclo de Vida dos Dados**.
 
 Próximas sprints aprovadas no roadmap:
 
@@ -37,6 +37,8 @@ Próximas sprints aprovadas no roadmap:
 - Os sete jogos utilizam a infraestrutura universal.
 - O Worker processa premiações legadas, outbox do Quiz, retry de eventos oficiais do Core e reconciliação independente de Eventos encerrados.
 - Backup administrativo, diagnóstico e reset usam o contrato operacional canônico até a migration `0036`.
+- Privacidade usa matriz canônica derivada do mesmo contrato; exportação pessoal v2 cobre Core, jogos, economia, Eventos e contribuições CMS.
+- Anonimização revoga sessões e credenciais efêmeras, preservando CMS organizacional e ledgers pseudônimos necessários a FKs e idempotência.
 - Estruturas legadas permanecem por compatibilidade e evidência histórica; a remoção ainda não começou.
 
 ## Riscos priorizados

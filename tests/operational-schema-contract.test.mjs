@@ -3,7 +3,7 @@ import { readFileSync, readdirSync } from "node:fs";
 import test from "node:test";
 import {
   APPLICATION_TABLES, BACKUP_TABLE_CLASSIFICATION, CRITICAL_INDEXES, CRITICAL_TRIGGERS,
-  EXPECTED_MIGRATION_COUNT, OPERATIONAL_SCHEMA_VERSION, RESET_TABLE_CLASSIFICATION,
+  EXPECTED_MIGRATION_COUNT, OPERATIONAL_SCHEMA_VERSION, RESET_TABLE_CLASSIFICATION, PRIVACY_TABLE_CLASSIFICATION,
 } from "../shared/operational-schema-contract.mjs";
 
 const migrations = readdirSync(new URL("../drizzle", import.meta.url)).filter(file => /^\d{4}_.+\.sql$/.test(file)).sort();
@@ -17,6 +17,7 @@ test("operational schema contract covers every migration table", () => {
     assert.ok(APPLICATION_TABLES.includes(table), `missing table classification: ${table}`);
     assert.ok(BACKUP_TABLE_CLASSIFICATION[table], `backup contract missing: ${table}`);
     assert.ok(RESET_TABLE_CLASSIFICATION[table], `reset contract missing: ${table}`);
+    assert.ok(PRIVACY_TABLE_CLASSIFICATION[table], `privacy contract missing: ${table}`);
   }
 });
 
@@ -30,6 +31,7 @@ test("backup and reset contracts reject unknown future tables", () => {
   assert.equal(RESET_TABLE_CLASSIFICATION.future_table, undefined);
   assert.equal(Object.keys(BACKUP_TABLE_CLASSIFICATION).length, APPLICATION_TABLES.length);
   assert.equal(Object.keys(RESET_TABLE_CLASSIFICATION).length, APPLICATION_TABLES.length);
+  assert.equal(Object.keys(PRIVACY_TABLE_CLASSIFICATION).length, APPLICATION_TABLES.length);
 });
 
 test("every INCLUDED table is present in the administrative backup implementation", () => {

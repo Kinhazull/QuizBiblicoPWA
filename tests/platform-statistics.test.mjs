@@ -35,7 +35,7 @@ test("statistics tables participate in operations without changing protected cat
   const [health, backup, privacy, reset, cleanup] = await Promise.all([
     read("functions/api/admin/health.ts"),
     read("functions/api/admin/backup.ts"),
-    read("functions/api/privacy/me.ts"),
+    read("functions/_lib/privacy-data.ts"),
     read("scripts/lib/pilot-reset-policy.mjs"),
     read("scripts/cleanup-test-data.mjs"),
   ]);

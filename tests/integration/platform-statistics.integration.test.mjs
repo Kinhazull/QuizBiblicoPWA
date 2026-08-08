@@ -94,8 +94,8 @@ test("official generic events create isolated global and per-game projections", 
   assert.equal(profile.platformStatistics.global.sessionsCompleted, 1);
   assert.equal(profile.platformStatistics.global.activeDays, 2);
   const privacy = await responseJson(await exportPrivacy({ request: createAuthenticatedRequest("https://test/api/privacy/me", { token }), env: ctx.env }));
-  assert.equal(privacy.platformStatistics.global.sessionsCompleted, 1);
-  assert.equal(privacy.platformStatistics.activeDayHistory.length, 2);
+  assert.equal(privacy.platform.statistics.global.sessionsCompleted, 1);
+  assert.equal(privacy.platform.statistics.activeDays.length, 2);
 });
 
 test("repeated and concurrent delivery never duplicates statistics", async t => {

@@ -13,7 +13,7 @@ export const onRequestGet=async({request,env}:{request:Request;env:AppEnv})=>{tr
   const progress=await getUserProgress(env,user.id,user.organizationId);
   const achievements=await getAchievementSummary(env,user.id,user.organizationId);
   const platformStatistics=await getUserStatistics(env,user.id,user.organizationId);
-  return json({user:{...user,...preferences},stats:{...stats,podiums:Number(podiums?.total||0)},progress,achievements,platformStatistics});
+  return json({user:{...user,...preferences},stats:{...stats,podiums:Number(podiums?.total||0)},progress,achievements,platformStatistics},200,{"cache-control":"no-store, private"});
 }catch(response){if(response instanceof Response)return response;throw response;}};
 
 export const onRequestPatch=async({request,env}:{request:Request;env:AppEnv})=>{try{
@@ -21,5 +21,5 @@ export const onRequestPatch=async({request,env}:{request:Request;env:AppEnv})=>{
   const nickname=String(body.nickname||'').trim().replace(/\s+/g,' '),bio=String(body.bio||'').trim(),favoriteBook=String(body.favoriteBook||'').trim(),favoriteVerse=String(body.favoriteVerse||'').trim();
   if(nickname.length>30||bio.length>280||favoriteBook.length>50||favoriteVerse.length>80)return json({error:'field_too_long'},400);
   await env.DB.prepare("UPDATE users SET nickname=?1,use_nickname_in_ranking=?2,profile_public=?3,bio=?4,favorite_book=?5,favorite_verse=?6,updated_at=?7 WHERE id=?8").bind(nickname||null,body.useNicknameInRanking&&nickname?1:0,body.profilePublic?1:0,bio||null,favoriteBook||null,favoriteVerse||null,Date.now(),user.id).run();
-  return json({ok:true});
+  return json({ok:true},200,{"cache-control":"no-store, private"});
 }catch(response){if(response instanceof Response)return response;throw response;}};
