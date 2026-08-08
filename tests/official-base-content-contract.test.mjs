@@ -6,7 +6,7 @@ const read = path => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
 test("official base import remains an authenticated administrative operation with explicit confirmation", async () => {
   const route = await read("functions/api/admin/content/import-official-base.ts");
-  assert.match(route, /requirePermission\(request, env, "questions\.edit"\)/);
+  assert.match(route, /requirePermission\(request, env, "content\.manage"\)/);
   assert.match(route, /IMPORTAR_CONTEUDO_BASE_OFICIAL/);
   assert.match(route, /body\.commit === true/);
 });
