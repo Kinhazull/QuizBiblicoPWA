@@ -145,7 +145,7 @@ test("a failed batch can be resumed without duplicating the completed batch", as
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM content_versions").get().total, 30);
 });
 
-test("players receive a read-only legacy bridge before import without creating CMS content", async t => {
+test("players never fall back to legacy Quiz tables when universal content is insufficient", async t => {
   const ctx = setup(t);
   for (let index = 0; index < 10; index += 1) {
     seedLegacyQuestion(ctx, index, { difficulty: index < 2 ? "easy" : index === 9 ? "hard" : "medium" });
@@ -167,17 +167,12 @@ test("players receive a read-only legacy bridge before import without creating C
   const responses = await Promise.all([call(1), call(2)]);
   for (const response of responses) {
     const data = await responseJson(response);
-    assert.equal(response.status, 200);
-    assert.equal(data.game.playHref, "/jogar?legacy=1");
-    assert.equal(data.game.mode, "LEGACY_READ_ONLY");
+    assert.equal(response.status, 400);
+    assert.equal(data.error, "insufficient_eligible_content");
   }
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM content_items").get().total, 0);
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM content_versions").get().total, 0);
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM universal_content_library").get().total, 0);
-  ctx.env.QUIZ_LEGACY_FALLBACK_ENABLED = "false";
-  const disabled = await call(3);
-  assert.equal(disabled.status, 400);
-  assert.equal((await responseJson(disabled)).error, "insufficient_eligible_content");
 });
 
 test("after the confirmed import Free Play and Daily use only Universal selections", async t => {

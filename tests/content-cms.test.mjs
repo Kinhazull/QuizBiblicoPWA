@@ -9,14 +9,15 @@ const dashboard = readFileSync(new URL("../app/admin/conteudo/page.tsx", import.
 const archive = readFileSync(new URL("../app/admin/conteudo/acervo/page.tsx", import.meta.url), "utf8");
 const css = readFileSync(new URL("../app/content-cms.css", import.meta.url), "utf8");
 
-test("admin navigation promotes universal content without deleting legacy operational routes", () => {
+test("admin navigation promotes universal content while legacy operational routes remain direct-only", () => {
   assert.match(navigation, /label: "Conteúdo"/);
   assert.match(navigation, /href: "\/admin\/conteudo"/);
   assert.match(navigation, /href: "\/admin\/conteudo\/acervo"/);
-  assert.match(navigation, /label: "Quiz Bíblico"/);
-  for (const route of ["/admin/perguntas/revisao", "/admin/perguntas/importar", "/admin/perguntas/colaboracao", "/admin/rodadas/lista"]) {
+  for (const route of ["/admin/perguntas/revisao", "/admin/perguntas/importar", "/admin/perguntas/colaboracao"]) {
     assert.ok(navigation.includes(route), route);
   }
+  assert.doesNotMatch(navigation, /\/admin\/rodadas|\/admin\/temporadas|\/admin\/calendario/);
+  assert.equal(readFileSync(new URL("../app/admin/rodadas/lista/page.tsx", import.meta.url), "utf8").length > 0, true);
   assert.match(navigation, /label: "Criar conteúdo"[\s\S]*?href: "\/admin\/conteudo\/editor"/);
   assert.doesNotMatch(navigation, /label: "Criar conteúdo"[\s\S]*?disabled: true/);
   assert.match(quickNav, /admin-nav-disabled/);

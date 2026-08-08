@@ -3,10 +3,10 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 const read = path => fs.readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("participant navigation has exactly five named destinations and keeps admin contextual", () => {
+test("participant navigation exposes only the current platform destinations", () => {
   const config = read("app/navigation.tsx"), chrome = read("app/ParticipantChrome.tsx");
-  for (const label of ["Início", "Jornada", "Ranking", "Medalhas", "Perfil"]) assert.match(config, new RegExp(`label: "${label}"`));
-  assert.doesNotMatch(config.match(/participantNavigation[\s\S]*?\];/)?.[0] || "", /Painel|Rankings/);
+  for (const label of ["Home", "Jogos", "Recompensas", "Perfil"]) assert.match(config, new RegExp(`label: "${label}"`));
+  assert.doesNotMatch(config, /participantNavigation/);
   assert.match(chrome, /Abrir painel administrativo/);
 });
 
@@ -26,7 +26,8 @@ test("profile owns explicit secure logout and privileged admin entry", () => {
 test("admin navigation is one-column collapsible accessible and centrally named", () => {
   const menu = read("app/AdminQuickNav.tsx"), config = read("app/navigation.tsx"), css = read("app/brand-system.css");
   assert.match(menu, /adminNavigation/); assert.match(menu, /aria-expanded/); assert.match(menu, /event\.key === "Escape"/); assert.match(menu, /toggleRef\.current\?\.focus/); assert.match(menu, /aria-current/);
-  for (const label of ["Visão geral", "Usuários", "Conteúdo", "Quiz Bíblico", "Jogos", "Progressão", "Economia", "Operações"]) assert.match(config, new RegExp(label));
+  for (const label of ["Visão geral", "Usuários", "Conteúdo", "Jogos", "Progressão", "Economia", "Operações"]) assert.match(config, new RegExp(label));
+  assert.doesNotMatch(config, /Gerenciar jornadas|Nova jornada|Importar jornada|Temporadas/);
   for (const label of ["Usuários e membros", "Aprovações", "Comunicados", "Colaboração e versões", "Auditoria administrativa"]) assert.match(config, new RegExp(label));
   assert.match(menu, /admin-nav-empty/);
   assert.doesNotMatch(config, /Sugestões com IA/);

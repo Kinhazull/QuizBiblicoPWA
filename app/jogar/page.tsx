@@ -51,9 +51,6 @@ type DailyQuizPayload = {
 };
 
 export default function PlayPage() {
-  const requestedLegacy =
-    typeof window !== "undefined" &&
-    new URLSearchParams(window.location.search).get("legacy") === "1";
   const [attempt, setAttempt] = useState<Attempt | null>(null);
   const [round, setRound] = useState<any>(null);
   const [loadedContent, setLoadedContent] = useState<LoadedGameContent<DailyQuizPayload | Record<string, unknown>> | null>(null);
@@ -83,7 +80,7 @@ export default function PlayPage() {
   useEffect(() => {
     const controller = new AbortController();
     const request = gameContentRequestFromLocation(GameType.QUIZ);
-    if (request.mode === GameContentMode.NORMAL && !requestedLegacy) {
+    if (request.mode === GameContentMode.NORMAL) {
       generateFreePlayGame(GameType.QUIZ)
         .then(href => location.replace(href))
         .catch(() => {
@@ -115,7 +112,7 @@ export default function PlayPage() {
       .catch(() => setError("Sem conexão. Verifique sua internet e tente novamente."))
       .finally(() => setLoadingRound(false));
     return () => controller.abort();
-  }, [requestedLegacy]);
+  }, []);
 
   useEffect(() => {
     if (!attempt || selected) return;

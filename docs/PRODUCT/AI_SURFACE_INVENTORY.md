@@ -1,7 +1,7 @@
 # Inventário da superfície de sugestões com IA
 
 **Estado funcional:** desativado.  
-**Decisão de continuidade:** pendente para 24.3 ou posterior.
+**Decisão de continuidade:** **DEFERRED** após a Sprint 24.3. A superfície permanece desativada, sem navegação e sem custo de runtime para modelos; dados e backend dormente ficam preservados até decisão posterior.
 
 | Superfície | Classificação | Estado observado |
 | --- | --- | --- |
@@ -28,4 +28,3 @@ Escolher uma das opções, sem decisão implícita:
 1. manter dormente com testes e custo de manutenção conhecido;
 2. reativar com orçamento, limites, revisão humana e UX atualizada;
 3. retirar a superfície executável e preservar somente histórico/dados necessários.
-

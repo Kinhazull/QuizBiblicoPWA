@@ -14,6 +14,20 @@ Data: 03/08/2026
 
 Nenhum item deste inventário foi removido na Fase 4.
 
+## Resultado da Sprint 24.3
+
+| Área | Resultado | Evidência/decisão |
+| --- | --- | --- |
+| fallback do Quiz (`legacy=1`, flag e ponte read-only) | **REMOVED** | runtime e endpoint participante não possuem mais branching legado |
+| Jornada no menu ativo | **DISABLED** | rotas e dados permanecem históricos, sem CTA principal |
+| Ranking | **HISTORICAL_PRESERVED / DEFERRED** | conceito será reconstruído futuramente para a plataforma universal |
+| Medalhas | **HISTORICAL_PRESERVED** | geração automática e notificações novas desativadas; leitura histórica direta preservada |
+| Temporadas | **DEFERRED / HISTORICAL_PRESERVED** | removidas do menu, sem remoção física |
+| job de premiação de Jornada | **DISABLED** | retirado do ciclo agendado; operações modernas permanecem |
+| Worker `journey-awards` | **ACTIVE_BY_DECISION** | nome técnico preservado; executa outbox, retry e reconciliação de Eventos |
+| notificações de Jornada/Medalha | **DISABLED** | anúncios modernos permanecem ativos |
+| IA | **DEFERRED** | flag desativada, sem navegação; backend/tabela históricos preservados |
+
 ## 2. Rotas do participante
 
 | Item | Classificação | Dependências | Próxima ação sugerida |

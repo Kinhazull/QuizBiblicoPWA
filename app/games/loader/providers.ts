@@ -7,7 +7,7 @@ import {
 } from "./types";
 
 const normalEndpoints: Record<GameTypeValue, string | null> = {
-  [GameType.QUIZ]: "/api/rounds/current",
+  [GameType.QUIZ]: null,
   [GameType.WORDLE]: "/api/platform/games/wordle",
   [GameType.TIMELINE]: "/api/platform/games/timeline",
   [GameType.MEMORY]: "/api/platform/games/memory",
@@ -44,18 +44,7 @@ function contentIdentity(payload: Record<string, unknown>) {
   return { id, version };
 }
 
-function normalizeNormalPayload(gameType: GameTypeValue, data: Record<string, unknown>) {
-  if (gameType === GameType.QUIZ) {
-    const round = data.round as Record<string, unknown> | null;
-    if (!round || typeof round.id !== "string") throw new Error("game_content_invalid");
-    return {
-      contentId: String(round.id),
-      contentVersion: Number(round.version ?? 1),
-      payload: round,
-      title: typeof round.title === "string" ? round.title : null,
-      biblicalReference: null,
-    };
-  }
+function normalizeNormalPayload(data: Record<string, unknown>) {
   const payload = data.content as Record<string, unknown> | null;
   if (!payload) throw new Error("game_content_invalid");
   const identity = contentIdentity(payload);
@@ -75,7 +64,6 @@ export class NormalContentProvider implements GameContentProvider {
     const endpoint = normalEndpoints[request.gameType];
     if (!endpoint) throw new Error("normal_content_provider_unsupported_game");
     const normalized = normalizeNormalPayload(
-      request.gameType,
       await requestJson(endpoint, { method: "GET", signal: request.signal }),
     );
     return {

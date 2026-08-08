@@ -51,14 +51,6 @@ export type NavigationGroup = {
 
 export type NavigationPermissionSet = ReadonlySet<string> | readonly string[];
 
-export const participantNavigation: NavigationItem[] = [
-  { label: "Início", href: "/", icon: "home" },
-  { label: "Jornada", href: "/jornada", icon: "book" },
-  { label: "Ranking", href: "/rankings", icon: "trophy" },
-  { label: "Medalhas", href: "/medalhas", icon: "medal" },
-  { label: "Perfil", href: "/perfil", icon: "user" },
-];
-
 export const platformHomeNavigation: NavigationItem[] = [
   { label: "Home", href: "/", icon: "home" },
   { label: "Jogos", href: "/jogos", icon: "gamepad" },
@@ -174,47 +166,6 @@ export const adminNavigation: NavigationGroup[] = [
         icon: "history",
         description: "Usar temporariamente a área colaborativa do Quiz.",
         permissions: ["questions.edit", "questions.review"],
-      },
-    ],
-  },
-  {
-    label: "Quiz Bíblico",
-    icon: "book",
-    items: [
-      {
-        label: "Gerenciar jornadas",
-        href: "/admin/rodadas/lista",
-        icon: "calendar",
-        description: "Consultar e administrar jornadas.",
-        permissions: ["rounds.manage"],
-      },
-      {
-        label: "Nova jornada",
-        href: "/admin/rodadas",
-        icon: "sparkles",
-        description: "Montar uma jornada manualmente ou pelo banco.",
-        permissions: ["rounds.manage"],
-      },
-      {
-        label: "Importar jornada",
-        href: "/admin/rodadas/importar",
-        icon: "upload",
-        description: "Criar uma jornada a partir de texto estruturado.",
-        permissions: ["rounds.manage"],
-      },
-      {
-        label: "Calendário",
-        href: "/admin/calendario",
-        icon: "calendar",
-        description: "Visualizar a programação das jornadas.",
-        permissions: ["rounds.manage"],
-      },
-      {
-        label: "Temporadas",
-        href: "/admin/temporadas",
-        icon: "trophy",
-        description: "Planejar e acompanhar ciclos trimestrais.",
-        permissions: ["rounds.manage"],
       },
     ],
   },

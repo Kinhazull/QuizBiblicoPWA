@@ -48,7 +48,6 @@ const dashboardGroups: NavigationGroup[] = adminNavigation.slice(1);
 const groupDescriptions: Record<string, string> = {
   Usuários: "Participantes, aprovações, convites, permissões e comunicados.",
   Conteúdo: "Acervo, revisão editorial, importação e colaboração.",
-  "Quiz Bíblico": "Jornadas, calendário e temporadas do Quiz.",
   Jogos: "Catálogo, conteúdo e acompanhamento dos jogos bíblicos.",
   Progressão: "XP, níveis, missões, conquistas e retenção dos participantes.",
   Economia: "Saldos, recompensas, inventário e itens da plataforma.",
@@ -167,13 +166,6 @@ export default function AdminHub() {
         description: "Participantes com acesso",
         value: data.metrics.members,
         href: "/admin/membros",
-      },
-      {
-        icon: "calendar",
-        title: "Jornadas cadastradas",
-        description: "Histórico e programação",
-        value: data.metrics.rounds,
-        href: "/admin/rodadas/lista",
       },
       {
         icon: "review",

@@ -1,10 +1,9 @@
-import { processClosedRoundAwards } from "../../functions/_lib/round-awards";
 import type { AppEnv } from "../../functions/_lib/auth";
 import { dispatchQuizOutbox } from "../../functions/_lib/game-integrations/quiz-outbox-dispatcher";
 import { retryOfficialCoreEvents } from "../../functions/_lib/platform-event-runtime";
 import { reconcilePlatformEvents } from "../../functions/_lib/platform-events";
 
-type ScheduledOperation = "journey_awards" | "quiz_outbox" | "core_event_retries" | "platform_events";
+type ScheduledOperation = "quiz_outbox" | "core_event_retries" | "platform_events";
 
 type ScheduledOperationResult = {
   operation: ScheduledOperation;
@@ -12,14 +11,12 @@ type ScheduledOperationResult = {
 };
 
 export type ScheduledPlatformDependencies = {
-  processAwards: typeof processClosedRoundAwards;
   dispatchOutbox: typeof dispatchQuizOutbox;
   retryCoreEvents: typeof retryOfficialCoreEvents;
   reconcileEvents: typeof reconcilePlatformEvents;
 };
 
 const defaultDependencies: ScheduledPlatformDependencies = {
-  processAwards: processClosedRoundAwards,
   dispatchOutbox: dispatchQuizOutbox,
   retryCoreEvents: retryOfficialCoreEvents,
   reconcileEvents: reconcilePlatformEvents,
@@ -36,7 +33,6 @@ export async function runScheduledPlatformOperations(
   now = Date.now(),
 ): Promise<ScheduledOperationResult[]> {
   const operations: Array<{ operation: ScheduledOperation; run: () => Promise<unknown> }> = [
-    { operation: "journey_awards", run: () => dependencies.processAwards(env, now) },
     { operation: "quiz_outbox", run: () => dependencies.dispatchOutbox(env, { now, limit: 100 }) },
     { operation: "core_event_retries", run: () => dependencies.retryCoreEvents(env, { now, limit: 100 }) },
     { operation: "platform_events", run: () => dependencies.reconcileEvents(env, now, 100) },
@@ -77,7 +73,7 @@ const journeyAwardsWorker = {
   },
 
   async fetch(): Promise<Response> {
-    return new Response("Journey awards worker is active.", {
+    return new Response("Platform scheduled worker is active.", {
       status: 200,
       headers: {
         "content-type": "text/plain; charset=UTF-8",

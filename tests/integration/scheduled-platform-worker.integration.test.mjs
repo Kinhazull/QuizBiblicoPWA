@@ -68,7 +68,6 @@ test("scheduled Worker delivers Quiz outbox and updates every official Core cons
   const result = await withFrozenTime(NOW, () => runScheduledPlatformOperations(ctx.env, undefined, NOW));
 
   assert.deepEqual(result, [
-    { operation: "journey_awards", ok: true },
     { operation: "quiz_outbox", ok: true },
     { operation: "core_event_retries", ok: true },
     { operation: "platform_events", ok: true },
@@ -89,15 +88,14 @@ test("scheduled Worker delivers Quiz outbox and updates every official Core cons
 test("failure in one scheduled operation does not prevent the remaining operations", async () => {
   const calls = [];
   const dependencies = {
-    processAwards: async () => { calls.push("journey_awards"); throw new Error("awards_failed"); },
-    dispatchOutbox: async () => { calls.push("quiz_outbox"); return { delivered: 1 }; },
+    dispatchOutbox: async () => { calls.push("quiz_outbox"); throw new Error("outbox_failed"); },
     retryCoreEvents: async () => { calls.push("core_event_retries"); return { completed: 1 }; },
     reconcileEvents: async () => { calls.push("platform_events"); return { finished: 1 }; },
   };
 
   await assert.rejects(
     () => runScheduledPlatformOperations({ DB: {} }, dependencies, NOW),
-    /scheduled_platform_operations_failed:journey_awards/,
+    /scheduled_platform_operations_failed:quiz_outbox/,
   );
-  assert.deepEqual(calls, ["journey_awards", "quiz_outbox", "core_event_retries", "platform_events"]);
+  assert.deepEqual(calls, ["quiz_outbox", "core_event_retries", "platform_events"]);
 });

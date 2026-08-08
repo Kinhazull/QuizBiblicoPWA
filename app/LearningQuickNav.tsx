@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import { useAuth } from "./AuthProvider";
 import { isGamePlayRoute } from "./games/sdk/gameModules";
-import { BrandIcon, participantNavigation, platformHomeNavigation } from "./navigation";
+import { BrandIcon, platformHomeNavigation } from "./navigation";
 
 const participantRoutes = new Set(["/", "/jornada", "/rankings", "/medalhas", "/perfil"]);
 
@@ -23,8 +23,8 @@ export function LearningQuickNav() {
     || path === "/inventario"
     || path === "/notificacoes";
   if (!user || (!participantRoutes.has(path) && !platformRoute)) return null;
-  const items = platformRoute ? platformHomeNavigation : participantNavigation;
-  return <nav className={`participant-bottom-nav ${platformRoute ? "platform-bottom-nav" : ""}`} aria-label="Navegação principal">{items.map(item => {
+  const items = platformHomeNavigation;
+  return <nav className="participant-bottom-nav platform-bottom-nav" aria-label="Navegação principal">{items.map(item => {
     const active = item.href === "/" ? path === "/" : item.href === "/jogos" ? path === "/jogos" || path.startsWith("/jogos/") : path === item.href;
     return <a key={item.href} href={item.href} className={active ? "active" : ""} aria-current={active ? "page" : undefined}><BrandIcon name={item.icon} /><span>{item.label}</span></a>;
   })}</nav>;

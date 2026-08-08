@@ -15,7 +15,7 @@ A tag `v1.0.0` permanece como referência histórica do piloto do produto anteri
 
 **Fase 5 — Consolidação, operação e desacoplamento progressivo do legado.**
 
-Sprint corrente: **24.2 — Privacidade e Ciclo de Vida dos Dados**.
+Sprint corrente: **24.3 — Desacoplamento Progressivo do Legado**.
 
 Próximas sprints aprovadas no roadmap:
 
@@ -35,17 +35,20 @@ Próximas sprints aprovadas no roadmap:
 - CMS Universal é a fonte oficial de conteúdo publicado.
 - Biblioteca, Catálogo Elegível e Gerador Universal alimentam os modos atuais.
 - Os sete jogos utilizam a infraestrutura universal.
-- O Worker processa premiações legadas, outbox do Quiz, retry de eventos oficiais do Core e reconciliação independente de Eventos encerrados.
+- O runtime participante do Quiz usa exclusivamente CMS, Biblioteca, Catálogo Elegível, Gerador, Selection, Provider e Game Loader; o fallback de leitura legado foi removido.
+- O Worker preserva o identificador técnico histórico `journey-awards`, mas executa somente outbox do Quiz, retry de eventos oficiais do Core e reconciliação independente de Eventos encerrados.
 - Backup administrativo, diagnóstico e reset usam o contrato operacional canônico até a migration `0036`.
 - Privacidade usa matriz canônica derivada do mesmo contrato; exportação pessoal v2 cobre Core, jogos, economia, Eventos e contribuições CMS.
 - Anonimização revoga sessões e credenciais efêmeras, preservando CMS organizacional e ledgers pseudônimos necessários a FKs e idempotência.
-- Estruturas legadas permanecem por compatibilidade e evidência histórica; a remoção ainda não começou.
+- Jornadas, ranking, medalhas e temporadas permanecem como rotas/dados históricos sem exposição na navegação ativa. A sincronização automática de medalhas e as notificações legadas foram desativadas.
 
 ## Riscos priorizados
 
 - restauração administrativa em produção continua dependendo de procedimento humano e validação prévia em D1 isolado;
 - privacidade e retenção precisam incluir todos os novos domínios;
-- fallback, Ranking, Medalhas, Jornadas e Worker legado precisam de critérios de saída.
+- ranking universal ainda precisa de decisão e reconstrução futura;
+- rotas/APIs históricas ainda exigem medição de uso e política de retenção antes da remoção física;
+- o nome técnico do Worker permanece legado por decisão operacional.
 
 ## Regras operacionais atuais
 

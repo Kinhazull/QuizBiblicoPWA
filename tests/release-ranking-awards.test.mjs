@@ -12,7 +12,7 @@ test("melhor tentativa é centralizada e preserva uma linha real", async () => {
   assert.doesNotMatch(source, /MAX\(a\.score\).*MAX\(a\.correct_answers\)/s);
 });
 
-test("Worker separado possui fechamento automático idempotente configurado", async () => {
+test("Worker histórico executa somente operações modernas da plataforma", async () => {
   const [worker, config, processor, migration] = await Promise.all([
     read("workers/journey-awards/index.ts"),
     read("workers/journey-awards/wrangler.jsonc"),
@@ -20,12 +20,12 @@ test("Worker separado possui fechamento automático idempotente configurado", as
     read("drizzle/0019_round_award_processing.sql"),
   ]);
   assert.match(worker, /async scheduled/);
-  assert.match(worker, /processClosedRoundAwards/);
+  assert.doesNotMatch(worker, /processClosedRoundAwards|journey_awards/);
   assert.match(worker, /dispatchQuizOutbox/);
   assert.match(worker, /retryOfficialCoreEvents/);
   assert.match(worker, /message: `\$\{item\.operation\}_completed`/);
   assert.match(worker, /message: `\$\{item\.operation\}_failed`/);
-  assert.match(worker, /Journey awards worker is active/);
+  assert.match(worker, /Platform scheduled worker is active/);
   assert.match(config, /"crons": \["\* \* \* \* \*"\]/);
   assert.match(config, /"binding": "DB"/);
   assert.match(config, /"database_name": "quiz-biblico-db"/);

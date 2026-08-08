@@ -69,15 +69,17 @@ test("normal provider standardizes content for games with a direct CMS endpoint"
   }
 });
 
-test("Quiz NORMAL provider exposes only the explicit transitional read bridge", async () => {
+test("Quiz NORMAL provider cannot consult the retired rounds endpoint", async () => {
   const calls = [];
   globalThis.fetch = async url => {
     calls.push(String(url));
-    return jsonResponse({ round: { id: "legacy-round-1", version: 1, title: "Quiz Bíblico" } });
+    throw new Error("must_not_fetch");
   };
-  const loaded = await loadGameContent({ gameType: GameType.QUIZ, mode: GameContentMode.NORMAL });
-  assert.equal(loaded.contentId, "legacy-round-1");
-  assert.deepEqual(calls, ["/api/rounds/current"]);
+  await assert.rejects(
+    () => loadGameContent({ gameType: GameType.QUIZ, mode: GameContentMode.NORMAL }),
+    /normal_content_provider_unsupported_game/,
+  );
+  assert.deepEqual(calls, []);
 });
 
 test("daily provider starts and loads the selected objective through one contract", async () => {
