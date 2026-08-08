@@ -1,6 +1,7 @@
 import { requireUser, type AppEnv } from "../../../_lib/auth";
 import { generateFreePlaySelection } from "../../../_lib/platform-free-play";
 import { json } from "../../../_lib/security";
+import { PublicErrorCategory, publicDomainError } from "../../../_lib/operational-observability";
 
 const CLIENT_ERRORS = new Set([
   "unsupported_game",
@@ -26,9 +27,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
     return json({ game }, 201, { "cache-control": "no-store, private" });
   } catch (error) {
     if (error instanceof Response) return error;
-    const code = error instanceof Error ? error.message : "generation_failed";
-    return json({ error: CLIENT_ERRORS.has(code) ? code : "generation_failed" }, CLIENT_ERRORS.has(code) ? 400 : 500, {
-      "cache-control": "no-store, private",
-    });
+    const allowed = Object.fromEntries([...CLIENT_ERRORS].map(code => [code, { category: PublicErrorCategory.VALIDATION_ERROR, status: 400 }]));
+    return publicDomainError(error, allowed, { component: "free-play", operation: "generate_selection" });
   }
 };

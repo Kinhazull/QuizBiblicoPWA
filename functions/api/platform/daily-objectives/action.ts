@@ -1,6 +1,7 @@
 import { requireUser, type AppEnv } from "../../../_lib/auth";
 import { validateDailyGameAction } from "../../../_lib/platform-daily-objectives";
 import { json } from "../../../_lib/security";
+import { PublicErrorCategory, publicDomainError } from "../../../_lib/operational-observability";
 
 export const onRequestPost = async ({ request, env }: { request: Request; env: AppEnv }) => {
   try {
@@ -31,9 +32,10 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
     return json(result, 200, { "cache-control": "no-store, private" });
   } catch (error) {
     if (error instanceof Response) return error;
-    const code = error instanceof Error ? error.message : "daily_action_failed";
-    return json({ error: code }, code.startsWith("invalid") || code.startsWith("unsupported") ? 400 : 500, {
-      "cache-control": "no-store, private",
-    });
+    return publicDomainError(error, {
+      invalid_daily_action: { category: PublicErrorCategory.VALIDATION_ERROR, status: 400 },
+      invalid_daily_selection: { category: PublicErrorCategory.VALIDATION_ERROR, status: 400 },
+      unsupported_game_action: { category: PublicErrorCategory.VALIDATION_ERROR, status: 400 },
+    }, { component: "daily-objectives", operation: "validate_action" });
   }
 };

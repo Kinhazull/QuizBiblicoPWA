@@ -67,11 +67,12 @@ test("scheduled Worker delivers Quiz outbox and updates every official Core cons
 
   const result = await withFrozenTime(NOW, () => runScheduledPlatformOperations(ctx.env, undefined, NOW));
 
-  assert.deepEqual(result, [
-    { operation: "quiz_outbox", ok: true },
-    { operation: "core_event_retries", ok: true },
-    { operation: "platform_events", ok: true },
+  assert.deepEqual(result.map(({ operation, ok, processed }) => ({ operation, ok, processed })), [
+    { operation: "quiz_outbox", ok: true, processed: 1 },
+    { operation: "core_event_retries", ok: true, processed: 0 },
+    { operation: "platform_events", ok: true, processed: 0 },
   ]);
+  assert.ok(result.every(item => Number.isFinite(item.durationMs) && item.durationMs >= 0));
   assert.equal(ctx.raw.prepare("SELECT delivery_state FROM quiz_core_event_outbox WHERE event_id=?").get(event.eventId).delivery_state, "delivered");
   assert.deepEqual({ ...ctx.raw.prepare("SELECT total_xp totalXp,coins FROM user_platform_progress WHERE user_id='player'").get() }, { totalXp: 96, coins: 13 });
   assert.deepEqual({ ...ctx.raw.prepare("SELECT official_games_completed games,official_questions_answered questions FROM user_platform_statistics WHERE user_id='player'").get() }, { games: 1, questions: 10 });
@@ -98,4 +99,27 @@ test("failure in one scheduled operation does not prevent the remaining operatio
     /scheduled_platform_operations_failed:quiz_outbox/,
   );
   assert.deepEqual(calls, ["quiz_outbox", "core_event_retries", "platform_events"]);
+});
+
+test("scheduled Worker correlates a failed operation with a supportId and emits a final cycle summary", async () => {
+  const lines = [];
+  const previousError = console.error, previousLog = console.log;
+  console.error = line => lines.push(JSON.parse(line));
+  console.log = line => lines.push(JSON.parse(line));
+  try {
+    await assert.rejects(() => runScheduledPlatformOperations({ DB: {} }, {
+      dispatchOutbox: async () => { throw new Error("SQLITE secret should not leak"); },
+      retryCoreEvents: async () => ({ completed: 2 }),
+      reconcileEvents: async () => ({ finished: 1 }),
+    }, NOW, { send: alert => lines.push({ alert }) }));
+  } finally {
+    console.error = previousError; console.log = previousLog;
+  }
+  const failed = lines.find(line => line.operation === "quiz_outbox" && line.outcome === "failed");
+  assert.match(failed.supportId, /^SUP-/);
+  assert.equal(JSON.stringify(lines).includes("SQLITE secret"), false);
+  assert.equal(lines.some(line => line.operation === "core_event_retries" && line.outcome === "completed"), true);
+  assert.equal(lines.some(line => line.operation === "platform_events" && line.outcome === "completed"), true);
+  assert.equal(lines.some(line => line.operation === "scheduled_cycle" && line.failed === 1), true);
+  assert.equal(lines.some(line => line.alert?.supportId === failed.supportId), true);
 });

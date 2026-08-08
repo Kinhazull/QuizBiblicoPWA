@@ -23,8 +23,10 @@ test("Worker histórico executa somente operações modernas da plataforma", asy
   assert.doesNotMatch(worker, /processClosedRoundAwards|journey_awards/);
   assert.match(worker, /dispatchQuizOutbox/);
   assert.match(worker, /retryOfficialCoreEvents/);
-  assert.match(worker, /message: `\$\{item\.operation\}_completed`/);
-  assert.match(worker, /message: `\$\{item\.operation\}_failed`/);
+  assert.match(worker, /operationalLog\(\{ level: "info", operation: item\.operation/);
+  assert.match(worker, /createSupportId\(\)/);
+  assert.match(worker, /scheduled_cycle/);
+  assert.match(worker, /alertSink\.send/);
   assert.match(worker, /Platform scheduled worker is active/);
   assert.match(config, /"crons": \["\* \* \* \* \*"\]/);
   assert.match(config, /"binding": "DB"/);

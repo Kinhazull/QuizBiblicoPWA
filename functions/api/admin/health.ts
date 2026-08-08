@@ -3,6 +3,8 @@ import type { AppEnv } from "../../_lib/auth";
 import { json } from "../../_lib/security";
 import { QUESTION_COUNT } from "../../_lib/questions";
 import { APPLICATION_TABLES, CRITICAL_INDEXES, CRITICAL_TRIGGERS, EXPECTED_MIGRATION_COUNT, OPERATIONAL_SCHEMA_VERSION } from "../../../shared/operational-schema-contract.mjs";
+import { buildOperationalHealth } from "../../_lib/operational-health";
+import { PublicErrorCategory, publicError } from "../../_lib/operational-observability";
 
 const SCHEMA_TARGET = `0036_operational_schema_v${OPERATIONAL_SCHEMA_VERSION}`;
 const AWARD_PARTICIPANTS_PER_RUN = 7;
@@ -361,8 +363,15 @@ export const onRequestGet = async ({
       recommendations.push(
         "Existem projeções estatísticas com checkpoint incompleto; reprocesse os eventos antes de integrar produtores reais.",
       );
+    const operational = await buildOperationalHealth(env, String(user.organizationId), {
+      now,
+      migrationRows,
+      expectedMigrations: EXPECTED_MIGRATION_COUNT,
+      schemaProblems: missing.length + missingColumns.length + missingIndexes.length + missingTriggers.length,
+    });
     return json({
       status,
+      operational,
       checkedAt: now,
       schemaTarget: SCHEMA_TARGET,
       tables: {
@@ -396,8 +405,11 @@ export const onRequestGet = async ({
     });
   } catch (response) {
     if (response instanceof Response) return response;
-    const supportId = crypto.randomUUID();
-    console.error("admin_health_failed", { supportId });
-    return json({ error: "unexpected_error", supportId }, 500, { "Cache-Control": "no-store, private" });
+    return publicError(response, {
+      category: PublicErrorCategory.INTERNAL_ERROR,
+      code: "admin_health_failed",
+      component: "admin-health",
+      operation: "read_operational_health",
+    });
   }
 };

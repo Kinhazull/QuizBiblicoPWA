@@ -1,6 +1,7 @@
 import { requireUser, type AppEnv } from "../../../_lib/auth";
 import { validateFreePlayAction } from "../../../_lib/platform-free-play";
 import { json } from "../../../_lib/security";
+import { PublicErrorCategory, publicDomainError } from "../../../_lib/operational-observability";
 
 export const onRequestPost = async ({ request, env }: { request: Request; env: AppEnv }) => {
   try {
@@ -27,7 +28,10 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
     return json(result, 200, { "cache-control": "no-store, private" });
   } catch (error) {
     if (error instanceof Response) return error;
-    const code = error instanceof Error ? error.message : "free_play_action_failed";
-    return json({ error: code }, code.startsWith("invalid_") || code.startsWith("unsupported_") ? 400 : 500);
+    return publicDomainError(error, {
+      invalid_free_play_action: { category: PublicErrorCategory.VALIDATION_ERROR, status: 400 },
+      invalid_free_play_selection: { category: PublicErrorCategory.VALIDATION_ERROR, status: 400 },
+      unsupported_game_action: { category: PublicErrorCategory.VALIDATION_ERROR, status: 400 },
+    }, { component: "free-play", operation: "validate_action" });
   }
 };

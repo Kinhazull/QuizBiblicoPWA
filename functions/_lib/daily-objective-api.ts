@@ -1,6 +1,7 @@
 import { requireUser, type AppEnv } from "./auth";
 import { getDailyObjective } from "./platform-daily-objectives";
 import { json } from "./security";
+import { PublicErrorCategory, publicError } from "./operational-observability";
 
 export function dailyObjectiveGet(gameType: string, logCode: string) {
   return async ({ request, env }: { request: Request; env: AppEnv }) => {
@@ -12,14 +13,7 @@ export function dailyObjectiveGet(gameType: string, logCode: string) {
       }, gameType);
       return json({ objective }, 200, { "cache-control": "no-store, private" });
     } catch (error) {
-      if (error instanceof Response) return error;
-      console.error(logCode, {
-        code: error instanceof Error ? error.message : "unknown_error",
-      });
-      return json({ error: "daily_objective_unavailable" }, 503, {
-        "cache-control": "no-store, private",
-      });
+      return publicError(error, { category: PublicErrorCategory.DEPENDENCY_FAILURE, code: "daily_objective_unavailable", component: "daily-objectives", operation: logCode, retryable: true });
     }
   };
 }
-

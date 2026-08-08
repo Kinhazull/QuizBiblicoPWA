@@ -15,7 +15,7 @@ A tag `v1.0.0` permanece como referência histórica do piloto do produto anteri
 
 **Fase 5 — Consolidação, operação e desacoplamento progressivo do legado.**
 
-Sprint corrente: **24.3 — Desacoplamento Progressivo do Legado**.
+Sprint corrente: **24.4 — Observabilidade e Segurança Operacional**.
 
 Próximas sprints aprovadas no roadmap:
 
@@ -33,6 +33,8 @@ Próximas sprints aprovadas no roadmap:
 - `main` é a linha integrada corrente da plataforma.
 - Migrations oficiais existem até `0036_platform_events.sql`.
 - CMS Universal é a fonte oficial de conteúdo publicado.
+- Erros públicos modernos, supportId, logs estruturados, health unificado e runbooks possuem contratos compartilhados.
+- Alertas externos permanecem desativados; o sink operacional padrão registra somente logs seguros.
 - Biblioteca, Catálogo Elegível e Gerador Universal alimentam os modos atuais.
 - Os sete jogos utilizam a infraestrutura universal.
 - O runtime participante do Quiz usa exclusivamente CMS, Biblioteca, Catálogo Elegível, Gerador, Selection, Provider e Game Loader; o fallback de leitura legado foi removido.

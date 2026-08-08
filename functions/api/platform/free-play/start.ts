@@ -1,6 +1,7 @@
 import { requireUser, type AppEnv } from "../../../_lib/auth";
 import { startFreePlaySelection } from "../../../_lib/platform-free-play";
 import { json } from "../../../_lib/security";
+import { PublicErrorCategory, publicDomainError } from "../../../_lib/operational-observability";
 
 export const onRequestPost = async ({ request, env }: { request: Request; env: AppEnv }) => {
   try {
@@ -16,7 +17,9 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
     return json({ participation }, 200, { "cache-control": "no-store, private" });
   } catch (error) {
     if (error instanceof Response) return error;
-    const code = error instanceof Error ? error.message : "free_play_start_failed";
-    return json({ error: code }, code.startsWith("invalid_") ? 400 : 500);
+    return publicDomainError(error, {
+      invalid_free_play_selection: { category: PublicErrorCategory.VALIDATION_ERROR, status: 400 },
+      free_play_participation_finished: { category: PublicErrorCategory.CONFLICT, status: 409 },
+    }, { component: "free-play", operation: "start_selection" });
   }
 };

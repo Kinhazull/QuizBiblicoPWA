@@ -1,6 +1,7 @@
 import { requireUser, type AppEnv } from "../../../_lib/auth";
 import { getFreePlaySelection } from "../../../_lib/platform-free-play";
 import { json } from "../../../_lib/security";
+import { PublicErrorCategory, publicDomainError } from "../../../_lib/operational-observability";
 
 export const onRequestGet = async ({ request, env }: { request: Request; env: AppEnv }) => {
   try {
@@ -14,7 +15,8 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: Ap
     return json({ game }, 200, { "cache-control": "no-store, private" });
   } catch (error) {
     if (error instanceof Response) return error;
-    const code = error instanceof Error ? error.message : "free_play_selection_unavailable";
-    return json({ error: code === "invalid_free_play_selection" ? code : "free_play_selection_unavailable" }, code === "invalid_free_play_selection" ? 404 : 500);
+    return publicDomainError(error, {
+      invalid_free_play_selection: { category: PublicErrorCategory.NOT_FOUND, status: 404 },
+    }, { component: "free-play", operation: "read_selection" });
   }
 };

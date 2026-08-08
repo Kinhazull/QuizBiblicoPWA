@@ -1,6 +1,7 @@
 import { requireUser, type AppEnv } from "../../../_lib/auth";
 import { listDailyObjectives } from "../../../_lib/platform-daily-objectives";
 import { json } from "../../../_lib/security";
+import { PublicErrorCategory, publicError } from "../../../_lib/operational-observability";
 
 export const onRequestGet = async ({ request, env }: { request: Request; env: AppEnv }) => {
   try {
@@ -11,12 +12,6 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: Ap
     });
     return json({ objectives }, 200, { "cache-control": "no-store, private" });
   } catch (error) {
-    if (error instanceof Response) return error;
-    console.error("daily_objectives_failed", {
-      code: error instanceof Error ? error.message : "unknown_error",
-    });
-    return json({ error: "daily_objectives_unavailable" }, 503, {
-      "cache-control": "no-store, private",
-    });
+    return publicError(error, { category: PublicErrorCategory.DEPENDENCY_FAILURE, code: "daily_objectives_unavailable", component: "daily-objectives", operation: "list_objectives", retryable: true });
   }
 };

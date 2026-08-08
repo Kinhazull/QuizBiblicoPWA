@@ -1,6 +1,7 @@
 import { requireUser, type AppEnv } from "../../../_lib/auth";
 import { freePlayCatalogOptions } from "../../../_lib/platform-free-play";
 import { json } from "../../../_lib/security";
+import { PublicErrorCategory, publicDomainError } from "../../../_lib/operational-observability";
 
 export const onRequestGet = async ({ request, env }: { request: Request; env: AppEnv }) => {
   try {
@@ -13,7 +14,6 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: Ap
     return json({ options }, 200, { "cache-control": "no-store, private" });
   } catch (error) {
     if (error instanceof Response) return error;
-    const code = error instanceof Error ? error.message : "free_play_options_unavailable";
-    return json({ error: code }, code === "unsupported_game" ? 400 : 500);
+    return publicDomainError(error, { unsupported_game: { category: PublicErrorCategory.VALIDATION_ERROR, status: 400 } }, { component: "free-play", operation: "catalog_options" });
   }
 };
