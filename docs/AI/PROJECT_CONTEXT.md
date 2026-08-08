@@ -4,88 +4,50 @@
 
 **Conte os Feitos** é uma plataforma cristã modular de Jogos e Desafios Bíblicos.
 
-O **Quiz Bíblico** é o primeiro módulo funcional. A plataforma evolui para comportar jogos independentes dentro de uma experiência comum.
+Jogos integrados ao CMS e à plataforma universal:
 
-Jogos planejados:
-
-- Quiz Bíblico
-- Wordle Bíblico
-- Jogo das 3 Pistas
-- Linha do Tempo
-- Associação de Temas
-
-O Show do Milhão foi removido do escopo.
+- Quiz Bíblico;
+- Wordle Bíblico;
+- Jogo das 3 Pistas;
+- Linha do Tempo Bíblica;
+- Memória Bíblica;
+- Associação de Temas;
+- Quem Sou Eu?.
 
 ## Princípios
 
 - experiência gratuita;
-- sem publicidade pesada;
 - retenção saudável;
 - linguagem cristã acessível;
 - conteúdo bíblico revisado por pessoas;
-- regras e persistência próprias por jogo;
 - servidor como fonte de verdade;
-- evolução modular sem enfraquecer o Quiz.
+- isolamento por organização;
+- progressão e recompensas idempotentes;
+- CMS Universal como fonte oficial do conteúdo publicado;
+- remoção do legado somente em etapas reversíveis.
 
-## Progressão geral
-
-A plataforma pode utilizar:
-
-- XP global;
-- nível global;
-- moedas;
-- estatísticas por jogo;
-- Conquistas;
-- missões;
-- eventos;
-- recompensas;
-- desbloqueáveis.
-
-Medalhas continuam pertencendo ao domínio competitivo do Quiz.
-
-## Arquitetura conhecida
+## Arquitetura atual
 
 - frontend/PWA;
-- Cloudflare Pages;
-- Pages Functions;
+- Cloudflare Pages e Pages Functions;
 - Cloudflare D1;
-- Worker separado;
+- Worker agendado separado;
 - GitHub Actions;
-- migrations versionadas;
-- serviços de domínio;
-- transactional outbox;
-- processamento assíncrono idempotente.
+- migrations versionadas e reconciliadas;
+- CMS, Biblioteca e Gerador Universal;
+- Game Loader e Provider Registry;
+- modos `FREE_PLAY`, `DAILY` e `EVENT`;
+- Event Engine, outbox e consumers idempotentes.
 
 ## Fluxo Git
 
-`main → feature branch → implementação → validações → commit → push → PR → CI → revisão → squash merge → exclusão da branch → pull da main`
+Fluxo recomendado:
 
-## Ferramentas oficiais
+`main → branch de trabalho → validações → commit → push → PR → CI → revisão → merge`
 
-### ChatGPT
+Quando o proprietário autorizar explicitamente trabalho direto na `main`, a etapa de branch/PR pode ser omitida. Commit, push, deploy e migrations continuam dependendo do escopo autorizado na tarefa.
 
-- planejamento;
-- arquitetura;
-- auditoria;
-- documentação;
-- revisão;
-- preparação de prompts;
-- continuidade entre conversas.
+## Responsabilidades
 
-### Codex
-
-- implementação;
-- testes;
-- build;
-- debug;
-- refatoração;
-- investigação dependente do ambiente local.
-
-### Usuário
-
-- aprova decisões;
-- executa ações humanas;
-- autoriza push, merge, deploy e migrations;
-- valida comportamento final.
-
-Gemini CLI, Roo Code e Qwen não fazem parte do fluxo oficial atual.
+- **ChatGPT/Codex:** análise, arquitetura, documentação, implementação, testes, build, debug e revisão conforme o pedido.
+- **Usuário/proprietário:** decisões finais e autorização de ações sensíveis ou externas.

@@ -2,81 +2,54 @@
 
 ## Entrada obrigatória
 
-- `00-START-HERE.md`
-- `AGENTS.md`
-- `PROJECT_CONTEXT.md`
-- `CURRENT_STATE.md`
-- `PROJECT_INDEX.md`
-- `CHAT_PROTOCOL.md`
-
-## Produto e roadmap
-
-- `docs/PRODUCT/README.md`
+- `docs/AI/AGENTS.md`
+- `docs/AI/PROJECT_CONTEXT.md`
+- `docs/AI/CURRENT_STATE.md` — fonte oficial do estado corrente
+- `docs/AI/KNOWN_ISSUES.md`
 - `docs/PRODUCT/ROADMAP.md`
-- `docs/PRODUCT/DECISION_LOG.md`
-- `docs/PRODUCT/AI_COLLABORATION.md`
-- `docs/PRODUCT_LANGUAGE.md`
-- `BACKLOG.md`
 
-## Arquitetura e operação
+## Produto e governança
 
 - `README.md`
-- `docs/ARCHITECTURE.md`
-- `OPERATIONS.md`
-- `RELEASE.md`
-- `docs/TESTING.md`
-- `docs/LOCAL_DEVELOPMENT.md`
+- `CHANGELOG.md`
+- `BACKLOG.md`
+- `docs/PRODUCT/README.md`
+- `docs/PRODUCT/DEPRECATIONS.md`
+- `docs/PRODUCT/DECISION_LOG.md`
+- `docs/PRODUCT/PRE_PHASE_5_COMPREHENSIVE_AUDIT.md`
+- `docs/PRODUCT/PHASE_5_LEGACY_AUDIT_BACKLOG.md`
+- `docs/REPOSITORY_GOVERNANCE.md`
+
+## Conteúdo e arquitetura universal
+
+- `docs/PRODUCT/EDITORIAL_ARCHITECTURE.md`
+- `docs/PRODUCT/PHASE_4_ARCHITECTURE_DESIGN.md`
+- `docs/PRODUCT/PHASE_4_RELEASE_CANDIDATE.md`
+- `shared/content/`
+- `functions/_lib/universal-content-library.ts`
+- `functions/_lib/universal-game-generator.ts`
+- `app/games/loader/`
+
+## Banco e operação
+
+- `drizzle/`
 - `docs/D1_MIGRATION_RECONCILIATION.md`
-- `docs/OPERATIONS_JOURNEY_AWARDS.md`
-- `docs/JOURNEY_LIFECYCLE.md`
+- `scripts/reconcile-d1-migrations.mjs`
+- `.github/workflows/reconcile-production-d1.yml`
+- `OPERATIONS.md`
 
-## Busca orientada
+## Core Platform
 
-### Eventos e outbox
+- `docs/PRODUCT/CORE_PLATFORM_ARCHITECTURE.md`
+- `functions/_lib/platform-event-engine.ts`
+- `functions/_lib/platform-progress.ts`
+- `functions/_lib/platform-statistics.ts`
+- `functions/_lib/platform-achievements.ts`
+- `functions/_lib/platform-missions.ts`
 
-- `GAME_FINISHED`
-- `quiz_core_event_outbox`
-- `dispatchQuizOutbox`
-- `consumer_version`
-- `dead letter`
-- `lease`
+## Legado e retirada controlada
 
-### Worker e scheduler
-
-- `scheduled(`
-- `processClosedRoundAwards`
-- `dispatchQuizOutbox`
-- arquivos Wrangler
-
-### Perfil
-
-- `/api/platform/progress`
-- `/api/platform/statistics`
-- `/api/platform/achievements`
-- `/api/platform/missions/current`
-
-### Progressão
-
-- Progress Service
-- Reward Service
-- XP
-- coins
-
-### Estatísticas
-
-- Statistics Service
-- checkpoint
-- rebuild
-
-### Conquistas
-
-- Achievement Service
-- achievement consumer
-- catálogo de Conquistas
-
-### Missões
-
-- Mission Service
-- Mission Generator
-- Mission Consumer
-- Mission Claim
+- `docs/PRODUCT/DEPRECATIONS.md`
+- `docs/PRODUCT/PHASE_5_LEGACY_AUDIT_BACKLOG.md`
+- `app/jogar/page.tsx`
+- `workers/journey-awards/`

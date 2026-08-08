@@ -1,59 +1,100 @@
 # Promoção segura das migrations do D1
 
-O workflow manual **Reconcile production D1 migrations** promove migrations
-oficiais pendentes sem publicar o Pages ou o Worker.
+O workflow manual **Reconcile production D1 migrations** promove migrations oficiais pendentes sem publicar Pages ou Worker.
 
-## Proteções
+## Proteções existentes
 
-Antes de escrever, o workflow:
+Antes de escrever, o fluxo:
 
-1. exige a confirmação `RECONCILIAR_MIGRATIONS_PRODUCAO`;
-2. aceita execução somente pela `main` e pelo environment `production`;
-3. valida que o histórico remoto é um prefixo exato e ordenado do catálogo local;
-4. valida o schema correspondente às migrations que já estão aplicadas;
-5. cria snapshot de integridade e backup remoto criptografado;
+1. exige confirmação operacional explícita;
+2. aceita execução somente pela referência e environment aprovados;
+3. valida que o ledger remoto é prefixo exato e ordenado do catálogo local;
+4. valida o schema correspondente às migrations aplicadas;
+5. cria snapshot e backup remoto criptografado;
 6. repete o preflight imediatamente antes da escrita.
 
-Após aplicar somente o sufixo pendente, o workflow:
+Depois da promoção:
 
-1. executa `db:reconcile-migrations:verify-final`;
-2. confirma que o histórico e o schema correspondem ao estado final local;
-3. verifica que tabelas e objetos preexistentes não mudaram;
-4. verifica que nenhuma tabela perdeu linhas.
+1. executa `verify-final`;
+2. confirma ledger e schema completos;
+3. aceita somente objetos criados ou modificados pelas migrations promovidas;
+4. bloqueia alterações inesperadas, remoções e regressões de linhas;
+5. executa a comparação com o snapshot anterior.
 
-Qualquer divergência interrompe a execução. O workflow não reconcilia
-automaticamente históricos vazios ou divergentes.
+Quando não há migrations pendentes, `verify-promotable` considera o estado válido. A aplicação informa `No migrations to apply`, e `verify-final` e `compare` continuam protegendo o fluxo.
 
-## Pré-requisitos no GitHub
+## Contrato obrigatório para toda nova migration
 
-1. O secret `CLOUDFLARE_API_TOKEN` deve existir em
-   **Settings → Secrets and variables → Actions**.
-2. O token precisa ter acesso à conta configurada e permissão de escrita no D1.
-3. A migration deve estar revisada, versionada e presente na `main`.
-4. O environment `production` deve manter a aprovação operacional adotada pelo projeto.
+Toda migration deve declarar na documentação da sprint ou no metadado canônico utilizado pelo reconciliador:
 
-## Como promover uma nova migration
+| Campo | Obrigatório |
+| --- | --- |
+| nome e número sequencial | sim |
+| objetos criados | sim, mesmo que vazio |
+| objetos alterados/recriados | sim, mesmo que vazio |
+| índices criados ou alterados | sim |
+| triggers criados ou alterados | sim |
+| schema anterior esperado | sim |
+| teste sobre banco vazio | sim |
+| teste sobre o estado imediatamente anterior | sim |
+| comportamento em reaplicação/verificação | sim |
+| impacto no reconciliador | sim |
+| mudanças esperadas no snapshot/compare | sim |
+| estratégia de recuperação/rollback | sim |
 
-1. Confirme que a migration aditiva foi integrada à `main`.
-2. Abra **Actions**.
-3. Escolha **Reconcile production D1 migrations**.
-4. Clique em **Run workflow** e selecione `main`.
-5. Digite exatamente:
+Migrations já publicadas são imutáveis. Correções persistentes usam nova migration aditiva.
 
-   ```text
-   RECONCILIAR_MIGRATIONS_PRODUCAO
-   ```
+## Validação local mínima
 
-6. Aguarde o resumo confirmar o preflight, backup, aplicação, `verify-final`
-   e preservação dos dados.
-7. Somente depois do sucesso, execute ou reexecute o workflow de deploy.
+1. aplicar todas as migrations em banco vazio;
+2. montar o schema imediatamente anterior;
+3. aplicar somente a nova migration sobre esse estado;
+4. confirmar tabelas, colunas, índices, triggers e constraints;
+5. executar contratos de migrations e reconciliador;
+6. confirmar que nenhuma estrutura anterior foi removida sem decisão formal;
+7. confirmar como o snapshot classificará objetos criados e alterados.
 
-Se não houver migration pendente, o workflow falha antes do backup e de
-qualquer escrita. Não é necessário nem recomendado executá-lo em todo push.
+## Ordem operacional oficial
 
-## Separação entre migration e deploy
+```text
+código/migration
+→ validação local sobre schema anterior
+→ commit
+→ Quality gate
+→ backup
+→ verify-promotable
+→ promoção controlada
+→ verify-final
+→ compare
+→ somente depois ativação funcional
+```
 
-- O workflow manual promove migrations.
-- O workflow **Quality and security** não aplica migrations.
-- Os deploys de Pages e Worker continuam executando `verify-final` e só
-  prosseguem quando o banco remoto já está no estado esperado.
+A funcionalidade não deve assumir que a migration está disponível em produção antes da conclusão de `verify-final` e `compare`.
+
+## Recuperação
+
+D1 não deve depender de rollback destrutivo improvisado. A estratégia deve priorizar:
+
+- migration aditiva corretiva;
+- restauração validada do backup quando houver perda ou corrupção;
+- feature flag ou compatibilidade de leitura durante promoção em etapas;
+- preservação do ledger real, sem marcação manual de migration como aplicada.
+
+## Processo manual
+
+1. integrar e validar a migration;
+2. abrir **Actions → Reconcile production D1 migrations**;
+3. selecionar a referência aprovada;
+4. informar a confirmação exigida pelo workflow;
+5. revisar banco, conta, migration pendente e backup;
+6. aguardar preflight, aplicação, `verify-final` e `compare`;
+7. somente depois autorizar deploy ou ativação funcional.
+
+## Regras permanentes
+
+- não desativar `verify-promotable`, `verify-final` ou `compare` para promover uma migration;
+- não editar manualmente o ledger remoto;
+- não marcar SQL como aplicado sem execução real;
+- não concatenar migration e deploy como forma de contornar o gate;
+- não executar operação remota sem autorização explícita;
+- manter backup obrigatório quando houver escrita remota.

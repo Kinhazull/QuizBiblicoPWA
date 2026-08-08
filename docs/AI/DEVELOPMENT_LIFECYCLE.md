@@ -30,8 +30,8 @@
 
 ## 5. Implementação
 
-- criar branch;
-- executar Codex com prompt fechado;
+- criar branch por padrão ou registrar a autorização explícita para trabalho na `main`;
+- executar a alteração com escopo fechado;
 - alterar somente o escopo.
 
 ## 6. Validação
@@ -44,12 +44,10 @@
 
 ## 7. Integração
 
-- commit;
-- push;
-- PR;
-- CI;
-- revisão;
-- squash merge.
+- commit, quando autorizado;
+- push e PR, quando autorizados;
+- CI e revisão;
+- merge conforme a estratégia aprovada.
 
 ## 8. Handoff
 

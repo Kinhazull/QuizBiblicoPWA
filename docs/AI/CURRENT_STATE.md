@@ -1,75 +1,56 @@
-# Estado atual e handoff operacional
+# Estado operacional corrente
 
-> Atualizar ao final de toda sprint, correção crítica, mudança de prioridade ou descoberta relevante.
+**Última atualização:** 08/08/2026
+**Fonte oficial de verdade para o estado corrente:** este arquivo.
 
-Última atualização inicial: **2026-07-24**
+Documentos de release, auditorias, roadmaps antigos e arquivos em `docs/AI/HISTORY/` preservam contexto histórico, mas não substituem este estado.
 
 ## Estado geral
 
-O Conte os Feitos possui o Quiz Bíblico como primeiro módulo funcional e está em evolução para uma plataforma modular.
+A Fase 4 foi concluída e registrada como Release Candidate. A plataforma possui sete jogos integrados, CMS Universal, Biblioteca Universal, Gerador Universal, Game Loader, modos Livre, Diário e Evento, progressão, estatísticas, missões, conquistas, retenção, economia e administração.
 
-A pasta `docs/AI` passa a funcionar como memória operacional oficial entre chats, contas e assistentes.
+A tag `v1.0.0` permanece como referência histórica do piloto do produto anterior centrado no Quiz Bíblico. A primeira release formal da plataforma Conte os Feitos será `v2.0.0`; essa tag ainda não foi criada.
 
-## Prioridade atual
+## Fase atual
 
-Consolidar o CF-POS v1.0 e garantir que toda nova conversa siga o protocolo de leitura, planejamento e divisão de responsabilidades.
+**Fase 5 — Consolidação, operação e desacoplamento progressivo do legado.**
 
-## Estado técnico pendente de confirmação
+Sprint corrente: **24.0 — Governança do Repositório e Estado Oficial da Plataforma**.
 
-Antes da próxima implementação:
+Próximas sprints aprovadas no roadmap:
 
-- revisar a `main`;
-- revisar commits e PRs recentes;
-- confirmar a sprint ativa;
-- validar o pipeline;
-- confirmar problemas conhecidos.
+- 24.1 — Integridade Operacional;
+- 24.2 — Privacidade e Ciclo de Vida dos Dados;
+- 24.3 — Desacoplamento Progressivo do Legado;
+- 24.4 — Observabilidade e Segurança Operacional;
+- 24.5 — Administração, Permissões e Analytics;
+- 24.6 — Governança Editorial e Assets;
+- 24.7 — Qualidade dos Jogos;
+- 24.8 — Release Candidate Público/Mobile.
 
-## Hipótese operacional registrada
+## Estado técnico confirmado
 
-Foi relatado que, ao concluir o Quiz em produção:
+- `main` é a linha integrada corrente da plataforma.
+- Migrations oficiais existem até `0036_platform_events.sql`.
+- CMS Universal é a fonte oficial de conteúdo publicado.
+- Biblioteca, Catálogo Elegível e Gerador Universal alimentam os modos atuais.
+- Os sete jogos utilizam a infraestrutura universal.
+- O Worker processa premiações legadas, outbox do Quiz e retry de eventos oficiais do Core.
+- Estruturas legadas permanecem por compatibilidade e evidência histórica; a remoção ainda não começou.
 
-- Medalhas legadas aparecem;
-- XP permanece em zero;
-- moedas permanecem em zero;
-- estatísticas permanecem em zero;
-- missões não avançam.
+## Riscos priorizados
 
-A hipótese é que o evento chega à outbox, mas o Scheduled Worker não chama o dispatcher automaticamente.
+- backup/restauração ainda precisam acompanhar integralmente a Fase 4;
+- privacidade e retenção precisam incluir todos os novos domínios;
+- diagnóstico administrativo precisa refletir migrations até 0036;
+- encerramento de Eventos não deve depender apenas de tráfego;
+- limpeza do piloto precisa de política para seleções, participações e Eventos;
+- fallback, Ranking, Medalhas, Jornadas e Worker legado precisam de critérios de saída.
 
-Essa hipótese deve ser validada no código e no histórico recente antes de qualquer implementação.
+## Regras operacionais atuais
 
-## Próxima ordem
-
-### ChatGPT
-
-- auditar a `main`;
-- revisar o pipeline do GitHub Actions;
-- validar a hipótese do Worker e da Outbox;
-- preparar a próxima sprint técnica.
-
-### Codex
-
-Nenhuma implementação até a conclusão da auditoria.
-
-### Usuário
-
-- manter o CF-POS atualizado;
-- abrir uma nova branch somente após a conclusão da auditoria;
-- aprovar a próxima sprint técnica.
-
-## Marcos recentes
-
-### 2026-07-24
-
-✅ CF-POS v1.0 implantado com sucesso.
-
-- documentação operacional criada;
-- protocolo de conversa oficializado;
-- papéis ChatGPT/Codex/Usuário definidos;
-- templates criados;
-- histórico operacional iniciado;
-- documentação versionada na branch principal.
-
-Último commit:
-
-67145b0 — docs: add CF-POS v1.0
+- trabalho em branch própria é recomendado, mas trabalho direto na `main` é permitido quando o proprietário autorizar explicitamente;
+- autorização para editar a `main` não inclui automaticamente commit, push, deploy ou migration;
+- pnpm é o único package manager oficial;
+- nenhuma tag `v2.0.0` será criada antes do gate correspondente;
+- ações remotas continuam dependendo de autorização específica.

@@ -1,53 +1,32 @@
 # Papéis e responsabilidades
 
-## ChatGPT
+## ChatGPT e Codex
 
-Pode:
+Podem, conforme o pedido e o escopo autorizado:
 
-- analisar;
-- planejar;
-- revisar;
-- documentar;
-- preparar prompts;
-- atualizar handoff;
-- auditar GitHub.
+- analisar, planejar e revisar;
+- documentar e preparar decisões;
+- implementar, refatorar, testar, compilar e depurar;
+- auditar o repositório e produzir relatórios técnicos;
+- trabalhar em branch própria ou diretamente na `main` quando o proprietário autorizar explicitamente.
 
-Não pode:
+Não podem:
 
-- inventar estado;
-- assumir autorização;
-- ampliar escopo;
-- declarar testes executados sem evidência;
-- substituir decisão humana.
-
-## Codex
-
-Pode:
-
-- implementar;
-- refatorar;
-- testar;
-- buildar;
-- depurar;
-- gerar relatório técnico.
-
-Não pode:
-
-- redefinir arquitetura;
-- ampliar escopo;
-- fazer deploy;
-- aplicar migration;
-- fazer merge;
-- trabalhar na `main`.
+- inventar estado ou declarar validações sem evidência;
+- ampliar o escopo materialmente sem autorização;
+- substituir decisões humanas, jurídicas ou operacionais;
+- tratar autorização para editar a `main` como autorização para commit, push, merge, deploy, migration remota ou alteração de produção.
 
 ## Usuário
 
 Responsável por:
 
-- definir prioridade;
-- aprovar decisões;
-- criar ou selecionar branch;
-- autorizar ações sensíveis;
-- validar comportamento;
-- aprovar merge;
-- executar deploy e migrations quando aplicável.
+- definir prioridade e escopo;
+- aprovar decisões de produto, arquitetura, governança e risco;
+- autorizar ações sensíveis ou remotas;
+- validar comportamento quando houver decisão humana;
+- aprovar integração, publicação e operações de produção.
+
+## Regra de branch
+
+Branch própria é a opção padrão para trabalho isolado. Trabalho direto na `main` é permitido quando houver autorização explícita do proprietário para a tarefa corrente. A autorização é específica e não concede implicitamente permissão para commit, push, merge, deploy, criação de tag ou migration remota.

@@ -2,39 +2,37 @@
 
 ## Missão
 
-Desenvolver o Conte os Feitos de forma sustentável, previsível e documentada, com mínimo desperdício de contexto e cota.
+Desenvolver o Conte os Feitos de forma sustentável, previsível e documentada, com contexto e validações proporcionais ao risco.
 
 ## Princípios operacionais
 
 1. O projeto não depende da memória de uma IA.
 2. Decisões importantes são versionadas.
 3. O código prevalece sobre a conversa.
-4. A documentação prevalece sobre a memória.
+4. A documentação corrente prevalece sobre a memória.
 5. A decisão formal prevalece sobre opinião informal.
-6. Toda sprint possui objetivo único.
-7. Toda ação possui responsável definido.
-8. O Codex entra principalmente na implementação.
-9. Deploy e migrations exigem autorização humana.
-10. O contexto deve ser mínimo e suficiente.
+6. Toda sprint possui objetivo e limites claros.
+7. ChatGPT e Codex podem atuar em todo o ciclo quando solicitado.
+8. Branch própria é o padrão; trabalho na `main` requer autorização explícita.
+9. Autorização para editar não autoriza commit, push, deploy, tag ou migration remota.
+10. Deploy, migrations remotas e alterações de produção exigem autorização humana específica.
 
 ## Estados operacionais
 
 - **L0 — Brainstorm:** ideias e exploração.
 - **L1 — Análise:** diagnóstico e levantamento.
 - **L2 — Arquitetura:** decisões e impactos.
-- **L3 — Planejamento:** sprint, critérios e prompt.
-- **L4 — Implementação:** Codex altera e valida.
+- **L3 — Planejamento:** sprint e critérios.
+- **L4 — Implementação:** alteração e validação.
 - **L5 — Revisão:** diff, testes e riscos.
-- **L6 — Merge:** aprovação humana e CI.
+- **L6 — Integração:** commit, CI, merge e publicação conforme autorização.
 - **L7 — Handoff:** documentação e continuidade.
 
-## Regra de transição
-
-Não avançar de estado sem concluir o anterior ou registrar explicitamente a pendência.
+Os estados orientam o processo, mas podem ser combinados quando o pedido autorizar claramente uma execução completa.
 
 ## Regra do escopo
 
-Uma sprint não deve misturar:
+Evitar misturar sem decisão explícita:
 
 - feature e refatoração ampla;
 - bugfix e redesign;
@@ -44,4 +42,4 @@ Uma sprint não deve misturar:
 
 ## Regra da documentação
 
-Nenhuma decisão importante pode existir apenas no chat.
+Nenhuma decisão importante pode existir apenas no chat. O estado corrente deve ser consolidado em `docs/AI/CURRENT_STATE.md`; decisões e histórico permanecem em seus documentos próprios.

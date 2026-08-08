@@ -168,4 +168,4 @@ Textos legais só podem ser atualizados com nova revisão humana/jurídica e ver
 - isolamento organizacional preservado;
 - backup validado em D1 separado;
 - nenhuma dependência do Worker ou diagnóstico pendente;
-- alteração feita em branch própria, sem misturar limpeza com nova funcionalidade.
+- alteração feita em branch própria ou diretamente na `main` quando houver autorização explícita, sem misturar limpeza com nova funcionalidade.

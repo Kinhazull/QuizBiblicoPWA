@@ -58,3 +58,22 @@ O Conte os Feitos iniciou como Quiz Bíblico PWA e concluiu o piloto técnico `v
 - A integração do Quiz deverá implementar a outbox e testes atômicos antes de publicar eventos.
 - `GAME_FINISHED` versão `1` permanece aceito como contrato legado mínimo. A Sprint 3.5A aprovou a versão `2` para novos eventos do Quiz com modo, acertos, total de perguntas, conclusão, tentativa e versão do jogo; duração e dificuldade continuam fora do contrato.
 - Notification Service, integração real de Mission/Achievement e recompensas acionadas por jogos continuam fora desta sprint.
+
+## 2026-08-08 — Governança da plataforma após a Fase 4
+
+**Status:** aceita; atualiza a decisão de estabilidade de 2026-07-18 sem apagar seu valor histórico.
+
+### Decisões
+
+1. A tag `v1.0.0` permanece como registro histórico do piloto Quiz Bíblico.
+2. A primeira release formal da plataforma Conte os Feitos será `v2.0.0`; nenhuma tag é criada nesta decisão.
+3. `docs/AI/CURRENT_STATE.md` é a fonte oficial do estado operacional corrente.
+4. Branch própria continua sendo o padrão, mas trabalho direto na `main` é permitido quando o proprietário autorizar explicitamente.
+5. Autorização para trabalhar na `main` não inclui automaticamente commit, push, merge, deploy, tag, migration remota ou alteração de produção.
+6. ChatGPT e Codex podem atuar em análise, arquitetura, documentação, implementação, testes e revisão conforme o pedido, sem divisão artificial obrigatória.
+
+### Consequências
+
+- A regra de branch própria da decisão de 2026-07-18 passa a ser histórica, não uma proibição absoluta.
+- Identificadores técnicos históricos não serão renomeados apenas por estética.
+- A Fase 5 seguirá o roadmap oficial das Sprints 24.0 a 24.8.

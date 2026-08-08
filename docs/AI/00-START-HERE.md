@@ -21,9 +21,9 @@ Use esta pasta para descobrir:
 - o que está acontecendo;
 - qual é a prioridade;
 - quais regras não podem ser quebradas;
-- quem executa cada ação;
+- quais ações estão autorizadas e quais dependem de decisão humana;
 - quais arquivos precisam ser lidos.
 
 ## Comando de retomada
 
-> Leia `docs/AI/00-START-HERE.md` e siga a ordem obrigatória de leitura. Depois apresente o estado atual, o bloqueio prioritário, a próxima ação e quem deve executá-la. Não altere arquivos ainda.
+> Leia `docs/AI/00-START-HERE.md` e siga a ordem obrigatória de leitura. Depois apresente o estado atual, o bloqueio prioritário e a próxima ação. Só altere arquivos quando o pedido autorizar execução.

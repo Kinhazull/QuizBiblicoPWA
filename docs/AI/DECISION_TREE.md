@@ -22,9 +22,9 @@
 
 ### É documentação?
 
-- ChatGPT prepara;
-- usuário versiona;
-- Codex não é necessário.
+- ChatGPT ou Codex pode preparar, revisar e validar;
+- commit e publicação seguem a autorização da tarefa;
+- documentação corrente deve distinguir estado atual de histórico.
 
 ### É deploy?
 

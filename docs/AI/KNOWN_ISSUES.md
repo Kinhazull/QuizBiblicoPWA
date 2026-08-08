@@ -1,32 +1,42 @@
 # Problemas conhecidos
 
-## KI-001 — Pipeline falha no audit
+Este arquivo registra apenas problemas correntes. Itens resolvidos permanecem no histórico operacional.
 
-**Status:** aberto  
-**Prioridade:** alta  
-**Data:** 2026-07-24
+## KI-001 — Pipeline falhava no audit
 
-### Sintoma
+**Status:** resolvido
+**Origem:** 24/07/2026
 
-O GitHub Actions falha em `pnpm audit --audit-level=high`.
+As dependências corrigíveis foram atualizadas e a exceção transitiva sem correção compatível foi limitada ao GHSA específico no gate do pnpm. Qualquer outro advisory alto ou crítico continua bloqueando a qualidade.
 
-### Impacto
+## KI-002 — Ferramentas operacionais anteriores à Fase 4
 
-Commits exclusivamente documentais também ficam com pipeline vermelho.
+**Status:** aberto
+**Prioridade:** alta
+**Sprint prevista:** 24.1
 
-### Evidência inicial
+Backup, restauração, diagnóstico e limpeza do piloto precisam ser reconciliados com as estruturas até a migration 0036.
 
-Foram observadas vulnerabilidades moderadas e altas, incluindo dependências transitivas.
+## KI-003 — Ciclo de vida e privacidade dos novos dados
 
-### Próxima ação
+**Status:** aberto
+**Prioridade:** alta
+**Sprint prevista:** 24.2
 
-Criar sprint de hardening de dependências.
+Exportação, anonimização e retenção precisam abranger seleções, participações, Eventos, economia e dados operacionais do Core.
 
-### Regras
+## KI-004 — Legado ainda ativo
 
-- não atualizar dependências às cegas;
-- identificar dependência raiz;
-- atualizar lockfile;
-- executar lint, build e testes;
-- registrar mudanças incompatíveis;
-- não misturar com feature.
+**Status:** controlado
+**Prioridade:** média
+**Sprint prevista:** 24.3
+
+Jornadas, Ranking, Medalhas, fallback do Quiz e Worker histórico permanecem deliberadamente disponíveis até que seus gates de saída sejam comprovados.
+
+## KI-005 — Sugestões com IA desativadas
+
+**Status:** dormente
+**Prioridade:** baixa
+**Decisão prevista:** 24.3 ou posterior
+
+A flag está desativada; a página redireciona; o endpoint retorna `feature_disabled`; tabela e documentação foram preservadas.

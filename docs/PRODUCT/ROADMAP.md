@@ -1,90 +1,83 @@
-# Roadmap oficial
+# Roadmap oficial — Conte os Feitos
 
-O roadmap define a ordem conceitual da evolução. A entrada em um módulo depende da aprovação e validação do anterior; a numeração não autoriza implementação antecipada de banco ou regras.
+**Estado:** Fase 5
+**Fonte do estado operacional corrente:** `docs/AI/CURRENT_STATE.md`
 
-## Módulo 0 — Diagnóstico e preparação
+Este documento registra a sequência aprovada do produto. Fases concluídas permanecem resumidas como histórico; detalhes técnicos continuam nos documentos de implementação e release.
 
-- Mapear arquitetura, rotas, dependências e riscos.
-- Preservar a `main` como `v1.0.0` estável.
-- Criar branch própria e registrar baseline.
-- Consolidar visão, linguagem, decisões e política de colaboração.
+## Convenção de versões
 
-## Módulo 1 — Identidade visual
+- `v1.0.0` permanece como tag histórica do produto anterior e do piloto controlado do Quiz Bíblico.
+- A primeira release formal da plataforma Conte os Feitos será `v2.0.0`.
+- A tag `v2.0.0` ainda não foi criada.
+- Tags históricas não serão alteradas ou recriadas.
 
-- Definir a identidade da plataforma sem descaracterizar o Quiz.
-- Centralizar tokens, padrões de cartões, ícones e estados.
-- Validar acessibilidade, responsividade e desempenho visual.
-- Não alterar regras do Quiz.
+## Histórico concluído
 
-## Módulo 2 — Estrutura da plataforma
+### Fase 1 — Quiz Bíblico e piloto controlado
 
-Este módulo incorpora a subdivisão técnica aprovada no diagnóstico:
+Quiz competitivo, Jornadas, tentativas, Ranking, Medalhas, administração, segurança, operação e piloto `v1.0.0`.
 
-### 2.1 — Shell da plataforma
+### Fase 2 — Fundação modular
 
-- Separar a apresentação autenticada do fluxo de login e cadastro.
-- Reutilizar o `AuthProvider` e os controles globais existentes.
+Identidade visual, shell da plataforma, catálogo de jogos, Home, Game SDK e desenvolvimento local seguro.
 
-### 2.2 — Catálogo de módulos
+### Fase 3 — Core Platform e jogos
 
-- Criar registro central, inicialmente estático, de jogos disponíveis e futuros.
-- Não criar persistência apenas para exibir o catálogo inicial.
+Event Engine, Progress, Reward, Statistics, Achievements, Missions, outbox, retenção, economia, Perfil e sete jogos.
 
-### 2.3 — Home modular
+### Fase 4 — Plataforma universal
 
-- Transformar a Home em ponto de descoberta da plataforma.
-- Evitar duplicação de notificações, perfil e navegação.
+CMS Universal, Biblioteca, Catálogo Elegível, Gerador, Game Loader, modos `FREE_PLAY`, `DAILY` e `EVENT`, conteúdo oficial e Release Candidate.
 
-### 2.4 — Integração do Quiz Bíblico
+## Fase 5 — Consolidação e preparação da plataforma pública
 
-- Apresentar o Quiz como o primeiro módulo.
-- Preservar `/jogar`, Jornadas, tentativas, Ranking, Medalhas e Worker.
-- Manter compatibilidade com links existentes durante a transição.
+### 24.0 — Governança do Repositório
 
-## Módulo 3 — Núcleo de progressão
+Atualizar a fonte de verdade, versionamento, package manager, inventários, changelog, deprecações e contrato de migrations.
 
-- Definir progressão geral, Conquistas, moedas, recompensas e desbloqueáveis.
-- Criar serviços de concessão idempotentes e auditáveis no servidor.
-- Manter progresso de cada jogo separado do progresso geral.
-- Exigir decisão formal e desenho de dados antes de migrations.
+### 24.1 — Integridade Operacional
 
-## Módulo 4 — Primeiro ciclo de retenção
+Atualizar backup/restauração, diagnóstico, reset do piloto e reconciliação operacional de Eventos para o schema atual.
 
-- Introduzir um ciclo recorrente simples e mensurável.
-- Validar se progressão e recompensas incentivam retorno saudável.
-- Não conflitar com Jornadas, Ranking ou Medalhas do Quiz.
+### 24.2 — Privacidade e Ciclo de Vida dos Dados
 
-## Módulo 5 — Wordle Bíblico
+Completar exportação, anonimização, retenção e documentação de privacidade dos novos domínios.
 
-- Implementar jogo diário ou periódico de descoberta de palavra bíblica.
-- Criar regras, estado e persistência próprios.
+### 24.3 — Desacoplamento Progressivo do Legado
 
-## Módulo 6 — Jogo das 3 Pistas
+Retirar fallback e acessos legados em etapas reversíveis, preservando dados históricos e decidindo o futuro de Ranking, Medalhas e Temporadas.
 
-- Criar experiência de identificação progressiva por pistas.
-- Manter validação e pontuação no servidor quando persistentes.
+### 24.4 — Observabilidade e Segurança Operacional
 
-## Módulo 7 — Linha do Tempo
+Alertas, health checks, dead letters, projeções, reservas, sanitização de erros e runbooks.
 
-- Organizar eventos, personagens e livros em ordem histórica ou narrativa.
-- Documentar critérios de curadoria bíblica usados pelo jogo.
+### 24.5 — Administração, Permissões e Analytics
 
-## Módulo 8 — Associação de Temas
+Permissões próprias da plataforma e indicadores por jogo, modo, conteúdo, Evento, retenção e economia.
 
-- Relacionar personagens, passagens, livros, acontecimentos e temas.
-- Preservar conteúdo amplo de toda a Bíblia.
+### 24.6 — Governança Editorial e Assets
 
-## Módulo 9 — Colecionáveis
+Revisão, aprovação, arquivamento, rollback, importação e Asset Registry.
 
-- Introduzir itens colecionáveis e desbloqueáveis da plataforma.
-- Temporadas futuras poderão afetar esses itens, sem alterar as Medalhas competitivas das Jornadas.
+### 24.7 — Qualidade dos Jogos
 
-## Módulo 10 — Polimento e Google Play
+Diferenciação, conteúdo, acessibilidade, dificuldade, repetição, feedback e cobertura E2E.
 
-- Consolidar experiência, acessibilidade, desempenho e observabilidade.
-- Revisar requisitos de empacotamento e publicação na Google Play.
-- Realizar nova aprovação legal, operacional e de segurança para abertura ampliada.
+### 24.8 — Release Candidate Público/Mobile
+
+Dispositivo real, desempenho, PWA, Google Play, observabilidade, aprovação legal e gate para `v2.0.0`.
+
+## Radar pós-Fase 5
+
+- expansão do catálogo de jogos;
+- colecionáveis e evolução da economia;
+- temporadas voltadas a desbloqueáveis, se aprovadas;
+- Google Play e evolução mobile contínua;
+- imagens e assets avançados nos jogos;
+- melhorias editoriais e mecânicas específicas;
+- recursos sociais somente após necessidade medida.
 
 ## Regra de avanço
 
-Cada módulo deve possuir branch própria, critérios de aceite, testes e estratégia de rollback. Mudanças de persistência devem ser aditivas e ocorrer em tarefa separada da alteração visual que as utiliza.
+Cada sprint deve possuir escopo, critérios de aceite, validações e rollback proporcionais ao risco. Branch própria é o padrão; trabalho direto na `main` é permitido quando explicitamente autorizado pelo proprietário. Persistência deve permanecer aditiva e operações remotas exigem autorização específica.

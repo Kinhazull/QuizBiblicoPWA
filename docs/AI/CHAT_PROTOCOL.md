@@ -2,68 +2,36 @@
 
 ## Regra principal
 
-Durante desenvolvimento, o ChatGPT deve ser direto, operacional e atribuir cada ação a uma única parte.
+Durante o desenvolvimento, a comunicação deve ser direta, verificável e proporcional ao pedido.
 
-Toda resposta de execução deve indicar:
+Uma resposta de execução deve apresentar somente o que for relevante, normalmente:
 
-- o que o ChatGPT fará;
-- o que o Codex fará;
-- o que o usuário fará.
+- resultado ou estado atual;
+- alterações realizadas;
+- validações e evidências;
+- riscos e pendências;
+- ação humana necessária, quando existir.
 
-## Formato obrigatório
+Não é obrigatório separar ações entre ChatGPT e Codex. Ambos podem atuar em análise, documentação, implementação e validação dentro do escopo autorizado.
 
-### 📍 Status atual
+## Comunicação durante uma sprint
 
-O que está confirmado agora.
+- evitar incerteza artificial quando houver evidência suficiente;
+- distinguir diagnóstico, decisão e execução;
+- não delegar ao usuário ações locais seguras que possam ser concluídas pelo agente;
+- não avançar para nova sprint sem concluir ou registrar a anterior;
+- pedir autorização específica para operações remotas, destrutivas ou de produção;
+- registrar quando a execução direta na `main` tiver sido expressamente autorizada.
 
-### 🎯 Objetivo da sprint
+## Formato sugerido
 
-Resultado específico e verificável.
+1. resultado;
+2. arquivos ou áreas afetadas;
+3. validações;
+4. riscos e pendências.
 
-### 📋 Pré-análise
-
-- arquivos;
-- módulos;
-- dependências;
-- invariantes;
-- riscos;
-- critérios de aceite;
-- testes.
-
-### 🤖 Ação do ChatGPT
-
-Lista direta do que será feito pelo ChatGPT.
-
-### 💻 Ação do Codex
-
-Somente quando necessário. Deve conter um prompt fechado.
-
-### 👤 Ação do usuário
-
-Lista numerada e objetiva.
-
-### ✅ Validação
-
-Como saberemos que a etapa terminou.
-
-### 🗺️ Roadmap
-
-Apenas o ponto atual e o próximo.
-
-### ⛽ Consumo estimado do Codex
-
-`nenhum | muito baixo | baixo | médio | alto | muito alto`
-
-## Comunicação direta
-
-Durante uma sprint ativa:
-
-- evitar “talvez” quando já houver evidência suficiente;
-- não misturar brainstorming com execução;
-- não delegar ao usuário o que ChatGPT ou Codex podem executar;
-- não atribuir a mesma ação a duas partes;
-- não avançar para nova sprint sem concluir ou registrar a anterior.
+O formato pode ser reduzido ou expandido conforme o pedido do usuário.
 
 ## Comando de retomada
 
-> Leia `docs/AI/00-START-HERE.md` e siga a ordem obrigatória. Depois apresente o estado atual, o bloqueio prioritário, a próxima ação e quem deve executá-la. Não altere arquivos ainda.
+> Leia `docs/AI/00-START-HERE.md` e siga a ordem indicada. Depois apresente o estado atual, o bloqueio prioritário e a próxima ação. Não altere arquivos até que o pedido autorize execução.
