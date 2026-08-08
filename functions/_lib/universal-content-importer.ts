@@ -189,8 +189,8 @@ export async function importUniversalContent(
       env.DB.prepare(`INSERT INTO content_items(
         id,organization_id,game_type,status,category,difficulty,biblical_reference,tags_json,
         payload_json,reference_json,template_id,version,author_id,reviewer_id,created_at,updated_at,
-        source,internal_notes
-      ) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,NULL,NULL,?10,?11,?12,?13,?14,?15,?16)`)
+        source,internal_notes,editorial_status
+      ) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,NULL,NULL,?10,?11,?12,?13,?14,?15,?16,?4)`)
         .bind(model.id, entry.organizationId, model.gameType, entry.targetStatus, model.category,
           model.difficulty, model.biblicalReference, JSON.stringify(model.tags), payloadJson,
           model.version, model.authorId, model.reviewerId, model.createdAt, now, source, notes),

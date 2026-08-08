@@ -23,10 +23,15 @@
 ## Conteúdo e arquitetura universal
 
 - `docs/PRODUCT/EDITORIAL_ARCHITECTURE.md`
+- `docs/EDITORIAL_GOVERNANCE.md`
+- `docs/ASSET_REGISTRY.md`
+- `docs/CONTENT_IMPORT.md`
 - `docs/PRODUCT/PHASE_4_ARCHITECTURE_DESIGN.md`
 - `docs/PRODUCT/PHASE_4_RELEASE_CANDIDATE.md`
 - `shared/content/`
 - `functions/_lib/universal-content-library.ts`
+- `functions/_lib/editorial-governance.ts`
+- `functions/_lib/asset-registry.ts`
 - `functions/_lib/universal-game-generator.ts`
 - `app/games/loader/`
 

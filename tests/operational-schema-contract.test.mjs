@@ -10,7 +10,7 @@ const migrations = readdirSync(new URL("../drizzle", import.meta.url)).filter(fi
 const sql = migrations.map(file => readFileSync(new URL(`../drizzle/${file}`, import.meta.url), "utf8")).join("\n");
 
 test("operational schema contract covers every migration table", () => {
-  assert.equal(OPERATIONAL_SCHEMA_VERSION, 36);
+  assert.equal(OPERATIONAL_SCHEMA_VERSION, 37);
   assert.equal(migrations.length, EXPECTED_MIGRATION_COUNT);
   const created = [...sql.matchAll(/CREATE TABLE(?: IF NOT EXISTS)?\s+([a-z0-9_]+)/gi)].map(match => match[1]);
   for (const table of new Set(created)) {

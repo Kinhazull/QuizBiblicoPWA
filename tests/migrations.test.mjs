@@ -5,12 +5,12 @@ import { DatabaseSync } from "node:sqlite";
 
 test("all migrations are sequential and apply to an empty SQLite database", async () => {
   const files = (await readdir(new URL("../drizzle/", import.meta.url))).filter(file => file.endsWith(".sql")).sort();
-  assert.equal(files.length, 37);
+  assert.equal(files.length, 38);
   files.forEach((file, index) => assert.equal(file.slice(0, 4), String(index).padStart(4, "0")));
   const db = new DatabaseSync(":memory:");
   for (const file of files) db.exec(await readFile(new URL(`../drizzle/${file}`, import.meta.url), "utf8"));
   const tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table'").all().map(row => row.name);
-  for (const required of ["users", "rounds", "question_bank", "seasons", "announcements", "privacy_requests", "ai_question_suggestions", "batch_operations", "season_snapshots", "season_awards", "round_award_processing", "round_award_participant_processing", "user_platform_progress", "platform_xp_ledger", "platform_coin_ledger", "platform_achievement_definitions", "user_platform_achievements", "platform_mission_definitions", "user_platform_missions", "user_platform_mission_progress_events", "core_platform_events", "core_platform_event_processing", "user_platform_statistics", "user_platform_game_statistics", "user_platform_statistics_active_days", "user_platform_statistics_official_days_utc", "user_platform_game_difficulty_statistics", "platform_statistics_event_checkpoints", "quiz_core_event_outbox", "content_items", "content_versions", "universal_content_library", "generated_game_selections", "generated_game_selection_items", "generated_game_participations", "generated_game_participation_usage", "platform_events", "platform_event_games", "platform_event_content_items", "platform_event_content_reservations", "platform_event_participations", "platform_event_reward_ledger"]) assert.ok(tables.includes(required), `missing ${required}`);
+  for (const required of ["users", "rounds", "question_bank", "seasons", "announcements", "privacy_requests", "ai_question_suggestions", "batch_operations", "season_snapshots", "season_awards", "round_award_processing", "round_award_participant_processing", "user_platform_progress", "platform_xp_ledger", "platform_coin_ledger", "platform_achievement_definitions", "user_platform_achievements", "platform_mission_definitions", "user_platform_missions", "user_platform_mission_progress_events", "core_platform_events", "core_platform_event_processing", "user_platform_statistics", "user_platform_game_statistics", "user_platform_statistics_active_days", "user_platform_statistics_official_days_utc", "user_platform_game_difficulty_statistics", "platform_statistics_event_checkpoints", "quiz_core_event_outbox", "content_items", "content_versions", "universal_content_library", "generated_game_selections", "generated_game_selection_items", "generated_game_participations", "generated_game_participation_usage", "platform_events", "platform_event_games", "platform_event_content_items", "platform_event_content_reservations", "platform_event_participations", "platform_event_reward_ledger", "content_review_comments", "asset_registry", "content_assets"]) assert.ok(tables.includes(required), `missing ${required}`);
   assert.ok(db.prepare("PRAGMA index_list('content_items')").all().some(row => row.name === "content_items_org_updated_idx"));
   assert.ok(db.prepare("PRAGMA index_list('content_versions')").all().some(row => row.name === "content_versions_content_version_idx"));
   assert.ok(db.prepare("PRAGMA index_list('universal_content_library')").all().some(row => row.name === "universal_content_library_eligible_idx"));
@@ -44,6 +44,25 @@ test("all migrations are sequential and apply to an empty SQLite database", asyn
   assert.ok(db.prepare("PRAGMA index_list('quiz_core_event_outbox')").all().some(row => row.name === "quiz_core_event_outbox_claim_idx"));
   const outboxSql = db.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='quiz_core_event_outbox'").get().sql;
   assert.match(outboxSql, /event_version IN \(1, 2\)/);
+  db.close();
+});
+
+test("migration 0037 applies over 0036 and preserves existing editorial content", async () => {
+  const files = (await readdir(new URL("../drizzle/", import.meta.url))).filter(file => file.endsWith(".sql")).sort();
+  const db = new DatabaseSync(":memory:");
+  for (const file of files.slice(0, 37)) db.exec(await readFile(new URL(`../drizzle/${file}`, import.meta.url), "utf8"));
+  db.prepare("INSERT INTO organizations(id,name,slug,created_at) VALUES('org','Org','org',0)").run();
+  db.prepare("INSERT INTO groups(id,organization_id,name,active,created_at) VALUES('g','org','G',1,0)").run();
+  db.prepare("INSERT INTO users(id,organization_id,group_id,username,display_name,password_hash,password_salt,role,status,must_change_password,created_at,updated_at) VALUES('u','org','g','u','U','h','s','admin','active',0,0,0)").run();
+  db.prepare(`INSERT INTO content_items(id,organization_id,game_type,status,category,difficulty,tags_json,payload_json,version,author_id,created_at,updated_at)
+    VALUES('draft','org','wordle-biblico','DRAFT','c','EASY','[]','{}',1,'u',0,0),('published','org','wordle-biblico','PUBLISHED','c','EASY','[]','{}',1,'u',0,0)`).run();
+  const migration = await readFile(new URL("../drizzle/0037_editorial_governance_assets.sql", import.meta.url), "utf8");
+  db.exec(migration);
+  assert.deepEqual(db.prepare("SELECT id,editorial_status status FROM content_items ORDER BY id").all().map(row => ({ ...row })), [
+    { id: "draft", status: "DRAFT" }, { id: "published", status: "PUBLISHED" },
+  ]);
+  assert.ok(db.prepare("PRAGMA table_info(platform_events)").all().some(row => row.name === "cover_asset_id"));
+  assert.throws(() => db.exec(migration), /duplicate column|already exists/);
   db.close();
 });
 

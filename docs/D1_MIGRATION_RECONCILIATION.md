@@ -98,3 +98,14 @@ D1 não deve depender de rollback destrutivo improvisado. A estratégia deve pri
 - não concatenar migration e deploy como forma de contornar o gate;
 - não executar operação remota sem autorização explícita;
 - manter backup obrigatório quando houver escrita remota.
+
+## Contrato da migration 0037
+
+- schema anterior: `0036_platform_events.sql`;
+- tabelas criadas: `content_review_comments`, `asset_registry`, `content_assets`;
+- tabelas alteradas: `content_items` (estado editorial, submissão, revisão e rollback) e `platform_events` (`cover_asset_id` opcional);
+- índices: estado editorial, comentários, assets por estado/URL e relação asset–conteúdo;
+- triggers: nenhum;
+- dados existentes: `editorial_status` é inicializado a partir de `status`, sem alterar payload ou versões;
+- snapshot: tabelas e índices novos são criações esperadas; `content_items` e `platform_events` são alterações esperadas da 0037;
+- recuperação: backup obrigatório e, se necessário, migration aditiva corretiva ou restauração validada; nunca editar ledger manualmente.

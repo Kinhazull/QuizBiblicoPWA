@@ -3,7 +3,7 @@ import { requireUser, type AppEnv } from "./auth";
 export const permissionCodes = [
   "members.manage","invitations.manage","questions.edit","questions.review","rounds.manage","reports.view",
   "audit.view","permissions.manage","notifications.manage","content.manage","events.manage","operations.view",
-  "privacy.manage","economy.manage","analytics.view",
+  "privacy.manage","economy.manage","analytics.view","content.review",
 ] as const;
 export type PermissionCode = typeof permissionCodes[number];
 
@@ -12,6 +12,7 @@ const legacyLeader = new Set<PermissionCode>(["members.manage","invitations.mana
 /** One-way bridge: historical grants satisfy modern domains during the deprecation window. */
 export const legacyPermissionCompatibility: Partial<Record<PermissionCode, readonly PermissionCode[]>> = {
   "content.manage": ["questions.edit"],
+  "content.review": ["questions.review"],
   "events.manage": ["rounds.manage"],
   "operations.view": ["reports.view"],
   "privacy.manage": ["members.manage"],

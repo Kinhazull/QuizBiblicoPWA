@@ -43,7 +43,7 @@ const GAME_TITLES: Readonly<Record<GameType, string>> = {
 };
 type Identity = { organizationId: string; userId: string };
 type EventInput = {
-  title?: unknown; description?: unknown; coverUrl?: unknown; startsAt?: unknown; endsAt?: unknown;
+  title?: unknown; description?: unknown; coverUrl?: unknown; coverAssetId?: unknown; startsAt?: unknown; endsAt?: unknown;
   timeZone?: unknown; completionRule?: unknown; minimumParticipations?: unknown;
   participationXp?: unknown; victoryCoins?: unknown; completionBonusXp?: unknown; perfectBonusCoins?: unknown;
   games?: unknown;
@@ -83,6 +83,7 @@ function normalizeEvent(input: EventInput) {
   const title = normalizedText(input.title, 120);
   const description = normalizedText(input.description, 1000);
   const coverUrl = normalizedText(input.coverUrl, 500) || null;
+  const coverAssetId = normalizedText(input.coverAssetId, 160) || null;
   const startsAt = integer(input.startsAt);
   const endsAt = integer(input.endsAt);
   const timeZone = normalizedText(input.timeZone, 80) || "America/Sao_Paulo";
@@ -101,7 +102,14 @@ function normalizeEvent(input: EventInput) {
     || rewards.perfectBonusCoins < 0 || rewards.perfectBonusCoins > MAX_REWARDS.perfectBonusCoins) {
     throw new Error("invalid_event");
   }
-  return { title, description, coverUrl, startsAt, endsAt, timeZone, completionRule, minimumParticipations, rewards, games };
+  return { title, description, coverUrl, coverAssetId, startsAt, endsAt, timeZone, completionRule, minimumParticipations, rewards, games };
+}
+
+async function assertEventAsset(env: AppEnv, organizationId: string, assetId: string | null) {
+  if (!assetId) return;
+  const owned = await env.DB.prepare("SELECT 1 ok FROM asset_registry WHERE id=?1 AND organization_id=?2 AND status='ACTIVE'")
+    .bind(assetId, organizationId).first();
+  if (!owned) throw new Error("invalid_event_cover_asset");
 }
 
 async function audit(env: AppEnv, identity: Identity, action: string, eventId: string, details: Record<string, unknown>, now: number) {
@@ -112,14 +120,15 @@ async function audit(env: AppEnv, identity: Identity, action: string, eventId: s
 
 export async function createPlatformEvent(env: AppEnv, identity: Identity, input: EventInput, now = Date.now()) {
   const value = normalizeEvent(input);
+  await assertEventAsset(env, identity.organizationId, value.coverAssetId);
   const id = crypto.randomUUID();
   const statements: D1PreparedStatement[] = [env.DB.prepare(`INSERT INTO platform_events(
     id,organization_id,title,description,cover_url,starts_at,ends_at,time_zone,status,completion_rule,
-    minimum_participations,participation_xp,victory_coins,completion_bonus_xp,perfect_bonus_coins,created_by,created_at,updated_at
-  ) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,'DRAFT',?9,?10,?11,?12,?13,?14,?15,?16,?16)`)
+    minimum_participations,participation_xp,victory_coins,completion_bonus_xp,perfect_bonus_coins,created_by,created_at,updated_at,cover_asset_id
+  ) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,'DRAFT',?9,?10,?11,?12,?13,?14,?15,?16,?16,?17)`)
     .bind(id, identity.organizationId, value.title, value.description, value.coverUrl, value.startsAt, value.endsAt,
       value.timeZone, value.completionRule, value.minimumParticipations, value.rewards.participationXp,
-      value.rewards.victoryCoins, value.rewards.completionBonusXp, value.rewards.perfectBonusCoins, identity.userId, now)];
+      value.rewards.victoryCoins, value.rewards.completionBonusXp, value.rewards.perfectBonusCoins, identity.userId, now, value.coverAssetId)];
   value.games.forEach((game, gameIndex) => {
     statements.push(env.DB.prepare(`INSERT INTO platform_event_games(event_id,organization_id,game_type,position)
       VALUES(?1,?2,?3,?4)`).bind(id, identity.organizationId, game.gameType, gameIndex + 1));
@@ -138,13 +147,14 @@ export async function updatePlatformEvent(env: AppEnv, identity: Identity, event
   if (!current) throw new Error("event_not_found");
   if (current.status !== EventStatus.DRAFT) throw new Error("event_locked");
   const value = normalizeEvent(input);
+  await assertEventAsset(env, identity.organizationId, value.coverAssetId);
   const statements: D1PreparedStatement[] = [
     env.DB.prepare(`UPDATE platform_events SET title=?1,description=?2,cover_url=?3,starts_at=?4,ends_at=?5,time_zone=?6,
       completion_rule=?7,minimum_participations=?8,participation_xp=?9,victory_coins=?10,completion_bonus_xp=?11,
-      perfect_bonus_coins=?12,updated_at=?13 WHERE id=?14 AND organization_id=?15 AND status='DRAFT'`)
+      perfect_bonus_coins=?12,updated_at=?13,cover_asset_id=?14 WHERE id=?15 AND organization_id=?16 AND status='DRAFT'`)
       .bind(value.title, value.description, value.coverUrl, value.startsAt, value.endsAt, value.timeZone,
         value.completionRule, value.minimumParticipations, value.rewards.participationXp, value.rewards.victoryCoins,
-        value.rewards.completionBonusXp, value.rewards.perfectBonusCoins, now, eventId, identity.organizationId),
+        value.rewards.completionBonusXp, value.rewards.perfectBonusCoins, now, value.coverAssetId, eventId, identity.organizationId),
     env.DB.prepare("DELETE FROM platform_event_content_items WHERE event_id=?1 AND organization_id=?2").bind(eventId, identity.organizationId),
     env.DB.prepare("DELETE FROM platform_event_games WHERE event_id=?1 AND organization_id=?2").bind(eventId, identity.organizationId),
   ];
@@ -331,6 +341,7 @@ async function hydrateEvent(env: AppEnv, row: any, now: number, participant: boo
   }
   return {
     id: String(row.id), title: String(row.title), description: String(row.description), coverUrl: row.cover_url ?? null,
+    coverAssetId: row.cover_asset_id ?? null,
     startsAt: Number(row.starts_at), endsAt: Number(row.ends_at), timeZone: String(row.time_zone), status: effectiveStatus(row, now),
     completionRule: String(row.completion_rule), minimumParticipations: Number(row.minimum_participations),
     rewards: { participationXp: Number(row.participation_xp), victoryCoins: Number(row.victory_coins),

@@ -59,7 +59,7 @@ test("statistics endpoint returns a safe authenticated empty state", async t => 
   const health = await responseJson(await readHealth({ request: createAuthenticatedRequest("https://test/api/admin/health", { token: adminToken }), env: ctx.env }));
   assert.equal(health.tables.missing.length, 0);
   assert.equal(health.checks.find(item => item.name === "statisticsProjection").ok, true);
-  assert.equal(health.migrationLedger.expected, 37);
+  assert.equal(health.migrationLedger.expected, 38);
 });
 
 test("official generic events create isolated global and per-game projections", async t => {

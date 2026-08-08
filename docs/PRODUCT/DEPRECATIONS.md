@@ -9,6 +9,8 @@ Este registro acompanha estruturas ainda presentes, mas destinadas a substituiç
 | `/jogos/modo-livre` | Compatibilidade de rota | `/jogos` | janela de compatibilidade concluída e ausência de links ativos | redirect e testes de navegação | 24.3 |
 | Jornada como fluxo principal | **DISABLED** na navegação ativa; histórico preservado | catálogo universal e modos Livre, Diário e Evento | medir uso direto e concluir retenção antes de retirar rotas/APIs | rounds, attempts e histórico | posterior |
 | editor/APIs de perguntas anteriores ao CMS | Em substituição | CMS Universal | capacidades necessárias migradas e uso legado somente leitura/zerado | `question_bank`, rotas administrativas e importador | 24.3/24.6 |
+| `content_items.status` como estado editorial | Compatibilidade operacional | `content_items.editorial_status` | todos os leitores editoriais migrados | CMS, Biblioteca e importadores | posterior à 24.6 |
+| URL direta de capa de Evento | Fallback histórico | `cover_asset_id` via Asset Registry | Eventos existentes migrados de forma controlada | Eventos e storage futuro | posterior à 24.6 |
 | `/rankings` | **HISTORICAL_PRESERVED / DEFERRED** | ranking universal futuro | decisão de produto e preservação histórica | attempts, rounds e perfis públicos | posterior |
 | `/medalhas` e `user_badges` | **HISTORICAL_PRESERVED**; geração automática desativada | Conquistas da plataforma | política de exportação/retenção e retirada de consumidores diretos | API histórica e dados | posterior |
 | `/temporadas` e estruturas sazonais | **DEFERRED / HISTORICAL_PRESERVED**; fora da navegação | decisão futura explícita | política de produto e retenção | seasons, snapshots, awards e rounds | posterior |

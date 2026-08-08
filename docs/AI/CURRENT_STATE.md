@@ -15,7 +15,7 @@ A tag `v1.0.0` permanece como referência histórica do piloto do produto anteri
 
 **Fase 5 — Consolidação, operação e desacoplamento progressivo do legado.**
 
-Sprint corrente: **24.5 — Analytics da Plataforma e Permissões Administrativas**.
+Sprint corrente: **24.6 — Governança Editorial e Asset Registry**.
 
 Próximas sprints aprovadas no roadmap:
 
@@ -31,7 +31,9 @@ Próximas sprints aprovadas no roadmap:
 ## Estado técnico confirmado
 
 - `main` é a linha integrada corrente da plataforma.
-- Migrations oficiais existem até `0036_platform_events.sql`.
+- A migration local `0037_editorial_governance_assets.sql` está preparada e não foi aplicada remotamente; produção permanece em `0036`.
+- O CMS possui fluxo DRAFT → IN_REVIEW → PUBLISHED → ARCHIVED, comentários, histórico comparável e rollback por nova versão.
+- O Asset Registry usa metadados no D1 e URL HTTPS controlada; R2 está apenas preparado, sem bucket ou binding remoto.
 - CMS Universal é a fonte oficial de conteúdo publicado.
 - Erros públicos modernos, supportId, logs estruturados, health unificado e runbooks possuem contratos compartilhados.
 - Analytics administrativos agregados reutilizam participações, eventos, Biblioteca, estatísticas e ledgers existentes, com isolamento organizacional e sem PII.

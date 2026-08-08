@@ -92,14 +92,17 @@ test("editor persists only through authenticated CMS endpoints and never browser
   assert.doesNotMatch(source, /\bDELETE\b/);
 });
 
-test("editor exposes the DRAFT to PUBLISHED lifecycle without direct published editing", () => {
-  assert.match(editor, /Publicar/);
-  assert.match(editor, /Voltar para Draft/);
-  assert.match(editor, /"publish"/);
-  assert.match(editor, /"unpublish"/);
-  assert.match(editor, /disabled=\{isPublished\}/);
+test("editor exposes the governed editorial lifecycle without direct published editing", () => {
+  assert.match(editor, /Enviar para revis[aã]o/);
+  assert.match(editor, /Aprovar e publicar/);
+  assert.match(editor, /Arquivar/);
+  assert.match(editor, /Restaurar como rascunho/);
+  assert.match(editor, /"submit-review"/);
+  assert.match(editor, /"archive"/);
+  assert.match(editor, /"restore"/);
+  assert.match(editor, /disabled=\{!isEditable\}/);
   assert.match(editor, /status: persisted\.status/);
-  assert.doesNotMatch(editor, /IN_REVIEW|ARCHIVED/);
+  assert.match(editor, /IN_REVIEW|ARCHIVED/);
 });
 
 test("editor layout is responsive, bounded and keyboard accessible", () => {

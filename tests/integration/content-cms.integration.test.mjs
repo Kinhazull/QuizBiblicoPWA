@@ -16,6 +16,7 @@ import {
 } from "../../functions/api/admin/content/[id].ts";
 import { onRequestGet as getContentVersions } from "../../functions/api/admin/content/[id]/versions.ts";
 import { onRequestPost as publishContent } from "../../functions/api/admin/content/[id]/publish.ts";
+import { onRequestPost as submitReview } from "../../functions/api/admin/content/[id]/submit-review.ts";
 import { onRequestPost as unpublishContent } from "../../functions/api/admin/content/[id]/unpublish.ts";
 import { onRequestGet as getPublishedWordle } from "../../functions/api/platform/games/wordle.ts";
 import {
@@ -115,6 +116,14 @@ async function post(ctx, token, body) {
 }
 
 async function transition(handler, ctx, token, contentId, version) {
+  if (handler === publishContent) {
+    const submitted = await submitReview({
+      request: createAuthenticatedRequest(`https://test/api/admin/content/${contentId}/submit-review`, { token, method: "POST", body: { version } }),
+      env: ctx.env, params: { id: contentId },
+    });
+    if (!submitted.ok) return submitted;
+    version = (await responseJson(submitted)).content.version;
+  }
   return handler({
     request: createAuthenticatedRequest(`https://test/api/admin/content/${contentId}`, {
       token,
@@ -911,7 +920,7 @@ test("version endpoint returns sanitized history for owned universal content", a
   assert.equal(response.status, 200);
   const data = await responseJson(response);
   assert.deepEqual(data.versions.map(version => version.version), [1]);
-  assert.equal("payloadJson" in data.versions[0], false);
+  assert.equal(typeof data.versions[0].payloadJson, "string");
 });
 
 test("universal archive paginates migrated and native content deterministically", async t => {
@@ -967,14 +976,14 @@ test("valid publication increments version, records history and audit, and locks
   assert.equal(response.status, 200);
   const published = (await responseJson(response)).content;
   assert.equal(published.status, "PUBLISHED");
-  assert.equal(published.version, 2);
-  assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM content_versions WHERE content_id=?").get(content.id).total, 2);
+  assert.equal(published.version, 3);
+  assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM content_versions WHERE content_id=?").get(content.id).total, 3);
   const audit = ctx.raw.prepare("SELECT action,details_json FROM audit_logs WHERE entity_id=? ORDER BY created_at DESC").get(content.id);
-  assert.equal(audit.action, "content.published");
+  assert.equal(audit.action, "content.review_approved");
   assert.deepEqual(JSON.parse(audit.details_json), {
-    fromStatus: "DRAFT",
+    fromStatus: "IN_REVIEW",
     toStatus: "PUBLISHED",
-    version: 2,
+    version: 3,
   });
   assert.equal(audit.details_json.includes("Quem construiu"), false);
 
@@ -1018,7 +1027,7 @@ test("publication requires questions.edit and hides cross-organization existence
   assert.equal(stored.version, 1);
 });
 
-test("return to Draft preserves history and writes a sanitized audit event", async t => {
+test("archive preserves history and writes a sanitized audit event", async t => {
   const { ctx, tokens } = await fixture(t);
   const { content } = await responseJson(await post(ctx, tokens.admin, universalBody(GameType.WORDLE)));
   const published = (await responseJson(
@@ -1027,11 +1036,11 @@ test("return to Draft preserves history and writes a sanitized audit event", asy
   const response = await transition(unpublishContent, ctx, tokens.admin, content.id, published.version);
   assert.equal(response.status, 200);
   const draft = (await responseJson(response)).content;
-  assert.equal(draft.status, "DRAFT");
-  assert.equal(draft.version, 3);
-  assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM content_versions WHERE content_id=?").get(content.id).total, 3);
+  assert.equal(draft.status, "ARCHIVED");
+  assert.equal(draft.version, 4);
+  assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM content_versions WHERE content_id=?").get(content.id).total, 4);
   const audit = ctx.raw.prepare("SELECT action,details_json FROM audit_logs WHERE entity_id=? ORDER BY created_at DESC").get(content.id);
-  assert.equal(audit.action, "content.returned_to_draft");
+  assert.equal(audit.action, "content.archived");
   assert.equal(audit.details_json.includes("GRACA"), false);
 });
 

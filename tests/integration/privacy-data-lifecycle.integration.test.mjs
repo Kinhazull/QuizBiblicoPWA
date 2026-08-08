@@ -7,8 +7,8 @@ import { onRequestPatch as resolvePrivacyRequest } from "../../functions/api/adm
 import { hashPassword } from "../../functions/_lib/security.ts";
 import { createAuthenticatedRequest, createSession, createTestDatabase, responseJson, seedOrganization, seedUser } from "../helpers/integration.mjs";
 
-test("privacy lifecycle classifies every operational table through schema 0036", () => {
-  assert.equal(APPLICATION_TABLES.length, 64);
+test("privacy lifecycle classifies every operational table through schema 0037", () => {
+  assert.equal(APPLICATION_TABLES.length, 67);
   assert.deepEqual(Object.keys(PRIVACY_TABLE_CLASSIFICATION).sort(), [...APPLICATION_TABLES].sort());
   for (const [table, policy] of Object.entries(PRIVACY_TABLE_CLASSIFICATION)) {
     assert.ok(policy.categories.length, table);

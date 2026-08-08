@@ -27,27 +27,26 @@ export type UniversalContentSummary = {
 export async function loadContentDashboard(env: AppEnv, organizationId: string) {
   const results = await Promise.all([
     env.DB.prepare("SELECT COUNT(*) total FROM content_items WHERE organization_id=?1").bind(organizationId).first<{ total: number }>(),
-    env.DB.prepare("SELECT COUNT(*) total FROM content_items WHERE organization_id=?1 AND status='DRAFT'").bind(organizationId).first<{ total: number }>(),
-    env.DB.prepare("SELECT COUNT(*) total FROM content_items WHERE organization_id=?1 AND status='PUBLISHED'").bind(organizationId).first<{ total: number }>(),
+    env.DB.prepare("SELECT editorial_status AS status,COUNT(*) total FROM content_items WHERE organization_id=?1 GROUP BY editorial_status").bind(organizationId).all<{ status: ContentStatus; total: number }>(),
     env.DB.prepare("SELECT game_type AS gameType,COUNT(*) total FROM content_items WHERE organization_id=?1 GROUP BY game_type")
       .bind(organizationId).all<{ gameType: GameType; total: number }>(),
   ]);
   const count = (index: number) => Number((results[index] as { total?: number } | null)?.total || 0);
   const universalTotal = count(0);
-  const universalDrafts = count(1);
-  const universalPublished = count(2);
-  const gameRows = (results[3] as D1Result<{ gameType: GameType; total: number }>).results || [];
+  const statusRows = (results[1] as D1Result<{ status: ContentStatus; total: number }>).results || [];
+  const statusCounts = new Map(statusRows.map(row => [row.status, Number(row.total)]));
+  const gameRows = (results[2] as D1Result<{ gameType: GameType; total: number }>).results || [];
   const byGameCount = new Map(gameRows.map(row => [row.gameType, Number(row.total)]));
   const byStatus = {
-    DRAFT: universalDrafts,
-    IN_REVIEW: 0,
-    PUBLISHED: universalPublished,
-    ARCHIVED: 0,
+    DRAFT: statusCounts.get(ContentStatus.DRAFT) || 0,
+    IN_REVIEW: statusCounts.get(ContentStatus.IN_REVIEW) || 0,
+    PUBLISHED: statusCounts.get(ContentStatus.PUBLISHED) || 0,
+    ARCHIVED: statusCounts.get(ContentStatus.ARCHIVED) || 0,
   };
   return {
     total: universalTotal,
-    archived: 0,
-    needsReview: 0,
+    archived: byStatus.ARCHIVED,
+    needsReview: byStatus.IN_REVIEW,
     byStatus,
     byGame: Object.values(GameType).map(gameType => ({
       gameType,
@@ -86,13 +85,8 @@ export async function loadUniversalContent(
     universalFilters.push(sql.replace("?", `?${universalValues.length}`));
   };
   if (gameType) addUniversal("game_type=?", gameType);
-  if (onlyArchived || status === ContentStatus.ARCHIVED) universalFilters.push("0=1");
-  else if (
-    status
-    && status !== ContentStatus.DRAFT
-    && status !== ContentStatus.PUBLISHED
-  ) universalFilters.push("0=1");
-  else if (status) addUniversal("status=?", status);
+  if (onlyArchived) addUniversal("editorial_status=?", ContentStatus.ARCHIVED);
+  else if (status && Object.values(ContentStatus).includes(status as ContentStatus)) addUniversal("editorial_status=?", status);
   if (difficulty) addUniversal("difficulty=?", difficulty);
   if (category) addUniversal("category=?", category);
   if (reference) addUniversal("biblical_reference LIKE ?", `%${reference}%`);
@@ -126,9 +120,8 @@ export async function loadUniversalContent(
         book: typeof payload.book === "string" ? payload.book : null,
         category: String(row.category),
         difficulty: String(row.difficulty) as Difficulty,
-        status: row.status === ContentStatus.PUBLISHED
-          ? ContentStatus.PUBLISHED
-          : ContentStatus.DRAFT,
+        status: Object.values(ContentStatus).includes(String(row.editorial_status) as ContentStatus)
+          ? String(row.editorial_status) as ContentStatus : ContentStatus.DRAFT,
         version: Number(row.version),
         updatedAt: Number(row.updated_at),
         timesUsed: 0,

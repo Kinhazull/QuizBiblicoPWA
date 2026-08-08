@@ -16,7 +16,8 @@ export type PersistedUniversalContent = {
   id: string;
   organizationId: string;
   gameType: GameType;
-  status: typeof ContentStatus.DRAFT | typeof ContentStatus.PUBLISHED;
+  status: (typeof ContentStatus)[keyof typeof ContentStatus];
+  publicationStatus: typeof ContentStatus.DRAFT | typeof ContentStatus.PUBLISHED;
   category: string;
   difficulty: SharedContentModel["difficulty"];
   biblicalReference: string | null;
@@ -31,6 +32,13 @@ export type PersistedUniversalContent = {
   updatedAt: number;
   source: UniversalContentSource;
   internalNotes: string | null;
+  submittedBy: string | null;
+  submittedAt: number | null;
+  reviewedBy: string | null;
+  reviewedAt: number | null;
+  reviewDecision: "APPROVED" | "CHANGES_REQUESTED" | null;
+  reviewComment: string | null;
+  rollbackSourceVersion: number | null;
 };
 
 type ContentInput = {
@@ -73,7 +81,10 @@ export function rowToUniversalContent(row: ContentRow): PersistedUniversalConten
     id: String(row.id),
     organizationId: String(row.organization_id),
     gameType: String(row.game_type) as GameType,
-    status: row.status === ContentStatus.PUBLISHED ? ContentStatus.PUBLISHED : ContentStatus.DRAFT,
+    status: Object.values(ContentStatus).includes(String(row.editorial_status) as never)
+      ? String(row.editorial_status) as PersistedUniversalContent["status"]
+      : row.status === ContentStatus.PUBLISHED ? ContentStatus.PUBLISHED : ContentStatus.DRAFT,
+    publicationStatus: row.status === ContentStatus.PUBLISHED ? ContentStatus.PUBLISHED : ContentStatus.DRAFT,
     category: String(row.category),
     difficulty: String(row.difficulty) as SharedContentModel["difficulty"],
     biblicalReference: typeof row.biblical_reference === "string" ? row.biblical_reference : null,
@@ -88,6 +99,13 @@ export function rowToUniversalContent(row: ContentRow): PersistedUniversalConten
     updatedAt: Number(row.updated_at),
     source: "UNIVERSAL_CMS",
     internalNotes: typeof row.internal_notes === "string" ? row.internal_notes : null,
+    submittedBy: typeof row.submitted_by === "string" ? row.submitted_by : null,
+    submittedAt: row.submitted_at == null ? null : Number(row.submitted_at),
+    reviewedBy: typeof row.reviewed_by === "string" ? row.reviewed_by : null,
+    reviewedAt: row.reviewed_at == null ? null : Number(row.reviewed_at),
+    reviewDecision: row.review_decision === "APPROVED" || row.review_decision === "CHANGES_REQUESTED" ? row.review_decision : null,
+    reviewComment: typeof row.review_comment === "string" ? row.review_comment : null,
+    rollbackSourceVersion: row.rollback_source_version == null ? null : Number(row.rollback_source_version),
   };
 }
 
@@ -212,8 +230,8 @@ export async function createUniversalDraft(
     env.DB.prepare(`INSERT INTO content_items(
       id,organization_id,game_type,status,category,difficulty,biblical_reference,tags_json,
       payload_json,reference_json,template_id,version,author_id,reviewer_id,created_at,updated_at,
-      source,internal_notes
-    ) VALUES(?1,?2,?3,'DRAFT',?4,?5,?6,?7,?8,?9,?10,1,?11,NULL,?12,?12,'UNIVERSAL_CMS',?13)`)
+      source,internal_notes,editorial_status
+    ) VALUES(?1,?2,?3,'DRAFT',?4,?5,?6,?7,?8,?9,?10,1,?11,NULL,?12,?12,'UNIVERSAL_CMS',?13,'DRAFT')`)
       .bind(id, organizationId, model.gameType, model.category, model.difficulty,
         model.biblicalReference, JSON.stringify(model.tags), payloadJson,
         reference ? JSON.stringify(reference) : null, templateId, authorId, now, model.internalNotes),
@@ -359,7 +377,7 @@ export async function transitionUniversalContentStatus(
       : prepareDraftContentLibrarySync(env, current, nextVersion, now);
     await env.DB.batch([
       env.DB.prepare(`UPDATE content_items
-        SET status=?1,version=?2,updated_at=?3
+        SET status=?1,editorial_status=?1,version=?2,updated_at=?3
         WHERE id=?4 AND organization_id=?5 AND version=?6 AND status=?7`)
         .bind(targetStatus, nextVersion, now, id, organizationId, current.version, current.status),
       env.DB.prepare(`INSERT INTO content_versions(
@@ -402,7 +420,8 @@ export async function listUniversalVersions(env: AppEnv, organizationId: string,
   const owned = await findUniversalContent(env, organizationId, contentId);
   if (!owned) return null;
   const rows = await env.DB.prepare(`SELECT
-    id,version,changed_by AS changedBy,change_summary AS changeSummary,created_at AS createdAt
+    id,version,metadata_json AS metadataJson,payload_json AS payloadJson,
+    changed_by AS changedBy,change_summary AS changeSummary,created_at AS createdAt
     FROM content_versions WHERE content_id=?1 AND organization_id=?2 ORDER BY version DESC`)
     .bind(contentId, organizationId).all();
   return rows.results;

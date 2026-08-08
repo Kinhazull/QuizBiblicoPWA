@@ -58,8 +58,9 @@ test("/api/auth/me exposes only the authenticated user's normalized effective pe
     "privacy.manage",
     "economy.manage",
     "analytics.view",
+    "content.review",
   ]);
-  assert.deepEqual((await current(ctx, "partial")).permissions, ["questions.review"]);
+  assert.deepEqual((await current(ctx, "partial")).permissions, ["questions.review", "content.review"]);
   assert.deepEqual((await current(ctx, "participant")).permissions, []);
 });
 

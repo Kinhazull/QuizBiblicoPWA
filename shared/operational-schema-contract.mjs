@@ -1,5 +1,5 @@
-export const OPERATIONAL_SCHEMA_VERSION = 36;
-export const EXPECTED_MIGRATION_COUNT = 37;
+export const OPERATIONAL_SCHEMA_VERSION = 37;
+export const EXPECTED_MIGRATION_COUNT = 38;
 
 export const APPLICATION_TABLES = Object.freeze([
   "organizations", "groups", "users", "invitations", "sessions", "rounds", "questions", "choices", "attempts",
@@ -17,6 +17,7 @@ export const APPLICATION_TABLES = Object.freeze([
   "platform_event_participations", "platform_event_reward_ledger", "user_platform_statistics",
   "user_platform_game_statistics", "user_platform_game_difficulty_statistics", "user_platform_statistics_active_days",
   "platform_statistics_event_checkpoints", "quiz_core_event_outbox", "user_platform_statistics_official_days_utc",
+  "content_review_comments", "asset_registry", "content_assets",
 ]);
 
 export const CRITICAL_INDEXES = Object.freeze([
@@ -35,7 +36,9 @@ export const CRITICAL_INDEXES = Object.freeze([
   "generated_game_participations_user_status_idx", "platform_events_org_window_idx",
   "platform_event_games_org_event_idx", "platform_event_content_lookup_idx",
   "platform_event_reservations_conflict_idx", "platform_event_participations_user_idx",
-  "platform_event_rewards_user_idx",
+  "platform_event_rewards_user_idx", "content_items_org_editorial_status_idx",
+  "content_review_comments_content_idx", "asset_registry_org_status_idx",
+  "asset_registry_org_source_url_uq", "content_assets_asset_idx",
   "rounds_window_idx", "user_platform_achievements_user_time_idx", "user_platform_missions_expiration_idx",
   "user_platform_mission_events_assignment_idx", "core_platform_events_org_time_idx",
   "core_platform_events_status_time_idx", "core_platform_events_user_time_idx",
@@ -54,7 +57,7 @@ export const BACKUP_TABLE_CLASSIFICATION = Object.freeze(Object.fromEntries(APPL
 const preserve = new Set(["organizations", "groups", "users", "invitations", "legal_consents", "question_bank",
   "question_bank_choices", "question_collaborators", "question_revisions", "content_items", "content_versions",
   "platform_achievement_definitions", "platform_mission_definitions", "audit_logs",
-  "platform_events", "platform_event_games", "platform_event_content_items"]);
+  "platform_events", "platform_event_games", "platform_event_content_items", "asset_registry", "content_assets"]);
 const securityPreserve = new Set(["sessions", "login_security", "account_recovery_codes", "abuse_counters", "user_permissions", "privacy_requests"]);
 export const RESET_TABLE_CLASSIFICATION = Object.freeze(Object.fromEntries(APPLICATION_TABLES.map(table => [table,
   preserve.has(table) ? "PRESERVE" : securityPreserve.has(table) ? "SECURITY_PRESERVE" :
@@ -81,6 +84,7 @@ const editorial = new Set([
   "question_revisions", "round_collaborators", "seasons", "announcements", "ai_question_suggestions",
   "batch_operations", "content_items", "content_versions", "universal_content_library", "platform_events",
   "platform_event_games", "platform_event_content_items", "platform_event_content_reservations",
+  "content_review_comments", "asset_registry", "content_assets",
 ]);
 const securityData = new Set(["sessions", "login_security", "audit_logs", "account_recovery_codes", "abuse_counters"]);
 const virtualEconomy = new Set(["user_platform_progress", "platform_xp_ledger", "platform_coin_ledger", "platform_event_reward_ledger"]);

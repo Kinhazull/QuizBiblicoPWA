@@ -2,6 +2,21 @@
 
 Este arquivo registra apenas problemas correntes. Itens resolvidos permanecem no histórico operacional.
 
+## KI-006 — Storage binário do Asset Registry
+
+**Status:** preparado, não ativado
+**Prioridade:** média
+**Sprint prevista:** posterior à 24.6
+
+O Registry 1.0 aceita apenas URLs HTTPS controladas. Bucket R2, binding, upload e entrega autenticada ainda exigem decisão operacional e não foram criados remotamente.
+
+## KI-007 — Promoção da migration 0037
+
+**Status:** pendente de processo operacional
+**Prioridade:** alta antes da ativação funcional
+
+A migration foi validada somente localmente. O código editorial e de assets não deve ser ativado em produção antes de backup, `verify-promotable`, promoção controlada, `verify-final` e comparação de snapshot.
+
 ## KI-001 — Pipeline falhava no audit
 
 **Status:** resolvido

@@ -24,7 +24,7 @@ import { ReferenceField, UniversalFieldRenderer } from "./UniversalFields";
 type PersistedContent = {
   id: string;
   gameType: GameType;
-  status: typeof ContentStatus.DRAFT | typeof ContentStatus.PUBLISHED;
+  status: (typeof ContentStatus)[keyof typeof ContentStatus];
   category: string;
   difficulty: EditorDraft["metadata"]["difficulty"];
   biblicalReference: string | null;
@@ -38,6 +38,22 @@ type PersistedContent = {
   createdAt: number;
   updatedAt: number;
   internalNotes: string | null;
+};
+
+type ContentVersion = { version: number; metadataJson: string; payloadJson: string; changedBy: string; changeSummary: string; createdAt: number };
+type ReviewComment = { id: string; contentVersion: number; authorId: string; body: string; createdAt: number };
+const parseHistoryJson = (value: string) => { try { return JSON.parse(value); } catch { return { unavailable: true }; } };
+const changedHistoryFields = (current: ContentVersion, previous?: ContentVersion) => {
+  if (!previous) return ["versão inicial"];
+  const changed: string[] = [];
+  for (const section of ["metadataJson", "payloadJson"] as const) {
+    const left = parseHistoryJson(current[section]) as Record<string, unknown>;
+    const right = parseHistoryJson(previous[section]) as Record<string, unknown>;
+    for (const key of new Set([...Object.keys(left), ...Object.keys(right)])) {
+      if (JSON.stringify(left[key]) !== JSON.stringify(right[key])) changed.push(`${section === "metadataJson" ? "metadados" : "payload"}.${key}`);
+    }
+  }
+  return changed.length ? changed : ["sem alteração de campo"];
 };
 
 const difficultyLabels = {
@@ -258,6 +274,9 @@ export default function UniversalContentEditor() {
   const [loadingContent, setLoadingContent] = useState(false);
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error" | "conflict">("idle");
   const [saveMessage, setSaveMessage] = useState("");
+  const [versions, setVersions] = useState<ContentVersion[]>([]);
+  const [comments, setComments] = useState<ReviewComment[]>([]);
+  const [reviewComment, setReviewComment] = useState("");
   const [warning, setWarning] = useState(
     initial.selection.invalid
       ? "O jogo informado não existe. O Quiz Bíblico foi carregado como padrão."
@@ -271,6 +290,7 @@ export default function UniversalContentEditor() {
   const schema = useMemo(() => getContentSchema(draft.gameType), [draft.gameType]);
   const selectedTemplate = schema?.templates.find(template => template.id === templateId) ?? null;
   const isPublished = draft.metadata.status === ContentStatus.PUBLISHED;
+  const isEditable = draft.metadata.status === ContentStatus.DRAFT;
 
   useEffect(() => {
     const search = new URLSearchParams(window.location.search);
@@ -356,6 +376,21 @@ export default function UniversalContentEditor() {
     window.addEventListener("beforeunload", warnBeforeUnload);
     return () => window.removeEventListener("beforeunload", warnBeforeUnload);
   }, [dirty]);
+
+  useEffect(() => {
+    if (!contentId) { setVersions([]); setComments([]); return; }
+    const controller = new AbortController();
+    Promise.all([
+      fetch(`/api/admin/content/${encodeURIComponent(contentId)}/versions`, { cache: "no-store", credentials: "same-origin", signal: controller.signal }),
+      fetch(`/api/admin/content/${encodeURIComponent(contentId)}/comments`, { cache: "no-store", credentials: "same-origin", signal: controller.signal }),
+    ]).then(async ([versionResponse, commentResponse]) => {
+      if (versionResponse.ok) setVersions((await versionResponse.json() as { versions?: ContentVersion[] }).versions ?? []);
+      if (commentResponse.ok) setComments((await commentResponse.json() as { comments?: ReviewComment[] }).comments ?? []);
+    }).catch(reason => {
+      if (!(reason instanceof DOMException && reason.name === "AbortError")) setWarning("O conteúdo foi carregado, mas o histórico editorial está temporariamente indisponível.");
+    });
+    return () => controller.abort();
+  }, [contentId, draft.metadata.version]);
 
   if (!schema) {
     return <section className="cms-state error">
@@ -492,7 +527,7 @@ export default function UniversalContentEditor() {
   };
 
   const transitionStatus = async (
-    target: typeof ContentStatus.DRAFT | typeof ContentStatus.PUBLISHED,
+    target: (typeof ContentStatus)[keyof typeof ContentStatus],
   ) => {
     if (!contentId || dirty || saveState === "saving") return;
     const currentValidation = validateContent(draft.gameType, {
@@ -510,7 +545,14 @@ export default function UniversalContentEditor() {
       ? "Publicando conteúdo…"
       : "Retornando para Draft…");
     try {
-      const action = target === ContentStatus.PUBLISHED ? "publish" : "unpublish";
+      const action = target === ContentStatus.IN_REVIEW ? "submit-review"
+        : target === ContentStatus.PUBLISHED ? "publish"
+          : target === ContentStatus.ARCHIVED ? "archive"
+            : draft.metadata.status === ContentStatus.ARCHIVED ? "restore" : "request-changes";
+      const comment = action === "request-changes"
+        ? window.prompt("Informe o ajuste editorial solicitado (obrigatÃ³rio):")
+        : undefined;
+      if (action === "request-changes" && !comment?.trim()) return;
       const response = await fetch(
         `/api/admin/content/${encodeURIComponent(contentId)}/${action}`,
         {
@@ -518,7 +560,7 @@ export default function UniversalContentEditor() {
           cache: "no-store",
           credentials: "same-origin",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ version: draft.metadata.version }),
+          body: JSON.stringify({ version: draft.metadata.version, comment }),
         },
       );
       const data = await response.json() as {
@@ -561,6 +603,30 @@ export default function UniversalContentEditor() {
     }
   };
 
+  const addComment = async () => {
+    if (!contentId || !reviewComment.trim()) return;
+    const response = await fetch(`/api/admin/content/${encodeURIComponent(contentId)}/comments`, {
+      method: "POST", cache: "no-store", credentials: "same-origin", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ body: reviewComment }),
+    });
+    if (!response.ok) { setSaveMessage("Não foi possível registrar o comentário editorial."); return; }
+    setReviewComment("");
+    const refreshed = await fetch(`/api/admin/content/${encodeURIComponent(contentId)}/comments`, { cache: "no-store", credentials: "same-origin" });
+    if (refreshed.ok) setComments((await refreshed.json() as { comments?: ReviewComment[] }).comments ?? []);
+    setSaveMessage("Comentário editorial registrado.");
+  };
+
+  const rollback = async (sourceVersion: number) => {
+    if (!contentId || !isEditable || dirty || !window.confirm(`Criar uma nova versão baseada na versão ${sourceVersion}?`)) return;
+    const response = await fetch(`/api/admin/content/${encodeURIComponent(contentId)}/rollback`, {
+      method: "POST", cache: "no-store", credentials: "same-origin", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ sourceVersion, version: draft.metadata.version }),
+    });
+    const data = await response.json() as { content?: PersistedContent };
+    if (!response.ok || !data.content) { setSaveMessage("Não foi possível criar a versão de rollback."); return; }
+    window.location.reload();
+  };
+
   return <main className="admin-page content-editor-page">
     <header className="admin-title">
       <span className="eyebrow">Conteúdo</span>
@@ -576,14 +642,14 @@ export default function UniversalContentEditor() {
     {warning && <div className="editor-warning" role="status">{warning}</div>}
 
     <section className="editor-controls" aria-label="Configuração do editor">
-      <GameTypeSelector disabled={isPublished} value={draft.gameType} onChange={changeGame} />
+      <GameTypeSelector disabled={!isEditable} value={draft.gameType} onChange={changeGame} />
       <ContentTemplateSelector
         templates={schema.templates}
         value={templateId}
-        disabled={isPublished}
+        disabled={!isEditable}
         onChange={setTemplateId}
       />
-      <button type="button" onClick={applySelectedTemplate} disabled={!selectedTemplate || isPublished}>
+      <button type="button" onClick={applySelectedTemplate} disabled={!selectedTemplate || !isEditable}>
         Aplicar template
       </button>
       <p>{selectedTemplate?.description ?? "Este schema não possui templates."}</p>
@@ -591,7 +657,7 @@ export default function UniversalContentEditor() {
 
     <div className="editor-workspace">
       <fieldset
-        disabled={isPublished}
+        disabled={!isEditable}
         aria-label="Conteúdo editorial"
         style={{ display: "contents" }}
       >
@@ -638,37 +704,59 @@ export default function UniversalContentEditor() {
     </div>
 
     <footer className="editor-actions">
-      <button type="button" disabled={isPublished} onClick={resetTemplate}>Reiniciar</button>
-      <button type="button" disabled={isPublished} onClick={validateNow}>Validar conteúdo</button>
-      <button type="button" disabled={isPublished} onClick={clearDraft}>Limpar rascunho local</button>
+      <button type="button" disabled={!isEditable} onClick={resetTemplate}>Reiniciar</button>
+      <button type="button" disabled={!isEditable} onClick={validateNow}>Validar conteúdo</button>
+      <button type="button" disabled={!isEditable} onClick={clearDraft}>Limpar rascunho local</button>
       <button
         type="button"
-        disabled={saveState === "saving" || loadingContent || isPublished}
+        disabled={saveState === "saving" || loadingContent || !isEditable}
         onClick={saveDraft}
       >
         {saveState === "saving" ? "Salvando…" : "Salvar rascunho"}
       </button>
-      {!isPublished && contentId && (
+      {isEditable && contentId && (
         <button
           type="button"
           disabled={dirty || saveState === "saving" || !validation.valid}
-          onClick={() => transitionStatus(ContentStatus.PUBLISHED)}
+          onClick={() => transitionStatus(ContentStatus.IN_REVIEW)}
         >
-          Publicar
+          Enviar para revisao
         </button>
       )}
-      {isPublished && contentId && (
+      {draft.metadata.status === ContentStatus.IN_REVIEW && contentId && <>
         <button
           type="button"
           disabled={saveState === "saving"}
-          onClick={() => transitionStatus(ContentStatus.DRAFT)}
+          onClick={() => transitionStatus(ContentStatus.PUBLISHED)}
         >
-          Voltar para Draft
+          Aprovar e publicar
         </button>
-      )}
+        <button type="button" disabled={saveState === "saving"} onClick={() => transitionStatus(ContentStatus.DRAFT)}>Devolver para ajustes</button>
+      </>}
+      {isPublished && contentId && <button type="button" disabled={saveState === "saving"} onClick={() => transitionStatus(ContentStatus.ARCHIVED)}>Arquivar</button>}
+      {draft.metadata.status === ContentStatus.ARCHIVED && contentId && <button type="button" disabled={saveState === "saving"} onClick={() => transitionStatus(ContentStatus.DRAFT)}>Restaurar como rascunho</button>}
       <span aria-live="polite" data-save-state={saveState}>
         {saveMessage || (dirty ? "Alterações não salvas." : contentId ? `Rascunho ${contentId}.` : "Novo rascunho.")}
       </span>
     </footer>
+
+    {contentId && <section className="editor-governance" aria-labelledby="editor-history-title">
+      <article className="admin-panel">
+        <h2 id="editor-history-title">Histórico comparável</h2>
+        <p>Metadados e payloads permanecem restritos à administração.</p>
+        <ol>{versions.map((item, index) => <li key={item.version}>
+          <div><strong>Versão {item.version}</strong><span>{item.changeSummary}</span><small>{new Date(item.createdAt).toLocaleString("pt-BR")}</small></div>
+          <small>Campos alterados: {changedHistoryFields(item, versions[index + 1]).join(", ")}</small>
+          <details><summary>Comparar campos</summary><pre>{JSON.stringify({ metadata: parseHistoryJson(item.metadataJson), payload: parseHistoryJson(item.payloadJson) }, null, 2)}</pre></details>
+          {isEditable && item.version !== draft.metadata.version && <button type="button" onClick={() => rollback(item.version)}>Criar rollback desta versão</button>}
+        </li>)}</ol>
+      </article>
+      <article className="admin-panel">
+        <h2>Comentários editoriais</h2>
+        <ul>{comments.map(item => <li key={item.id}><strong>v{item.contentVersion} · {item.authorId}</strong><p>{item.body}</p><small>{new Date(item.createdAt).toLocaleString("pt-BR")}</small></li>)}</ul>
+        <label>Novo comentário<textarea maxLength={2000} value={reviewComment} onChange={event => setReviewComment(event.target.value)} /></label>
+        <button type="button" disabled={!reviewComment.trim()} onClick={addComment}>Adicionar comentário</button>
+      </article>
+    </section>}
   </main>;
 }

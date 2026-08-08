@@ -49,6 +49,7 @@ const foundationMigrations = [
   "0034_daily_objective_participations.sql",
   "0035_free_play_participations.sql",
   "0036_platform_events.sql",
+  "0037_editorial_governance_assets.sql",
 ];
 const expectedFinalLedger = [...baseline, targetMigration, ...foundationMigrations];
 const introducedTablesByMigration = {
@@ -66,6 +67,7 @@ const introducedTablesByMigration = {
     "platform_events", "platform_event_games", "platform_event_content_items",
     "platform_event_content_reservations", "platform_event_participations", "platform_event_reward_ledger",
   ],
+  "0037_editorial_governance_assets.sql": ["content_review_comments", "asset_registry", "content_assets"],
 };
 const introducedIndexesByMigration = {
   "0032_universal_content_library.sql": [
@@ -85,12 +87,20 @@ const introducedIndexesByMigration = {
     "platform_events_org_window_idx", "platform_event_games_org_event_idx", "platform_event_content_lookup_idx",
     "platform_event_reservations_conflict_idx", "platform_event_participations_user_idx", "platform_event_rewards_user_idx",
   ],
+  "0037_editorial_governance_assets.sql": [
+    "content_items_org_editorial_status_idx", "content_review_comments_content_idx",
+    "asset_registry_org_status_idx", "asset_registry_org_source_url_uq", "content_assets_asset_idx",
+  ],
 };
 const modifiedSchemaObjectsByMigration = {
   "0035_free_play_participations.sql": [
     { type: "table", name: "generated_game_participations" },
     { type: "table", name: "generated_game_participation_usage" },
     { type: "index", name: "generated_game_participations_user_status_idx" },
+  ],
+  "0037_editorial_governance_assets.sql": [
+    { type: "table", name: "content_items" },
+    { type: "table", name: "platform_events" },
   ],
 };
 
@@ -109,6 +119,7 @@ const reconcilerTables = [
   "generated_game_participations", "generated_game_participation_usage",
   "platform_events", "platform_event_games", "platform_event_content_items", "platform_event_content_reservations",
   "platform_event_participations", "platform_event_reward_ledger",
+  "content_review_comments", "asset_registry", "content_assets",
   "user_platform_statistics", "user_platform_game_statistics", "user_platform_game_difficulty_statistics",
   "user_platform_statistics_active_days", "platform_statistics_event_checkpoints", "quiz_core_event_outbox",
   "user_platform_statistics_official_days_utc",
@@ -131,6 +142,8 @@ const requiredColumns = {
   quiz_core_event_outbox: [
     "event_version", "delivery_state", "attempt_count", "next_attempt_at", "lease_token", "lease_until",
   ],
+  content_items: ["editorial_status", "submitted_by", "submitted_at", "reviewed_by", "reviewed_at", "review_decision", "rollback_source_version"],
+  platform_events: ["cover_asset_id"],
 };
 const requiredTables = [...APPLICATION_TABLES];
 const reconcilerIndexes = [
@@ -148,6 +161,8 @@ const reconcilerIndexes = [
   "generated_game_participations_user_status_idx",
   "platform_events_org_window_idx", "platform_event_games_org_event_idx", "platform_event_content_lookup_idx",
   "platform_event_reservations_conflict_idx", "platform_event_participations_user_idx", "platform_event_rewards_user_idx",
+  "content_items_org_editorial_status_idx", "content_review_comments_content_idx",
+  "asset_registry_org_status_idx", "asset_registry_org_source_url_uq", "content_assets_asset_idx",
 ];
 const requiredIndexes = [...CRITICAL_INDEXES];
 if (reconcilerTables.some(table => !requiredTables.includes(table)) || reconcilerIndexes.some(index => !requiredIndexes.includes(index))) {
