@@ -35,16 +35,14 @@ Próximas sprints aprovadas no roadmap:
 - CMS Universal é a fonte oficial de conteúdo publicado.
 - Biblioteca, Catálogo Elegível e Gerador Universal alimentam os modos atuais.
 - Os sete jogos utilizam a infraestrutura universal.
-- O Worker processa premiações legadas, outbox do Quiz e retry de eventos oficiais do Core.
+- O Worker processa premiações legadas, outbox do Quiz, retry de eventos oficiais do Core e reconciliação independente de Eventos encerrados.
+- Backup administrativo, diagnóstico e reset usam o contrato operacional canônico até a migration `0036`.
 - Estruturas legadas permanecem por compatibilidade e evidência histórica; a remoção ainda não começou.
 
 ## Riscos priorizados
 
-- backup/restauração ainda precisam acompanhar integralmente a Fase 4;
+- restauração administrativa em produção continua dependendo de procedimento humano e validação prévia em D1 isolado;
 - privacidade e retenção precisam incluir todos os novos domínios;
-- diagnóstico administrativo precisa refletir migrations até 0036;
-- encerramento de Eventos não deve depender apenas de tráfego;
-- limpeza do piloto precisa de política para seleções, participações e Eventos;
 - fallback, Ranking, Medalhas, Jornadas e Worker legado precisam de critérios de saída.
 
 ## Regras operacionais atuais

@@ -2,10 +2,11 @@ import { requirePermission } from "../../_lib/permissions";
 import type { AppEnv } from "../../_lib/auth";
 import { json } from "../../_lib/security";
 import { QUESTION_COUNT } from "../../_lib/questions";
+import { APPLICATION_TABLES, CRITICAL_INDEXES, CRITICAL_TRIGGERS, EXPECTED_MIGRATION_COUNT, OPERATIONAL_SCHEMA_VERSION } from "../../../shared/operational-schema-contract.mjs";
 
-const SCHEMA_TARGET = "0027_platform_statistics";
+const SCHEMA_TARGET = `0036_operational_schema_v${OPERATIONAL_SCHEMA_VERSION}`;
 const AWARD_PARTICIPANTS_PER_RUN = 7;
-const required = [
+const legacyRequired = [
   "organizations",
   "groups",
   "users",
@@ -52,6 +53,8 @@ const required = [
   "user_platform_game_difficulty_statistics",
   "platform_statistics_event_checkpoints",
 ];
+const required = [...APPLICATION_TABLES];
+if (legacyRequired.some(table => !required.includes(table))) throw new Error("health_schema_contract_inconsistent");
 const expected: Record<string, string[]> = {
   sessions: ["user_agent", "ip_hash"],
   attempts: [
@@ -162,6 +165,37 @@ export const onRequestGet = async ({
     const statisticsFailures: any = found.has("platform_statistics_event_checkpoints")
       ? await env.DB.prepare("SELECT COUNT(*) total FROM platform_statistics_event_checkpoints WHERE organization_id=?1 AND state<>'completed'").bind(user.organizationId).first()
       : { total: 0 };
+    const cmsProjectionFailures: any = found.has("universal_content_library")
+      ? await env.DB.prepare(`SELECT COUNT(*) total FROM content_items item LEFT JOIN universal_content_library library
+          ON library.organization_id=item.organization_id AND library.content_id=item.id AND library.content_version=item.version
+          WHERE item.organization_id=?1 AND item.status='PUBLISHED' AND library.content_id IS NULL`).bind(user.organizationId).first()
+      : { total: 0 };
+    const incompleteSelections: any = found.has("generated_game_selections")
+      ? await env.DB.prepare(`SELECT COUNT(*) total FROM generated_game_selections selection
+          WHERE selection.organization_id=?1 AND selection.status='ACTIVE' AND NOT EXISTS(
+            SELECT 1 FROM generated_game_selection_items item WHERE item.selection_id=selection.id)`).bind(user.organizationId).first()
+      : { total: 0 };
+    const missingHistoricalContent: any = found.has("generated_game_selection_items")
+      ? await env.DB.prepare(`SELECT COUNT(*) total FROM generated_game_selection_items selected
+          LEFT JOIN content_versions version ON version.organization_id=selected.organization_id
+            AND version.content_id=selected.content_id AND version.version=selected.content_version
+          WHERE selected.organization_id=?1 AND version.content_id IS NULL`).bind(user.organizationId).first()
+      : { total: 0 };
+    const staleEvents: any = found.has("platform_events")
+      ? await env.DB.prepare("SELECT COUNT(*) total FROM platform_events WHERE organization_id=?1 AND status IN ('SCHEDULED','ACTIVE') AND ends_at<=?2").bind(user.organizationId, now).first()
+      : { total: 0 };
+    const staleReservations: any = found.has("platform_event_content_reservations")
+      ? await env.DB.prepare("SELECT COUNT(*) total FROM platform_event_content_reservations WHERE organization_id=?1 AND released_at IS NULL AND ends_at<=?2").bind(user.organizationId, now).first()
+      : { total: 0 };
+    const participationConflicts: any = found.has("platform_event_participations")
+      ? await env.DB.prepare(`SELECT COUNT(*) total FROM platform_event_participations participation
+          JOIN platform_events event ON event.id=participation.event_id
+          WHERE participation.organization_id=?1 AND (event.organization_id<>participation.organization_id
+            OR (event.status IN ('FINISHED','CANCELLED') AND participation.status IN ('CREATED','STARTED')))`).bind(user.organizationId).first()
+      : { total: 0 };
+    const outboxProblems: any = found.has("quiz_core_event_outbox")
+      ? await env.DB.prepare("SELECT COUNT(*) total FROM quiz_core_event_outbox WHERE organization_id=?1 AND delivery_state IN ('retry','dead_letter')").bind(user.organizationId).first()
+      : { total: 0 };
     const awardPending =
         Number(awardBacklog.total || 0) + Number(queued.total || 0),
       awardEstimatedMinutes = Math.ceil(
@@ -191,9 +225,9 @@ export const onRequestGet = async ({
       },
       {
         name: "migrationLedger",
-        ok: migrationRows === null || migrationRows >= 28,
+        ok: migrationRows === null || migrationRows === EXPECTED_MIGRATION_COUNT,
         total: migrationRows,
-        expected: 28,
+        expected: EXPECTED_MIGRATION_COUNT,
       },
       {
         name: "eventEngine",
@@ -205,6 +239,12 @@ export const onRequestGet = async ({
         ok: Number(statisticsFailures.total || 0) === 0,
         total: Number(statisticsFailures.total || 0),
       },
+      { name: "cmsProjection", ok: Number(cmsProjectionFailures.total || 0) === 0, total: Number(cmsProjectionFailures.total || 0) },
+      { name: "generatedSelections", ok: Number(incompleteSelections.total || 0) === 0 && Number(missingHistoricalContent.total || 0) === 0,
+        total: Number(incompleteSelections.total || 0) + Number(missingHistoricalContent.total || 0), incomplete: Number(incompleteSelections.total || 0), missingHistory: Number(missingHistoricalContent.total || 0) },
+      { name: "platformEvents", ok: Number(staleEvents.total || 0) === 0 && Number(staleReservations.total || 0) === 0 && Number(participationConflicts.total || 0) === 0,
+        total: Number(staleEvents.total || 0) + Number(staleReservations.total || 0) + Number(participationConflicts.total || 0), staleEvents: Number(staleEvents.total || 0), staleReservations: Number(staleReservations.total || 0), participationConflicts: Number(participationConflicts.total || 0) },
+      { name: "quizOutbox", ok: Number(outboxProblems.total || 0) === 0, total: Number(outboxProblems.total || 0) },
       {
         name: "aiConfiguration",
         ok: Boolean(env.AI),
@@ -230,7 +270,7 @@ export const onRequestGet = async ({
       for (const name of names)
         if (!columns.has(name)) missingColumns.push(`${table}.${name}`);
     }
-    const requiredIndexes = [
+    const legacyRequiredIndexes = [
         "choices_question_position_uq",
         "attempt_answers_order_uq",
         "attempts_user_round_mode_number_uq",
@@ -267,20 +307,23 @@ export const onRequestGet = async ({
           ).results as any[]
         ).map((row) => row.name),
       ),
-      missingIndexes = requiredIndexes.filter((name) => !indexes.has(name));
+      missingIndexes = CRITICAL_INDEXES.filter((name) => !indexes.has(name));
+    if (legacyRequiredIndexes.some(index => !CRITICAL_INDEXES.includes(index))) throw new Error("health_index_contract_inconsistent");
+    const triggers = new Set(((await env.DB.prepare("SELECT name FROM sqlite_master WHERE type='trigger'").all()).results as any[]).map(row => row.name));
+    const missingTriggers = CRITICAL_TRIGGERS.filter(name => !triggers.has(name));
     const status =
         missing.length ||
         missingColumns.length ||
-        missingIndexes.length ||
+        missingIndexes.length || missingTriggers.length ||
         checks.some((check) => !check.ok)
           ? "attention"
           : "healthy",
       recommendations: string[] = [];
-    if (missing.length || missingColumns.length || missingIndexes.length)
+    if (missing.length || missingColumns.length || missingIndexes.length || missingTriggers.length)
       recommendations.push(
         "Execute as migrations D1 pendentes antes de publicar.",
       );
-    if (migrationRows !== null && migrationRows < 28)
+    if (migrationRows !== null && migrationRows !== EXPECTED_MIGRATION_COUNT)
       recommendations.push(
         "O histórico de migrations do D1 não corresponde ao schema esperado; execute a reconciliação segura.",
       );
@@ -327,9 +370,10 @@ export const onRequestGet = async ({
         found: required.length - missing.length,
         missing,
       },
-      migrationLedger: { rows: migrationRows, expected: 28 },
+      migrationLedger: { rows: migrationRows, expected: EXPECTED_MIGRATION_COUNT },
       missingColumns,
       missingIndexes,
+      missingTriggers,
       checks,
       recommendations,
       roundConflicts: {
@@ -352,6 +396,8 @@ export const onRequestGet = async ({
     });
   } catch (response) {
     if (response instanceof Response) return response;
-    throw response;
+    const supportId = crypto.randomUUID();
+    console.error("admin_health_failed", { supportId });
+    return json({ error: "unexpected_error", supportId }, 500, { "Cache-Control": "no-store, private" });
   }
 };

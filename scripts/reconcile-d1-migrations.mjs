@@ -17,6 +17,7 @@ import {
   migrationsAppliedAfterSnapshot,
 } from "./lib/d1-snapshot-policy.mjs";
 import { buildAtomicBaselineInsert } from "./lib/d1-ledger-policy.mjs";
+import { APPLICATION_TABLES, CRITICAL_INDEXES } from "../shared/operational-schema-contract.mjs";
 
 const config = "workers/journey-awards/wrangler.jsonc";
 const database = "quiz-biblico-db";
@@ -93,7 +94,7 @@ const modifiedSchemaObjectsByMigration = {
   ],
 };
 
-const requiredTables = [
+const reconcilerTables = [
   "organizations", "groups", "users", "invitations", "sessions", "rounds", "questions", "choices", "attempts",
   "attempt_answers", "audit_logs", "login_security", "user_badges", "notification_receipts", "legal_consents",
   "question_bank", "question_bank_choices", "user_permissions", "question_collaborators", "question_revisions",
@@ -131,7 +132,8 @@ const requiredColumns = {
     "event_version", "delivery_state", "attempt_count", "next_attempt_at", "lease_token", "lease_until",
   ],
 };
-const requiredIndexes = [
+const requiredTables = [...APPLICATION_TABLES];
+const reconcilerIndexes = [
   "choices_question_position_uq", "attempt_answers_order_uq", "attempts_user_round_mode_number_uq",
   "questions_round_source_uq", "round_award_processing_time_idx", "round_award_participant_pending_idx",
   "user_platform_progress_org_user_idx", "platform_xp_ledger_user_time_idx", "platform_coin_ledger_user_time_idx",
@@ -147,6 +149,10 @@ const requiredIndexes = [
   "platform_events_org_window_idx", "platform_event_games_org_event_idx", "platform_event_content_lookup_idx",
   "platform_event_reservations_conflict_idx", "platform_event_participations_user_idx", "platform_event_rewards_user_idx",
 ];
+const requiredIndexes = [...CRITICAL_INDEXES];
+if (reconcilerTables.some(table => !requiredTables.includes(table)) || reconcilerIndexes.some(index => !requiredIndexes.includes(index))) {
+  throw new Error("Canonical operational schema contract is inconsistent with the reconciler.");
+}
 
 function runWrangler(command) {
   const result = spawnSync(process.execPath, [

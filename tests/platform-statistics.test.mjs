@@ -40,7 +40,7 @@ test("statistics tables participate in operations without changing protected cat
     read("scripts/cleanup-test-data.mjs"),
   ]);
   for (const source of [health, backup, privacy, reset, cleanup]) assert.match(source, /user_platform_statistics/);
-  assert.match(health, /0027_platform_statistics/);
-  assert.match(backup, /schemaVersion: 28/);
+  assert.match(health, /OPERATIONAL_SCHEMA_VERSION/);
+  assert.match(backup, /OPERATIONAL_SCHEMA_VERSION/);
   assert.match(reset, /purgeTables[\s\S]*platform_statistics_event_checkpoints/);
 });

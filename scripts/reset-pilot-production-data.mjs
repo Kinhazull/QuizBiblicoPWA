@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { writeFileSync } from "node:fs";
 import { assertResetPolicy, buildResetBatch, protectedTables, purgeTables } from "./lib/pilot-reset-policy.mjs";
+import { EXPECTED_MIGRATION_COUNT, RESET_TABLE_CLASSIFICATION } from "../shared/operational-schema-contract.mjs";
 
 const args = Object.fromEntries(process.argv.slice(2).map((value, index, all) =>
   value.startsWith("--") ? [value.slice(2), all[index + 1]?.startsWith("--") ? true : all[index + 1]] : null
@@ -62,7 +63,7 @@ async function snapshot() {
 function validateExpected(state) {
   if (state.users !== expectedUsers) throw new Error(`User count mismatch: expected ${expectedUsers}, found ${state.users}.`);
   if (state.questions !== expectedQuestions) throw new Error(`Question count mismatch: expected ${expectedQuestions}, found ${state.questions}.`);
-  if (state.protectedCounts.d1_migrations !== 28) throw new Error(`Migration ledger mismatch: expected 28, found ${state.protectedCounts.d1_migrations}.`);
+  if (state.protectedCounts.d1_migrations !== EXPECTED_MIGRATION_COUNT) throw new Error(`Migration ledger mismatch: expected ${EXPECTED_MIGRATION_COUNT}, found ${state.protectedCounts.d1_migrations}.`);
 }
 function resetWorkRemaining(state) {
   return Object.values(state.purgeCounts).reduce((total, value) => total + value, 0)
@@ -90,7 +91,7 @@ if (mode !== "verify" && resetWorkRemaining(before) === 0) {
 }
 if (mode === "dry-run") {
   writeSnapshot(before);
-  console.log(JSON.stringify({ status: "dry_run_valid", ...before }, null, 2));
+  console.log(JSON.stringify({ status: "dry_run_valid", tablePolicy: RESET_TABLE_CLASSIFICATION, actions: buildResetBatch(), ...before }, null, 2));
 } else if (mode === "apply") {
   if (!args.snapshot) throw new Error("--apply exige --snapshot com o estado anterior.");
   writeSnapshot(before);

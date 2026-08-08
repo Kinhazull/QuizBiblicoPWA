@@ -15,7 +15,7 @@ test("pilot reset deletes only competitive tables and preserves accounts and que
 test("pilot reset policy rejects deletion of protected data", () => {
   assert.throws(() => assertResetPolicy([...buildResetBatch(), "DELETE FROM users"]), /Protected table/);
   assert.throws(() => assertResetPolicy([...buildResetBatch(), "DELETE FROM question_bank"]), /Protected table/);
-  assert.throws(() => assertResetPolicy([...buildResetBatch(), "UPDATE users SET status='suspended'"]), /Only question_bank/);
+  assert.throws(() => assertResetPolicy([...buildResetBatch(), "UPDATE users SET status='suspended'"]), /unexpected update/);
 });
 
 test("production reset workflow is manual, guarded, backed up and does not deploy", () => {

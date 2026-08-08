@@ -2,6 +2,7 @@ import type { AppEnv } from "../../_lib/auth";
 import { requirePermission } from "../../_lib/permissions";
 import { json, verifyPassword } from "../../_lib/security";
 import { enforceRateLimit, requestFingerprint } from "../../_lib/abuse";
+import { BACKUP_TABLE_CLASSIFICATION, OPERATIONAL_SCHEMA_VERSION } from "../../../shared/operational-schema-contract.mjs";
 
 async function rows(env: AppEnv, sql: string, ...bindings: unknown[]) {
   const result = await env.DB.prepare(sql).bind(...bindings).all();
@@ -20,8 +21,10 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
     const organizationId = admin.organizationId;
     const data = {
       format: "conte-os-feitos-backup",
-      schemaVersion: 28,
+      schemaVersion: OPERATIONAL_SCHEMA_VERSION,
       credentialsExcluded: true,
+      contract: "ORGANIZATIONAL_ADMIN_BACKUP",
+      tableClassification: BACKUP_TABLE_CLASSIFICATION,
       exportedAt: Date.now(),
       organizationId,
       tables: {
@@ -43,6 +46,10 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
         seasons: await rows(env, "SELECT * FROM seasons WHERE organization_id=?1", organizationId),
         question_bank: await rows(env, "SELECT * FROM question_bank WHERE organization_id=?1", organizationId),
         question_bank_choices: await rows(env, "SELECT qbc.* FROM question_bank_choices qbc JOIN question_bank qb ON qb.id=qbc.question_id WHERE qb.organization_id=?1", organizationId),
+        question_collaborators: await rows(env, "SELECT qc.* FROM question_collaborators qc JOIN question_bank qb ON qb.id=qc.question_id WHERE qb.organization_id=?1", organizationId),
+        question_revisions: await rows(env, "SELECT qr.* FROM question_revisions qr JOIN question_bank qb ON qb.id=qr.question_id WHERE qb.organization_id=?1", organizationId),
+        round_collaborators: await rows(env, "SELECT rc.* FROM round_collaborators rc JOIN rounds r ON r.id=rc.round_id WHERE r.organization_id=?1", organizationId),
+        user_review_progress: await rows(env, "SELECT urp.* FROM user_review_progress urp JOIN users u ON u.id=urp.user_id WHERE u.organization_id=?1", organizationId),
         content_items: await rows(env, "SELECT * FROM content_items WHERE organization_id=?1", organizationId),
         content_versions: await rows(env, "SELECT * FROM content_versions WHERE organization_id=?1", organizationId),
         user_permissions: await rows(env, "SELECT up.* FROM user_permissions up JOIN users u ON u.id=up.user_id WHERE u.organization_id=?1", organizationId),
@@ -69,6 +76,17 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
         user_platform_statistics_official_days_utc: await rows(env, "SELECT * FROM user_platform_statistics_official_days_utc WHERE organization_id=?1", organizationId),
         user_platform_game_difficulty_statistics: await rows(env, "SELECT * FROM user_platform_game_difficulty_statistics WHERE organization_id=?1", organizationId),
         platform_statistics_event_checkpoints: await rows(env, "SELECT * FROM platform_statistics_event_checkpoints WHERE organization_id=?1", organizationId),
+        universal_content_library: await rows(env, "SELECT * FROM universal_content_library WHERE organization_id=?1", organizationId),
+        generated_game_selections: await rows(env, "SELECT * FROM generated_game_selections WHERE organization_id=?1", organizationId),
+        generated_game_selection_items: await rows(env, "SELECT * FROM generated_game_selection_items WHERE organization_id=?1", organizationId),
+        generated_game_participations: await rows(env, "SELECT * FROM generated_game_participations WHERE organization_id=?1", organizationId),
+        generated_game_participation_usage: await rows(env, "SELECT * FROM generated_game_participation_usage WHERE organization_id=?1", organizationId),
+        platform_events: await rows(env, "SELECT * FROM platform_events WHERE organization_id=?1", organizationId),
+        platform_event_games: await rows(env, "SELECT * FROM platform_event_games WHERE organization_id=?1", organizationId),
+        platform_event_content_items: await rows(env, "SELECT * FROM platform_event_content_items WHERE organization_id=?1", organizationId),
+        platform_event_content_reservations: await rows(env, "SELECT * FROM platform_event_content_reservations WHERE organization_id=?1", organizationId),
+        platform_event_participations: await rows(env, "SELECT * FROM platform_event_participations WHERE organization_id=?1", organizationId),
+        platform_event_reward_ledger: await rows(env, "SELECT * FROM platform_event_reward_ledger WHERE organization_id=?1", organizationId),
       },
     };
 

@@ -71,6 +71,7 @@ test("scheduled Worker delivers Quiz outbox and updates every official Core cons
     { operation: "journey_awards", ok: true },
     { operation: "quiz_outbox", ok: true },
     { operation: "core_event_retries", ok: true },
+    { operation: "platform_events", ok: true },
   ]);
   assert.equal(ctx.raw.prepare("SELECT delivery_state FROM quiz_core_event_outbox WHERE event_id=?").get(event.eventId).delivery_state, "delivered");
   assert.deepEqual({ ...ctx.raw.prepare("SELECT total_xp totalXp,coins FROM user_platform_progress WHERE user_id='player'").get() }, { totalXp: 96, coins: 13 });
@@ -91,11 +92,12 @@ test("failure in one scheduled operation does not prevent the remaining operatio
     processAwards: async () => { calls.push("journey_awards"); throw new Error("awards_failed"); },
     dispatchOutbox: async () => { calls.push("quiz_outbox"); return { delivered: 1 }; },
     retryCoreEvents: async () => { calls.push("core_event_retries"); return { completed: 1 }; },
+    reconcileEvents: async () => { calls.push("platform_events"); return { finished: 1 }; },
   };
 
   await assert.rejects(
     () => runScheduledPlatformOperations({ DB: {} }, dependencies, NOW),
     /scheduled_platform_operations_failed:journey_awards/,
   );
-  assert.deepEqual(calls, ["journey_awards", "quiz_outbox", "core_event_retries"]);
+  assert.deepEqual(calls, ["journey_awards", "quiz_outbox", "core_event_retries", "platform_events"]);
 });

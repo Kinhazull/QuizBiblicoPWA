@@ -2,8 +2,9 @@ import { processClosedRoundAwards } from "../../functions/_lib/round-awards";
 import type { AppEnv } from "../../functions/_lib/auth";
 import { dispatchQuizOutbox } from "../../functions/_lib/game-integrations/quiz-outbox-dispatcher";
 import { retryOfficialCoreEvents } from "../../functions/_lib/platform-event-runtime";
+import { reconcilePlatformEvents } from "../../functions/_lib/platform-events";
 
-type ScheduledOperation = "journey_awards" | "quiz_outbox" | "core_event_retries";
+type ScheduledOperation = "journey_awards" | "quiz_outbox" | "core_event_retries" | "platform_events";
 
 type ScheduledOperationResult = {
   operation: ScheduledOperation;
@@ -14,12 +15,14 @@ export type ScheduledPlatformDependencies = {
   processAwards: typeof processClosedRoundAwards;
   dispatchOutbox: typeof dispatchQuizOutbox;
   retryCoreEvents: typeof retryOfficialCoreEvents;
+  reconcileEvents: typeof reconcilePlatformEvents;
 };
 
 const defaultDependencies: ScheduledPlatformDependencies = {
   processAwards: processClosedRoundAwards,
   dispatchOutbox: dispatchQuizOutbox,
   retryCoreEvents: retryOfficialCoreEvents,
+  reconcileEvents: reconcilePlatformEvents,
 };
 
 function safeError(error: unknown) {
@@ -36,6 +39,7 @@ export async function runScheduledPlatformOperations(
     { operation: "journey_awards", run: () => dependencies.processAwards(env, now) },
     { operation: "quiz_outbox", run: () => dependencies.dispatchOutbox(env, { now, limit: 100 }) },
     { operation: "core_event_retries", run: () => dependencies.retryCoreEvents(env, { now, limit: 100 }) },
+    { operation: "platform_events", run: () => dependencies.reconcileEvents(env, now, 100) },
   ];
   const results: ScheduledOperationResult[] = [];
 

@@ -278,6 +278,19 @@ export async function reconcileFinishedEvents(env: AppEnv, organizationId: strin
   return { finished: expired.results.length };
 }
 
+export async function reconcilePlatformEvents(env: AppEnv, now = Date.now(), limit = 100) {
+  const boundedLimit = Math.max(1, Math.min(250, Math.trunc(limit)));
+  const expired = await env.DB.prepare(`SELECT id,organization_id organizationId FROM platform_events
+    WHERE status IN ('SCHEDULED','ACTIVE') AND ends_at<=?1 ORDER BY ends_at,id LIMIT ?2`)
+    .bind(now, boundedLimit).all<{ id: string; organizationId: string }>();
+  let finished = 0;
+  for (const item of expired.results) {
+    const result = await reconcileFinishedEvents(env, item.organizationId, now);
+    finished += result.finished;
+  }
+  return { scanned: expired.results.length, finished };
+}
+
 export async function listAdminEvents(env: AppEnv, organizationId: string, now = Date.now()) {
   await reconcileFinishedEvents(env, organizationId, now);
   const rows = await env.DB.prepare("SELECT * FROM platform_events WHERE organization_id=?1 ORDER BY starts_at DESC,id")

@@ -2,6 +2,10 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { createTestDatabase } from "../helpers/integration.mjs";
 import { assertResetPolicy, buildResetBatch } from "../../scripts/lib/pilot-reset-policy.mjs";
+import { createUniversalDraft, transitionUniversalContentStatus } from "../../functions/_lib/universal-content-store.ts";
+import { ContentStatus, GameType } from "../../shared/content.ts";
+import { createPlatformEvent, schedulePlatformEvent, startEventSelection } from "../../functions/_lib/platform-events.ts";
+import { seedOrganization, seedUser } from "../helpers/integration.mjs";
 
 test("pilot reset removes competition data and preserves accounts, legal records and question bank", t => {
   const ctx = createTestDatabase();
@@ -49,4 +53,30 @@ test("pilot reset removes competition data and preserves accounts, legal records
   assert.equal(db.prepare("SELECT COUNT(*) total FROM user_platform_statistics").get().total, 0);
   assert.equal(db.prepare("SELECT COUNT(*) total FROM user_platform_game_statistics").get().total, 0);
   assert.equal(db.prepare("SELECT COUNT(*) total FROM audit_logs WHERE action='production.pilot_data_reset'").get().total, 1);
+});
+
+test("pilot reset preserves CMS and administrative Event while removing modern participant activity", async t => {
+  const ctx = createTestDatabase(); t.after(ctx.close); seedOrganization(ctx); seedUser(ctx, { id: "admin", role: "admin" }); seedUser(ctx, { id: "player" });
+  const draft = await createUniversalDraft(ctx.env, "org-1", "admin", { gameType: GameType.WORDLE, status: ContentStatus.DRAFT,
+    metadata: { category: "Palavras", tags: ["fé"], difficulty: "MEDIUM", biblicalReference: "Efésios 2:8", status: ContentStatus.DRAFT, internalNotes: null },
+    payload: { word: "GRACA", hint: "Favor imerecido" } });
+  const published = await transitionUniversalContentStatus(ctx.env, "org-1", "admin", draft.content.id, ContentStatus.PUBLISHED, draft.content.version);
+  const event = await createPlatformEvent(ctx.env, { organizationId: "org-1", userId: "admin" }, { title: "Evento preservado", startsAt: 1000, endsAt: 10000,
+    timeZone: "America/Sao_Paulo", games: [{ gameType: GameType.WORDLE, contentItems: [{ contentId: draft.content.id, contentVersion: published.content.version }] }] }, 100);
+  const scheduled = await schedulePlatformEvent(ctx.env, { organizationId: "org-1", userId: "admin" }, event.id, 200);
+  await startEventSelection(ctx.env, { organizationId: "org-1", userId: "player" }, event.id, scheduled.event.games[0].selectionId, 2000);
+  ctx.raw.prepare("INSERT INTO platform_event_reward_ledger(id,event_id,organization_id,user_id,reward_type,xp_amount,coin_amount,created_at) VALUES('reset-reward',?,'org-1','player','participation',10,0,2)").run(event.id);
+  ctx.raw.prepare(`INSERT INTO generated_game_selections(id,organization_id,requested_by_user_id,game_type,mode,selection_key,
+    algorithm_version,seed_hash,request_fingerprint,status,filters_json,created_at)
+    VALUES('free-selection','org-1','player',?,'FREE_PLAY','reset-free-play-selection',1,'seed','fingerprint','ACTIVE','{}',300)`).run(GameType.WORDLE);
+  ctx.raw.exec("BEGIN IMMEDIATE");
+  try { for (const sql of buildResetBatch()) ctx.raw.exec(sql); ctx.raw.exec("COMMIT"); } catch (error) { ctx.raw.exec("ROLLBACK"); throw error; }
+  assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM content_items").get().total, 1);
+  assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM universal_content_library").get().total, 1);
+  assert.equal(ctx.raw.prepare("SELECT status FROM platform_events WHERE id=?").get(event.id).status, "SCHEDULED");
+  assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM platform_event_participations").get().total, 0);
+  assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM platform_event_reward_ledger").get().total, 0);
+  assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM generated_game_selections WHERE mode='FREE_PLAY'").get().total, 0);
+  assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM generated_game_selections WHERE mode='EVENT'").get().total, 1);
+  assert.equal(ctx.raw.prepare("PRAGMA foreign_key_check").all().length, 0);
 });

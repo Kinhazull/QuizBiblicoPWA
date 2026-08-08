@@ -5,7 +5,7 @@ import { createUniversalDraft, transitionUniversalContentStatus } from "../../fu
 import { ContentStatus, GameType } from "../../shared/content.ts";
 import {
   cancelPlatformEvent, createPlatformEvent, getEventSelection, getParticipantEvent,
-  reconcileFinishedEvents, schedulePlatformEvent, startEventSelection, validatePlatformEvent,
+  reconcileFinishedEvents, reconcilePlatformEvents, schedulePlatformEvent, startEventSelection, validatePlatformEvent,
 } from "../../functions/_lib/platform-events.ts";
 import { generateFreePlaySelection } from "../../functions/_lib/platform-free-play.ts";
 import { getDailyObjective } from "../../functions/_lib/platform-daily-objectives.ts";
@@ -64,6 +64,17 @@ test("reservas concorrentes são bloqueadas e o encerramento libera o conteúdo"
   assert.equal(result.finished, 1);
   assert.equal(ctx.raw.prepare("SELECT status FROM platform_events WHERE id=?").get(first.id).status, "FINISHED");
   assert.equal(ctx.raw.prepare("SELECT availability_status status FROM universal_content_library WHERE content_id=?").get(contentId).status, "AVAILABLE");
+});
+
+test("reconciliação operacional encerra Eventos sem depender de tráfego autenticado", async t => {
+  const { ctx, contentId, version } = await fixture(t); const identity = { organizationId: "org-1", userId: "admin" };
+  const event = await createPlatformEvent(ctx.env, identity, input(contentId, version), 100);
+  await schedulePlatformEvent(ctx.env, identity, event.id, 200);
+  const result = await reconcilePlatformEvents(ctx.env, 10_001, 100);
+  assert.deepEqual(result, { scanned: 1, finished: 1 });
+  assert.equal(ctx.raw.prepare("SELECT status FROM platform_events WHERE id=?").get(event.id).status, "FINISHED");
+  assert.equal(ctx.raw.prepare("SELECT availability_status FROM universal_content_library WHERE content_id=?").get(contentId).availability_status, "AVAILABLE");
+  assert.deepEqual(await reconcilePlatformEvents(ctx.env, 10_002, 100), { scanned: 0, finished: 0 });
 });
 
 test("conteúdo reservado fica fora de DAILY e FREE_PLAY até cancelamento", async t => {
