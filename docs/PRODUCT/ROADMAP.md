@@ -26,7 +26,7 @@ Qualidade da primeira versão pública tem prioridade sobre velocidade de public
 | Item antigo | Estado | Evidência e delta real |
 |---|---|---|
 | 25.1 Objetivo Diário Completo | DONE | Sete tentativas, progresso por vitórias, estados finais, metas 3/7–7/7 e claim idempotente foram consolidados e validados localmente. |
-| 25.2 Economia | PARTIAL | Moedas, ledgers, Loja, propriedade, Inventário e equipamento existem. Falta balanceamento, catálogo/recompensas e indicadores econômicos orientados por uso real. |
+| 25.2 Economia | DONE | Política v2 centralizada, recompensas recorrentes e Daily calibradas, catálogo permanente reprecificado e cenários de aquisição documentados; monitoramento com Analytics existente permanece operacional. |
 | 25.3 Colecionáveis | PARTIAL | Conquistas, recompensas cosméticas e equipamento existem; não há modelo de coleções/progresso de coleção claramente aprovado. |
 | 25.4 Perfil | PARTIAL | Perfil exibe progresso, estatísticas, missões, equipamentos, conta e privacidade. Falta consolidar hierarquia, identidade pública e visão por jogo. |
 | 25.5 Ranking | NEEDS_REVIEW | O ranking existente é histórico e específico do Quiz. Ranking universal não foi iniciado e exige regras de privacidade, temporadas e competição saudável. |
@@ -63,6 +63,7 @@ Qualidade da primeira versão pública tem prioridade sobre velocidade de public
 - **Dependências:** dados de teste representativos e decisão de produto sobre ritmo de aquisição.
 - **Aceite macro:** economia sem saldo negativo/duplicação e progressão compreensível em uso real.
 - **Fora do escopo:** pagamentos, marketplace e moedas premium.
+- **Estado:** concluída localmente; política oficial em `docs/ECONOMY.md` e valores executáveis em `shared/platform-economy.ts`.
 
 ### 25.3 — Colecionáveis e conquistas
 

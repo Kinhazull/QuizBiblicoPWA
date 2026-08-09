@@ -1,14 +1,13 @@
 import type { AppEnv } from "./auth";
 import { listDailyObjectives, organizationDayKey } from "./platform-daily-objectives";
 import { grantPlatformRetentionReward } from "./platform-progress";
+import { DAILY_CHALLENGE_ECONOMY } from "../../shared/platform-economy";
 
-export const DAILY_CHALLENGE_TARGETS = Object.freeze({ INTERMEDIATE: 3, COMPLETE: 7 });
-
-// Provisional v2 values. Sprint 25.2 must review them with the complete economy.
-export const DAILY_CHALLENGE_REWARDS = Object.freeze({
-  3: Object.freeze({ xp: 25, coins: 3, label: "+25 XP e +3 moedas" }),
-  7: Object.freeze({ xp: 50, coins: 7, label: "+50 XP e +7 moedas" }),
-} as const);
+export const DAILY_CHALLENGE_TARGETS = Object.freeze({
+  INTERMEDIATE: DAILY_CHALLENGE_ECONOMY.targets.intermediate,
+  COMPLETE: DAILY_CHALLENGE_ECONOMY.targets.complete,
+});
+export const DAILY_CHALLENGE_REWARDS = DAILY_CHALLENGE_ECONOMY.rewards;
 
 export type DailyVisibleStatus = "AVAILABLE" | "WON" | "LOST" | "UNAVAILABLE";
 export type DailyRewardState = "LOCKED" | "READY" | "CLAIMED";

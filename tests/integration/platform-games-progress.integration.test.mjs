@@ -98,7 +98,7 @@ test("Wordle completion updates Progress, Statistics, Achievements and Missions 
   const progress = ctx.raw.prepare(
     "SELECT total_xp totalXp,coins FROM user_platform_progress WHERE user_id='player'",
   ).get();
-  assert.deepEqual({ ...progress }, { totalXp: 160, coins: 25 });
+  assert.deepEqual({ ...progress }, { totalXp: 160, coins: 23 });
 
   const statistics = ctx.raw.prepare(`SELECT sessions_completed sessionsCompleted,
     questions_answered questionsAnswered,correct_answers correctAnswers,
@@ -159,7 +159,7 @@ test("3 Pistas CMS completion reaches Progress, Statistics, Achievements and Mis
   assert.equal(data.score, 700);
   assert.deepEqual({
     ...ctx.raw.prepare("SELECT total_xp totalXp,coins FROM user_platform_progress WHERE user_id='player'").get(),
-  }, { totalXp: 160, coins: 25 });
+  }, { totalXp: 160, coins: 23 });
   assert.deepEqual({
     ...ctx.raw.prepare(`SELECT sessions_completed sessionsCompleted,questions_answered questionsAnswered,
       correct_answers correctAnswers,incorrect_answers incorrectAnswers,best_score bestScore
@@ -200,7 +200,7 @@ test("Linha do Tempo victory reaches Progress, Statistics, Achievements and Miss
   assert.equal(data.score, 300);
   assert.deepEqual({
     ...ctx.raw.prepare("SELECT total_xp totalXp,coins FROM user_platform_progress WHERE user_id='player'").get(),
-  }, { totalXp: 160, coins: 25 });
+  }, { totalXp: 160, coins: 23 });
   assert.deepEqual({
     ...ctx.raw.prepare(`SELECT sessions_completed sessionsCompleted,questions_answered questionsAnswered,
       correct_answers correctAnswers,incorrect_answers incorrectAnswers,best_score bestScore
@@ -244,7 +244,7 @@ test("Memória Bíblica victory reaches Progress, Statistics, Achievements and M
   assert.equal(data.score, 450);
   assert.deepEqual({
     ...ctx.raw.prepare("SELECT total_xp totalXp,coins FROM user_platform_progress WHERE user_id='player'").get(),
-  }, { totalXp: 160, coins: 25 });
+  }, { totalXp: 160, coins: 23 });
   assert.deepEqual({
     ...ctx.raw.prepare(`SELECT sessions_completed sessionsCompleted,questions_answered questionsAnswered,
       correct_answers correctAnswers,incorrect_answers incorrectAnswers,best_score bestScore
@@ -291,7 +291,7 @@ test("Quem Sou Eu victory reaches Progress, Statistics, Achievements and Mission
   assert.equal(data.score, 1500);
   assert.deepEqual({
     ...ctx.raw.prepare("SELECT total_xp totalXp,coins FROM user_platform_progress WHERE user_id='player'").get(),
-  }, { totalXp: 160, coins: 25 });
+  }, { totalXp: 160, coins: 23 });
   assert.deepEqual({
     ...ctx.raw.prepare(`SELECT sessions_completed sessionsCompleted,questions_answered questionsAnswered,
       correct_answers correctAnswers,incorrect_answers incorrectAnswers,best_score bestScore
@@ -335,7 +335,7 @@ test("Associação de Temas victory reaches Progress, Statistics, Achievements a
   assert.equal(data.score, 300);
   assert.deepEqual({
     ...ctx.raw.prepare("SELECT total_xp totalXp,coins FROM user_platform_progress WHERE user_id='player'").get(),
-  }, { totalXp: 160, coins: 25 });
+  }, { totalXp: 160, coins: 23 });
   assert.deepEqual({
     ...ctx.raw.prepare(`SELECT sessions_completed sessionsCompleted,questions_answered questionsAnswered,
       correct_answers correctAnswers,incorrect_answers incorrectAnswers,best_score bestScore

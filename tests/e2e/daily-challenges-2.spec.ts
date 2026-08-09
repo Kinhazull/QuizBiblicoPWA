@@ -23,8 +23,8 @@ function dailyState(wins = 3) {
     dayKey: "2026-08-09", timeZone: "America/Sao_Paulo", wins, played: Math.min(7, wins + 1), unavailable: 0, total: 7,
     objectives,
     rewards: [
-      { target: 3, state: wins >= 3 ? "READY" : "LOCKED", reward: { xp: 25, coins: 3, label: "+25 XP e +3 moedas" } },
-      { target: 7, state: wins >= 7 ? "READY" : "LOCKED", reward: { xp: 50, coins: 7, label: "+50 XP e +7 moedas" } },
+      { target: 3, state: wins >= 3 ? "READY" : "LOCKED", reward: { xp: 30, coins: 5, label: "+30 XP e +5 moedas" } },
+      { target: 7, state: wins >= 7 ? "READY" : "LOCKED", reward: { xp: 70, coins: 12, label: "+70 XP e +12 moedas" } },
     ],
   };
 }

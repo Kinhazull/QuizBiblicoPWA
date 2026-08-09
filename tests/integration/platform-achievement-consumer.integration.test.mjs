@@ -53,7 +53,7 @@ test("first official completion unlocks the Bronze first achievement and rewards
   const ctx = setup(t);
   await withFrozenTime(NOW, () => publishOfficialCoreEvent(ctx.env, event("first"), NOW));
   assert.deepEqual(unlocked(ctx), ["first_steps"]);
-  assert.deepEqual(progress(ctx), { totalXp: 96, coins: 13 });
+  assert.deepEqual(progress(ctx), { totalXp: 96, coins: 12 });
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM platform_xp_ledger WHERE source_type='platform_achievement'").get().total, 1);
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM platform_coin_ledger WHERE source_type='platform_achievement'").get().total, 1);
 });
@@ -63,7 +63,7 @@ test("catalog evaluation unlocks Bronze, Silver, Gold and Legendary persistence 
   insertStatistics(ctx, { games: 999 });
   await withFrozenTime(NOW, () => publishOfficialCoreEvent(ctx.env, event("tiers"), NOW));
   assert.deepEqual(unlocked(ctx), ["first_steps", "persistent_10", "persistent_100", "persistent_1000"]);
-  assert.deepEqual(progress(ctx), { totalXp: 896, coins: 173 });
+  assert.deepEqual(progress(ctx), { totalXp: 896, coins: 172 });
 });
 
 test("hidden achievements use the same evaluation and become visible after unlock", async t => {
@@ -154,7 +154,7 @@ test("Quiz outbox dispatch reaches all registered Core consumers end to end", as
   assert.equal(result.delivered, 1);
   assert.deepEqual(unlocked(ctx), ["first_steps"]);
   assert.equal(ctx.raw.prepare("SELECT official_games_completed total FROM user_platform_statistics").get().total, 1);
-  assert.deepEqual(progress(ctx), { totalXp: 96, coins: 13 });
+  assert.deepEqual(progress(ctx), { totalXp: 96, coins: 12 });
   assert.deepEqual(ctx.raw.prepare("SELECT consumer_id id,state FROM core_platform_event_processing ORDER BY consumer_id").all().map(row => ({ ...row })), [
     { id: "platform-achievements", state: "completed" },
     { id: "platform-missions", state: "completed" },

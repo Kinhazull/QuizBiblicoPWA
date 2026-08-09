@@ -41,11 +41,11 @@ function progress(ctx) {
 }
 
 test("reward policy calculates minimum, intermediate and maximum grants", () => {
-  assert.deepEqual(calculateGameFinishedReward(event("min").payload), { baseXp: 20, coins: 2, dailyBonusXp: 10, perfect: false, ratio: 0 });
-  assert.equal(calculateGameFinishedReward(event("threshold-70", { correct: 7 }).payload).coins, 3);
-  assert.deepEqual(calculateGameFinishedReward(event("mid", { correct: 8 }).payload), { baseXp: 36, coins: 3, dailyBonusXp: 10, perfect: false, ratio: 0.8 });
-  assert.equal(calculateGameFinishedReward(event("threshold-90", { correct: 9 }).payload).coins, 4);
-  assert.deepEqual(calculateGameFinishedReward(event("max", { correct: 10 }).payload), { baseXp: 50, coins: 5, dailyBonusXp: 10, perfect: true, ratio: 1 });
+  assert.deepEqual(calculateGameFinishedReward(event("min").payload), { baseXp: 20, coins: 1, dailyBonusXp: 10, perfect: false, ratio: 0 });
+  assert.equal(calculateGameFinishedReward(event("threshold-70", { correct: 7 }).payload).coins, 2);
+  assert.deepEqual(calculateGameFinishedReward(event("mid", { correct: 8 }).payload), { baseXp: 36, coins: 2, dailyBonusXp: 10, perfect: false, ratio: 0.8 });
+  assert.equal(calculateGameFinishedReward(event("threshold-90", { correct: 9 }).payload).coins, 2);
+  assert.deepEqual(calculateGameFinishedReward(event("max", { correct: 10 }).payload), { baseXp: 50, coins: 3, dailyBonusXp: 10, perfect: true, ratio: 1 });
 });
 
 test("v2 official reward is persisted once and level remains derived by Progress Service", async t => {
@@ -53,13 +53,13 @@ test("v2 official reward is persisted once and level remains derived by Progress
   const value = event("perfect", { correct: 10 });
   await withFrozenTime(DAY_ONE, () => publishRewardEvent(ctx.env, value, DAY_ONE));
   await withFrozenTime(DAY_ONE + 1, () => publishRewardEvent(ctx.env, value, DAY_ONE + 1));
-  assert.deepEqual({ ...progress(ctx) }, { totalXp: 60, coins: 5 });
+  assert.deepEqual({ ...progress(ctx) }, { totalXp: 60, coins: 3 });
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM platform_xp_ledger").get().total, 2);
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM platform_coin_ledger").get().total, 1);
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM core_platform_event_processing WHERE consumer_id='reward-progress' AND state='completed'").get().total, 1);
 
   await withFrozenTime(DAY_TWO, () => publishRewardEvent(ctx.env, event("perfect-next", { correct: 10, completedAt: DAY_TWO }), DAY_TWO));
-  assert.deepEqual({ ...progress(ctx) }, { totalXp: 120, coins: 10 });
+  assert.deepEqual({ ...progress(ctx) }, { totalXp: 120, coins: 6 });
   assert.equal(Math.floor(Math.sqrt(progress(ctx).totalXp / 100)) + 1, 2);
 });
 
@@ -69,7 +69,7 @@ test("only one concurrent first-game UTC bonus is granted per user and organizat
     publishRewardEvent(ctx.env, event("parallel-a"), DAY_ONE),
     publishRewardEvent(ctx.env, event("parallel-b"), DAY_ONE),
   ]));
-  assert.deepEqual({ ...progress(ctx) }, { totalXp: 50, coins: 4 });
+  assert.deepEqual({ ...progress(ctx) }, { totalXp: 50, coins: 2 });
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM platform_xp_ledger WHERE reason='Primeira partida oficial do dia'").get().total, 1);
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM platform_xp_ledger").get().total, 3);
 });
@@ -90,7 +90,7 @@ test("invalid v2 metrics and incompatible replay fail safely before rewards", as
   const original = event("immutable", { correct: 4 });
   await publishRewardEvent(ctx.env, original, DAY_ONE);
   await assert.rejects(() => publishRewardEvent(ctx.env, { ...original, payload: { ...original.payload, correctAnswers: 5 } }, DAY_ONE), /event_id_conflict/);
-  assert.deepEqual({ ...progress(ctx) }, { totalXp: 38, coins: 2 });
+  assert.deepEqual({ ...progress(ctx) }, { totalXp: 38, coins: 1 });
 });
 
 test("a failed atomic reward is retryable and never leaves partial XP or coins", async t => {
@@ -105,7 +105,7 @@ test("a failed atomic reward is retryable and never leaves partial XP or coins",
   ctx.raw.exec("DROP TRIGGER reject_reward_coins");
   const retried = await withFrozenTime(DAY_ONE + 5_000, () => retryRewardEvents(ctx.env, { now: DAY_ONE + 5_000 }));
   assert.equal(retried.completed, 1);
-  assert.deepEqual({ ...progress(ctx) }, { totalXp: 46, coins: 3 });
+  assert.deepEqual({ ...progress(ctx) }, { totalXp: 46, coins: 2 });
 });
 
 test("a receipt failure after Progress application resumes without duplicating reward", async t => {
@@ -114,11 +114,11 @@ test("a receipt failure after Progress application resumes without duplicating r
     WHEN OLD.consumer_id='reward-progress' AND NEW.state='completed'
     BEGIN SELECT RAISE(ABORT,'receipt_unavailable'); END`);
   await withFrozenTime(DAY_ONE, () => publishRewardEvent(ctx.env, event("receipt", { correct: 7 }), DAY_ONE));
-  assert.deepEqual({ ...progress(ctx) }, { totalXp: 44, coins: 3 });
+  assert.deepEqual({ ...progress(ctx) }, { totalXp: 44, coins: 2 });
   assert.equal(ctx.raw.prepare("SELECT state FROM core_platform_event_processing WHERE consumer_id='reward-progress'").get().state, "retryable_failed");
   ctx.raw.exec("DROP TRIGGER reject_reward_receipt");
   await withFrozenTime(DAY_ONE + 5_000, () => retryRewardEvents(ctx.env, { now: DAY_ONE + 5_000 }));
-  assert.deepEqual({ ...progress(ctx) }, { totalXp: 44, coins: 3 });
+  assert.deepEqual({ ...progress(ctx) }, { totalXp: 44, coins: 2 });
   assert.equal(ctx.raw.prepare("SELECT state FROM core_platform_event_processing WHERE consumer_id='reward-progress'").get().state, "completed");
 });
 

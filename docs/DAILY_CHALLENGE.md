@@ -32,10 +32,10 @@ Estados visíveis:
 - Meta completa: 7 vitórias.
 - Estados: `LOCKED`, `READY`, `CLAIMED`.
 - Claim: manual, autenticado e validado novamente no servidor.
-- 3/7: 25 XP e 3 moedas.
-- 7/7: 50 XP e 7 moedas.
+- 3/7: 30 XP e 5 moedas.
+- 7/7: 70 XP e 12 moedas.
 
-Os valores são provisórios e centralizados em `platform-daily-challenge.ts`; devem ser revisados na Sprint 25.2. IDs determinísticos e `ON CONFLICT` dos ledgers impedem duplicação por refresh, múltiplas abas ou requisições concorrentes.
+Os valores são a política oficial da Economia 2.0 e ficam centralizados em `shared/platform-economy.ts`. IDs determinísticos e `ON CONFLICT` dos ledgers impedem duplicação por refresh, múltiplas abas ou requisições concorrentes.
 
 ## Derrota, abandono e indisponibilidade
 

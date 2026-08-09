@@ -1,10 +1,10 @@
 import type { CoreEventConsumer, CorePlatformEvent } from "./platform-event-engine";
 import type { GameFinishedV2Payload } from "./platform-event-catalog";
 import { grantPlatformReward } from "./platform-progress";
+import { GAME_FINISHED_ECONOMY } from "../../shared/platform-economy";
 
 export const REWARD_PROGRESS_CONSUMER_ID = "reward-progress";
 export const REWARD_PROGRESS_CONSUMER_VERSION = 1;
-const DAILY_BONUS_XP = 10;
 
 export function calculateGameFinishedReward(payload: GameFinishedV2Payload) {
   if (payload.status !== "completed" || payload.mode !== "official") return null;
@@ -13,9 +13,15 @@ export function calculateGameFinishedReward(payload: GameFinishedV2Payload) {
     || payload.correctAnswers > payload.questionsAnswered) throw new Error("invalid_reward_metrics");
   const ratio = payload.correctAnswers / payload.questionsAnswered;
   const perfect = payload.correctAnswers === payload.questionsAnswered;
-  const baseXp = Math.min(50, 20 + Math.floor(ratio * 20) + (perfect ? 10 : 0));
-  const coins = Math.min(5, 2 + (ratio >= 0.7 ? 1 : 0) + (ratio >= 0.9 ? 1 : 0) + (perfect ? 1 : 0));
-  return { baseXp, coins, dailyBonusXp: DAILY_BONUS_XP, perfect, ratio };
+  const baseXp = Math.min(GAME_FINISHED_ECONOMY.maximumXpPerGame,
+    GAME_FINISHED_ECONOMY.completionXp
+    + Math.floor(ratio * GAME_FINISHED_ECONOMY.performanceXpMaximum)
+    + (perfect ? GAME_FINISHED_ECONOMY.perfectXpBonus : 0));
+  const coins = Math.min(GAME_FINISHED_ECONOMY.maximumCoinsPerGame,
+    GAME_FINISHED_ECONOMY.completionCoins
+    + (ratio >= GAME_FINISHED_ECONOMY.performanceCoinThreshold ? GAME_FINISHED_ECONOMY.performanceCoins : 0)
+    + (perfect ? GAME_FINISHED_ECONOMY.perfectCoins : 0));
+  return { baseXp, coins, dailyBonusXp: GAME_FINISHED_ECONOMY.firstOfficialGameDailyXp, perfect, ratio };
 }
 
 function dailyWindowKey(completedAt: number) {

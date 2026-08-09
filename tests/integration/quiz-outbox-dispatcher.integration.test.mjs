@@ -106,7 +106,7 @@ test("successful delivery runs Statistics, Reward, Achievement and Mission consu
   assert.equal(game.bestScore, 800);
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM platform_statistics_event_checkpoints WHERE state='completed'").get().total, 1);
   assert.equal(ctx.raw.prepare("SELECT total_xp FROM user_platform_progress WHERE user_id='player'").get().total_xp, 96);
-  assert.equal(ctx.raw.prepare("SELECT coins FROM user_platform_progress WHERE user_id='player'").get().coins, 13);
+  assert.equal(ctx.raw.prepare("SELECT coins FROM user_platform_progress WHERE user_id='player'").get().coins, 12);
 });
 
 test("dispatcher preserves delivery compatibility for stored v1 and new v2 envelopes", async t => {
@@ -271,7 +271,7 @@ test("official Quiz completion flows through the protected operation into Statis
   assert.equal(ctx.raw.prepare("SELECT sessions_completed FROM user_platform_statistics WHERE user_id='player'").get().sessions_completed, 1);
   assert.equal(ctx.raw.prepare("SELECT sessions_completed FROM user_platform_game_statistics WHERE user_id='player'").get().sessions_completed, 1);
   assert.equal(ctx.raw.prepare("SELECT total_xp FROM user_platform_progress WHERE user_id='player'").get().total_xp, 160);
-  assert.equal(ctx.raw.prepare("SELECT coins FROM user_platform_progress WHERE user_id='player'").get().coins, 25);
+  assert.equal(ctx.raw.prepare("SELECT coins FROM user_platform_progress WHERE user_id='player'").get().coins, 23);
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM user_platform_missions").get().total, 0);
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM user_platform_achievements").get().total, 2);
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM notification_receipts").get().total, 0);

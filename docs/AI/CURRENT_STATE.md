@@ -10,7 +10,7 @@ Documentos de release, auditorias e arquivos em `docs/AI/HISTORY/` preservam con
 
 A baseline local é **`2.0.0-rc.1`**, confirmada no `package.json`. Ela não é a release final, não significa aprovação pública e não possui tag `v2.0.0`. O desenvolvimento funcional foi reaberto antes do lançamento para reavaliar e concluir as Fases 6 e 7; a Fase 8 concentrará Release Readiness e o Go/No-Go.
 
-As Fases 1–5 estão concluídas como fundação histórica. A **Sprint 25.1 — Desafios Diários 2.0** está concluída e validada localmente; a próxima evolução prevista é a Sprint 25.2.
+As Fases 1–5 estão concluídas como fundação histórica. As Sprints **25.1 — Desafios Diários 2.0** e **25.2 — Economia e Recompensas 2.0** estão concluídas e validadas localmente.
 
 ## Maturidade dos subsistemas
 
@@ -24,7 +24,7 @@ As Fases 1–5 estão concluídas como fundação histórica. A **Sprint 25.1 �
 | Conteúdo | MADURO: Quiz universal e pacote modular oficial de 380 conteúdos; nenhuma alteração editorial foi feita na Sprint 25.0. |
 | Biblioteca/Gerador/Loader | MADURO: fonte publicada, elegibilidade, geração e providers sustentam os sete jogos. |
 | Eventos | V1 COMPLETA: criação, validação, sugestão/seleção, reservas, agendamento, cancelamento e participante; Eventos 2.0 é evolução. |
-| Economia/coleção | FUNCIONAL, A CALIBRAR: moedas, ledgers, Loja, Inventário, equipamento e conquistas existem. |
+| Economia/coleção | ECONOMIA 2.0 LOCAL: política centralizada, emissão recorrente de moedas reduzida, metas Daily finais e preços permanentes recalibrados; ledgers, Loja, Inventário e equipamento preservados. |
 | Administração/Analytics | FUNCIONAL: navegação unificada, diagnóstico, operação, conteúdo, Eventos e Analytics agregados; dashboards ainda podem ganhar integração/ação. |
 | Operação/privacidade | FUNCIONAL: contrato de schema, reconciliação, backup/restore, diagnóstico, observabilidade, exportação e anonimização abrangem os domínios atuais. |
 | PWA/mobile | RC LOCAL: manifest e service worker revisados; validação pública e em Android físico permanece externa. |
@@ -47,11 +47,14 @@ As Fases 1–5 estão concluídas como fundação histórica. A **Sprint 25.1 �
 - Analytics administrativos reutilizam fontes existentes, com isolamento organizacional e sem PII desnecessária.
 - O PWA mantém operações de servidor como `ONLINE_REQUIRED` e não armazena `/api/*` em cache.
 - Daily 2.0 usa estados visíveis AVAILABLE/WON/LOST/UNAVAILABLE; STARTED permanece apenas técnico e nunca oferece retomada na lista.
-- Recompensas Daily provisórias são 25 XP + 3 moedas em 3/7 e 50 XP + 7 moedas em 7/7, pendentes de revisão econômica na Sprint 25.2.
+- Recompensas Daily oficiais são 30 XP + 5 moedas em 3/7 e 70 XP + 12 moedas em 7/7.
+- Partidas oficiais concedem prospectivamente até 3 moedas; o catálogo cosmético permanente totaliza 950 moedas.
 
 ## Baseline de validação registrada
 
 A Sprint 25.1 registrou: testes focados 19/19, `test:quick` 147/147, `test:all` 254/254, Playwright Daily desktop/mobile 4/4, Axe sem violações sérias/críticas, lint, typecheck/build com 64 páginas e `git diff --check` aprovados.
+
+A Sprint 25.2 registrou: testes econômicos focados 56/56, integrações corrigidas 20/20, `test:quick` 147/147, `test:all` 254/254, Playwright completo 72 executados sem falhas, lint e build/typecheck com 64 páginas aprovados. Nenhuma migration ou operação remota foi realizada.
 
 ## Fases seguintes
 

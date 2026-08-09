@@ -64,7 +64,7 @@ export type PlatformRetentionRewardInput = {
   xpAmount: number;
   coinAmount: number;
   reason: string;
-  sourceType: "daily_login" | "daily_chest";
+  sourceType: "daily_login" | "daily_chest" | "daily_challenge_3" | "daily_challenge_7";
   sourceId: string;
 };
 

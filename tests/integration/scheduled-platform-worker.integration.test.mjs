@@ -74,7 +74,7 @@ test("scheduled Worker delivers Quiz outbox and updates every official Core cons
   ]);
   assert.ok(result.every(item => Number.isFinite(item.durationMs) && item.durationMs >= 0));
   assert.equal(ctx.raw.prepare("SELECT delivery_state FROM quiz_core_event_outbox WHERE event_id=?").get(event.eventId).delivery_state, "delivered");
-  assert.deepEqual({ ...ctx.raw.prepare("SELECT total_xp totalXp,coins FROM user_platform_progress WHERE user_id='player'").get() }, { totalXp: 96, coins: 13 });
+  assert.deepEqual({ ...ctx.raw.prepare("SELECT total_xp totalXp,coins FROM user_platform_progress WHERE user_id='player'").get() }, { totalXp: 96, coins: 12 });
   assert.deepEqual({ ...ctx.raw.prepare("SELECT official_games_completed games,official_questions_answered questions FROM user_platform_statistics WHERE user_id='player'").get() }, { games: 1, questions: 10 });
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM user_platform_achievements WHERE user_id='player'").get().total, 1);
   assert.deepEqual({ ...ctx.raw.prepare("SELECT progress,state FROM user_platform_missions WHERE id='player-mission'").get() }, { progress: 1, state: "completed" });

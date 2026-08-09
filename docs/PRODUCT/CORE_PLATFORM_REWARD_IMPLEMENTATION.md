@@ -18,7 +18,7 @@ O Reward Consumer valida e calcula a recompensa. Somente o Progress Service grav
 
 XP por conclusão oficial: `20`. Desempenho: `floor(correctAnswers / questionsAnswered × 20)`. Partida perfeita: `+10`. Primeira partida oficial do dia UTC: `+10`. O máximo é 50 XP por partida ou 60 XP quando o bônus diário é aplicado.
 
-Moedas: `2` pela conclusão, `+1` a partir de 70%, `+1` a partir de 90% e `+1` por perfeição, limitadas a `5`.
+Moedas: `1` pela conclusão, `+1` a partir de 70% e `+1` por perfeição, limitadas a `3`. O patamar separado de 90% foi removido na Economia 2.0 para desacelerar a emissão recorrente sem alterar o incentivo à conclusão, ao bom desempenho e à partida perfeita.
 
 ## Idempotência e atomicidade
 

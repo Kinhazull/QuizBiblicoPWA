@@ -490,8 +490,8 @@ test("Daily 2.0 counts only wins, exposes no resume and grants 3/7 once under co
   assert.equal(claimed.rewards[0].state, "CLAIMED");
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM platform_xp_ledger WHERE source_type='daily_challenge_3' AND applied_at IS NOT NULL").get().total, 1);
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM platform_coin_ledger WHERE source_type='daily_challenge_3' AND applied_at IS NOT NULL").get().total, 1);
-  assert.equal(ctx.raw.prepare("SELECT total_xp FROM user_platform_progress WHERE user_id='user-1'").get().total_xp, 25);
-  assert.equal(ctx.raw.prepare("SELECT coins FROM user_platform_progress WHERE user_id='user-1'").get().coins, 3);
+  assert.equal(ctx.raw.prepare("SELECT total_xp FROM user_platform_progress WHERE user_id='user-1'").get().total_xp, 30);
+  assert.equal(ctx.raw.prepare("SELECT coins FROM user_platform_progress WHERE user_id='user-1'").get().coins, 5);
 });
 
 test("Daily 2.0 resets by organization day and rejects a locked 7/7 reward", async t => {
@@ -524,6 +524,6 @@ test("Daily 2.0 unlocks the superior 7/7 reward once", async t => {
   ]);
   assert.equal(first.daily.rewards[1].state, "CLAIMED");
   assert.equal(duplicate.daily.rewards[1].state, "CLAIMED");
-  assert.equal(ctx.raw.prepare("SELECT total_xp FROM user_platform_progress WHERE user_id='user-1'").get().total_xp, 50);
-  assert.equal(ctx.raw.prepare("SELECT coins FROM user_platform_progress WHERE user_id='user-1'").get().coins, 7);
+  assert.equal(ctx.raw.prepare("SELECT total_xp FROM user_platform_progress WHERE user_id='user-1'").get().total_xp, 70);
+  assert.equal(ctx.raw.prepare("SELECT coins FROM user_platform_progress WHERE user_id='user-1'").get().coins, 12);
 });

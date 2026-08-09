@@ -1,6 +1,7 @@
 import type { AppEnv } from "./auth";
 import { getCurrentDailyMission, listCurrentMissionSnapshots } from "./platform-missions";
 import { getUserProgress, grantPlatformRetentionReward } from "./platform-progress";
+import { DAILY_CHEST_ECONOMY, DAILY_LOGIN_ECONOMY } from "../../shared/platform-economy";
 
 const DEFAULT_TIME_ZONE = "America/Sao_Paulo";
 
@@ -48,8 +49,11 @@ export function calculateDailyStreak(dayKey: string, claimedDayKeys: readonly st
 }
 
 export function dailyLoginReward(streak: number): DailyRetentionReward {
-  const bounded = Math.max(1, Math.min(7, Math.floor(streak)));
-  const reward = { xp: 10 + (bounded - 1) * 2, coins: 2 + Math.floor((bounded - 1) / 2) };
+  const bounded = Math.max(1, Math.min(DAILY_LOGIN_ECONOMY.maximumStreakStep, Math.floor(streak)));
+  const reward = {
+    xp: DAILY_LOGIN_ECONOMY.baseXp + (bounded - 1) * DAILY_LOGIN_ECONOMY.xpStep,
+    coins: DAILY_LOGIN_ECONOMY.baseCoins + Math.floor((bounded - 1) / DAILY_LOGIN_ECONOMY.coinStepEveryDays),
+  };
   return { ...reward, label: rewardLabel(reward) };
 }
 
@@ -59,8 +63,7 @@ export function dailyChestReward(identity: string): DailyRetentionReward {
     hash ^= character.charCodeAt(0);
     hash = Math.imul(hash, 16777619);
   }
-  const variants = [{ xp: 20, coins: 0 }, { xp: 0, coins: 5 }, { xp: 10, coins: 3 }] as const;
-  const reward = variants[(hash >>> 0) % variants.length];
+  const reward = DAILY_CHEST_ECONOMY.variants[(hash >>> 0) % DAILY_CHEST_ECONOMY.variants.length];
   return { ...reward, label: rewardLabel(reward) };
 }
 
