@@ -1,6 +1,8 @@
 # Escopo da Release v2.0.0
 
-Status: **Release Candidate `2.0.0-rc.1`**. A tag `v2.0.0` ainda não existe.
+Status: **baseline local `2.0.0-rc.1`**. A tag `v2.0.0` ainda não existe e o RC não representa aprovação de release.
+
+O desenvolvimento funcional foi reaberto antes da publicação. As Fases 6 e 7 serão concluídas ou reavaliadas conforme o delta real; a Fase 8 executará o Release Readiness e o Go/No-Go. Não existe prazo rígido: qualidade da primeira versão pública prevalece sobre pressa.
 
 ## Incluído
 
