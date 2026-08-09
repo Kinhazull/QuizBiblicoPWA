@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 import {
   DAILY_CHALLENGE_ECONOMY,
+  FREE_PLAY_ECONOMY,
   GAME_FINISHED_ECONOMY,
   PLATFORM_ECONOMY_VERSION,
   SHOP_CATALOG,
@@ -11,9 +12,10 @@ import {
 test("economy v2 centralizes recurring rewards and permanent cosmetic prices", () => {
   assert.equal(PLATFORM_ECONOMY_VERSION, "v2");
   assert.equal(GAME_FINISHED_ECONOMY.maximumCoinsPerGame, 3);
+  assert.equal(FREE_PLAY_ECONOMY.dailyCoinBudget, 15);
   assert.deepEqual(DAILY_CHALLENGE_ECONOMY.rewards[3], { xp: 30, coins: 5, label: "+30 XP e +5 moedas" });
   assert.deepEqual(DAILY_CHALLENGE_ECONOMY.rewards[7], { xp: 70, coins: 12, label: "+70 XP e +12 moedas" });
-  assert.equal(SHOP_CATALOG.reduce((sum, item) => sum + item.price, 0), 950);
+  assert.equal(SHOP_CATALOG.slice(0, 6).reduce((sum, item) => sum + item.price, 0), 950);
 });
 
 test("economy source files consume the shared policy instead of duplicating values", async () => {

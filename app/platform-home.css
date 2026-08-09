@@ -46,6 +46,11 @@
 .equipped-avatar[data-frame="frame-bronze"] { border-color: #bf7a3b; box-shadow: 0 0 0 4px #71401e,0 10px 25px #020a1899; }
 .equipped-avatar[data-frame="frame-silver"] { border-color: #e1e7ed; box-shadow: 0 0 0 4px #7f91a1,0 10px 25px #020a1899; }
 .equipped-avatar[data-frame="frame-gold"] { border-color: #ffd84a; box-shadow: 0 0 0 4px #b77b00,0 10px 25px #020a1899; }
+.equipped-avatar[data-frame="frame-olive"] { border-color: #79b36a; box-shadow: 0 0 0 4px #355f2f,0 10px 25px #020a1899; }
+.equipped-avatar[data-frame="frame-covenant"] { border-color: #69b7ff; box-shadow: 0 0 0 4px #8b5fbf,0 10px 25px #020a1899; }
+.equipped-avatar[data-frame="frame-light"] { border-color: #fff4ad; box-shadow: 0 0 0 4px #d89f27,0 0 24px #ffe98988; }
+.equipped-avatar[data-frame="frame-royal"] { border-color: #f4b400; box-shadow: 0 0 0 4px #6d3b98,0 10px 25px #020a1899; }
+.equipped-avatar[data-frame="frame-celestial"] { border-color: #9bdcff; box-shadow: 0 0 0 4px #224d85,0 0 26px #79bfff77; }
 .platform-brand>span:last-child { display: flex; min-width: 0; flex-wrap: wrap; gap: 0 7px; }
 .platform-brand strong { color: #4190f2; }
 .platform-brand-mark { display: grid; place-items: center; position: relative; width: 54px; height: 54px; border-radius: 17px; background: linear-gradient(145deg,#1769d7,#092b70); box-shadow: 0 11px 30px #020b1a99; }

@@ -14,7 +14,9 @@ O roadmap canônico está em `docs/PRODUCT/ROADMAP.md`. Este arquivo reúne trab
 | P1 | EXTERNAL_VALIDATION | Medir Web Vitals no domínio público/CDN | Baseline público registrado e regressões impeditivas resolvidas. |
 | P1 | OPERATIONS | Definir domínio público e package ID | Decisão do dono registrada; Digital Asset Links preparado se TWA for aprovada. |
 | P2 | FEATURE | Calibrar economia/recompensas | Política versionada e cenários de saldo/progressão validados. |
-| P2 | FEATURE | Consolidar colecionáveis/conquistas | Escopo aprovado sem duplicar Achievements, Shop ou Inventory. |
+| P2 | ART | Substituir placeholders dos colecionáveis por arte final | Assets autorais/licenciados preservam IDs, contraste e acessibilidade. |
+| P2 | FEATURE | Decidir expansão dos grants de itens | Daily 7/7 e Primeiros Passos são a baseline; Missões e Eventos exigem decisão própria. |
+| P2 | PRODUCT | Decidir recompensa por coleção completa | Definir valor e idempotência; a versão atual exibe apenas progresso. |
 | P2 | UX | Perfil 2.0 | Identidade, evolução e conta/privacidade com hierarquia mobile consistente. |
 | P2 | EDITORIAL | Migrar Memória integralmente para assets | Conteúdo revisado e Asset Registry disponível; texto continua fallback válido até lá. |
 | P2 | TECH_DEBT | Centralizar matriz E2E dos sete jogos × modos | Cobertura parametrizada sem duplicação frágil. |

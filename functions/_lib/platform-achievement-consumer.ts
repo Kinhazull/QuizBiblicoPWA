@@ -1,9 +1,10 @@
 import type { CoreEventConsumer, CorePlatformEvent } from "./platform-event-engine";
 import { CORE_PLATFORM_ACHIEVEMENTS, achievementCriterionMet, achievementMetricValue } from "./platform-achievement-catalog";
 import { ensureAchievementCatalogDefinitions, unlockAchievementWithReward } from "./platform-achievements";
-import { getUserProgress } from "./platform-progress";
+import { getUserProgress, grantPlatformCollectible } from "./platform-progress";
 import { REWARD_PROGRESS_CONSUMER_ID, REWARD_PROGRESS_CONSUMER_VERSION } from "./platform-rewards";
 import { getUserStatistics, STATISTICS_CONSUMER_ID, STATISTICS_CONSUMER_VERSION } from "./platform-statistics";
+import { COLLECTIBLE_CATALOG, COLLECTIBLE_GRANTS } from "../../shared/platform-collections";
 
 export const ACHIEVEMENT_CONSUMER_ID = "platform-achievements";
 export const ACHIEVEMENT_CONSUMER_VERSION = 1;
@@ -64,6 +65,18 @@ export const platformAchievementConsumer: CoreEventConsumer = {
         scopeKey: "global",
       });
       if (result.unlocked) unlockedCodes.add(achievement.achievementId);
+    }
+    for (const [achievementCode, itemId] of Object.entries(COLLECTIBLE_GRANTS.achievements)) {
+      if (!unlockedCodes.has(achievementCode)) continue;
+      const item = COLLECTIBLE_CATALOG.find(value => value.id === itemId)!;
+      await grantPlatformCollectible(env, {
+        itemId: item.id,
+        itemName: item.name,
+        userId: event.userId,
+        organizationId: event.organizationId,
+        sourceType: "platform_achievement",
+        sourceId: achievementCode,
+      });
     }
   },
 };

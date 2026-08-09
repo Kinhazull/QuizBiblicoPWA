@@ -1,6 +1,6 @@
 # Roadmap oficial — Conte os Feitos
 
-**Estado:** Sprint 25.0, baseline local `2.0.0-rc.1`
+**Estado:** Sprint 25.3 concluída localmente, baseline `2.0.0-rc.1`
 **Roadmap canônico:** este arquivo
 **Fonte do estado operacional corrente:** `docs/AI/CURRENT_STATE.md`
 
@@ -27,7 +27,7 @@ Qualidade da primeira versão pública tem prioridade sobre velocidade de public
 |---|---|---|
 | 25.1 Objetivo Diário Completo | DONE | Sete tentativas, progresso por vitórias, estados finais, metas 3/7–7/7 e claim idempotente foram consolidados e validados localmente. |
 | 25.2 Economia | DONE | Política v2 centralizada, recompensas recorrentes e Daily calibradas, catálogo permanente reprecificado e cenários de aquisição documentados; monitoramento com Analytics existente permanece operacional. |
-| 25.3 Colecionáveis | PARTIAL | Conquistas, recompensas cosméticas e equipamento existem; não há modelo de coleções/progresso de coleção claramente aprovado. |
+| 25.3 Colecionáveis | DONE | Catálogo expandido de 16 itens, duas coleções, raridade/origem, progresso derivado, experiência de Recompensas e conquistas existentes integradas sem nova persistência. |
 | 25.4 Perfil | PARTIAL | Perfil exibe progresso, estatísticas, missões, equipamentos, conta e privacidade. Falta consolidar hierarquia, identidade pública e visão por jogo. |
 | 25.5 Ranking | NEEDS_REVIEW | O ranking existente é histórico e específico do Quiz. Ranking universal não foi iniciado e exige regras de privacidade, temporadas e competição saudável. |
 | 26.1 Dashboards | PARTIAL | Dashboard administrativo, health, diagnóstico e Analytics existem, mas permanecem superfícies separadas e com lacunas de ação operacional. |
@@ -67,12 +67,15 @@ Qualidade da primeira versão pública tem prioridade sobre velocidade de public
 
 ### 25.3 — Colecionáveis e conquistas
 
+**Estado:** concluído e validado localmente.
+
 - **Objetivo:** transformar conquistas e cosméticos existentes em uma experiência de coleção coerente.
 - **Escopo:** catálogo, progresso, raridade/visibilidade, relação com Perfil/Inventário e recompensa única.
 - **Entregas:** contrato de coleção aprovado e experiência de descoberta/acompanhamento.
 - **Dependências:** 25.2 e catálogo de conquistas existente.
 - **Aceite macro:** desbloqueio, recompensa e exibição idempotentes, inclusive itens ocultos.
 - **Fora do escopo:** troca entre usuários e itens pagos.
+- **Decisões:** 14 itens pela Loja, Avatar Lâmpada pelo Daily 7/7 e Moldura Luz pela conquista Primeiros Passos; nenhuma recompensa por completar coleção; Eventos/Missões e arte final permanecem evoluções explícitas.
 
 ### 25.4 — Perfil 2.0
 

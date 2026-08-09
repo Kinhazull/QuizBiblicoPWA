@@ -1,13 +1,13 @@
 import type { CoreEventConsumer, CorePlatformEvent } from "./platform-event-engine";
 import type { GameFinishedV2Payload } from "./platform-event-catalog";
 import { grantPlatformReward } from "./platform-progress";
-import { GAME_FINISHED_ECONOMY } from "../../shared/platform-economy";
+import { FREE_PLAY_ECONOMY, GAME_FINISHED_ECONOMY } from "../../shared/platform-economy";
 
 export const REWARD_PROGRESS_CONSUMER_ID = "reward-progress";
 export const REWARD_PROGRESS_CONSUMER_VERSION = 1;
 
 export function calculateGameFinishedReward(payload: GameFinishedV2Payload) {
-  if (payload.status !== "completed" || payload.mode !== "official") return null;
+  if (payload.status !== "completed" || !["official", "free_play"].includes(payload.mode)) return null;
   if (!Number.isSafeInteger(payload.questionsAnswered) || payload.questionsAnswered < 1
     || !Number.isSafeInteger(payload.correctAnswers) || payload.correctAnswers < 0
     || payload.correctAnswers > payload.questionsAnswered) throw new Error("invalid_reward_metrics");
@@ -29,6 +29,12 @@ function dailyWindowKey(completedAt: number) {
   return new Date(completedAt).toISOString().slice(0, 10);
 }
 
+function localOrganizationDayKey(completedAt: number, timeZone: string) {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone, year: "numeric", month: "2-digit", day: "2-digit",
+  }).format(new Date(completedAt));
+}
+
 export const platformRewardConsumer: CoreEventConsumer = {
   id: REWARD_PROGRESS_CONSUMER_ID,
   handlerVersion: REWARD_PROGRESS_CONSUMER_VERSION,
@@ -40,6 +46,15 @@ export const platformRewardConsumer: CoreEventConsumer = {
     const payload = event.payload as GameFinishedV2Payload;
     const reward = calculateGameFinishedReward(payload);
     if (!reward) return;
+    const freePlay = payload.mode === "free_play";
+    const organization = freePlay
+      ? await env.DB.prepare("SELECT timezone FROM organizations WHERE id=?1")
+        .bind(event.organizationId).first<{ timezone: string | null }>()
+      : null;
+    if (freePlay && !organization) throw new Error("reward_organization_unavailable");
+    const freePlayDayKey = freePlay
+      ? localOrganizationDayKey(payload.completedAt, String(organization?.timezone || "America/Sao_Paulo"))
+      : null;
     await grantPlatformReward(env, {
       eventId: event.eventId,
       userId: event.userId,
@@ -51,6 +66,9 @@ export const platformRewardConsumer: CoreEventConsumer = {
       reason: "Conclusão oficial de jogo",
       sourceType: "game_finished",
       sourceId: payload.attemptId,
+      freePlayDailyCoinBudget: freePlay ? FREE_PLAY_ECONOMY.dailyCoinBudget : undefined,
+      coinBudgetWindowKey: freePlayDayKey || undefined,
+      coinBudgetSourceType: freePlay ? "game_finished_free_play" : undefined,
     });
   },
 };

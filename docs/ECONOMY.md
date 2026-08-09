@@ -27,6 +27,12 @@ Este documento registra a política econômica vigente da plataforma. Os valores
 | Conquista | uma por conquista | 50–600 | 10–120 | desbloqueio único conforme catálogo |
 | Evento | configuração administrativa | até 250 | até 50 | limites server-side atuais; requer orçamento editorial |
 
+### Orçamento anti-farm do Free Play
+
+FREE_PLAY permanece ilimitado para jogar e continua aplicando XP e estatísticas conforme os consumidores oficiais. Somente a emissão de moedas possui orçamento de **15 moedas por usuário, organização e dia local da organização**. O valor equivale a cinco conclusões de valor máximo (3 moedas), reduzindo farm automatizado sem transformar o modo livre em um fluxo bloqueado.
+
+O Reward Consumer resolve o fuso da organização no servidor. A inserção no ledger calcula o saldo restante dentro da mesma transação D1, concede apenas a parcela disponível e usa o `eventId` imutável para replay. Ao atingir 15 moedas, novas conclusões continuam válidas, mas adicionam zero moedas. Daily, Missões, Cofre, Conquistas e Eventos usam outros `source_type` e não participam desse somatório.
+
 ## Sumidouros de moedas
 
 O sumidouro atual é a Loja de cosméticos permanentes. Compra duplicada é recusada, o preço vem exclusivamente do catálogo server-side e equipar/trocar itens não consome moedas.
@@ -40,7 +46,7 @@ O sumidouro atual é a Loja de cosméticos permanentes. Compra duplicada é recu
 | Avatar Pomba | 45 | 160 |
 | Avatar Leão | 60 | 240 |
 
-O catálogo completo passou de 265 para 950 moedas. Não existem consumíveis, pagamentos ou saldo negativo.
+O catálogo-base de seis cosméticos passou de 265 para 950 moedas na Economia 2.0. A expansão aditiva de Colecionáveis 2.0 preserva esses seis preços e adiciona dez itens. Os 16 itens somam 2.560 moedas em valor de referência; os 14 compráveis somam 2.310 moedas, pois dois são obtidos por feitos. Não existem consumíveis, pagamentos ou saldo negativo. O contrato completo das coleções está em `docs/COLLECTIONS_AND_ACHIEVEMENTS.md`.
 
 ## Modelagem de aquisição
 
@@ -54,7 +60,7 @@ Tempo aproximado por faixa de preço:
 
 - casual: 11–17 dias para itens de entrada, 26–30 dias para intermediários e 45–49 dias para premium;
 - regular: 3–4 dias, 6–7 dias e 11–12 dias, respectivamente;
-- muito engajado: 1–2 dias, cerca de 3 dias e cerca de 5 dias; catálogo completo em aproximadamente 2,6 semanas.
+- muito engajado: 1–2 dias, cerca de 3 dias e cerca de 5 dias; o catálogo-base de seis itens exige aproximadamente 2,6 semanas. O anti-farm reduz a emissão de Free Play e o ritmo real do catálogo expandido deve ser acompanhado por Analytics, sem pressupor farm ilimitado.
 
 ## Segurança, idempotência e compatibilidade
 
@@ -72,6 +78,6 @@ Os Analytics existentes já expõem XP concedido, moedas concedidas/gastas, sald
 
 ## Riscos e decisões pendentes
 
-- Free Play continua sem teto diário de recompensas. O aumento de preços reduz o impacto, mas um orçamento diário server-side deve ser decidido com dados reais antes de ampliar o catálogo ou criar itens consumíveis.
+- O teto de 15 moedas de Free Play é uma baseline conservadora. Deve ser revisado com dados reais de retenção, tempo de jogo e concentração de saldo; XP continua sem esse teto.
 - Eventos possuem limites técnicos amplos. Cada evento deve ter orçamento explícito; alterar os limites globais exige decisão de produto e compatibilidade com eventos já configurados.
 - O catálogo atual é finito e permanente. Usuários muito engajados ainda podem concluí-lo em poucas semanas; novos sumidouros ou expansão cosmética devem ser orientados por Analytics, sem inflação preventiva.

@@ -56,6 +56,7 @@ test("first official completion unlocks the Bronze first achievement and rewards
   assert.deepEqual(progress(ctx), { totalXp: 96, coins: 12 });
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM platform_xp_ledger WHERE source_type='platform_achievement'").get().total, 1);
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM platform_coin_ledger WHERE source_type='platform_achievement'").get().total, 1);
+  assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM platform_coin_ledger WHERE source_type='collectible_grant' AND source_id='frame-light' AND applied_at IS NOT NULL").get().total, 1);
 });
 
 test("catalog evaluation unlocks Bronze, Silver, Gold and Legendary persistence tiers", async t => {

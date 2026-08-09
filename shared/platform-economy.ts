@@ -13,6 +13,11 @@ export const GAME_FINISHED_ECONOMY = Object.freeze({
   maximumCoinsPerGame: 3,
 });
 
+/** Five maximum-value Free Play completions per local organization day. Play remains unlimited. */
+export const FREE_PLAY_ECONOMY = Object.freeze({
+  dailyCoinBudget: 15,
+});
+
 export const DAILY_LOGIN_ECONOMY = Object.freeze({
   baseXp: 10,
   xpStep: 2,
@@ -54,6 +59,16 @@ export const SHOP_CATALOG: readonly ShopCatalogItem[] = Object.freeze([
   Object.freeze({ id: "avatar-scroll", category: "avatar", name: "Avatar Pergaminho", description: "Um símbolo de estudo e sabedoria.", price: 90, icon: "📜" }),
   Object.freeze({ id: "avatar-dove", category: "avatar", name: "Avatar Pomba", description: "Um símbolo de paz e esperança.", price: 160, icon: "🕊️" }),
   Object.freeze({ id: "avatar-lion", category: "avatar", name: "Avatar Leão", description: "Um símbolo de coragem e força.", price: 240, icon: "🦁" }),
+  Object.freeze({ id: "avatar-lamp", category: "avatar", name: "Avatar Lâmpada", description: "Uma lembrança da Palavra que ilumina o caminho.", price: 70, icon: "🪔" }),
+  Object.freeze({ id: "avatar-fish", category: "avatar", name: "Avatar Peixe", description: "Um símbolo histórico da fé cristã.", price: 110, icon: "🐟" }),
+  Object.freeze({ id: "avatar-olive", category: "avatar", name: "Avatar Oliveira", description: "Um símbolo de paz, aliança e perseverança.", price: 130, icon: "🫒" }),
+  Object.freeze({ id: "avatar-ark", category: "avatar", name: "Avatar Arca", description: "Um símbolo de cuidado e preservação.", price: 190, icon: "🚢" }),
+  Object.freeze({ id: "avatar-crown", category: "avatar", name: "Avatar Coroa", description: "Uma lembrança do Reino e da esperança eterna.", price: 250, icon: "👑" }),
+  Object.freeze({ id: "frame-olive", category: "frame", name: "Moldura Oliveira", description: "Tons verdes inspirados em paz e perseverança.", price: 90, icon: "🫒" }),
+  Object.freeze({ id: "frame-covenant", category: "frame", name: "Moldura Aliança", description: "Tons do arco que recordam promessa e fidelidade.", price: 120, icon: "🌈" }),
+  Object.freeze({ id: "frame-light", category: "frame", name: "Moldura Luz", description: "Um acabamento luminoso inspirado em esperança.", price: 180, icon: "✨" }),
+  Object.freeze({ id: "frame-royal", category: "frame", name: "Moldura Real", description: "Púrpura e ouro para uma identidade marcante.", price: 220, icon: "🟣" }),
+  Object.freeze({ id: "frame-celestial", category: "frame", name: "Moldura Celestial", description: "Azul profundo com brilho de estrelas.", price: 250, icon: "🌟" }),
 ]);
 
 export function getShopCatalogItem(itemId: string) {

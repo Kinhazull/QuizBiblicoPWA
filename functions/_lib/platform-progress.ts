@@ -33,6 +33,18 @@ export type PlatformRewardGrantInput = {
   reason: string;
   sourceType: string;
   sourceId: string;
+  freePlayDailyCoinBudget?: number;
+  coinBudgetWindowKey?: string;
+  coinBudgetSourceType?: string;
+};
+
+export type PlatformCollectibleGrantInput = {
+  itemId: string;
+  itemName: string;
+  userId: string;
+  organizationId: string;
+  sourceType: "daily_challenge" | "platform_achievement";
+  sourceId: string;
 };
 
 export type PlatformAchievementRewardInput = {
@@ -139,6 +151,16 @@ function assertExpectedLedger(row: any, expected: GrantInput) {
   }
 }
 
+function assertExpectedBudgetLedger(row: any, expected: GrantInput) {
+  if (!row) return;
+  if (row.userId !== expected.userId || row.organizationId !== expected.organizationId
+    || Number(row.amount) < 1 || Number(row.amount) > expected.amount
+    || row.reason !== expected.reason || row.sourceType !== expected.sourceType
+    || (row.sourceId || null) !== (expected.sourceId || null)) {
+    throw new Error("progress_reward_conflict");
+  }
+}
+
 async function existingLedger(env: AppEnv, table: "platform_xp_ledger" | "platform_coin_ledger", eventId: string) {
   return env.DB.prepare(`SELECT user_id userId,organization_id organizationId,amount,reason,source_type sourceType,source_id sourceId,applied_at appliedAt FROM ${table} WHERE event_id=?1`)
     .bind(eventId).first<any>();
@@ -157,7 +179,13 @@ export async function grantPlatformReward(env: AppEnv, input: PlatformRewardGran
     sourceId: input.sourceId,
   };
   const xpGrant = { ...base, eventId: baseXpEventId, amount: input.xpAmount };
-  const coinGrant = { ...base, eventId: coinEventId, amount: input.coinAmount };
+  const coinGrant = {
+    ...base,
+    eventId: coinEventId,
+    amount: input.coinAmount,
+    sourceType: input.coinBudgetSourceType || base.sourceType,
+    sourceId: input.coinBudgetWindowKey || base.sourceId,
+  };
   const dailyGrant = {
     ...base,
     eventId: dailyEventId,
@@ -174,7 +202,14 @@ export async function grantPlatformReward(env: AppEnv, input: PlatformRewardGran
   if (!active) throw new Error("progress_user_unavailable");
 
   assertExpectedLedger(await existingLedger(env, "platform_xp_ledger", baseXpEventId), xpGrant);
-  assertExpectedLedger(await existingLedger(env, "platform_coin_ledger", coinEventId), coinGrant);
+  const budget = Number(input.freePlayDailyCoinBudget || 0);
+  const budgeted = budget > 0;
+  if (budgeted && (!Number.isSafeInteger(budget) || !input.coinBudgetWindowKey)) {
+    throw new Error("invalid_free_play_coin_budget");
+  }
+  const existingCoin = await existingLedger(env, "platform_coin_ledger", coinEventId);
+  if (budgeted) assertExpectedBudgetLedger(existingCoin, coinGrant);
+  else assertExpectedLedger(existingCoin, coinGrant);
   assertExpectedLedger(await existingLedger(env, "platform_xp_ledger", dailyEventId), dailyGrant);
 
   const now = Date.now();
@@ -186,8 +221,15 @@ export async function grantPlatformReward(env: AppEnv, input: PlatformRewardGran
       VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9) ON CONFLICT(event_id) DO NOTHING`)
       .bind(crypto.randomUUID(), baseXpEventId, input.userId, input.organizationId, input.xpAmount, input.reason, input.sourceType, input.sourceId, now),
     env.DB.prepare(`INSERT INTO platform_coin_ledger(id,event_id,user_id,organization_id,amount,reason,source_type,source_id,created_at)
-      VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9) ON CONFLICT(event_id) DO NOTHING`)
-      .bind(crypto.randomUUID(), coinEventId, input.userId, input.organizationId, input.coinAmount, input.reason, input.sourceType, input.sourceId, now),
+      SELECT ?1,?2,?3,?4,
+        CASE WHEN ?10>0 THEN MIN(?5,?10-COALESCE((SELECT SUM(amount) FROM platform_coin_ledger
+          WHERE user_id=?3 AND organization_id=?4 AND source_type=?7 AND source_id=?8 AND applied_at IS NOT NULL),0)) ELSE ?5 END,
+        ?6,?7,?8,?9
+      WHERE ?10=0 OR COALESCE((SELECT SUM(amount) FROM platform_coin_ledger
+        WHERE user_id=?3 AND organization_id=?4 AND source_type=?7 AND source_id=?8 AND applied_at IS NOT NULL),0)<?10
+      ON CONFLICT(event_id) DO NOTHING`)
+      .bind(crypto.randomUUID(), coinEventId, input.userId, input.organizationId, input.coinAmount,
+        input.reason, coinGrant.sourceType, coinGrant.sourceId, now, budget),
     env.DB.prepare(`INSERT INTO platform_xp_ledger(id,event_id,user_id,organization_id,amount,reason,source_type,source_id,created_at)
       VALUES(?1,?2,?3,?4,?5,'Primeira partida oficial do dia',?6,?7,?8) ON CONFLICT(event_id) DO NOTHING`)
       .bind(crypto.randomUUID(), dailyEventId, input.userId, input.organizationId, input.dailyBonusXp, input.sourceType, input.dailyWindowKey, now),
@@ -210,6 +252,36 @@ export async function grantPlatformReward(env: AppEnv, input: PlatformRewardGran
     dailyBonusApplied: appliedXpEntries === 2,
     progress: await getUserProgress(env, input.userId, input.organizationId),
   };
+}
+
+/** Records permanent item ownership without changing coin balances. */
+export async function grantPlatformCollectible(env: AppEnv, input: PlatformCollectibleGrantInput) {
+  if (!/^[a-z0-9-]{3,80}$/.test(input.itemId) || !input.itemName.trim()
+    || input.itemName.length > 100 || !input.sourceId.trim() || input.sourceId.length > 120) {
+    throw new Error("invalid_collectible_grant");
+  }
+  const eventId = await compactEventId(
+    "collectible-grant",
+    `${input.organizationId}:${input.userId}:${input.itemId}`,
+  );
+  const reason = `Colecionável: ${input.itemName} (${input.sourceType}:${input.sourceId})`;
+  const expected = {
+    eventId, userId: input.userId, organizationId: input.organizationId, amount: 1,
+    reason, sourceType: "collectible_grant", sourceId: input.itemId,
+  };
+  assertExpectedLedger(await existingLedger(env, "platform_coin_ledger", eventId), expected);
+  const active = await env.DB.prepare(
+    "SELECT id FROM users WHERE id=?1 AND organization_id=?2 AND status='active'",
+  ).bind(input.userId, input.organizationId).first();
+  if (!active) throw new Error("progress_user_unavailable");
+  const now = Date.now();
+  const result = await env.DB.prepare(`INSERT INTO platform_coin_ledger(
+      id,event_id,user_id,organization_id,amount,reason,source_type,source_id,created_at,applied_at
+    ) VALUES(?1,?2,?3,?4,1,?5,'collectible_grant',?6,?7,?7)
+    ON CONFLICT(event_id) DO NOTHING`)
+    .bind(crypto.randomUUID(), eventId, input.userId, input.organizationId, reason, input.itemId, now)
+    .run();
+  return { granted: Number((result as any)?.meta?.changes || 0) === 1, itemId: input.itemId };
 }
 
 /** Executes an Achievement-owned unlock statement and its Progress-owned rewards as one D1 transaction. */
@@ -453,8 +525,8 @@ export async function purchasePlatformItem(env: AppEnv, input: PlatformShopPurch
 }
 
 export async function getOwnedPlatformItemIds(env: AppEnv, userId: string, organizationId: string) {
-  const rows = await env.DB.prepare(`SELECT source_id itemId FROM platform_coin_ledger
-    WHERE user_id=?1 AND organization_id=?2 AND source_type='shop_purchase' AND applied_at IS NOT NULL
+  const rows = await env.DB.prepare(`SELECT DISTINCT source_id itemId FROM platform_coin_ledger
+    WHERE user_id=?1 AND organization_id=?2 AND source_type IN ('shop_purchase','collectible_grant') AND applied_at IS NOT NULL
     ORDER BY created_at ASC`).bind(userId, organizationId).all<any>();
   return rows.results.map(row => String(row.itemId));
 }
@@ -478,7 +550,7 @@ export async function equipPlatformItem(env: AppEnv, input: PlatformEquipmentInp
   if (!/^[a-z0-9-]{3,80}$/.test(input.itemId)
     || !["frame", "avatar"].includes(input.category)) throw new Error("invalid_shop_item");
   const owned = await env.DB.prepare(`SELECT 1 owned FROM platform_coin_ledger
-    WHERE user_id=?1 AND organization_id=?2 AND source_type='shop_purchase'
+    WHERE user_id=?1 AND organization_id=?2 AND source_type IN ('shop_purchase','collectible_grant')
       AND source_id=?3 AND applied_at IS NOT NULL`)
     .bind(input.userId, input.organizationId, input.itemId).first();
   if (!owned) throw new Error("shop_item_not_owned");

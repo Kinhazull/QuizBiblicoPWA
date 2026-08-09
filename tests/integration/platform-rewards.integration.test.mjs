@@ -46,6 +46,31 @@ test("reward policy calculates minimum, intermediate and maximum grants", () => 
   assert.deepEqual(calculateGameFinishedReward(event("mid", { correct: 8 }).payload), { baseXp: 36, coins: 2, dailyBonusXp: 10, perfect: false, ratio: 0.8 });
   assert.equal(calculateGameFinishedReward(event("threshold-90", { correct: 9 }).payload).coins, 2);
   assert.deepEqual(calculateGameFinishedReward(event("max", { correct: 10 }).payload), { baseXp: 50, coins: 3, dailyBonusXp: 10, perfect: true, ratio: 1 });
+  assert.equal(calculateGameFinishedReward(event("free", { correct: 10, mode: "free_play" }).payload).coins, 3);
+});
+
+test("Free Play keeps XP and play unlimited while daily local coin issuance stops at 15", async t => {
+  const ctx = setup(t);
+  ctx.raw.prepare("UPDATE organizations SET timezone='America/Sao_Paulo' WHERE id='org-1'").run();
+  const completions = Array.from({ length: 8 }, (_, index) => event(`free-${index}`, {
+    correct: 10,
+    mode: "free_play",
+    completedAt: DAY_ONE + index,
+  }));
+  await Promise.all(completions.map(value => publishRewardEvent(ctx.env, value, value.occurredAt)));
+  assert.deepEqual({ ...progress(ctx) }, { totalXp: 410, coins: 15 });
+  assert.equal(ctx.raw.prepare("SELECT SUM(amount) total FROM platform_coin_ledger WHERE source_type='game_finished_free_play'").get().total, 15);
+  assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM core_platform_event_processing WHERE consumer_id='reward-progress' AND state='completed'").get().total, 8);
+  await publishRewardEvent(ctx.env, completions[0], completions[0].occurredAt + 100);
+  assert.deepEqual({ ...progress(ctx) }, { totalXp: 410, coins: 15 });
+
+  const official = event("official-after-free-cap", { correct: 10, completedAt: DAY_ONE + 500 });
+  await publishRewardEvent(ctx.env, official, official.occurredAt);
+  assert.deepEqual({ ...progress(ctx) }, { totalXp: 460, coins: 18 });
+
+  const nextLocalDay = DAY_ONE + 24 * 60 * 60 * 1000;
+  await publishRewardEvent(ctx.env, event("free-next-day", { correct: 10, mode: "free_play", completedAt: nextLocalDay }), nextLocalDay);
+  assert.deepEqual({ ...progress(ctx) }, { totalXp: 520, coins: 21 });
 });
 
 test("v2 official reward is persisted once and level remains derived by Progress Service", async t => {

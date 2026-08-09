@@ -1,7 +1,8 @@
 import type { AppEnv } from "./auth";
 import { listDailyObjectives, organizationDayKey } from "./platform-daily-objectives";
-import { grantPlatformRetentionReward } from "./platform-progress";
+import { grantPlatformCollectible, grantPlatformRetentionReward } from "./platform-progress";
 import { DAILY_CHALLENGE_ECONOMY } from "../../shared/platform-economy";
+import { COLLECTIBLE_CATALOG, COLLECTIBLE_GRANTS } from "../../shared/platform-collections";
 
 export const DAILY_CHALLENGE_TARGETS = Object.freeze({
   INTERMEDIATE: DAILY_CHALLENGE_ECONOMY.targets.intermediate,
@@ -128,5 +129,16 @@ export async function claimDailyChallengeReward(
     sourceType: `daily_challenge_${target}`,
     sourceId: state.dayKey,
   });
+  if (target === DAILY_CHALLENGE_TARGETS.COMPLETE) {
+    const item = COLLECTIBLE_CATALOG.find(value => value.id === COLLECTIBLE_GRANTS.dailyChallenge7)!;
+    await grantPlatformCollectible(env, {
+      itemId: item.id,
+      itemName: item.name,
+      userId: identity.userId,
+      organizationId: identity.organizationId,
+      sourceType: "daily_challenge",
+      sourceId: `${state.dayKey}:7`,
+    });
+  }
   return { daily: await getDailyChallengeState(env, identity, now), progress: result.progress };
 }

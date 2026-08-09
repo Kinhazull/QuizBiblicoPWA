@@ -10,7 +10,7 @@ Documentos de release, auditorias e arquivos em `docs/AI/HISTORY/` preservam con
 
 A baseline local é **`2.0.0-rc.1`**, confirmada no `package.json`. Ela não é a release final, não significa aprovação pública e não possui tag `v2.0.0`. O desenvolvimento funcional foi reaberto antes do lançamento para reavaliar e concluir as Fases 6 e 7; a Fase 8 concentrará Release Readiness e o Go/No-Go.
 
-As Fases 1–5 estão concluídas como fundação histórica. As Sprints **25.1 — Desafios Diários 2.0** e **25.2 — Economia e Recompensas 2.0** estão concluídas e validadas localmente.
+As Fases 1–5 estão concluídas como fundação histórica. As Sprints **25.1 — Desafios Diários 2.0**, **25.2 — Economia e Recompensas 2.0** e **25.3 — Colecionáveis e Conquistas 2.0** estão concluídas e validadas localmente.
 
 ## Maturidade dos subsistemas
 
@@ -24,7 +24,7 @@ As Fases 1–5 estão concluídas como fundação histórica. As Sprints **25.1 
 | Conteúdo | MADURO: Quiz universal e pacote modular oficial de 380 conteúdos; nenhuma alteração editorial foi feita na Sprint 25.0. |
 | Biblioteca/Gerador/Loader | MADURO: fonte publicada, elegibilidade, geração e providers sustentam os sete jogos. |
 | Eventos | V1 COMPLETA: criação, validação, sugestão/seleção, reservas, agendamento, cancelamento e participante; Eventos 2.0 é evolução. |
-| Economia/coleção | ECONOMIA 2.0 LOCAL: política centralizada, emissão recorrente de moedas reduzida, metas Daily finais e preços permanentes recalibrados; ledgers, Loja, Inventário e equipamento preservados. |
+| Economia/coleção | V2 LOCAL: política centralizada, 16 cosméticos em duas coleções, progresso derivado, raridade/origem, 14 itens de Loja e dois grants determinísticos sobre os ledgers existentes. |
 | Administração/Analytics | FUNCIONAL: navegação unificada, diagnóstico, operação, conteúdo, Eventos e Analytics agregados; dashboards ainda podem ganhar integração/ação. |
 | Operação/privacidade | FUNCIONAL: contrato de schema, reconciliação, backup/restore, diagnóstico, observabilidade, exportação e anonimização abrangem os domínios atuais. |
 | PWA/mobile | RC LOCAL: manifest e service worker revisados; validação pública e em Android físico permanece externa. |
@@ -48,13 +48,17 @@ As Fases 1–5 estão concluídas como fundação histórica. As Sprints **25.1 
 - O PWA mantém operações de servidor como `ONLINE_REQUIRED` e não armazena `/api/*` em cache.
 - Daily 2.0 usa estados visíveis AVAILABLE/WON/LOST/UNAVAILABLE; STARTED permanece apenas técnico e nunca oferece retomada na lista.
 - Recompensas Daily oficiais são 30 XP + 5 moedas em 3/7 e 70 XP + 12 moedas em 7/7.
-- Partidas oficiais concedem prospectivamente até 3 moedas; o catálogo cosmético permanente totaliza 950 moedas.
+- Partidas FREE_PLAY continuam ilimitadas em jogo e XP, mas concedem no máximo 15 moedas por usuário, organização e dia local da organização; outras fontes econômicas não consomem esse orçamento.
+- Os seis cosméticos-base preservam o total de 950 moedas; 14 dos 16 itens permanecem compráveis, enquanto Avatar Lâmpada e Moldura Luz têm grants determinísticos por Daily 7/7 e conquista `first_steps`.
+- A área `/recompensas` apresenta duas coleções e as 14 conquistas oficiais sem criar uma API pública de concessão.
 
 ## Baseline de validação registrada
 
 A Sprint 25.1 registrou: testes focados 19/19, `test:quick` 147/147, `test:all` 254/254, Playwright Daily desktop/mobile 4/4, Axe sem violações sérias/críticas, lint, typecheck/build com 64 páginas e `git diff --check` aprovados.
 
 A Sprint 25.2 registrou: testes econômicos focados 56/56, integrações corrigidas 20/20, `test:quick` 147/147, `test:all` 254/254, Playwright completo 72 executados sem falhas, lint e build/typecheck com 64 páginas aprovados. Nenhuma migration ou operação remota foi realizada.
+
+O fechamento conjunto das Sprints 25.2 e 25.3 registrou: testes focados 46/46, `test:quick` 147/147, `test:all` 258/258, Playwright relacionado 46/46 em desktop/mobile, lint e build/typecheck com 65 páginas aprovados. Nenhuma migration ou operação remota foi realizada.
 
 ## Fases seguintes
 
@@ -70,6 +74,7 @@ O detalhamento e a classificação das antigas sprints estão em `docs/PRODUCT/R
 - restauração operacional deve ser exercitada em D1 isolado antes da release;
 - R2 ainda não está configurado e URLs externas são solução transitória;
 - Memória ainda depende de apresentação textual em vez de assets editoriais integrais;
+- colecionáveis usam representações simples; arte final autoral/licenciada e expansão dos grants além de Daily 7/7 e `first_steps` exigem decisão posterior;
 - matriz E2E centralizada dos sete jogos × modos não está completa;
 - testes Android físico, teclado, background/bloqueio/encerramento, atualização entre deploys e maskable dependem de ambiente real;
 - Web Vitals dependem do domínio público/CDN;

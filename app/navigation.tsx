@@ -54,7 +54,7 @@ export type NavigationPermissionSet = ReadonlySet<string> | readonly string[];
 export const platformHomeNavigation: NavigationItem[] = [
   { label: "Home", href: "/", icon: "home" },
   { label: "Jogos", href: "/jogos", icon: "gamepad" },
-  { label: "Recompensas", href: "/#recompensas", icon: "medal" },
+  { label: "Recompensas", href: "/recompensas", icon: "medal" },
   { label: "Perfil", href: "/perfil", icon: "user" },
 ];
 
