@@ -10,13 +10,13 @@ Documentos de release, auditorias e arquivos em `docs/AI/HISTORY/` preservam con
 
 A baseline local é **`2.0.0-rc.1`**, confirmada no `package.json`. Ela não é a release final, não significa aprovação pública e não possui tag `v2.0.0`. O desenvolvimento funcional foi reaberto antes do lançamento para reavaliar e concluir as Fases 6 e 7; a Fase 8 concentrará Release Readiness e o Go/No-Go.
 
-As Fases 1–5 estão concluídas como fundação histórica. As Sprints **25.1 — Desafios Diários 2.0**, **25.2 — Economia e Recompensas 2.0** e **25.3 — Colecionáveis e Conquistas 2.0** estão concluídas e validadas localmente.
+As Fases 1–5 estão concluídas como fundação histórica. As Sprints **25.1 — Desafios Diários 2.0**, **25.2 — Economia e Recompensas 2.0**, **25.3 — Colecionáveis e Conquistas 2.0** e **25.4 — Perfil e Identidade do Jogador** estão concluídas e validadas localmente.
 
 ## Maturidade dos subsistemas
 
 | Subsistema | Estado corrente |
 |---|---|
-| Plataforma participante | MADURO: Home, catálogo, Perfil, Recompensas, Loja, Inventário e Notificações existem; há deltas de UX/engajamento antes da release. |
+| Plataforma participante | MADURO: Home, catálogo, Perfil 2.0, Recompensas, Loja, Inventário e Notificações existem; há deltas de UX/engajamento antes da release. |
 | Jogos | MADURO: sete jogos integrados ao SDK e à conclusão da plataforma; qualidade e cobertura cartesiana continuam em evolução. |
 | Modos | MADURO: `FREE_PLAY`, `DAILY` e `EVENT` usam seleção/participação persistida e regras próprias. Daily apresenta vitórias, derrotas e metas 3/7–7/7 com claim idempotente. |
 | Core Platform | MADURO: Event Engine, Progress, Reward, Statistics, Achievements e Missions possuem persistência, idempotência e APIs de leitura. |
@@ -51,6 +51,7 @@ As Fases 1–5 estão concluídas como fundação histórica. As Sprints **25.1 
 - Partidas FREE_PLAY continuam ilimitadas em jogo e XP, mas concedem no máximo 15 moedas por usuário, organização e dia local da organização; outras fontes econômicas não consomem esse orçamento.
 - Os seis cosméticos-base preservam o total de 950 moedas; 14 dos 16 itens permanecem compráveis, enquanto Avatar Lâmpada e Moldura Luz têm grants determinísticos por Daily 7/7 e conquista `first_steps`.
 - A área `/recompensas` apresenta duas coleções e as 14 conquistas oficiais sem criar uma API pública de concessão.
+- O Perfil 2.0 compõe Progress, Statistics e Collections existentes; mostra os sete jogos, deriva o mais jogado por conclusões e usa apenas conquistas com timestamp real como feitos recentes.
 
 ## Baseline de validação registrada
 
@@ -59,6 +60,8 @@ A Sprint 25.1 registrou: testes focados 19/19, `test:quick` 147/147, `test:all` 
 A Sprint 25.2 registrou: testes econômicos focados 56/56, integrações corrigidas 20/20, `test:quick` 147/147, `test:all` 254/254, Playwright completo 72 executados sem falhas, lint e build/typecheck com 64 páginas aprovados. Nenhuma migration ou operação remota foi realizada.
 
 O fechamento conjunto das Sprints 25.2 e 25.3 registrou: testes focados 46/46, `test:quick` 147/147, `test:all` 258/258, Playwright relacionado 46/46 em desktop/mobile, lint e build/typecheck com 65 páginas aprovados. Nenhuma migration ou operação remota foi realizada.
+
+A Sprint 25.4 registrou: testes focados 29/29, `test:quick` 147/147, `test:all` 258/258, Playwright relacionado 4/4 em desktop/mobile com Axe, lint e build/typecheck com 65 páginas aprovados. Nenhuma migration ou operação remota foi realizada.
 
 ## Fases seguintes
 

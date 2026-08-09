@@ -28,7 +28,7 @@ Qualidade da primeira versão pública tem prioridade sobre velocidade de public
 | 25.1 Objetivo Diário Completo | DONE | Sete tentativas, progresso por vitórias, estados finais, metas 3/7–7/7 e claim idempotente foram consolidados e validados localmente. |
 | 25.2 Economia | DONE | Política v2 centralizada, recompensas recorrentes e Daily calibradas, catálogo permanente reprecificado e cenários de aquisição documentados; monitoramento com Analytics existente permanece operacional. |
 | 25.3 Colecionáveis | DONE | Catálogo expandido de 16 itens, duas coleções, raridade/origem, progresso derivado, experiência de Recompensas e conquistas existentes integradas sem nova persistência. |
-| 25.4 Perfil | PARTIAL | Perfil exibe progresso, estatísticas, missões, equipamentos, conta e privacidade. Falta consolidar hierarquia, identidade pública e visão por jogo. |
+| 25.4 Perfil | DONE | Perfil 2.0 consolida identidade equipada, progressão, jornada, estatísticas dos sete jogos, feitos recentes confiáveis e coleções; identidade social pública permanece fora do escopo. |
 | 25.5 Ranking | NEEDS_REVIEW | O ranking existente é histórico e específico do Quiz. Ranking universal não foi iniciado e exige regras de privacidade, temporadas e competição saudável. |
 | 26.1 Dashboards | PARTIAL | Dashboard administrativo, health, diagnóstico e Analytics existem, mas permanecem superfícies separadas e com lacunas de ação operacional. |
 | 26.2 Biblioteca Inteligente | PARTIAL | Biblioteca Universal, catálogo elegível, filtros, uso e gerador existem. Busca, qualidade, diversidade e recomendações editoriais ainda são limitadas. |
@@ -79,12 +79,15 @@ Qualidade da primeira versão pública tem prioridade sobre velocidade de public
 
 ### 25.4 — Perfil 2.0
 
+**Estado:** concluído e validado localmente.
+
 - **Objetivo:** consolidar Perfil como identidade e resumo da jornada na plataforma.
 - **Escopo:** hierarquia mobile, equipamentos, evolução, estatísticas por jogo, conquistas e separação clara de conta/privacidade.
 - **Entregas:** visão participante unificada e estados vazios/erro/carregamento consistentes.
 - **Dependências:** 25.2–25.3 e APIs existentes; novas APIs somente se o delta for comprovado.
 - **Aceite macro:** dados confiáveis, acessibilidade e consistência visual com a plataforma.
 - **Fora do escopo:** perfil social público sem decisão de privacidade.
+- **Decisões:** jogo mais jogado derivado de partidas concluídas; Últimos Feitos usa somente `unlockedAt` de conquistas; Ranking permanece reservado para a 25.5 sem placeholder ou reaproveitamento legado.
 
 ### 25.5 — Ranking e competição saudável
 
