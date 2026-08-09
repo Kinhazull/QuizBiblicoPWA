@@ -4,8 +4,14 @@ import {
   assertMigrationLedgerPrefix,
   pendingMigrationNames,
   promotionPreflightMessage,
+  missingRequiredColumns,
+  schemaColumnsForLedger,
   schemaTablesForLedger,
 } from "../scripts/lib/d1-migration-promotion-policy.mjs";
+import {
+  INTRODUCED_COLUMNS_BY_MIGRATION,
+  REQUIRED_COLUMNS,
+} from "../shared/operational-schema-contract.mjs";
 
 test("accepts an exact remote prefix and returns only the pending suffix", () => {
   const expected = ["0030.sql", "0031.sql"];
@@ -63,4 +69,53 @@ test("0036 preflight accepts the 0035 schema and final verification requires Eve
   assert.deepEqual(pendingMigrationNames([expected[0]], expected), [expected[1]]);
   assert.deepEqual(schemaTablesForLedger([expected[0]], expected, finalTables, introduced), ["users"]);
   assert.deepEqual(schemaTablesForLedger(expected, expected, finalTables, introduced), finalTables);
+});
+
+test("0037 preflight validates the 0036 baseline without requiring pending editorial columns", () => {
+  const expected = ["0036_platform_events.sql", "0037_editorial_governance_assets.sql"];
+  const applied = [expected[0]];
+  const columns = schemaColumnsForLedger(
+    applied,
+    expected,
+    REQUIRED_COLUMNS,
+    INTRODUCED_COLUMNS_BY_MIGRATION,
+  );
+
+  assert.deepEqual(pendingMigrationNames(applied, expected), [expected[1]]);
+  assert.equal(columns.content_items, undefined);
+  assert.equal(columns.platform_events, undefined);
+});
+
+test("0037 preflight still rejects a schema incomplete relative to 0036", () => {
+  const expected = ["0036_platform_events.sql", "0037_editorial_governance_assets.sql"];
+  const columns = schemaColumnsForLedger(
+    [expected[0]],
+    expected,
+    REQUIRED_COLUMNS,
+    INTRODUCED_COLUMNS_BY_MIGRATION,
+  );
+  const actual = Object.fromEntries(Object.entries(columns).map(([table, names]) => [table, [...names]]));
+  actual.users = actual.users.filter((column) => column !== "nickname");
+
+  assert.deepEqual(missingRequiredColumns(actual, columns), ["users.nickname"]);
+});
+
+test("0037 final contract requires every editorial governance column", () => {
+  const expected = ["0036_platform_events.sql", "0037_editorial_governance_assets.sql"];
+  const columns = schemaColumnsForLedger(expected, expected, REQUIRED_COLUMNS, INTRODUCED_COLUMNS_BY_MIGRATION);
+
+  assert.deepEqual(columns.content_items, [
+    "editorial_status", "submitted_by", "submitted_at", "reviewed_by", "reviewed_at", "review_decision",
+    "review_comment", "rollback_source_version",
+  ]);
+  assert.deepEqual(columns.platform_events, ["cover_asset_id"]);
+  assert.deepEqual(missingRequiredColumns(columns, columns), []);
+});
+
+test("0037 final verification rejects any missing final column", () => {
+  const expected = ["0036_platform_events.sql", "0037_editorial_governance_assets.sql"];
+  const columns = schemaColumnsForLedger(expected, expected, REQUIRED_COLUMNS, INTRODUCED_COLUMNS_BY_MIGRATION);
+  const incomplete = { ...columns, content_items: columns.content_items.filter((name) => name !== "review_comment") };
+
+  assert.deepEqual(missingRequiredColumns(incomplete, columns), ["content_items.review_comment"]);
 });

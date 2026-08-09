@@ -5,8 +5,10 @@ import { resolve } from "node:path";
 import { validateMigration0021, validateMigration0022 } from "./lib/d1-migration-validator.mjs";
 import {
   assertMigrationLedgerPrefix,
+  missingRequiredColumns,
   pendingMigrationNames,
   promotionPreflightMessage,
+  schemaColumnsForLedger,
   schemaTablesForLedger,
 } from "./lib/d1-migration-promotion-policy.mjs";
 import {
@@ -17,7 +19,12 @@ import {
   migrationsAppliedAfterSnapshot,
 } from "./lib/d1-snapshot-policy.mjs";
 import { buildAtomicBaselineInsert } from "./lib/d1-ledger-policy.mjs";
-import { APPLICATION_TABLES, CRITICAL_INDEXES } from "../shared/operational-schema-contract.mjs";
+import {
+  APPLICATION_TABLES,
+  CRITICAL_INDEXES,
+  INTRODUCED_COLUMNS_BY_MIGRATION,
+  REQUIRED_COLUMNS,
+} from "../shared/operational-schema-contract.mjs";
 
 const config = "workers/journey-awards/wrangler.jsonc";
 const database = "quiz-biblico-db";
@@ -124,27 +131,7 @@ const reconcilerTables = [
   "user_platform_statistics_active_days", "platform_statistics_event_checkpoints", "quiz_core_event_outbox",
   "user_platform_statistics_official_days_utc",
 ];
-const requiredColumns = {
-  users: ["nickname", "use_nickname_in_ranking", "profile_public", "bio", "favorite_book", "favorite_verse"],
-  attempts: ["resumed_count", "last_resumed_at", "question_order_json", "current_question_started_at"],
-  sessions: ["user_agent", "ip_hash"],
-  questions: ["source_question_id"],
-  choices: ["position"],
-  question_bank: ["review_status", "version", "updated_by"],
-  rounds: ["season_id", "round_type", "featured", "advanced_rules_json"],
-  seasons: ["closed_at", "snapshot_created_at"],
-  legal_consents: ["organization_id", "document_type", "ip_hash", "user_agent"],
-  user_platform_progress: ["total_xp", "coins", "organization_id"],
-  core_platform_event_processing: ["consumer_id", "handler_version", "state", "attempt_count"],
-  user_platform_statistics: [
-    "official_games_completed", "official_questions_answered", "perfect_games", "distinct_official_play_days_utc",
-  ],
-  quiz_core_event_outbox: [
-    "event_version", "delivery_state", "attempt_count", "next_attempt_at", "lease_token", "lease_until",
-  ],
-  content_items: ["editorial_status", "submitted_by", "submitted_at", "reviewed_by", "reviewed_at", "review_decision", "rollback_source_version"],
-  platform_events: ["cover_asset_id"],
-};
+const requiredColumns = REQUIRED_COLUMNS;
 const requiredTables = [...APPLICATION_TABLES];
 const reconcilerIndexes = [
   "choices_question_position_uq", "attempt_answers_order_uq", "attempts_user_round_mode_number_uq",
@@ -214,7 +201,7 @@ function validateTargetMigration() {
   validateMigration0022(readFileSync(resolve("drizzle", targetMigration), "utf8"), targetMigration);
 }
 
-function validateLegacySchema(tables = requiredTables, indexes = requiredIndexes) {
+function validateLegacySchema(tables = requiredTables, indexes = requiredIndexes, columns = requiredColumns) {
   const tableList = tables.map(quoteValue).join(",");
   const indexList = indexes.map(quoteValue).join(",");
   const tableCount = scalar(
@@ -225,12 +212,15 @@ function validateLegacySchema(tables = requiredTables, indexes = requiredIndexes
     `SELECT COUNT(*) AS value FROM sqlite_master WHERE type='index' AND name IN (${indexList})`,
     "value",
   );
-  const missingColumns = Object.entries(requiredColumns)
+  const activeColumns = Object.fromEntries(Object.entries(columns)
     .filter(([table]) => tables.includes(table))
-    .flatMap(([table, columns]) => {
-      const found = new Set(rows(`SELECT name FROM pragma_table_info(${quoteValue(table)})`).map((row) => String(row.name)));
-      return columns.filter((column) => !found.has(column)).map((column) => `${table}.${column}`);
-    });
+  );
+  const actualColumns = Object.fromEntries(Object.entries(activeColumns)
+    .map(([table]) => [
+      table,
+      rows(`SELECT name FROM pragma_table_info(${quoteValue(table)})`).map((row) => String(row.name)),
+    ]));
+  const missingColumns = missingRequiredColumns(actualColumns, activeColumns);
   if (tableCount !== tables.length || indexCount !== indexes.length || missingColumns.length) {
     throw new Error(
       `Legacy schema is incomplete: tables ${tableCount}/${tables.length}, ` +
@@ -257,7 +247,13 @@ function promotableState() {
   const pendingIndexes = new Set(Object.entries(introducedIndexesByMigration)
     .filter(([migration]) => !applied.has(migration))
     .flatMap(([, indexes]) => indexes));
-  validateLegacySchema(tables, requiredIndexes.filter(index => !pendingIndexes.has(index)));
+  const columns = schemaColumnsForLedger(
+    ledger,
+    expectedFinalLedger,
+    requiredColumns,
+    INTRODUCED_COLUMNS_BY_MIGRATION,
+  );
+  validateLegacySchema(tables, requiredIndexes.filter(index => !pendingIndexes.has(index)), columns);
   return { ledger, pending, tables };
 }
 

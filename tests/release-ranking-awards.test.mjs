@@ -62,9 +62,10 @@ test("pipeline publica Pages e Worker somente após qualidade e nunca altera mig
 });
 
 test("reconciliação é manual, confirmada, precedida por backup e não faz deploy", async () => {
-  const [workflow, script, docs] = await Promise.all([
+  const [workflow, script, schemaContract, docs] = await Promise.all([
     read(".github/workflows/reconcile-production-d1.yml"),
     read("scripts/reconcile-d1-migrations.mjs"),
+    read("shared/operational-schema-contract.mjs"),
     read("docs/D1_MIGRATION_RECONCILIATION.md"),
   ]);
   assert.match(workflow, /workflow_dispatch:/);
@@ -95,7 +96,7 @@ test("reconciliação é manual, confirmada, precedida por backup e não faz dep
   assert.match(script, /foundationMigrations/);
   assert.match(script, /expectedFinalLedger\.length/);
   assert.match(script, /quiz_core_event_outbox_claim_idx/);
-  assert.match(script, /distinct_official_play_days_utc/);
+  assert.match(schemaContract, /distinct_official_play_days_utc/);
   assert.match(script, /assertExactNames\(ledgerNames\(\), expectedFinalLedger/);
   assert.match(docs, /Actions/);
 });

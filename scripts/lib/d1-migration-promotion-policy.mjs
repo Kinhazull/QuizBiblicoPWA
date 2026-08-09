@@ -27,6 +27,32 @@ export function schemaTablesForLedger(actual, expected, finalTables, introducedT
   return finalTables.filter((table) => !pendingTables.has(table));
 }
 
+export function schemaColumnsForLedger(actual, expected, finalColumns, introducedColumnsByMigration) {
+  const pending = new Set(pendingMigrationNames(actual, expected));
+  const pendingColumns = new Map();
+  for (const [migration, tables] of Object.entries(introducedColumnsByMigration || {})) {
+    if (!pending.has(migration)) continue;
+    for (const [table, columns] of Object.entries(tables)) {
+      const excluded = pendingColumns.get(table) || new Set();
+      for (const column of columns) excluded.add(column);
+      pendingColumns.set(table, excluded);
+    }
+  }
+
+  return Object.fromEntries(Object.entries(finalColumns).flatMap(([table, columns]) => {
+    const excluded = pendingColumns.get(table) || new Set();
+    const required = columns.filter((column) => !excluded.has(column));
+    return required.length ? [[table, required]] : [];
+  }));
+}
+
+export function missingRequiredColumns(actualColumns, requiredColumns) {
+  return Object.entries(requiredColumns).flatMap(([table, columns]) => {
+    const found = new Set(actualColumns[table] || []);
+    return columns.filter((column) => !found.has(column)).map((column) => `${table}.${column}`);
+  });
+}
+
 export function promotionPreflightMessage(appliedCount, pending) {
   if (!Array.isArray(pending)) throw new Error("Pending migrations must be an array.");
   if (pending.length === 0) {

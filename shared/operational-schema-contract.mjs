@@ -48,6 +48,43 @@ export const CRITICAL_INDEXES = Object.freeze([
 
 export const CRITICAL_TRIGGERS = Object.freeze(["choices_fill_position_after_insert", "platform_event_reservation_no_overlap"]);
 
+export const REQUIRED_COLUMNS = Object.freeze({
+  users: Object.freeze(["nickname", "use_nickname_in_ranking", "profile_public", "bio", "favorite_book", "favorite_verse"]),
+  attempts: Object.freeze(["resumed_count", "last_resumed_at", "question_order_json", "current_question_started_at"]),
+  sessions: Object.freeze(["user_agent", "ip_hash"]),
+  questions: Object.freeze(["source_question_id"]),
+  choices: Object.freeze(["position"]),
+  question_bank: Object.freeze(["review_status", "version", "updated_by"]),
+  rounds: Object.freeze(["season_id", "round_type", "featured", "advanced_rules_json"]),
+  seasons: Object.freeze(["closed_at", "snapshot_created_at"]),
+  legal_consents: Object.freeze(["organization_id", "document_type", "ip_hash", "user_agent"]),
+  user_platform_progress: Object.freeze(["total_xp", "coins", "organization_id"]),
+  core_platform_event_processing: Object.freeze(["consumer_id", "handler_version", "state", "attempt_count"]),
+  user_platform_statistics: Object.freeze([
+    "official_games_completed", "official_questions_answered", "perfect_games", "distinct_official_play_days_utc",
+  ]),
+  quiz_core_event_outbox: Object.freeze([
+    "event_version", "delivery_state", "attempt_count", "next_attempt_at", "lease_token", "lease_until",
+  ]),
+  content_items: Object.freeze([
+    "editorial_status", "submitted_by", "submitted_at", "reviewed_by", "reviewed_at", "review_decision",
+    "review_comment", "rollback_source_version",
+  ]),
+  platform_events: Object.freeze(["cover_asset_id"]),
+});
+
+// Columns added to pre-existing tables must be excluded from the promotion
+// baseline until their owning migration is present in the migration ledger.
+export const INTRODUCED_COLUMNS_BY_MIGRATION = Object.freeze({
+  "0037_editorial_governance_assets.sql": Object.freeze({
+    content_items: Object.freeze([
+      "editorial_status", "submitted_by", "submitted_at", "reviewed_by", "reviewed_at", "review_decision",
+      "review_comment", "rollback_source_version",
+    ]),
+    platform_events: Object.freeze(["cover_asset_id"]),
+  }),
+});
+
 const security = new Set(["sessions", "login_security", "account_recovery_codes", "abuse_counters"]);
 const operational = new Set(["quiz_core_event_outbox"]);
 export const BACKUP_TABLE_CLASSIFICATION = Object.freeze(Object.fromEntries(APPLICATION_TABLES.map(table => [table,
