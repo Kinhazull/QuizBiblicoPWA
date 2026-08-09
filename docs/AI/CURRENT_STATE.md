@@ -15,7 +15,7 @@ A tag `v1.0.0` permanece como referência histórica do piloto do produto anteri
 
 **Fase 5 — Consolidação, operação e desacoplamento progressivo do legado.**
 
-Sprint corrente: **24.7 — Qualidade, Identidade e Experiência dos Jogos**.
+Sprint corrente: **24.8 — Release Candidate Público/Mobile**.
 
 Próximas sprints aprovadas no roadmap:
 
@@ -42,6 +42,8 @@ Próximas sprints aprovadas no roadmap:
 - Biblioteca, Catálogo Elegível e Gerador Universal alimentam os modos atuais.
 - Os sete jogos utilizam a infraestrutura universal.
 - Os sete jogos possuem contrato explícito de identidade, dificuldade e scoring; feedback, progresso e instruções contextuais seguem o Game SDK.
+- A versão corrente está centralizada no `package.json` como `2.0.0-rc.1`, sem criação da tag `v2.0.0`.
+- O PWA possui manifest completo, cache restrito ao shell público, atualização controlada por `controllerchange` e contrato `ONLINE_REQUIRED` para operações de servidor.
 - FREE_PLAY evita os últimos 20 conteúdos por usuário/jogo quando o catálogo permite e aplica fallback controlado quando necessário; DAILY permanece determinístico e EVENT usa reservas.
 - O runtime participante do Quiz usa exclusivamente CMS, Biblioteca, Catálogo Elegível, Gerador, Selection, Provider e Game Loader; o fallback de leitura legado foi removido.
 - O Worker preserva o identificador técnico histórico `journey-awards`, mas executa somente outbox do Quiz, retry de eventos oficiais do Core e reconciliação independente de Eventos encerrados.

@@ -4,6 +4,12 @@ As mudanças relevantes do Conte os Feitos serão registradas neste arquivo. O f
 
 ## Unreleased — Fase 5
 
+### Release Candidate público/mobile
+
+- versão de desenvolvimento `2.0.0-rc.1` centralizada no pacote, sem criação de tag;
+- manifest PWA consolidado, atualização controlada e contrato offline seguro;
+- estratégia Android/Google Play, Data Safety e gate manual documentados.
+
 ### Governança
 
 - fonte oficial do estado operacional consolidada;
@@ -44,4 +50,3 @@ Esta etapa não recebeu tag pública. O estado consolidado está documentado em 
 - pipeline de qualidade e deploy verificado.
 
 `v1.0.0` permanece imutável como tag histórica. A primeira release formal da plataforma Conte os Feitos será `v2.0.0`, ainda não criada.
-

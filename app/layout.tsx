@@ -31,11 +31,13 @@ import { ParticipantChrome } from "./ParticipantChrome";
 import { AuthProvider } from "./AuthProvider";
 import { PasswordVisibility } from "./PasswordVisibility";
 import { GameNavigationProvider } from "./GameNavigationContext";
+import { APP_VERSION } from "./app-version";
 
 export const metadata: Metadata = {
   title: "Conte os Feitos — Jogos e Desafios Bíblicos",
   description: "Plataforma de jogos e desafios bíblicos para aprender de forma leve e divertida.",
   applicationName: "Conte os Feitos",
+  other: { "application-version": APP_VERSION },
   manifest: "/manifest.webmanifest",
   appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Conte os Feitos" },
   icons: {

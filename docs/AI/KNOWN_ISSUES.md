@@ -2,6 +2,13 @@
 
 Este arquivo registra apenas problemas correntes. Itens resolvidos permanecem no histórico operacional.
 
+## KI-008 — Aceite final público/mobile
+
+**Status:** validação humana pendente
+**Prioridade:** alta antes da v2.0.0
+
+Instalação, atualização, background/foreground, teclado virtual, recorte maskable e Web Vitals públicos ainda precisam ser validados em Android físico e no domínio HTTPS final. Package ID/domínio dependem de decisão do dono; Data Safety, menores, retenção e licença dos textos bíblicos exigem revisão jurídica.
+
 ## KI-006 — Storage binário do Asset Registry
 
 **Status:** preparado, não ativado

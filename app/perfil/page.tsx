@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { ProfilePrivacySections } from "../ProfilePrivacySections";
 import { PlatformProfileOverview } from "./PlatformProfileOverview";
+import { APP_VERSION } from "../app-version";
 
 export default function Profile() {
   const [data, setData] = useState<any>(null);
@@ -39,6 +40,8 @@ export default function Profile() {
     <PlatformProfileOverview displayName={user.nickname || user.displayName} />
     <form className="profile-section profile-form" onSubmit={save}><h2>Informações pessoais</h2><label>Nome<input value={user.displayName} readOnly /></label><label>Apelido<input name="nickname" maxLength={30} defaultValue={user.nickname || ""} /></label><label>Biografia<textarea name="bio" maxLength={280} defaultValue={user.bio || ""} /></label><label>Livro bíblico favorito<input name="favoriteBook" maxLength={50} defaultValue={user.favoriteBook || ""} /></label><label>Versículo favorito<input name="favoriteVerse" maxLength={80} defaultValue={user.favoriteVerse || ""} /></label><label className="check-row"><input name="useNicknameInRanking" type="checkbox" defaultChecked={Boolean(user.useNicknameInRanking)} /> Usar meu apelido no ranking</label><label className="check-row"><input name="profilePublic" type="checkbox" defaultChecked={Boolean(user.profilePublic)} /> Permitir que participantes vejam meu perfil</label><button className="primary">Salvar perfil</button></form>
     <form className="profile-section profile-form" onSubmit={recovery}><h2>Códigos de recuperação</h2><label>Confirme sua senha atual<input name="password" type="password" required /></label><button className="secondary">Gerar seis códigos</button>{codes.length > 0 && <div className="recovery-codes">{codes.map(code => <code key={code}>{code}</code>)}<button type="button" onClick={() => navigator.clipboard.writeText(codes.join("\n"))}>Copiar todos</button></div>}</form>
-    <ProfilePrivacySections role={user.role} />{message && <p className="auth-message" role="status">{message}</p>}
+    <ProfilePrivacySections role={user.role} />
+    <p className="app-version" aria-label={`Versão do aplicativo ${APP_VERSION}`}>Conte os Feitos · versão {APP_VERSION}</p>
+    {message && <p className="auth-message" role="status">{message}</p>}
   </main>;
 }

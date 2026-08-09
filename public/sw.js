@@ -1,4 +1,4 @@
-const CACHE='conte-os-feitos-v5',SHELL=['/manifest.webmanifest','/app-icon.svg','/offline.html'];
+const CACHE='conte-os-feitos-v2-rc1',SHELL=['/manifest.webmanifest','/app-icon.svg','/offline.html'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(SHELL))));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
 self.addEventListener('message',event=>{if(event.data?.type==='SKIP_WAITING')self.skipWaiting();if(event.data?.type==='CLEAR_PRIVATE_STATE')event.waitUntil(Promise.resolve())});
