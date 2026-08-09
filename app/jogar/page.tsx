@@ -11,6 +11,7 @@ import {
 } from "../games/loader";
 import { GameType } from "../../shared/content";
 import { useRegisterActiveGame } from "../GameNavigationContext";
+import { GameInstruction } from "../games/sdk";
 
 type Choice = { id: string; text: string };
 type Question = {
@@ -444,6 +445,12 @@ export default function PlayPage() {
                 </p>
               )}
             </>
+          ) : error ? (
+            <div className="platform-game-loading" role="alert">
+              <p className="eyebrow">NÃO FOI POSSÍVEL CARREGAR</p>
+              <h1>Tente <em>novamente</em></h1>
+              <p className="intro">{error}</p>
+            </div>
           ) : (
             <>
               <p className="eyebrow">AGUARDE</p>
@@ -455,7 +462,7 @@ export default function PlayPage() {
               </p>
             </>
           )}
-          {error && <p className="auth-message">{error}</p>}
+          {error && round && <p className="auth-message">{error}</p>}
         </section>
       </main>
     );
@@ -504,6 +511,7 @@ export default function PlayPage() {
           <span aria-hidden="true">{time}</span>
         </div>
         <h2>{question.prompt}</h2>
+        <GameInstruction title="Como responder">Escolha uma alternativa antes do tempo terminar. Sem resposta, a questão vale zero ponto.</GameInstruction>
         <div className="answers">
           {question.choices.map((choice, choiceIndex) => (
             <button
@@ -553,7 +561,7 @@ export default function PlayPage() {
                 <strong>
                   {feedback.correct
                     ? `Muito bem! +${feedback.points}`
-                    : "Continue firme!"}
+                    : selected === "timeout" ? "Tempo encerrado — 0 pontos" : "Resposta incorreta — 0 pontos"}
                 </strong>
                 <p>{feedback.commentary}</p>
               </div>

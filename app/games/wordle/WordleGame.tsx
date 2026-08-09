@@ -11,6 +11,7 @@ import {
 } from "./engine";
 import {
   createGameSessionId,
+  GameInstruction,
   GameLayout,
   recordPlatformGameCompletion,
   type GamePlayStatus,
@@ -228,12 +229,15 @@ export function WordleGame() {
       {contentState === "loading" && <p className="wordle-message" role="status">Carregando desafio publicado...</p>}
       {contentState === "error" && <p className="wordle-message lost" role="alert">{message}</p>}
       {contentState === "ready" && content?.hint && <p className="wordle-message">Dica: {content.hint}</p>}
+      {contentState === "ready" && <GameInstruction>
+        Verde: posição correta. Amarelo: existe em outra posição. Cinza: não pertence à palavra.
+      </GameInstruction>}
       <div className="wordle-board" aria-label="Tabuleiro do Wordle Bíblico">
         {rows.map((row, rowIndex) => (
           <div className="wordle-row" key={rowIndex} aria-label={`Tentativa ${rowIndex + 1}`}>
             {row.letters.map((item, letterIndex) => (
-              <span className={`wordle-cell ${row.submitted ? item.state : ""} ${item.letter ? "filled" : ""}`} key={letterIndex} aria-label={row.submitted ? `${item.letter}: ${item.state === "correct" ? "correta" : item.state === "present" ? "presente" : "ausente"}` : item.letter || "vazia"}>
-                {item.letter}
+              <span className={`wordle-cell ${row.submitted ? item.state : ""} ${item.letter ? "filled" : ""}`} key={letterIndex} role="img" aria-label={row.submitted ? `${item.letter}: ${item.state === "correct" ? "correta" : item.state === "present" ? "presente" : "ausente"}` : item.letter || "vazia"}>
+                {item.letter}<small aria-hidden="true">{row.submitted ? item.state === "correct" ? "✓" : item.state === "present" ? "•" : "×" : ""}</small>
               </span>
             ))}
           </div>
@@ -247,7 +251,7 @@ export function WordleGame() {
           {KEYBOARD_ROWS.map((row, index) => (
             <div className="wordle-keyboard-row" key={row}>
               {index === 2 && <button className="wordle-key wide" type="button" onClick={submitGuess}>Enter</button>}
-              {[...row].map(letter => <button className={`wordle-key ${keyboardState[letter] || ""}`} type="button" onClick={() => addLetter(letter)} key={letter} aria-label={`Letra ${letter}`}>{letter}</button>)}
+              {[...row].map(letter => <button className={`wordle-key ${keyboardState[letter] || ""}`} type="button" onClick={() => addLetter(letter)} key={letter} aria-label={`Letra ${letter}${keyboardState[letter] ? `: ${keyboardState[letter] === "correct" ? "correta" : keyboardState[letter] === "present" ? "presente" : "ausente"}` : ""}`}>{letter}</button>)}
               {index === 2 && <button className="wordle-key wide" type="button" onClick={removeLetter} aria-label="Apagar letra">⌫</button>}
             </div>
           ))}

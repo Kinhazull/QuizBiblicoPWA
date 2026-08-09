@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
-import { createGameSessionId, GameLayout, recordPlatformGameCompletion, type GamePlayStatus } from "../sdk";
+import { createGameSessionId, GameInstruction, GameLayout, recordPlatformGameCompletion, type GamePlayStatus } from "../sdk";
 import { gameContentRequestFromLocation, loadGameContent, validateGameContentAction } from "../loader";
 import type { LoadedGameContent } from "../loader";
 import { GameType } from "../../../shared/content";
@@ -178,6 +178,7 @@ export function ThreeCluesGame() {
               <span>{content.title}</span>
               <strong>Desafio {challengeIndex + 1} de {challengeCount}</strong>
               {content.biblicalReference && <small>{content.biblicalReference}</small>}
+              <em>Vale até {scoreForCluesUsed(revealedClues)} pontos</em>
             </header>
             <ol className="three-clues-list" aria-label="Pistas reveladas">
               {challenge.clues.map((clue, index) => {
@@ -208,6 +209,7 @@ export function ThreeCluesGame() {
                 </form>
               </>
             )}
+            <GameInstruction>Descubra lugares, objetos, acontecimentos, livros, conceitos ou personagens. Menos pistas rendem mais pontos.</GameInstruction>
             <p className={`three-clues-message ${status} ${feedbackTone}`} role="status" aria-live="polite">{message}</p>
           </>
         )}

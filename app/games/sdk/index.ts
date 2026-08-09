@@ -1,5 +1,8 @@
 export { GameHud } from "./GameHud";
 export { GameLayout } from "./GameLayout";
+export { GameInstruction } from "./GameInstruction";
+export { GameFeedback } from "./GameFeedback";
+export type { GameFeedbackTone } from "./GameFeedback";
 export { GameResult } from "./GameResult";
 export { gameModules, getGameModule } from "./gameModules";
 export { createGameSessionId, recordPlatformGameCompletion } from "./platformCompletion";

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import {
   createGameSessionId,
+  GameInstruction,
   GameLayout,
   recordPlatformGameCompletion,
   type GamePlayStatus,
@@ -198,6 +199,11 @@ export function TimelineGame() {
                 {validating ? "Validando..." : "Confirmar ordem"}
               </button>
             )}
+            <GameInstruction>
+              {round.title.toLocaleLowerCase("pt-BR").includes("narrativa")
+                ? "Organize conforme a ordem narrativa apresentada na Bíblia."
+                : "Organize do acontecimento mais antigo para o mais recente."}
+            </GameInstruction>
             <p className={`timeline-message ${status}`} role="status" aria-live="polite">{message}</p>
           </>
         )}

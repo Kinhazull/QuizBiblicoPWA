@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { createGameSessionId, GameLayout, recordPlatformGameCompletion, type GamePlayStatus } from "../sdk";
+import { createGameSessionId, GameInstruction, GameLayout, recordPlatformGameCompletion, type GamePlayStatus } from "../sdk";
 import { gameContentRequestFromLocation, loadGameContent, validateGameContentAction } from "../loader";
 import type { LoadedGameContent } from "../loader";
 import { GameType } from "../../../shared/content";
@@ -108,6 +108,7 @@ export function ThemeAssociationGame() {
         setIncorrectIds([leftId, rightId]);
         setMessage(`Associação incorreta. Restam ${Math.max(0, THEME_ASSOCIATION_MAX_ERRORS - nextErrors)} erro(s).`);
         if (nextErrors >= THEME_ASSOCIATION_MAX_ERRORS) await registerCompletion(nextAttempts, "lost");
+        await new Promise(resolve => setTimeout(resolve, 420));
         setIncorrectIds([]);
         setSelectedLeftId(null);
         setSelectedRightId(null);
@@ -194,6 +195,7 @@ export function ThemeAssociationGame() {
                 })}
               </div>
             </div>
+            <GameInstruction>Escolha um elemento de cada coluna. Uma borda verde confirma o par; uma borda vermelha indica tentativa incorreta.</GameInstruction>
             <p className={`theme-association-message ${status}`} role="status" aria-live="polite">{message}</p>
           </>
         )}

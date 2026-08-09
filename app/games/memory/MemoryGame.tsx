@@ -1,7 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import { createGameSessionId, GameLayout, recordPlatformGameCompletion, type GamePlayStatus } from "../sdk";
+import { createGameSessionId, GameInstruction, GameLayout, recordPlatformGameCompletion, type GamePlayStatus } from "../sdk";
 import {
   GameContentMode,
   gameContentRequestFromLocation,
@@ -18,12 +19,13 @@ type PublishedMemory = {
   id: string;
   version: number;
   title: string;
-  cards: Array<MemoryCard | { id: string; label: string }>;
+  cards: Array<MemoryCard | { id: string; label: string; assetUrl?: string | null; altText?: string | null }>;
   pairCount: number;
   biblicalReference: string | null;
 };
+type MemoryDisplayCard = MemoryCard & { assetUrl?: string | null; altText?: string | null };
 
-function shuffledCards(cards: readonly MemoryCard[]) {
+function shuffledCards(cards: readonly MemoryDisplayCard[]) {
   const shuffled = [...cards];
   for (let index = shuffled.length - 1; index > 0; index -= 1) {
     const target = Math.floor(Math.random() * (index + 1));
@@ -37,7 +39,7 @@ export function MemoryGame() {
   const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [content, setContent] = useState<PublishedMemory | null>(null);
   const [loadedContent, setLoadedContent] = useState<LoadedGameContent<PublishedMemory> | null>(null);
-  const [deck, setDeck] = useState<MemoryCard[]>([]);
+  const [deck, setDeck] = useState<MemoryDisplayCard[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [matchedCardIds, setMatchedCardIds] = useState<string[]>([]);
   const [revealedCardIds, setRevealedCardIds] = useState<string[]>([]);
@@ -64,11 +66,11 @@ export function MemoryGame() {
           version: loaded.contentVersion,
           cards: loaded.payload.cards.map(card => "cardId" in card
             ? card
-            : { cardId: card.id, pairId: "", label: card.label }),
+            : { cardId: card.id, pairId: "", label: card.label, assetUrl: card.assetUrl, altText: card.altText }),
         };
         setLoadedContent(loaded);
         setContent(normalized);
-        setDeck(shuffledCards(normalized.cards as MemoryCard[]));
+        setDeck(shuffledCards(normalized.cards as MemoryDisplayCard[]));
         setMessage(`Encontre os ${normalized.pairCount} pares bíblicos.`);
       } catch (error) {
         if (error instanceof DOMException && error.name === "AbortError") return;
@@ -145,7 +147,7 @@ export function MemoryGame() {
     if (!content) return;
     if (hideTimer.current) clearTimeout(hideTimer.current);
     sessionId.current = createGameSessionId();
-    setDeck(shuffledCards(content.cards as MemoryCard[]));
+    setDeck(shuffledCards(content.cards as MemoryDisplayCard[]));
     setSelectedIds([]);
     setMatchedCardIds([]);
     setRevealedCardIds([]);
@@ -183,10 +185,15 @@ export function MemoryGame() {
                   disabled={status !== "playing" || locked || matched}
                   aria-label={visible ? card.label : "Carta oculta"} aria-pressed={visible}>
                   <span className="memory-card-back" aria-hidden="true">✦</span>
-                  <span className="memory-card-front" aria-hidden={!visible}><small>{card.label}</small></span>
+                  <span className="memory-card-front" aria-hidden={!visible}>
+                    {"assetUrl" in card && card.assetUrl
+                      ? <Image src={card.assetUrl} alt={card.altText || card.label} fill sizes="(max-width: 430px) 22vw, 130px" unoptimized />
+                      : <small>{card.label}</small>}
+                  </span>
                 </button>;
               })}
             </div>
+            <GameInstruction>Vire duas cartas por vez. Pares encontrados permanecem abertos.</GameInstruction>
             <p className={`memory-message ${status}`} role="status" aria-live="polite">{message}</p>
           </>
         )}

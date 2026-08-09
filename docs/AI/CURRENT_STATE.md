@@ -15,7 +15,7 @@ A tag `v1.0.0` permanece como referência histórica do piloto do produto anteri
 
 **Fase 5 — Consolidação, operação e desacoplamento progressivo do legado.**
 
-Sprint corrente: **24.6 — Governança Editorial e Asset Registry**.
+Sprint corrente: **24.7 — Qualidade, Identidade e Experiência dos Jogos**.
 
 Próximas sprints aprovadas no roadmap:
 
@@ -41,6 +41,8 @@ Próximas sprints aprovadas no roadmap:
 - Alertas externos permanecem desativados; o sink operacional padrão registra somente logs seguros.
 - Biblioteca, Catálogo Elegível e Gerador Universal alimentam os modos atuais.
 - Os sete jogos utilizam a infraestrutura universal.
+- Os sete jogos possuem contrato explícito de identidade, dificuldade e scoring; feedback, progresso e instruções contextuais seguem o Game SDK.
+- FREE_PLAY evita os últimos 20 conteúdos por usuário/jogo quando o catálogo permite e aplica fallback controlado quando necessário; DAILY permanece determinístico e EVENT usa reservas.
 - O runtime participante do Quiz usa exclusivamente CMS, Biblioteca, Catálogo Elegível, Gerador, Selection, Provider e Game Loader; o fallback de leitura legado foi removido.
 - O Worker preserva o identificador técnico histórico `journey-awards`, mas executa somente outbox do Quiz, retry de eventos oficiais do Core e reconciliação independente de Eventos encerrados.
 - Backup administrativo, diagnóstico e reset usam o contrato operacional canônico até a migration `0036`.

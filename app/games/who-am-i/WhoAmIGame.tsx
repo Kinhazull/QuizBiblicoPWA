@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
-import { createGameSessionId, GameLayout, recordPlatformGameCompletion, type GamePlayStatus } from "../sdk";
+import { createGameSessionId, GameInstruction, GameLayout, recordPlatformGameCompletion, type GamePlayStatus } from "../sdk";
 import { gameContentRequestFromLocation, loadGameContent, validateGameContentAction } from "../loader";
 import type { LoadedGameContent } from "../loader";
 import { GameType } from "../../../shared/content";
@@ -156,6 +156,7 @@ export function WhoAmIGame() {
               <span>{content.title}</span>
               <h2>Desafio {challengeIndex + 1} de {challengeCount}</h2>
               {content.biblicalReference && <small>{content.biblicalReference}</small>}
+              <p className="who-am-i-score">Pontuação máxima desta identidade: <strong>{Math.max(100, (challenge.hints.length - hintsVisible + 1) * 100)}</strong></p>
             </header>
             <ol className="who-am-i-hints" aria-label="Pistas reveladas">
               {challenge.hints.slice(0, hintsVisible).map((hint, index) => (
@@ -166,7 +167,7 @@ export function WhoAmIGame() {
             </ol>
             {status === "playing" && hintsVisible < challenge.hints.length && (
               <button className="who-am-i-reveal" type="button" onClick={revealHint} disabled={validating}>
-                Mostrar próxima pista
+                Revelar pista {hintsVisible + 1} — reduz a pontuação máxima
               </button>
             )}
             {status === "playing" && (
@@ -180,6 +181,7 @@ export function WhoAmIGame() {
                 </button>
               </form>
             )}
+            <GameInstruction>Identifique o personagem com o menor número de pistas. Você pode responder a qualquer momento.</GameInstruction>
             <p className={`who-am-i-message ${status} ${feedbackTone}`} role="status" aria-live="polite">{message}</p>
           </>
         )}

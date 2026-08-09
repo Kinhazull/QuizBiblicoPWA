@@ -91,6 +91,31 @@ async function mockPublicApi(page: import("@playwright/test").Page, authenticate
     }],
     biblicalReference: "Gênesis 6–9",
   }, authenticated, body => ({ correct: body.answer === "Noé" }));
+  await mockCmsGameApi(page, "/api/platform/games/timeline", {
+    id: "timeline-e2e", version: 1, title: "Ordem narrativa do Êxodo", biblicalReference: "Êxodo 3–14",
+    events: [
+      { id: "burning-bush", title: "Sarça ardente", description: null },
+      { id: "plagues", title: "Pragas no Egito", description: null },
+      { id: "sea", title: "Travessia do mar", description: null },
+    ],
+  }, authenticated, body => ({ correct: JSON.stringify(body.orderedEventIds) === JSON.stringify(["burning-bush", "plagues", "sea"]) }));
+  await mockCmsGameApi(page, "/api/platform/games/memory", {
+    id: "memory-e2e", version: 1, title: "Pares bíblicos", biblicalReference: "Gênesis 6–9", pairCount: 3,
+    cards: [
+      { cardId: "a1", pairId: "a", label: "Noé" }, { cardId: "a2", pairId: "a", label: "Arca" },
+      { cardId: "b1", pairId: "b", label: "Moisés" }, { cardId: "b2", pairId: "b", label: "Mar" },
+      { cardId: "c1", pairId: "c", label: "Davi" }, { cardId: "c2", pairId: "c", label: "Golias" },
+    ],
+  }, authenticated);
+  await mockCmsGameApi(page, "/api/platform/games/association", {
+    id: "association-e2e", version: 1, title: "Personagens e acontecimentos", biblicalReference: null, pairCount: 3,
+    leftItems: [{ id: "l1", label: "Noé" }, { id: "l2", label: "Moisés" }, { id: "l3", label: "Davi" }],
+    rightItems: [{ id: "r1", label: "Arca" }, { id: "r2", label: "Êxodo" }, { id: "r3", label: "Golias" }],
+  }, authenticated, body => ({ correct: ({ l1: "r1", l2: "r2", l3: "r3" } as Record<string, string>)[String(body.leftId)] === body.rightId }));
+  await mockCmsGameApi(page, "/api/platform/games/who-am-i", {
+    id: "who-e2e", version: 1, title: "Identifique o personagem", biblicalReference: "Gênesis 6–9",
+    challenges: [{ id: "who-1", hints: ["Construí uma grande embarcação.", "Sobrevivi ao dilúvio.", "Meu nome tem três letras."] }],
+  }, authenticated, body => ({ correct: body.answer === "Noé" }));
   await page.route("**/api/platform/daily/check-in", route => route.fulfill({
     status: authenticated ? 200 : 401,
     contentType: "application/json",
@@ -385,6 +410,28 @@ test("catalog and Game SDK keep both platform games playable on mobile", async (
   expect(resultClearance!.navigationVisible).toBe(false);
   expect(resultClearance!.resultBottom).toBeLessThanOrEqual(resultClearance!.viewportHeight + 0.5);
   expect(resultClearance!.pageWidth).toBe(resultClearance!.viewportWidth);
+});
+
+test("all modular game surfaces expose progress, instructions and no mobile overflow", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 700 });
+  await mockPublicApi(page, true);
+  for (const route of [
+    "/jogos/wordle-biblico",
+    "/jogos/jogo-das-3-pistas",
+    "/jogos/linha-do-tempo-biblica",
+    "/jogos/memoria-biblica",
+    "/jogos/associacao-de-temas",
+    "/jogos/quem-sou-eu",
+  ]) {
+    await page.goto(route);
+    await expect(page.locator(".game-sdk-hud")).toBeVisible();
+    await expect(page.locator(".game-sdk-instruction")).toBeVisible();
+    const accessibility = await new AxeBuilder({ page }).include(".game-sdk-shell").analyze();
+    expect(accessibility.violations.filter(item => item.impact === "critical" || item.impact === "serious")).toEqual([]);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(
+      await page.evaluate(() => document.documentElement.clientWidth),
+    );
+  }
 });
 
 for (const scenario of [
