@@ -3,6 +3,7 @@ import { listDailyObjectives, organizationDayKey } from "./platform-daily-object
 import { grantPlatformCollectible, grantPlatformRetentionReward } from "./platform-progress";
 import { DAILY_CHALLENGE_ECONOMY } from "../../shared/platform-economy";
 import { COLLECTIBLE_CATALOG, COLLECTIBLE_GRANTS } from "../../shared/platform-collections";
+import { publishOfficialCoreEvent } from "./platform-event-runtime";
 
 export const DAILY_CHALLENGE_TARGETS = Object.freeze({
   INTERMEDIATE: DAILY_CHALLENGE_ECONOMY.targets.intermediate,
@@ -13,6 +14,32 @@ export const DAILY_CHALLENGE_REWARDS = DAILY_CHALLENGE_ECONOMY.rewards;
 export type DailyVisibleStatus = "AVAILABLE" | "WON" | "LOST" | "UNAVAILABLE";
 export type DailyRewardState = "LOCKED" | "READY" | "CLAIMED";
 type Identity = { organizationId: string; userId: string };
+
+export async function recordDailyOpened(env: AppEnv, identity: Identity, dayKey: string, now = Date.now()) {
+  const eventId = `daily-opened:${identity.organizationId}:${identity.userId}:${dayKey}`;
+  const existing = await env.DB.prepare("SELECT status FROM core_platform_events WHERE event_id=?1 AND organization_id=?2 AND user_id=?3")
+    .bind(eventId, identity.organizationId, identity.userId).first<{ status: string }>();
+  if (existing) return { accepted: false, duplicate: true, status: existing.status, consumers: [] };
+  try {
+    return await publishOfficialCoreEvent(env, {
+      eventId,
+      eventType: "DAILY_OPENED",
+      occurredAt: now,
+      organizationId: identity.organizationId,
+      userId: identity.userId,
+      source: { kind: "platform", service: "platform-daily", sourceId: dayKey },
+      payload: { dayKey },
+      version: 1,
+    }, now);
+  } catch (error) {
+    // Concurrent first opens may carry different timestamps; the deterministic fact still wins once.
+    if (!(error instanceof Error) || error.message !== "event_id_conflict") throw error;
+    const winner = await env.DB.prepare("SELECT status FROM core_platform_events WHERE event_id=?1 AND organization_id=?2 AND user_id=?3")
+      .bind(eventId, identity.organizationId, identity.userId).first<{ status: string }>();
+    if (!winner) throw error;
+    return { accepted: false, duplicate: true, status: winner.status, consumers: [] };
+  }
+}
 
 type ParticipationResult = {
   selectionId: string;
@@ -140,5 +167,12 @@ export async function claimDailyChallengeReward(
       sourceId: `${state.dayKey}:7`,
     });
   }
-  return { daily: await getDailyChallengeState(env, identity, now), progress: result.progress };
+  const collectible = target === DAILY_CHALLENGE_TARGETS.COMPLETE
+    ? COLLECTIBLE_CATALOG.find(value => value.id === COLLECTIBLE_GRANTS.dailyChallenge7) || null
+    : null;
+  return {
+    daily: await getDailyChallengeState(env, identity, now),
+    progress: result.progress,
+    reward: { ...reward, collectible: collectible ? { id: collectible.id, name: collectible.name, icon: collectible.icon } : null },
+  };
 }

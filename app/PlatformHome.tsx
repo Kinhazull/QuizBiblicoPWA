@@ -1,5 +1,6 @@
 import { PLATFORM_HOME_PREVIEW } from "./platform-home-config";
 import { EquippedAvatar, type EquipmentView } from "./EquippedAvatar";
+import { selectHomeEngagementAction } from "./platform-engagement";
 
 type PlatformAchievement = {
   code: string;
@@ -115,6 +116,7 @@ export function PlatformHome({
   const nextReward = dailyObjectives?.rewards?.find(item => item.state === "READY")
     || dailyObjectives?.rewards?.find(item => item.state === "LOCKED");
   const featuredEvent = events.find(item => item.status === "ACTIVE") || events.find(item => item.status === "SCHEDULED");
+  const engagement = selectHomeEngagementAction(dailyObjectives, daily, events);
 
   return <main className="platform-home">
     <div className="platform-ambient platform-ambient-one" aria-hidden="true" />
@@ -141,6 +143,7 @@ export function PlatformHome({
             <div className="platform-progress"><i style={{ width: `${platformProgress.levelProgress.percent}%` }} /></div>
             <small>{platformProgress.levelProgress.currentXp.toLocaleString("pt-BR")} / {platformProgress.levelProgress.targetXp.toLocaleString("pt-BR")} XP</small>
           </div>
+          <a className="platform-ranking-link" href="/ranking">Ver Ranking <span aria-hidden="true">→</span></a>
         </div>
         <div className="platform-currencies" aria-label="Saldo da plataforma">
           <span><b aria-hidden="true">🪙</b><strong>{platformProgress.coins.toLocaleString("pt-BR")}</strong><small>Moedas</small></span>
@@ -152,6 +155,11 @@ export function PlatformHome({
             <small>{dailyError || (daily?.login.claimed ? `Recompensa de hoje: ${daily.login.reward.label}` : "Sua recompensa será entregue ao entrar.")}</small>
           </div>
         </div>
+      </section>
+
+      <section className={`platform-engagement-focus ${engagement.kind.toLowerCase()}`} aria-labelledby="engagement-focus-title">
+        <div><p>{engagement.eyebrow}</p><h2 id="engagement-focus-title">{engagement.title}</h2><span>{engagement.description}</span></div>
+        <a href={engagement.href}>{engagement.label} <span aria-hidden="true">→</span></a>
       </section>
 
       <section className="platform-daily-summary" aria-labelledby="daily-summary-title">
@@ -168,7 +176,7 @@ export function PlatformHome({
         </div>
         <div className="platform-daily-milestones">
           <span className={dailyWins >= 3 ? "complete" : ""}><b>3 vitórias</b><small>{dailyObjectives?.rewards?.[0]?.state === "CLAIMED" ? "Recompensa resgatada" : dailyObjectives?.rewards?.[0]?.reward.label || "Recompensa intermediária"}</small></span>
-          <span className={dailyWins >= 7 ? "complete" : ""}><b>7 vitórias</b><small>{dailyObjectives?.rewards?.[1]?.state === "CLAIMED" ? "Recompensa resgatada" : dailyObjectives?.rewards?.[1]?.reward.label || "Recompensa completa"}</small></span>
+          <span className={dailyWins >= 7 ? "complete" : ""}><b>7 vitórias</b><small>{dailyObjectives?.rewards?.[1]?.state === "CLAIMED" ? "XP, moedas e Avatar Lâmpada resgatados" : `${dailyObjectives?.rewards?.[1]?.reward.label || "Recompensa completa"} + Avatar Lâmpada`}</small></span>
         </div>
       </section>
 
@@ -178,7 +186,7 @@ export function PlatformHome({
         <a href="/jogos">Ver jogos <span aria-hidden="true">→</span></a>
       </section>
 
-      {featuredEvent ? <section className="platform-event-card" aria-labelledby="featured-event-title">
+      {featuredEvent && engagement.eventId !== featuredEvent.id ? <section className="platform-event-card" aria-labelledby="featured-event-title">
         <div><p>{featuredEvent.status === "ACTIVE" ? "Evento ativo" : "Próximo evento"}</p>
           <h2 id="featured-event-title">{featuredEvent.title}</h2><span>{featuredEvent.description}</span></div>
         <a href={`/eventos/detalhes?id=${encodeURIComponent(featuredEvent.id)}`}>Ver evento <span aria-hidden="true">→</span></a>

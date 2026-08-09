@@ -35,8 +35,9 @@ async function mockDaily(page: Page, wins = 3) {
   await page.route("**/api/notifications", route => json(route, { unread: 0, notifications: [] }));
   await page.route("**/api/platform/daily-objectives/rewards", route => {
     const target = Number(route.request().postDataJSON().target);
+    const milestone = state.rewards.find(item => item.target === target)!;
     state = { ...state, rewards: state.rewards.map(item => item.target === target ? { ...item, state: "CLAIMED" } : item) };
-    return json(route, { daily: state, progress: { level: 1, totalXp: 25, coins: 3 } });
+    return json(route, { daily: state, progress: { level: 1, totalXp: 25, coins: 3 }, reward: { ...milestone.reward, collectible: target === 7 ? { id: "avatar-lamp", name: "Avatar Lâmpada", icon: "🪔" } : null } });
   });
   await page.route("**/api/platform/daily-objectives", route => json(route, state));
 }
@@ -51,7 +52,9 @@ test("Daily mostra vitória, derrota, claim 3/7 e nunca oferece Continuar ou rep
   await expect(page.getByRole("button", { name: "Resgatar" })).toBeVisible();
   await expect(page.getByText(/Continuar|Jogar novamente|Tentar novamente/i)).toHaveCount(0);
   await page.getByRole("button", { name: "Resgatar" }).click();
-  await expect(page.getByText("Recompensa de 3/7 resgatada!")).toBeVisible();
+  await expect(page.getByText("Você recebeu +30 XP e +5 moedas.")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Ver recompensas" })).toHaveAttribute("href", "/recompensas");
+  await expect(page.getByRole("link", { name: "Ver perfil" })).toHaveAttribute("href", "/perfil");
   await expect(page.getByText("Concluído ✓").first()).toBeVisible();
   const audit = await new AxeBuilder({ page }).include("main").analyze();
   expect(audit.violations.filter(item => ["critical", "serious"].includes(item.impact || ""))).toEqual([]);
@@ -71,4 +74,12 @@ test("Daily cabe no viewport e mantém ações acessíveis", async ({ page }) =>
       if (box) expect(box.height).toBeGreaterThanOrEqual(44);
     }
   }
+});
+
+test("Daily 7/7 comunica o Avatar Lâmpada e conduz à coleção", async ({ page }) => {
+  await mockDaily(page, 7);
+  await page.goto("/desafios-diarios");
+  await page.getByRole("button", { name: "Resgatar" }).last().click();
+  await expect(page.getByText(/Você recebeu .+ Avatar Lâmpada/)).toBeVisible();
+  await expect(page.getByRole("link", { name: "Ver recompensas" })).toBeVisible();
 });

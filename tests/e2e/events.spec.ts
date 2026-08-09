@@ -85,7 +85,8 @@ test("Home exibe Evento somente quando existe agendamento ativo", async ({ page 
   visible = true;
   await page.reload();
   await expect(page.getByRole("heading", { name: "Semana da Fé" })).toBeVisible();
-  await expect(page.getByRole("link", { name: /Ver evento/ })).toHaveAttribute("href", "/eventos/detalhes?id=event-e2e");
+  await expect(page.getByRole("link", { name: /Participar do evento/ })).toHaveAttribute("href", "/eventos/detalhes?id=event-e2e");
+  await expect(page.locator(".platform-event-card")).toHaveCount(0);
 });
 
 test("participante conclui Evento uma vez e recebe resultado fixo", async ({ page }) => {

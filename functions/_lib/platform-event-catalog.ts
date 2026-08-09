@@ -1,5 +1,6 @@
 export const CORE_EVENT_TYPES = [
   "USER_REGISTERED", "USER_LOGGED_IN", "DAILY_LOGIN",
+  "DAILY_OPENED",
   "GAME_STARTED", "GAME_FINISHED", "QUESTION_ANSWERED",
   "XP_GRANTED", "LEVEL_UP", "ACHIEVEMENT_UNLOCKED",
   "MISSION_PROGRESS", "MISSION_COMPLETED", "MISSION_REWARD_CLAIMED", "REWARD_GRANTED",
@@ -59,6 +60,7 @@ export const CORE_EVENT_CATALOG: Readonly<Record<CoreEventType, EventDefinition>
   USER_REGISTERED: { version: 1, sourceKind: "auth", services: authServices, fields: { method: "string" }, enums: { method: ["invite", "admin"] } },
   USER_LOGGED_IN: { version: 1, sourceKind: "auth", services: authServices, fields: { persistent: "boolean" } },
   DAILY_LOGIN: { version: 1, sourceKind: "auth", services: authServices, fields: { windowKey: "string" } },
+  DAILY_OPENED: { version: 1, sourceKind: "platform", services: ["platform-daily"], fields: { dayKey: "string" } },
   GAME_STARTED: { version: 1, sourceKind: "game", services: gameServices, fields: { sessionType: "string" } },
   GAME_FINISHED: {
     version: 2,

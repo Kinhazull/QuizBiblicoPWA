@@ -523,6 +523,8 @@ test("Daily 2.0 unlocks the superior 7/7 reward once", async t => {
     claimDailyChallengeReward(ctx.env, identity, 7, DAY_ONE + 3000),
   ]);
   assert.equal(first.daily.rewards[1].state, "CLAIMED");
+  assert.equal(first.reward.collectible.id, "avatar-lamp");
+  assert.equal(first.reward.collectible.name, "Avatar Lâmpada");
   assert.equal(duplicate.daily.rewards[1].state, "CLAIMED");
   assert.equal(ctx.raw.prepare("SELECT total_xp FROM user_platform_progress WHERE user_id='user-1'").get().total_xp, 70);
   assert.equal(ctx.raw.prepare("SELECT coins FROM user_platform_progress WHERE user_id='user-1'").get().coins, 12);

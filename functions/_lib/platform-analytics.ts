@@ -63,7 +63,7 @@ export async function getPlatformAnalytics(env: AppEnv, organizationId: string, 
     .bind(organizationId, period.from, period.to).all<ParticipationRow>();
   const rows = [...(generated.results || []), ...(event.results || [])];
 
-  const [playerCounts, dailyUsers, content, usage, usageDetails, activeDays, retention, economy, rewards, topItems, eventSummary] = await Promise.all([
+  const [playerCounts, dailyUsers, dailyOpened, content, usage, usageDetails, activeDays, retention, economy, rewards, topItems, eventSummary] = await Promise.all([
     env.DB.prepare(`WITH activity AS (
       SELECT mode,game_type gameType,user_id userId FROM generated_game_participations WHERE organization_id=?1 AND started_at>=?2 AND started_at<?3
       UNION ALL SELECT 'EVENT',game_type,user_id FROM platform_event_participations WHERE organization_id=?1 AND started_at>=?2 AND started_at<?3
@@ -73,7 +73,10 @@ export async function getPlatformAnalytics(env: AppEnv, organizationId: string, 
     env.DB.prepare(`SELECT COUNT(DISTINCT CASE WHEN won>=3 THEN user_id END) completed3,COUNT(DISTINCT CASE WHEN won>=7 THEN user_id END) completed7 FROM
       (SELECT p.user_id,COUNT(DISTINCT CASE WHEN p.status='FINISHED' AND CAST(json_extract(e.payload_json,'$.correctAnswers') AS INTEGER)>0 THEN p.game_type END) won
        FROM generated_game_participations p LEFT JOIN core_platform_events e ON e.event_id=p.finish_event_id AND e.organization_id=p.organization_id
-       WHERE p.organization_id=?1 AND p.mode='DAILY' AND p.finished_at>=?2 AND p.finished_at<?3 GROUP BY p.user_id)`).bind(organizationId, period.from, period.to).first<any>(),
+      WHERE p.organization_id=?1 AND p.mode='DAILY' AND p.finished_at>=?2 AND p.finished_at<?3 GROUP BY p.user_id)`).bind(organizationId, period.from, period.to).first<any>(),
+    env.DB.prepare(`SELECT COUNT(DISTINCT user_id) users,COUNT(*) opens FROM core_platform_events
+      WHERE organization_id=?1 AND event_type='DAILY_OPENED' AND occurred_at>=?2 AND occurred_at<?3`)
+      .bind(organizationId, period.from, period.to).first<any>(),
     env.DB.prepare(`SELECT i.game_type gameType,SUM(CASE WHEN i.status='PUBLISHED' THEN 1 ELSE 0 END) published,
       SUM(CASE WHEN l.availability_status='AVAILABLE' THEN 1 ELSE 0 END) available,SUM(CASE WHEN l.availability_status='RESERVED_EVENT' THEN 1 ELSE 0 END) reservedEvent,
       SUM(CASE WHEN l.usage_count=0 THEN 1 ELSE 0 END) neverUsed FROM content_items i LEFT JOIN universal_content_library l ON i.id=l.content_id AND i.organization_id=l.organization_id
@@ -131,7 +134,7 @@ export async function getPlatformAnalytics(env: AppEnv, organizationId: string, 
   const overview = { ...summarize(rows), players: playerCount.get("overview:all") || 0 };
   return {
     period, overview, modes, games,
-    daily: { opened: { available: false, reason: "daily_open_not_persisted" }, started: summarize(rows.filter(row => row.mode === "DAILY")).started, completed: summarize(rows.filter(row => row.mode === "DAILY")).completed, wins: summarize(rows.filter(row => row.mode === "DAILY")).wins, completed3: number(dailyUsers?.completed3), completed7: number(dailyUsers?.completed7) },
+    daily: { opened: { available: true, users: number(dailyOpened?.users), opens: number(dailyOpened?.opens) }, started: summarize(rows.filter(row => row.mode === "DAILY")).started, completed: summarize(rows.filter(row => row.mode === "DAILY")).completed, wins: summarize(rows.filter(row => row.mode === "DAILY")).wins, completed3: number(dailyUsers?.completed3), completed7: number(dailyUsers?.completed7) },
     events: { ...eventSummary, completion: { available: false, reason: "event_completion_not_projected" } },
     content: games.map(({ gameType, published, available, reservedEvent, usedContent, neverUsed, exhaustionRisk }) => ({ gameType, published, available, reservedEvent, usedContent, neverUsed, exhaustionRisk })),
     retention: { activeByDay: activeDays.results || [], newUsers: number(retention?.newUsers), returningUsers: number(retention?.returningUsers), averageStreak: number(retention?.averageStreak), streakDistribution: { zero: number(retention?.streak0), oneToTwo: number(retention?.streak1to2), threeToSix: number(retention?.streak3to6), sevenPlus: number(retention?.streak7plus) } },

@@ -17,7 +17,7 @@ export default function RewardsPage(){
   async function load(){setError("");try{const response=await fetch("/api/platform/collections",{cache:"no-store"});if(response.status===401){location.href="/";return}if(!response.ok)throw new Error();setData(await response.json())}catch{setError("Não foi possível carregar suas coleções e conquistas.")}}
   useEffect(()=>{void load()},[]);
   return <main className={styles.page}><div className={styles.shell}>
-    <header className={styles.hero}><div><p className={styles.eyebrow}>Recompensas da plataforma</p><h1>Minha coleção</h1><p>Acompanhe itens permanentes e conquistas construídos ao jogar. Nenhum colecionável oferece vantagem competitiva.</p></div><nav className={styles.actions} aria-label="Ações da coleção"><a href="/loja">Abrir Loja</a><a href="/inventario">Meu Inventário</a></nav></header>
+    <header className={styles.hero}><div><p className={styles.eyebrow}>Recompensas da plataforma</p><h1>Minha coleção</h1><p>Acompanhe itens permanentes e conquistas construídos ao jogar. Nenhum colecionável oferece vantagem competitiva.</p></div><nav className={styles.actions} aria-label="Ações da coleção"><a href="/loja">Abrir Loja</a><a href="/inventario">Meu Inventário</a><a href="/perfil">Ver Perfil</a></nav></header>
     {error?<section className={styles.error} role="alert"><strong>{error}</strong><br/><button type="button" onClick={()=>void load()}>Tentar novamente</button></section>:null}
     {!data&&!error?<p className={styles.loading} role="status">Carregando sua coleção...</p>:null}
     {data?<>

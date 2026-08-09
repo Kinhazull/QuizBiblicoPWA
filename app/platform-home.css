@@ -218,6 +218,9 @@
   .platform-home * { scroll-behavior: auto!important; transition: none!important; }
 }
 .platform-daily-summary,.platform-play-hub{border:1px solid #77a6d53b;border-radius:20px;padding:22px;background:linear-gradient(145deg,#0b1d31ec,#071525ec);box-shadow:0 18px 48px #0108164f}
+.platform-ranking-link{display:inline-flex;align-items:center;gap:6px;margin-top:10px;color:#75b5ff;font-size:12px;font-weight:800;text-decoration:none}
+.platform-engagement-focus{display:flex;align-items:center;justify-content:space-between;gap:20px;border:1px solid #54a0ff7a;border-radius:20px;padding:22px;background:linear-gradient(135deg,#10365d,#0b263f);box-shadow:0 18px 48px #0108164f;color:#fff}
+.platform-engagement-focus p{margin:0;color:#78d49a;font-size:12px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}.platform-engagement-focus h2{margin:5px 0;font-size:clamp(21px,4vw,30px)}.platform-engagement-focus div>span{color:#b5c7d8}.platform-engagement-focus>a{display:inline-flex;min-height:46px;align-items:center;justify-content:center;gap:8px;border-radius:12px;padding:11px 16px;background:#1767cf;color:#fff;font-size:12px;font-weight:900;text-decoration:none;white-space:nowrap}.platform-engagement-focus.daily_reward{border-color:#f4b40099;background:linear-gradient(135deg,#3d330e,#142940)}
 .platform-daily-summary>header{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:16px}
 .platform-daily-summary>header p,.platform-play-hub p{margin:0;color:#6cc08a;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
 .platform-daily-summary h2,.platform-play-hub h2{margin:4px 0 0;color:#fff;font-size:clamp(20px,4vw,28px)}
@@ -234,4 +237,4 @@
 .platform-play-hub{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:18px}
 .platform-play-hub>div:first-child{display:grid;width:58px;height:58px;place-items:center;border-radius:16px;background:#1767cf;font-size:28px}
 .platform-play-hub span{color:#aebdca;font-size:13px}
-@media(max-width:560px){.platform-daily-summary,.platform-play-hub{padding:16px}.platform-daily-summary>header{align-items:flex-start;flex-direction:column}.platform-daily-summary>header a{width:100%}.platform-play-hub{grid-template-columns:auto minmax(0,1fr)}.platform-play-hub>a{grid-column:1/-1;width:100%}}
+@media(max-width:560px){.platform-daily-summary,.platform-play-hub,.platform-engagement-focus{padding:16px}.platform-engagement-focus{align-items:stretch;flex-direction:column}.platform-engagement-focus>a{width:100%}.platform-daily-summary>header{align-items:flex-start;flex-direction:column}.platform-daily-summary>header a{width:100%}.platform-play-hub{grid-template-columns:auto minmax(0,1fr)}.platform-play-hub>a{grid-column:1/-1;width:100%}}
