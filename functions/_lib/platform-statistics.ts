@@ -39,6 +39,39 @@ function requireGameId(event: StatisticsEvent) {
   return gameId;
 }
 
+const NORMALIZED_PERFORMANCE_GAMES = new Set([
+  "memoria-biblica", "associacao-de-temas", "quem-sou-eu", "jogo-tres-pistas",
+]);
+
+function boundedPercentage(value: number) {
+  return Math.max(0, Math.min(100, Math.round(value)));
+}
+
+/** Derives a same-game 0-100 metric exclusively from the server-validated GAME_FINISHED payload. */
+export function normalizedGamePerformance(gameId: string, payload: Record<string, unknown>) {
+  if (!NORMALIZED_PERFORMANCE_GAMES.has(gameId)) return null;
+  const score = Number(payload.score);
+  const correct = Number(payload.correctAnswers);
+  const total = Number(payload.questionsAnswered);
+  if (!Number.isSafeInteger(score) || score < 0 || !Number.isSafeInteger(correct) || correct < 0
+    || !Number.isSafeInteger(total) || total < 1 || correct > total) return null;
+  if (gameId === "memoria-biblica") {
+    if (score > total * 150) return null;
+    return boundedPercentage((score / (total * 150)) * 100);
+  }
+  if (gameId === "associacao-de-temas") {
+    if (score > total * 100 || score % 100 !== 0) return null;
+    const completion = correct / total;
+    const won = correct === total;
+    const errors = won ? Math.max(0, total - (score / 100)) : 3;
+    const errorEfficiency = Math.max(0, 1 - (errors / 3));
+    return boundedPercentage(((completion * 0.8) + (errorEfficiency * 0.2)) * 100);
+  }
+  const maximumPerChallenge = gameId === "quem-sou-eu" ? 500 : 300;
+  if (score > total * maximumPerChallenge || score % 100 !== 0) return null;
+  return boundedPercentage((score / (total * maximumPerChallenge)) * 100);
+}
+
 async function refreshDerivedStatistics(env: AppEnv, userId: string, organizationId: string, now: number) {
   const [days, officialDays] = await Promise.all([env.DB.prepare(
     "SELECT day_key dayKey FROM user_platform_statistics_active_days WHERE user_id=?1 AND organization_id=?2 ORDER BY day_key",
@@ -73,6 +106,9 @@ async function applyStatisticsEvent(event: StatisticsEvent, env: AppEnv) {
   const gameId = isGameEvent ? requireGameId(event) : null;
   const score = event.eventType === "GAME_FINISHED" && Number.isSafeInteger(event.payload.score)
     ? Number(event.payload.score)
+    : null;
+  const normalizedPerformance = event.eventType === "GAME_FINISHED" && event.version === 2 && gameId
+    ? normalizedGamePerformance(gameId, event.payload)
     : null;
   const correct = event.eventType === "QUESTION_ANSWERED" ? event.payload.correct === true : false;
   const officialCompletion = event.eventType === "GAME_FINISHED" && event.version === 2
@@ -140,10 +176,12 @@ async function applyStatisticsEvent(event: StatisticsEvent, env: AppEnv) {
       correct_answers=correct_answers+?4,
       incorrect_answers=incorrect_answers+?5,
       best_score=CASE WHEN ?6 IS NULL THEN best_score WHEN best_score IS NULL OR best_score<?6 THEN ?6 ELSE best_score END,
-      last_activity_at=CASE WHEN last_activity_at IS NULL OR last_activity_at<?7 THEN ?7 ELSE last_activity_at END,
-      updated_at=?8
-      WHERE user_id=?9 AND organization_id=?10 AND game_id=?11 AND EXISTS(
-        SELECT 1 FROM platform_statistics_event_checkpoints WHERE event_id=?12 AND consumer_version=?13 AND state='processing'
+      best_normalized_performance=CASE WHEN ?7 IS NULL THEN best_normalized_performance
+        WHEN best_normalized_performance IS NULL OR best_normalized_performance<?7 THEN ?7 ELSE best_normalized_performance END,
+      last_activity_at=CASE WHEN last_activity_at IS NULL OR last_activity_at<?8 THEN ?8 ELSE last_activity_at END,
+      updated_at=?9
+      WHERE user_id=?10 AND organization_id=?11 AND game_id=?12 AND EXISTS(
+        SELECT 1 FROM platform_statistics_event_checkpoints WHERE event_id=?13 AND consumer_version=?14 AND state='processing'
       )`).bind(
       event.eventType === "GAME_STARTED" ? 1 : 0,
       event.eventType === "GAME_FINISHED" ? 1 : 0,
@@ -151,6 +189,7 @@ async function applyStatisticsEvent(event: StatisticsEvent, env: AppEnv) {
       (event.eventType === "QUESTION_ANSWERED" && correct ? 1 : 0) + completedCorrect,
       (event.eventType === "QUESTION_ANSWERED" && !correct ? 1 : 0) + completedIncorrect,
       score,
+      normalizedPerformance,
       event.occurredAt,
       now,
       event.userId,

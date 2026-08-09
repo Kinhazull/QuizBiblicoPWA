@@ -57,6 +57,7 @@ const foundationMigrations = [
   "0035_free_play_participations.sql",
   "0036_platform_events.sql",
   "0037_editorial_governance_assets.sql",
+  "0038_platform_rankings_indexes.sql",
 ];
 const expectedFinalLedger = [...baseline, targetMigration, ...foundationMigrations];
 const introducedTablesByMigration = {
@@ -98,6 +99,10 @@ const introducedIndexesByMigration = {
     "content_items_org_editorial_status_idx", "content_review_comments_content_idx",
     "asset_registry_org_status_idx", "asset_registry_org_source_url_uq", "content_assets_asset_idx",
   ],
+  "0038_platform_rankings_indexes.sql": [
+    "user_platform_progress_org_ranking_idx", "platform_xp_ledger_org_applied_user_idx",
+    "user_platform_game_statistics_org_game_score_idx", "user_platform_game_statistics_org_game_performance_idx",
+  ],
 };
 const modifiedSchemaObjectsByMigration = {
   "0035_free_play_participations.sql": [
@@ -108,6 +113,9 @@ const modifiedSchemaObjectsByMigration = {
   "0037_editorial_governance_assets.sql": [
     { type: "table", name: "content_items" },
     { type: "table", name: "platform_events" },
+  ],
+  "0038_platform_rankings_indexes.sql": [
+    { type: "table", name: "user_platform_game_statistics" },
   ],
 };
 

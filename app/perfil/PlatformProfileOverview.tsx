@@ -63,11 +63,16 @@ type CollectionsResponse = {
   equipment: EquipmentView["equipped"];
 };
 
+type RankingResponse = {
+  me: { position: number; totalXp: number } | null;
+};
+
 type ProfilePlatformData = {
   progress: ProgressResponse["progress"];
   statistics: StatisticsResponse;
   collections: CollectionsResponse;
   equipment: EquipmentView;
+  ranking: RankingResponse;
 };
 
 async function readJson<T>(url: string, signal: AbortSignal): Promise<T> {
@@ -115,8 +120,12 @@ export function PlatformProfileOverview({ displayName }: { displayName: string }
       readJson<ProgressResponse>("/api/platform/progress", controller.signal),
       readJson<StatisticsResponse>("/api/platform/statistics", controller.signal),
       readJson<CollectionsResponse>("/api/platform/collections", controller.signal),
-    ]).then(([progress, statistics, collections]) => {
-      setData({ progress: progress.progress, statistics, collections, equipment: equipmentView(collections) });
+      readJson<RankingResponse>("/api/platform/rankings?scope=overall&limit=10", controller.signal).catch(error => {
+        if (error instanceof Error && error.message === "unauthenticated") throw error;
+        return { me: null };
+      }),
+    ]).then(([progress, statistics, collections, ranking]) => {
+      setData({ progress: progress.progress, statistics, collections, equipment: equipmentView(collections), ranking });
       setStatus("ready");
     }).catch(error => {
       if (error instanceof DOMException && error.name === "AbortError") return;
@@ -144,7 +153,7 @@ export function PlatformProfileOverview({ displayName }: { displayName: string }
     <div className="platform-profile-error" role="alert"><strong>Não foi possível carregar sua jornada.</strong><span>Verifique sua conexão e tente novamente.</span><button type="button" onClick={() => setReloadKey(value => value + 1)}>Tentar novamente</button></div>
   </section>;
 
-  const { progress, statistics, collections, equipment } = data;
+  const { progress, statistics, collections, equipment, ranking } = data;
   const global = statistics.global;
   const remainingXp = Math.max(0, progress.levelProgress.targetXp - progress.levelProgress.currentXp);
   const mostPlayed = [...gameStatistics]
@@ -178,6 +187,11 @@ export function PlatformProfileOverview({ displayName }: { displayName: string }
         <article><small>Colecionáveis</small><strong>{formatNumber(collections.summary.ownedCollectibles)}/{formatNumber(collections.summary.collectibles)}</strong><span>adquiridos</span></article>
         <article><small>Dias ativos</small><strong>{formatNumber(global.distinctOfficialPlayDaysUtc || global.activeDays)}</strong><span>na plataforma</span></article>
       </div>
+    </section>
+
+    <section className="platform-profile-ranking" aria-labelledby="profile-ranking-title">
+      <div><p>RANKING UNIVERSAL</p><h3 id="profile-ranking-title">{ranking.me ? `${ranking.me.position}º lugar no ranking geral` : "Sua posição começa com o primeiro XP"}</h3><span>Classificação pelo XP total dentro da sua organização.</span></div>
+      <a href="/rankings">Ver ranking completo</a>
     </section>
 
     <section className="platform-profile-games" aria-labelledby="profile-games-title">

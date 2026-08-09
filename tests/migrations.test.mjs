@@ -5,7 +5,7 @@ import { DatabaseSync } from "node:sqlite";
 
 test("all migrations are sequential and apply to an empty SQLite database", async () => {
   const files = (await readdir(new URL("../drizzle/", import.meta.url))).filter(file => file.endsWith(".sql")).sort();
-  assert.equal(files.length, 38);
+  assert.equal(files.length, 39);
   files.forEach((file, index) => assert.equal(file.slice(0, 4), String(index).padStart(4, "0")));
   const db = new DatabaseSync(":memory:");
   for (const file of files) db.exec(await readFile(new URL(`../drizzle/${file}`, import.meta.url), "utf8"));
@@ -14,6 +14,11 @@ test("all migrations are sequential and apply to an empty SQLite database", asyn
   assert.ok(db.prepare("PRAGMA index_list('content_items')").all().some(row => row.name === "content_items_org_updated_idx"));
   assert.ok(db.prepare("PRAGMA index_list('content_versions')").all().some(row => row.name === "content_versions_content_version_idx"));
   assert.ok(db.prepare("PRAGMA index_list('universal_content_library')").all().some(row => row.name === "universal_content_library_eligible_idx"));
+  assert.ok(db.prepare("PRAGMA index_list('user_platform_progress')").all().some(row => row.name === "user_platform_progress_org_ranking_idx"));
+  assert.ok(db.prepare("PRAGMA index_list('platform_xp_ledger')").all().some(row => row.name === "platform_xp_ledger_org_applied_user_idx"));
+  assert.ok(db.prepare("PRAGMA index_list('user_platform_game_statistics')").all().some(row => row.name === "user_platform_game_statistics_org_game_score_idx"));
+  assert.ok(db.prepare("PRAGMA index_list('user_platform_game_statistics')").all().some(row => row.name === "user_platform_game_statistics_org_game_performance_idx"));
+  assert.ok(db.prepare("PRAGMA table_info('user_platform_game_statistics')").all().some(row => row.name === "best_normalized_performance"));
   const librarySql = db.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='universal_content_library'").get().sql;
   assert.match(librarySql, /RESERVED_DAILY/);
   assert.match(librarySql, /RESERVED_EVENT/);
@@ -63,6 +68,27 @@ test("migration 0037 applies over 0036 and preserves existing editorial content"
   ]);
   assert.ok(db.prepare("PRAGMA table_info(platform_events)").all().some(row => row.name === "cover_asset_id"));
   assert.throws(() => db.exec(migration), /duplicate column|already exists/);
+  db.close();
+});
+
+test("migration 0038 adds ranking indexes over 0037 without changing data", async () => {
+  const files = (await readdir(new URL("../drizzle/", import.meta.url))).filter(file => file.endsWith(".sql")).sort();
+  const db = new DatabaseSync(":memory:");
+  for (const file of files.slice(0, 38)) db.exec(await readFile(new URL(`../drizzle/${file}`, import.meta.url), "utf8"));
+  db.prepare("INSERT INTO organizations(id,name,slug,created_at) VALUES('org','Org','org',0)").run();
+  db.prepare("INSERT INTO groups(id,organization_id,name,active,created_at) VALUES('g','org','G',1,0)").run();
+  db.prepare("INSERT INTO users(id,organization_id,group_id,username,display_name,password_hash,password_salt,role,status,must_change_password,created_at,updated_at) VALUES('u','org','g','u','U','h','s','participant','active',0,0,0)").run();
+  db.prepare("INSERT INTO user_platform_progress(user_id,organization_id,total_xp,coins,created_at,updated_at) VALUES('u','org',100,2,0,1)").run();
+  const migration = await readFile(new URL("../drizzle/0038_platform_rankings_indexes.sql", import.meta.url), "utf8");
+  db.exec(migration);
+  assert.equal(db.prepare("SELECT total_xp FROM user_platform_progress WHERE user_id='u'").get().total_xp, 100);
+  for (const [table, index] of [
+    ["user_platform_progress", "user_platform_progress_org_ranking_idx"],
+    ["platform_xp_ledger", "platform_xp_ledger_org_applied_user_idx"],
+    ["user_platform_game_statistics", "user_platform_game_statistics_org_game_score_idx"],
+    ["user_platform_game_statistics", "user_platform_game_statistics_org_game_performance_idx"],
+  ]) assert.ok(db.prepare(`PRAGMA index_list('${table}')`).all().some(row => row.name === index));
+  assert.throws(() => db.exec(migration), /(already exists|duplicate column name)/);
   db.close();
 });
 

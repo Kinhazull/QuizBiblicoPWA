@@ -1,5 +1,5 @@
-export const OPERATIONAL_SCHEMA_VERSION = 37;
-export const EXPECTED_MIGRATION_COUNT = 38;
+export const OPERATIONAL_SCHEMA_VERSION = 38;
+export const EXPECTED_MIGRATION_COUNT = 39;
 
 export const APPLICATION_TABLES = Object.freeze([
   "organizations", "groups", "users", "invitations", "sessions", "rounds", "questions", "choices", "attempts",
@@ -44,6 +44,8 @@ export const CRITICAL_INDEXES = Object.freeze([
   "core_platform_events_status_time_idx", "core_platform_events_user_time_idx",
   "user_platform_game_statistics_org_game_idx", "user_platform_statistics_active_days_user_idx",
   "user_platform_game_difficulty_statistics_lookup_idx",
+  "user_platform_progress_org_ranking_idx", "platform_xp_ledger_org_applied_user_idx",
+  "user_platform_game_statistics_org_game_score_idx", "user_platform_game_statistics_org_game_performance_idx",
 ]);
 
 export const CRITICAL_TRIGGERS = Object.freeze(["choices_fill_position_after_insert", "platform_event_reservation_no_overlap"]);
@@ -63,6 +65,7 @@ export const REQUIRED_COLUMNS = Object.freeze({
   user_platform_statistics: Object.freeze([
     "official_games_completed", "official_questions_answered", "perfect_games", "distinct_official_play_days_utc",
   ]),
+  user_platform_game_statistics: Object.freeze(["best_normalized_performance"]),
   quiz_core_event_outbox: Object.freeze([
     "event_version", "delivery_state", "attempt_count", "next_attempt_at", "lease_token", "lease_until",
   ]),
@@ -76,6 +79,9 @@ export const REQUIRED_COLUMNS = Object.freeze({
 // Columns added to pre-existing tables must be excluded from the promotion
 // baseline until their owning migration is present in the migration ledger.
 export const INTRODUCED_COLUMNS_BY_MIGRATION = Object.freeze({
+  "0038_platform_rankings_indexes.sql": Object.freeze({
+    user_platform_game_statistics: Object.freeze(["best_normalized_performance"]),
+  }),
   "0037_editorial_governance_assets.sql": Object.freeze({
     content_items: Object.freeze([
       "editorial_status", "submitted_by", "submitted_at", "reviewed_by", "reviewed_at", "review_decision",

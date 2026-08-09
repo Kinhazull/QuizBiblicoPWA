@@ -10,6 +10,7 @@ async function mockProfile(page: Page) {
   await page.route("**/api/notifications", route => json(route, { unread: 0, notifications: [] }));
   await page.route("**/api/profile/me", route => json(route, { user: { id: "profile-player", displayName: "Ana Souza", nickname: "Ana", role: "participant", bio: "", favoriteBook: "", favoriteVerse: "", useNicknameInRanking: false, profilePublic: false } }));
   await page.route("**/api/platform/progress", route => json(route, { progress: { level: 4, totalXp: 1260, coins: 84, levelProgress: { currentXp: 260, targetXp: 500, percent: 52 } } }));
+  await page.route("**/api/platform/rankings?scope=overall&limit=10", route => json(route, { me: { position: 7, totalXp: 1260 } }));
   await page.route("**/api/platform/statistics", route => json(route, {
     global: { sessionsCompleted: 28, gamesUsed: 7, activeDays: 9, currentDailyStreak: 4, officialGamesCompleted: 20, questionsAnswered: 70, perfectGames: 6, distinctOfficialPlayDaysUtc: 8 },
     games: [
@@ -46,6 +47,8 @@ test("Perfil 2.0 apresenta identidade e os sete jogos sem expor conquista oculta
     await expect(page.getByText("Avatar Leão · Moldura Ouro")).toBeVisible();
     await expect(page.getByText("Mais jogado:").locator("..") ).toContainText("Quiz Bíblico");
     await expect(page.locator(".platform-profile-game-grid article")).toHaveCount(7);
+    await expect(page.getByRole("heading", { name: "7º lugar no ranking geral" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Ver ranking completo" })).toHaveAttribute("href", "/rankings");
     await expect(page.getByText("Feito secreto revelado")).toBeVisible();
     await expect(page.getByText("hidden_locked")).toHaveCount(0);
     expect(await page.evaluate(() => document.documentElement.scrollWidth === document.documentElement.clientWidth)).toBe(true);

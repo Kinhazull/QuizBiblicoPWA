@@ -7,7 +7,7 @@ const page = readFileSync("app/perfil/page.tsx", "utf8");
 const css = readFileSync("app/profile.css", "utf8");
 
 test("perfil da plataforma compõe identidade somente com APIs existentes", () => {
-  for (const endpoint of ["/api/platform/progress", "/api/platform/statistics", "/api/platform/collections"]) {
+  for (const endpoint of ["/api/platform/progress", "/api/platform/statistics", "/api/platform/collections", "/api/platform/rankings?scope=overall&limit=10"]) {
     assert.ok(component.includes(endpoint), `endpoint ausente: ${endpoint}`);
   }
   for (const redundant of ["/api/platform/achievements", "/api/platform/missions/current", "/api/platform/inventory"]) {
@@ -24,8 +24,8 @@ test("perfil possui estados de carregamento erro vazio e nova tentativa", () => 
   assert.match(component, /Tentar novamente/);
 });
 
-test("Perfil 2.0 expõe identidade progressão jogos conquistas e coleções", () => {
-  for (const label of ["IDENTIDADE DO JOGADOR", "XP para o próximo", "moedas", "Partidas concluídas", "Dias ativos", "SEUS JOGOS", "Conquistas em destaque", "Suas coleções", "Ver todas as recompensas"]) {
+test("Perfil 2.0 expõe identidade progressão jogos conquistas coleções e posição geral", () => {
+  for (const label of ["IDENTIDADE DO JOGADOR", "XP para o próximo", "moedas", "Partidas concluídas", "Dias ativos", "SEUS JOGOS", "Conquistas em destaque", "Suas coleções", "Ver todas as recompensas", "RANKING UNIVERSAL"]) {
     assert.ok(component.includes(label), `campo ausente: ${label}`);
   }
   assert.match(component, /role="progressbar"/);
@@ -34,7 +34,8 @@ test("Perfil 2.0 expõe identidade progressão jogos conquistas e coleções", (
   assert.match(component, /sessionsCompleted/);
   assert.match(component, /mostPlayed/);
   assert.match(component, /unlockedAt/);
-  assert.doesNotMatch(component, /ranking|posição/i);
+  assert.match(component, /ranking\.me\.position/);
+  assert.match(component, /href="\/rankings"/);
 });
 
 test("página integra a identidade sem remover edição recuperação e privacidade", () => {
@@ -44,9 +45,10 @@ test("página integra a identidade sem remover edição recuperação e privacid
   assert.match(page, /<ProfilePrivacySections/);
 });
 
-test("layout do perfil adapta identidade jogos e coleções ao celular", () => {
+test("layout do perfil adapta identidade jogos coleções e ranking ao celular", () => {
   assert.match(css, /@media\(max-width:520px\)/);
   assert.match(css, /@media\(max-width:340px\)/);
   assert.match(css, /minmax\(0,1fr\)/);
+  assert.match(css, /platform-profile-ranking/);
   assert.match(css, /prefers-reduced-motion:reduce/);
 });

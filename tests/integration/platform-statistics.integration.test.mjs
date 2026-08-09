@@ -59,7 +59,7 @@ test("statistics endpoint returns a safe authenticated empty state", async t => 
   const health = await responseJson(await readHealth({ request: createAuthenticatedRequest("https://test/api/admin/health", { token: adminToken }), env: ctx.env }));
   assert.equal(health.tables.missing.length, 0);
   assert.equal(health.checks.find(item => item.name === "statisticsProjection").ok, true);
-  assert.equal(health.migrationLedger.expected, 38);
+  assert.equal(health.migrationLedger.expected, 39);
 });
 
 test("official generic events create isolated global and per-game projections", async t => {
@@ -182,4 +182,18 @@ test("a retry after a transient Statistics failure applies official projections 
   const retried = await retryOfficialCoreEvents(ctx.env, { now: DAY_ONE + 60_000 });
   assert.equal(retried.completed, 1);
   assert.deepEqual({ ...ctx.raw.prepare("SELECT official_games_completed games,official_questions_answered questions,perfect_games perfect,distinct_official_play_days_utc days FROM user_platform_statistics WHERE user_id='player'").get() }, { games: 1, questions: 10, perfect: 1, days: 1 });
+});
+
+test("Statistics persists the best normalized performance once from canonical game events", async t => {
+  const { ctx } = await setup(t);
+  const event = completedGameV2("game:memory:normalized", DAY_ONE, { correctAnswers: 4, questionsAnswered: 4, mode: "free_play" });
+  event.source = { kind: "game", service: "memory-service", gameId: "memoria-biblica", sourceId: event.payload.attemptId };
+  event.payload.score = 450;
+  await Promise.all([
+    publishOfficialCoreEvent(ctx.env, event, DAY_ONE + 1),
+    publishOfficialCoreEvent(ctx.env, event, DAY_ONE + 1),
+  ]);
+  const row = ctx.raw.prepare(`SELECT sessions_completed sessions,best_normalized_performance performance
+    FROM user_platform_game_statistics WHERE user_id='player' AND organization_id='org-1' AND game_id='memoria-biblica'`).get();
+  assert.deepEqual({ ...row }, { sessions: 1, performance: 75 });
 });
