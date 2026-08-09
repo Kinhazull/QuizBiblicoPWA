@@ -221,6 +221,7 @@
 .platform-daily-dots{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin:14px 0}
 .platform-daily-dots i{height:9px;border-radius:999px;background:#183552}
 .platform-daily-dots i.complete{background:#6cc08a;box-shadow:0 0 12px #6cc08a66}
+.platform-daily-dots i.won{background:#6cc08a;box-shadow:0 0 12px #6cc08a66}.platform-daily-dots i.lost{background:#b87338}.platform-daily-dots i.unavailable{background:transparent;border:1px dashed #70869b}
 .platform-daily-milestones{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .platform-daily-milestones span{display:flex;min-width:0;flex-direction:column;border:1px solid #77a6d529;border-radius:12px;padding:11px 13px;color:#91a4b8}
 .platform-daily-milestones span.complete{border-color:#f4b40080;background:#f4b40010;color:#f7f5f0}

@@ -26,6 +26,10 @@ import {
 import { ContentStatus, GameType } from "../../shared/content.ts";
 import { onRequestGet as listObjectives } from "../../functions/api/platform/daily-objectives/index.ts";
 import { onRequestGet as wordleObjective } from "../../functions/api/platform/daily-objectives/wordle.ts";
+import {
+  claimDailyChallengeReward,
+  getDailyChallengeState,
+} from "../../functions/_lib/platform-daily-challenge.ts";
 
 const DAY_ONE = Date.UTC(2026, 6, 29, 12);
 const DAY_TWO = Date.UTC(2026, 6, 30, 12);
@@ -41,6 +45,7 @@ function contentInput(word, hint = "Uma pista segura") {
       biblicalReference: "João 1:1",
       status: ContentStatus.DRAFT,
       internalNotes: null,
+      theme: "Fé e perseverança",
     },
     payload: { word, hint },
   };
@@ -78,14 +83,14 @@ async function publish(ctx, organizationId, actorId, word, hint) {
   return published.content;
 }
 
-async function publishGame(ctx, gameType, payload) {
+async function publishGame(ctx, gameType, payload, difficulty = "MEDIUM") {
   const draft = await createUniversalDraft(ctx.env, "org-1", "user-1", {
     gameType,
     status: ContentStatus.DRAFT,
     metadata: {
       category: "Bíblia",
       tags: ["diário"],
-      difficulty: "MEDIUM",
+      difficulty,
       biblicalReference: "Hebreus 11",
       status: ContentStatus.DRAFT,
       internalNotes: null,
@@ -103,6 +108,51 @@ async function publishGame(ctx, gameType, payload) {
   );
   assert.equal(published.ok, true, JSON.stringify(published));
   return published.content;
+}
+
+async function publishDailyCatalog(ctx) {
+  await publish(ctx, "org-1", "user-1", "GRACA");
+  for (const difficulty of ["EASY", "EASY", "MEDIUM", "MEDIUM", "HARD"]) {
+    await publishGame(ctx, GameType.QUIZ, {
+      prompt: `Pergunta ${difficulty} ${crypto.randomUUID()}`,
+      theme: "Fé e perseverança",
+      choices: [
+        { text: "Certa", correct: true }, { text: "Errada A", correct: false },
+        { text: "Errada B", correct: false }, { text: "Errada C", correct: false },
+      ],
+      explanation: "Explicação segura",
+    }, difficulty);
+  }
+  await publishGame(ctx, GameType.TIMELINE, { title: "Ordem", events: [
+    { title: "Criação", position: 1 }, { title: "Dilúvio", position: 2 }, { title: "Êxodo", position: 3 },
+  ] });
+  await publishGame(ctx, GameType.MEMORY, { title: "Pares", pairs: [
+    { front: "Noé", back: "Arca" }, { front: "Davi", back: "Golias" }, { front: "Moisés", back: "Êxodo" },
+  ] });
+  await publishGame(ctx, GameType.ASSOCIATION, { title: "Associações", pairs: [
+    { left: "Noé", right: "Arca" }, { left: "Davi", right: "Golias" }, { left: "Moisés", right: "Êxodo" },
+  ] });
+  await publishGame(ctx, GameType.WHO_AM_I, { title: "Quem sou eu", challenges: [
+    { answer: "Noé", hints: ["Achei graça", "Construí uma embarcação", "Sobrevivi ao dilúvio"] },
+    { answer: "Davi", hints: ["Fui pastor", "Enfrentei um gigante", "Fui rei"] },
+    { answer: "Moisés", hints: ["Vivi no Egito", "Conduzi o povo", "Recebi mandamentos"] },
+  ] });
+  await publishGame(ctx, GameType.THREE_CLUES, { title: "Três pistas", challenges: [
+    { answer: "Arca", clues: ["Foi construída", "Protegeu uma família", "Enfrentou o dilúvio"] },
+    { answer: "Maná", clues: ["Veio do céu", "Alimentou o povo", "Apareceu no deserto"] },
+    { answer: "Jericó", clues: ["Era uma cidade", "Tinha muralhas", "Caiu após trombetas"] },
+  ] });
+}
+
+async function finishForDailyState(ctx, objective, won, suffix) {
+  await startDailyObjective(ctx.env, { organizationId: "org-1", userId: "user-1" }, objective.selectionId, DAY_ONE);
+  const eventId = `daily-test-${suffix}`;
+  ctx.raw.prepare(`INSERT INTO core_platform_events(event_id,event_type,event_version,occurred_at,organization_id,user_id,
+    source_kind,source_service,source_game_id,source_id,payload_json,fingerprint,status,created_at,updated_at)
+    VALUES(?, 'GAME_FINISHED',2,?,'org-1','user-1','game','test',?,?,?,'fingerprint','completed',?,?)`)
+    .run(eventId, DAY_ONE + 1000, objective.gameType, objective.participationId,
+      JSON.stringify({ correctAnswers: won ? 1 : 0, questionsAnswered: 1 }), DAY_ONE + 1000, DAY_ONE + 1000);
+  await finishDailyParticipation(ctx.env, { organizationId: "org-1", userId: "user-1" }, objective.selectionId, eventId, DAY_ONE + 1000);
 }
 
 test("daily Wordle seed and selection are deterministic, unique by organization and day", async t => {
@@ -405,4 +455,75 @@ test("authenticated daily endpoints expose seven objectives and protect Wordle a
     env: ctx.env,
   });
   assert.equal(anonymous.status, 401);
+});
+
+test("Daily 2.0 counts only wins, exposes no resume and grants 3/7 once under concurrency", async t => {
+  const ctx = fixture(t);
+  await publishDailyCatalog(ctx);
+  const identity = { organizationId: "org-1", userId: "user-1" };
+  const initial = await getDailyChallengeState(ctx.env, identity, DAY_ONE);
+  assert.equal(initial.objectives.length, 7);
+  assert.ok(initial.objectives.every(item => item.state === "AVAILABLE"));
+
+  const details = [];
+  for (const item of initial.objectives.slice(0, 4)) {
+    details.push(await getDailyObjective(ctx.env, identity, item.gameType, DAY_ONE));
+  }
+  await finishForDailyState(ctx, details[0], true, "won-1");
+  await finishForDailyState(ctx, details[1], false, "lost-1");
+  await finishForDailyState(ctx, details[2], true, "won-2");
+  await finishForDailyState(ctx, details[3], true, "won-3");
+
+  const ready = await getDailyChallengeState(ctx.env, identity, DAY_ONE + 2000);
+  assert.equal(ready.wins, 3);
+  assert.equal(ready.played, 4);
+  assert.deepEqual(ready.objectives.slice(0, 4).map(item => item.state), ["WON", "LOST", "WON", "WON"]);
+  assert.equal(ready.rewards[0].state, "READY");
+  assert.equal(ready.rewards[1].state, "LOCKED");
+  assert.ok(ready.objectives.every(item => !Object.values(item).includes("Continuar")));
+
+  await Promise.all([
+    claimDailyChallengeReward(ctx.env, identity, 3, DAY_ONE + 3000),
+    claimDailyChallengeReward(ctx.env, identity, 3, DAY_ONE + 3000),
+  ]);
+  const claimed = await getDailyChallengeState(ctx.env, identity, DAY_ONE + 4000);
+  assert.equal(claimed.rewards[0].state, "CLAIMED");
+  assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM platform_xp_ledger WHERE source_type='daily_challenge_3' AND applied_at IS NOT NULL").get().total, 1);
+  assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM platform_coin_ledger WHERE source_type='daily_challenge_3' AND applied_at IS NOT NULL").get().total, 1);
+  assert.equal(ctx.raw.prepare("SELECT total_xp FROM user_platform_progress WHERE user_id='user-1'").get().total_xp, 25);
+  assert.equal(ctx.raw.prepare("SELECT coins FROM user_platform_progress WHERE user_id='user-1'").get().coins, 3);
+});
+
+test("Daily 2.0 resets by organization day and rejects a locked 7/7 reward", async t => {
+  const ctx = fixture(t);
+  await publishDailyCatalog(ctx);
+  const identity = { organizationId: "org-1", userId: "user-1" };
+  const dayOne = await getDailyChallengeState(ctx.env, identity, DAY_ONE);
+  await assert.rejects(() => claimDailyChallengeReward(ctx.env, identity, 7, DAY_ONE), /daily_reward_locked/);
+  const dayTwo = await getDailyChallengeState(ctx.env, identity, DAY_TWO);
+  assert.notEqual(dayOne.dayKey, dayTwo.dayKey);
+  assert.equal(dayTwo.wins, 0);
+  assert.ok(dayTwo.rewards.every(reward => reward.state === "LOCKED"));
+});
+
+test("Daily 2.0 unlocks the superior 7/7 reward once", async t => {
+  const ctx = fixture(t);
+  await publishDailyCatalog(ctx);
+  const identity = { organizationId: "org-1", userId: "user-1" };
+  const initial = await getDailyChallengeState(ctx.env, identity, DAY_ONE);
+  for (const [index, item] of initial.objectives.entries()) {
+    const detail = await getDailyObjective(ctx.env, identity, item.gameType, DAY_ONE);
+    await finishForDailyState(ctx, detail, true, `perfect-${index}`);
+  }
+  const ready = await getDailyChallengeState(ctx.env, identity, DAY_ONE + 2000);
+  assert.equal(ready.wins, 7);
+  assert.ok(ready.rewards.every(reward => reward.state === "READY"));
+  const [first, duplicate] = await Promise.all([
+    claimDailyChallengeReward(ctx.env, identity, 7, DAY_ONE + 3000),
+    claimDailyChallengeReward(ctx.env, identity, 7, DAY_ONE + 3000),
+  ]);
+  assert.equal(first.daily.rewards[1].state, "CLAIMED");
+  assert.equal(duplicate.daily.rewards[1].state, "CLAIMED");
+  assert.equal(ctx.raw.prepare("SELECT total_xp FROM user_platform_progress WHERE user_id='user-1'").get().total_xp, 50);
+  assert.equal(ctx.raw.prepare("SELECT coins FROM user_platform_progress WHERE user_id='user-1'").get().coins, 7);
 });

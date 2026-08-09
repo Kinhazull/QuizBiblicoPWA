@@ -10,7 +10,7 @@ Documentos de release, auditorias e arquivos em `docs/AI/HISTORY/` preservam con
 
 A baseline local é **`2.0.0-rc.1`**, confirmada no `package.json`. Ela não é a release final, não significa aprovação pública e não possui tag `v2.0.0`. O desenvolvimento funcional foi reaberto antes do lançamento para reavaliar e concluir as Fases 6 e 7; a Fase 8 concentrará Release Readiness e o Go/No-Go.
 
-As Fases 1–5 estão concluídas como fundação histórica. A sprint corrente é **25.0 — Sincronização do estado, roadmap e baseline da v2**.
+As Fases 1–5 estão concluídas como fundação histórica. A **Sprint 25.1 — Desafios Diários 2.0** está concluída e validada localmente; a próxima evolução prevista é a Sprint 25.2.
 
 ## Maturidade dos subsistemas
 
@@ -18,7 +18,7 @@ As Fases 1–5 estão concluídas como fundação histórica. A sprint corrente 
 |---|---|
 | Plataforma participante | MADURO: Home, catálogo, Perfil, Recompensas, Loja, Inventário e Notificações existem; há deltas de UX/engajamento antes da release. |
 | Jogos | MADURO: sete jogos integrados ao SDK e à conclusão da plataforma; qualidade e cobertura cartesiana continuam em evolução. |
-| Modos | MADURO: `FREE_PLAY`, `DAILY` e `EVENT` usam seleção/participação persistida e regras próprias. |
+| Modos | MADURO: `FREE_PLAY`, `DAILY` e `EVENT` usam seleção/participação persistida e regras próprias. Daily apresenta vitórias, derrotas e metas 3/7–7/7 com claim idempotente. |
 | Core Platform | MADURO: Event Engine, Progress, Reward, Statistics, Achievements e Missions possuem persistência, idempotência e APIs de leitura. |
 | CMS/editorial | MADURO LOCALMENTE: workflow DRAFT → IN_REVIEW → PUBLISHED → ARCHIVED, comentários, histórico, rollback e importação JSON/CSV. A ativação remota depende da 0037. |
 | Conteúdo | MADURO: Quiz universal e pacote modular oficial de 380 conteúdos; nenhuma alteração editorial foi feita na Sprint 25.0. |
@@ -46,10 +46,12 @@ As Fases 1–5 estão concluídas como fundação histórica. A sprint corrente 
 - Erros públicos, supportId, logs, health e runbooks possuem contratos compartilhados.
 - Analytics administrativos reutilizam fontes existentes, com isolamento organizacional e sem PII desnecessária.
 - O PWA mantém operações de servidor como `ONLINE_REQUIRED` e não armazena `/api/*` em cache.
+- Daily 2.0 usa estados visíveis AVAILABLE/WON/LOST/UNAVAILABLE; STARTED permanece apenas técnico e nunca oferece retomada na lista.
+- Recompensas Daily provisórias são 25 XP + 3 moedas em 3/7 e 50 XP + 7 moedas em 7/7, pendentes de revisão econômica na Sprint 25.2.
 
 ## Baseline de validação registrada
 
-A Sprint 24.8 registrou: build com 64 páginas, `test:quick` com 147 testes, `test:all` com 250 testes, Playwright com 66 aprovados e 2 skips, além de lint, typecheck e `git diff --check` aprovados. Esses números são **históricos da 24.8** e não foram reexecutados nem alterados pela Sprint 25.0.
+A Sprint 25.1 registrou: testes focados 19/19, `test:quick` 147/147, `test:all` 254/254, Playwright Daily desktop/mobile 4/4, Axe sem violações sérias/críticas, lint, typecheck/build com 64 páginas e `git diff --check` aprovados.
 
 ## Fases seguintes
 

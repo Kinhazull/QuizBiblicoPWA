@@ -70,8 +70,10 @@ export async function getPlatformAnalytics(env: AppEnv, organizationId: string, 
     ) SELECT 'overview' dimension,'all' key,COUNT(DISTINCT userId) players FROM activity
       UNION ALL SELECT 'mode',mode,COUNT(DISTINCT userId) FROM activity GROUP BY mode
       UNION ALL SELECT 'game',gameType,COUNT(DISTINCT userId) FROM activity GROUP BY gameType`).bind(organizationId, period.from, period.to).all<any>(),
-    env.DB.prepare(`SELECT COUNT(DISTINCT CASE WHEN completed>=3 THEN user_id END) completed3,COUNT(DISTINCT CASE WHEN completed>=7 THEN user_id END) completed7 FROM
-      (SELECT user_id,COUNT(DISTINCT game_type) completed FROM generated_game_participations WHERE organization_id=?1 AND mode='DAILY' AND status='FINISHED' AND finished_at>=?2 AND finished_at<?3 GROUP BY user_id)`).bind(organizationId, period.from, period.to).first<any>(),
+    env.DB.prepare(`SELECT COUNT(DISTINCT CASE WHEN won>=3 THEN user_id END) completed3,COUNT(DISTINCT CASE WHEN won>=7 THEN user_id END) completed7 FROM
+      (SELECT p.user_id,COUNT(DISTINCT CASE WHEN p.status='FINISHED' AND CAST(json_extract(e.payload_json,'$.correctAnswers') AS INTEGER)>0 THEN p.game_type END) won
+       FROM generated_game_participations p LEFT JOIN core_platform_events e ON e.event_id=p.finish_event_id AND e.organization_id=p.organization_id
+       WHERE p.organization_id=?1 AND p.mode='DAILY' AND p.finished_at>=?2 AND p.finished_at<?3 GROUP BY p.user_id)`).bind(organizationId, period.from, period.to).first<any>(),
     env.DB.prepare(`SELECT i.game_type gameType,SUM(CASE WHEN i.status='PUBLISHED' THEN 1 ELSE 0 END) published,
       SUM(CASE WHEN l.availability_status='AVAILABLE' THEN 1 ELSE 0 END) available,SUM(CASE WHEN l.availability_status='RESERVED_EVENT' THEN 1 ELSE 0 END) reservedEvent,
       SUM(CASE WHEN l.usage_count=0 THEN 1 ELSE 0 END) neverUsed FROM content_items i LEFT JOIN universal_content_library l ON i.id=l.content_id AND i.organization_id=l.organization_id

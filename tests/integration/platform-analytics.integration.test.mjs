@@ -21,6 +21,14 @@ function seedAnalytics(ctx, organizationId, userId, now) {
   ctx.raw.prepare(`INSERT INTO user_platform_statistics_active_days(user_id,organization_id,day_key,first_activity_at,last_activity_at) VALUES(?,?,'2026-08-08',?,?)`).run(userId,organizationId,now,now);
 }
 
+function seedDailyOutcome(ctx, { organizationId, userId, gameType, suffix, won, now }) {
+  const contentId=`daily-content-${suffix}`,selectionId=`daily-selection-${suffix}`,participationId=`daily-participation-${suffix}`,finishId=`daily-finish-${suffix}`;
+  ctx.raw.prepare(`INSERT INTO content_items(id,organization_id,game_type,status,category,difficulty,tags_json,payload_json,version,author_id,created_at,updated_at) VALUES(?,?,?,'PUBLISHED','Evangelhos','EASY','[]','{}',1,?,?,?)`).run(contentId,organizationId,gameType,userId,now,now);
+  ctx.raw.prepare(`INSERT INTO generated_game_selections(id,organization_id,requested_by_user_id,game_type,mode,selection_key,algorithm_version,seed_hash,request_fingerprint,status,filters_json,created_at) VALUES(?,?,?,?,? ,?,1,?,?,'ACTIVE','{}',?)`).run(selectionId,organizationId,userId,gameType,"DAILY",`daily-key-${suffix}`,`daily-seed-${suffix}`,`daily-fingerprint-${suffix}`,now);
+  ctx.raw.prepare(`INSERT INTO generated_game_participations(id,selection_id,organization_id,user_id,game_type,mode,status,started_at,finished_at,finish_event_id,created_at,updated_at) VALUES(?,?,?,?,?,'DAILY','FINISHED',?,?,?,?,?)`).run(participationId,selectionId,organizationId,userId,gameType,now-1000,now,finishId,now-1000,now);
+  ctx.raw.prepare(`INSERT INTO core_platform_events(event_id,event_type,event_version,occurred_at,organization_id,user_id,source_kind,source_service,source_game_id,source_id,payload_json,fingerprint,status,created_at,updated_at) VALUES(?,'GAME_FINISHED',2,?,?,?,'game','test',?,?,?,?,'completed',?,?)`).run(finishId,now,organizationId,userId,gameType,participationId,JSON.stringify({correctAnswers:won?1:0,questionsAnswered:1}),`daily-fp-${suffix}`,now,now);
+}
+
 test("platform analytics aggregates existing data and isolates organizations without PII", async () => {
   const ctx=createTestDatabase(),now=Date.UTC(2026,7,8,12);
   seedOrganization(ctx,{id:"org-a"});seedOrganization(ctx,{id:"org-b"});
@@ -48,6 +56,19 @@ test("analytics endpoint requires the modern permission while accepting historic
   assert.ok((await effectivePermissions(ctx.env,{id:"viewer",role:"participant"})).includes("analytics.view"));
   response=await onRequestGet({request:createAuthenticatedRequest("http://local/api/admin/platform-analytics?period=7d",{token}),env:ctx.env});
   assert.equal(response.status,200);assert.match(response.headers.get("cache-control")||"",/no-store/);
+  ctx.close();
+});
+
+test("daily analytics milestones count victories and exclude completed losses", async () => {
+  const ctx=createTestDatabase(),now=Date.UTC(2026,7,8,12);
+  seedOrganization(ctx,{id:"org-a"});seedUser(ctx,{id:"user-a",organizationId:"org-a"});
+  const games=["quiz-biblico","wordle-biblico","linha-do-tempo-biblica","memoria-biblica"];
+  games.forEach((gameType,index)=>seedDailyOutcome(ctx,{organizationId:"org-a",userId:"user-a",gameType,suffix:String(index),won:index<3,now}));
+  const result=await getPlatformAnalytics(ctx.env,"org-a",{key:"today",from:now-10000,to:now+1});
+  assert.equal(result.daily.completed,4);
+  assert.equal(result.daily.wins,3);
+  assert.equal(result.daily.completed3,1);
+  assert.equal(result.daily.completed7,0);
   ctx.close();
 });
 

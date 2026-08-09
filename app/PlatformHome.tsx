@@ -47,6 +47,18 @@ export type DailyObjectiveData = {
   availability: "AVAILABLE" | "UNAVAILABLE";
   unavailableReason: "insufficient_catalog" | "no_published_content" | "unsupported_game" | "generation_failed" | null;
   playHref: string | null;
+  state: "AVAILABLE" | "WON" | "LOST" | "UNAVAILABLE";
+};
+
+export type DailyChallengeData = {
+  dayKey: string;
+  timeZone: string;
+  wins: number;
+  played: number;
+  unavailable: number;
+  total: 7;
+  objectives: DailyObjectiveData[];
+  rewards: Array<{ target: 3 | 7; state: "LOCKED" | "READY" | "CLAIMED"; reward: { xp: number; coins: number; label: string } }>;
 };
 
 export type PlatformEventSummary = {
@@ -64,7 +76,7 @@ type PlatformHomeProps = {
   achievementData: PlatformAchievementData | null;
   progress: PlatformProgressData | null;
   daily: DailyRetentionData | null;
-  dailyObjectives: DailyObjectiveData[] | null;
+  dailyObjectives: DailyChallengeData | null;
   dailyBusy: boolean;
   dailyError: string;
   equipment: EquipmentView | null;
@@ -97,9 +109,11 @@ export function PlatformHome({
 }: PlatformHomeProps) {
   const achievements = recentAchievements(achievementData);
   const platformProgress = progress || PLATFORM_HOME_PREVIEW.progress;
-  const objectives = dailyObjectives || [];
-  const completedObjectives = objectives.filter(item => item.status === "FINISHED").length;
-  const objectivePercent = Math.round((completedObjectives / 7) * 100);
+  const objectives = dailyObjectives?.objectives || [];
+  const dailyWins = dailyObjectives?.wins || 0;
+  const objectivePercent = Math.round((dailyWins / 7) * 100);
+  const nextReward = dailyObjectives?.rewards?.find(item => item.state === "READY")
+    || dailyObjectives?.rewards?.find(item => item.state === "LOCKED");
   const featuredEvent = events.find(item => item.status === "ACTIVE") || events.find(item => item.status === "SCHEDULED");
 
   return <main className="platform-home">
@@ -142,20 +156,19 @@ export function PlatformHome({
 
       <section className="platform-daily-summary" aria-labelledby="daily-summary-title">
         <header>
-          <div><p>Desafios diários</p><h2 id="daily-summary-title">{completedObjectives} de 7 concluídos</h2></div>
-          <a href="/desafios-diarios">Ir para Desafios Diários <span aria-hidden="true">→</span></a>
+          <div><p>Desafios diários</p><h2 id="daily-summary-title">{dailyWins} de 7 vitórias</h2></div>
+          <a href="/desafios-diarios">{nextReward?.state === "READY" ? "Resgatar recompensa" : "Ver desafios"} <span aria-hidden="true">→</span></a>
         </header>
-        <div className="platform-progress" role="progressbar" aria-label="Progresso dos desafios diários" aria-valuemin={0} aria-valuemax={7} aria-valuenow={completedObjectives}>
+        <div className="platform-progress" role="progressbar" aria-label="Vitórias nos desafios diários" aria-valuemin={0} aria-valuemax={7} aria-valuenow={dailyWins}>
           <i style={{ width: `${objectivePercent}%` }} />
         </div>
-        <div className="platform-daily-dots" role="img" aria-label={`${completedObjectives} de 7 desafios concluídos`}>
-          {Array.from({ length: 7 }, (_, index) =>
-            <i className={index < completedObjectives ? "complete" : ""} key={index} aria-hidden="true" />,
-          )}
+        <div className="platform-daily-dots" role="img" aria-label={`${dailyWins} de 7 vitórias`}>
+          {objectives.length === 7 ? objectives.map(item => <i className={item.state.toLowerCase()} key={item.gameType} aria-hidden="true" />)
+            : Array.from({ length: 7 }, (_, index) => <i key={index} aria-hidden="true" />)}
         </div>
         <div className="platform-daily-milestones">
-          <span className={completedObjectives >= 3 ? "complete" : ""}><b>3 desafios</b><small>Recompensa intermediária</small></span>
-          <span className={completedObjectives >= 7 ? "complete" : ""}><b>7 desafios</b><small>Recompensa completa</small></span>
+          <span className={dailyWins >= 3 ? "complete" : ""}><b>3 vitórias</b><small>{dailyObjectives?.rewards?.[0]?.state === "CLAIMED" ? "Recompensa resgatada" : dailyObjectives?.rewards?.[0]?.reward.label || "Recompensa intermediária"}</small></span>
+          <span className={dailyWins >= 7 ? "complete" : ""}><b>7 vitórias</b><small>{dailyObjectives?.rewards?.[1]?.state === "CLAIMED" ? "Recompensa resgatada" : dailyObjectives?.rewards?.[1]?.reward.label || "Recompensa completa"}</small></span>
         </div>
       </section>
 

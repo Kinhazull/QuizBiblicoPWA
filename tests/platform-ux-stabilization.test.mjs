@@ -9,8 +9,8 @@ test("Home is a platform hub with compact daily progress and no legacy game spot
 
   assert.match(home, /Desafios diários/);
   assert.match(home, /Array\.from\(\{ length: 7 \}/);
-  assert.match(home, /3 desafios/);
-  assert.match(home, /7 desafios/);
+  assert.match(home, /3 vitórias/);
+  assert.match(home, /7 vitórias/);
   assert.match(home, /href="\/desafios-diarios"/);
   assert.match(home, /href="\/jogos"/);
   assert.doesNotMatch(home, /Gemas|Continuar jogando|JourneyCard|Jornada/);
@@ -60,8 +60,9 @@ test("daily challenges never expose resume and Quiz timeout cannot become a choi
     read("functions/_lib/platform-daily-objectives.ts"),
   ]);
   assert.doesNotMatch(daily, />Continuar</);
-  assert.match(daily, /objective\.status !== "CREATED"/);
-  assert.match(daily, /Finalizando\.\.\./);
+  assert.match(daily, /objective\.state === "AVAILABLE"/);
+  assert.match(daily, /objective\.state === "LOST" \? "Encerrado"/);
+  assert.doesNotMatch(daily, /Em andamento|Finalizando\.\.\./);
   assert.match(quiz, /choiceId: current\.choiceId \|\| null/);
   assert.match(quiz, /timedOut: current\.timedOut/);
   assert.match(validator, /input\.payload\.timedOut === true && !choiceId/);

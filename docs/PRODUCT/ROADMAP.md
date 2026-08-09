@@ -25,7 +25,7 @@ Qualidade da primeira versão pública tem prioridade sobre velocidade de public
 
 | Item antigo | Estado | Evidência e delta real |
 |---|---|---|
-| 25.1 Objetivo Diário Completo | PARTIAL | Objetivos dos sete jogos, seleção determinística, lifecycle, tentativa única e retenção existem. Falta consolidar experiência, metas/recompensas e critérios de engajamento 2.0. |
+| 25.1 Objetivo Diário Completo | DONE | Sete tentativas, progresso por vitórias, estados finais, metas 3/7–7/7 e claim idempotente foram consolidados e validados localmente. |
 | 25.2 Economia | PARTIAL | Moedas, ledgers, Loja, propriedade, Inventário e equipamento existem. Falta balanceamento, catálogo/recompensas e indicadores econômicos orientados por uso real. |
 | 25.3 Colecionáveis | PARTIAL | Conquistas, recompensas cosméticas e equipamento existem; não há modelo de coleções/progresso de coleção claramente aprovado. |
 | 25.4 Perfil | PARTIAL | Perfil exibe progresso, estatísticas, missões, equipamentos, conta e privacidade. Falta consolidar hierarquia, identidade pública e visão por jogo. |
@@ -45,6 +45,8 @@ Qualidade da primeira versão pública tem prioridade sobre velocidade de public
 - **Aceite:** uma fonte operacional e um roadmap canônico, sem alterações funcionais ou remotas.
 
 ### 25.1 — Desafios e Objetivo Diário 2.0
+
+**Estado:** concluído e validado localmente.
 
 - **Objetivo:** evoluir o ciclo diário já existente para uma experiência clara, consistente e mensurável nos sete jogos.
 - **Escopo:** UX de progresso diário, metas de 3/7 desafios, estados de participação, recompensa e retorno; eliminar inconsistências remanescentes sem recriar seleção/lifecycle.

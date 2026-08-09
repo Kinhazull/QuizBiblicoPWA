@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "./AuthProvider";
-import { PlatformHome, type DailyObjectiveData, type DailyRetentionData, type PlatformAchievementData, type PlatformEventSummary, type PlatformProgressData } from "./PlatformHome";
+import { PlatformHome, type DailyChallengeData, type DailyRetentionData, type PlatformAchievementData, type PlatformEventSummary, type PlatformProgressData } from "./PlatformHome";
 import type { EquipmentView } from "./EquippedAvatar";
 
 const LEGAL_VERSION = "2026-07-13";
@@ -15,7 +15,7 @@ export default function Home() {
   const [achievementData, setAchievementData] = useState<PlatformAchievementData | null>(null);
   const [progress, setProgress] = useState<PlatformProgressData | null>(null);
   const [daily, setDaily] = useState<DailyRetentionData | null>(null);
-  const [dailyObjectives, setDailyObjectives] = useState<DailyObjectiveData[] | null>(null);
+  const [dailyObjectives, setDailyObjectives] = useState<DailyChallengeData | null>(null);
   const [dailyBusy, setDailyBusy] = useState(false);
   const [dailyError, setDailyError] = useState("");
   const [equipment, setEquipment] = useState<EquipmentView | null>(null);
@@ -44,7 +44,7 @@ export default function Home() {
       .then(data => { if (active && data) setAchievementData(data); }).catch(() => undefined);
     fetch("/api/platform/daily-objectives", { cache: "no-store", signal: controller.signal })
       .then(response => response.ok ? response.json() : null)
-      .then(data => { if (active && Array.isArray(data?.objectives)) setDailyObjectives(data.objectives); })
+      .then(data => { if (active && Array.isArray(data?.objectives)) setDailyObjectives(data); })
       .catch(() => undefined);
     fetch("/api/platform/events", { cache: "no-store", signal: controller.signal })
       .then(response => response.ok ? response.json() : null)
