@@ -48,6 +48,8 @@ test("admin menu applies existing role and permission visibility without replaci
 
 test("admin dashboard renders real attention states metrics and actionable links", () => {
   const page = read("app/admin/page.tsx"), endpoint = read("functions/api/admin/dashboard.ts");
-  assert.match(page, /Precisa de atenção/); assert.match(page, /Nenhuma pendência crítica no momento/); assert.match(page, /Carregando pendências/); assert.match(page, /Não foi possível carregar/);
-  assert.match(endpoint, /requirePermission/); assert.match(endpoint, /organization_id=\?1/); assert.match(endpoint, /Cache-Control/); assert.match(endpoint, /rounds a JOIN rounds b/);
+  assert.match(page, /Requer atenção/); assert.match(page, /Plataforma saudável, sem pendências relevantes/); assert.match(page, /Carregando sinais operacionais/); assert.match(page, /Não foi possível carregar/);
+  for (const label of ["Saúde operacional", "Usuários ativos hoje", "Partidas hoje", "Eventos", "Conteúdo e reservas", "Atividade recente", "Atalhos operacionais"]) assert.match(page, new RegExp(label));
+  assert.match(endpoint, /requirePermission/); assert.match(endpoint, /organization_id=\?1/); assert.match(endpoint, /Cache-Control/);
+  assert.match(endpoint, /getPlatformAnalytics/); assert.match(endpoint, /buildOperationalHealth/); assert.match(endpoint, /LIMIT 8/);
 });

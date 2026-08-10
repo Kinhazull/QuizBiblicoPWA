@@ -10,7 +10,7 @@ Documentos de release, auditorias e arquivos em `docs/AI/HISTORY/` preservam con
 
 A baseline local é **`2.0.0-rc.1`**, confirmada no `package.json`. Ela não é a release final, não significa aprovação pública e não possui tag `v2.0.0`. O desenvolvimento funcional foi reaberto antes do lançamento para reavaliar e concluir as Fases 6 e 7; a Fase 8 concentrará Release Readiness e o Go/No-Go.
 
-As Fases 1–5 estão concluídas como fundação histórica. As Sprints **25.1 — Desafios Diários 2.0**, **25.2 — Economia e Recompensas 2.0**, **25.3 — Colecionáveis e Conquistas 2.0** e **25.4 — Perfil e Identidade do Jogador** estão concluídas e validadas localmente.
+As Fases 1–5 estão concluídas como fundação histórica. As Sprints **25.1–25.7** da Fase 6 estão concluídas. A Fase 7 iniciou com a **Sprint 26.1 — Central Administrativa**, consolidando numa projeção read-only os sinais já existentes de Health, Analytics, Eventos, CMS/Biblioteca, reservas e auditoria.
 
 ## Maturidade dos subsistemas
 
@@ -25,7 +25,7 @@ As Fases 1–5 estão concluídas como fundação histórica. As Sprints **25.1 
 | Biblioteca/Gerador/Loader | MADURO: fonte publicada, elegibilidade, geração e providers sustentam os sete jogos. |
 | Eventos | V1 COMPLETA: criação, validação, sugestão/seleção, reservas, agendamento, cancelamento e participante; Eventos 2.0 é evolução. |
 | Economia/coleção | V2 LOCAL: política centralizada, 16 cosméticos em duas coleções, progresso derivado, raridade/origem, 14 itens de Loja e dois grants determinísticos sobre os ledgers existentes. |
-| Administração/Analytics | FUNCIONAL: navegação unificada, diagnóstico, operação, conteúdo, Eventos e Analytics agregados; dashboards ainda podem ganhar integração/ação. |
+| Administração/Analytics | MADURO: a Central Administrativa resume atenção, Health operacional, uso do dia, Eventos, conteúdo, reservas e atividade auditada, com atalhos para os módulos especializados; Analytics e Diagnóstico continuam sendo as superfícies detalhadas. |
 | Operação/privacidade | FUNCIONAL: contrato de schema, reconciliação, backup/restore, diagnóstico, observabilidade, exportação e anonimização abrangem os domínios atuais. |
 | PWA/mobile | RC LOCAL: manifest e service worker revisados; validação pública e em Android físico permanece externa. |
 

@@ -30,7 +30,7 @@ Qualidade da primeira versão pública tem prioridade sobre velocidade de public
 | 25.3 Colecionáveis | DONE | Catálogo expandido de 16 itens, duas coleções, raridade/origem, progresso derivado, experiência de Recompensas e conquistas existentes integradas sem nova persistência. |
 | 25.4 Perfil | DONE | Perfil 2.0 consolida identidade equipada, progressão, jornada, estatísticas dos sete jogos, feitos recentes confiáveis e coleções; identidade social pública permanece fora do escopo. |
 | 25.5 Ranking | NEEDS_REVIEW | O ranking existente é histórico e específico do Quiz. Ranking universal não foi iniciado e exige regras de privacidade, temporadas e competição saudável. |
-| 26.1 Dashboards | PARTIAL | Dashboard administrativo, health, diagnóstico e Analytics existem, mas permanecem superfícies separadas e com lacunas de ação operacional. |
+| 26.1 Central Administrativa | COMPLETE | Entrada administrativa consolidada como projeção read-only de Health, Analytics, Eventos, conteúdo, reservas e auditoria, com drill-down para os módulos existentes. |
 | 26.2 Biblioteca Inteligente | PARTIAL | Biblioteca Universal, catálogo elegível, filtros, uso e gerador existem. Busca, qualidade, diversidade e recomendações editoriais ainda são limitadas. |
 | 26.3 Editor de Eventos | SUPERSEDED | Eventos v1 já possuem criação, validação, sugestão, agendamento, cancelamento, reservas e experiência participante. O delta futuro é Eventos 2.0. |
 | 26.4 Planejamento | PARTIAL | Calendário e ferramentas históricas coexistem com Eventos/CMS; falta um planejamento editorial e operacional universal, sem dependência de Jornada. |
@@ -102,10 +102,13 @@ Qualidade da primeira versão pública tem prioridade sobre velocidade de public
 
 ### 26.1 — Dashboard operacional e analítico
 
+**Estado:** concluído localmente como Central Administrativa.
+
 - **Objetivo:** integrar indicadores já existentes em uma visão acionável.
 - **Escopo:** saúde, filas/dead letters, migrations, Eventos, conteúdo e métricas de uso com drill-down seguro.
 - **Dependências:** observabilidade e Analytics atuais.
 - **Aceite macro:** problemas operacionais detectáveis sem consulta direta ao banco e sem PII desnecessária.
+- **Decisões:** `/api/admin/dashboard` permanece autenticado, tenant-scoped, read-only e `no-store`; a Central reutiliza `getPlatformAnalytics` e `buildOperationalHealth`, limita atividade recente a oito registros auditados e não persiste contadores próprios.
 
 ### 26.2 — Biblioteca Inteligente
 
