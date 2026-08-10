@@ -1,4 +1,5 @@
 import { expect, test, type Page, type Route } from "@playwright/test";
+import AxeBuilder from "@axe-core/playwright";
 
 const participant = { id: "event-player", displayName: "Participante Evento", role: "participant", mustChangePassword: false };
 const admin = { id: "event-admin", displayName: "Administrador Evento", role: "admin", mustChangePassword: false };
@@ -54,26 +55,49 @@ test("administrador cria, valida, agenda e cancela um Evento", async ({ page }) 
     status = "DRAFT";
     return json(route, { event: { id: "event-e2e" } }, 201);
   });
-  await page.route("**/api/admin/events/suggest-content", route => json(route, { suggestions: [{ contentId: "wordle-event", contentVersion: 1 }] }));
+  await page.route("**/api/admin/assets?status=ACTIVE", route => json(route, { assets: [{ id: "asset-event", title: "Capa oficial", type: "BANNER", status: "ACTIVE", source_url: "https://example.com/event.webp", alt_text: "Capa do evento" }] }));
+  await page.route("**/api/admin/events/suggest-content?*", route => json(route, { options: [{ contentId: "wordle-event", contentVersion: 1, title: "Palavra da fé", category: "Fé", difficulty: "EASY", themes: ["Fé"], biblicalReference: "Hebreus 11:1" }], counts: { available: 40, reserved: 2, archived: 0 } }));
 
   await page.goto("/admin/eventos");
   await page.getByLabel("Título").fill("Semana da Fé");
   await page.getByLabel("Descrição").fill("Jogos especiais da comunidade.");
-  await page.getByLabel("Início").fill("2026-08-02T12:00");
-  await page.getByLabel("Fim").fill("2026-08-03T12:00");
-  await page.getByLabel("Fuso").fill("America/Sao_Paulo");
+  await page.getByRole("button", { name: "Próximo" }).click();
+  await page.getByText("Wordle Bíblico", { exact: true }).click();
+  await page.getByRole("button", { name: "Próximo" }).click();
+  await page.getByText("Palavra da fé", { exact: true }).click();
+  await page.getByRole("button", { name: "Próximo" }).click();
   await page.getByLabel("Regra de conclusão").selectOption("MINIMUM");
   await page.getByLabel("Mínimo de jogos").fill("1");
-  await page.getByRole("button", { name: "Sugerir conteúdo" }).click();
-  await expect(page.getByLabel("Jogos e conteúdos (JSON)" )).toHaveValue(/wordle-event/);
-  await page.getByRole("button", { name: "SALVAR RASCUNHO" }).click();
-  await expect(page.getByText("DRAFT", { exact: false })).toBeVisible();
-  await page.getByRole("button", { name: "Validar" }).click();
-  await expect(page.getByRole("status")).toContainText("Evento válido");
-  await page.getByRole("button", { name: "Agendar" }).click();
+  await page.getByRole("button", { name: "Próximo" }).click();
+  await page.getByLabel("XP por participação").fill("20");
+  await page.getByRole("button", { name: "Próximo" }).click();
+  await page.getByLabel("Capa do Evento").selectOption("asset-event");
+  await page.getByRole("button", { name: "Próximo" }).click();
+  await expect(page.getByText(/1 selecionado/)).toBeVisible();
+  await page.getByRole("button", { name: "Próximo" }).click();
+  await page.getByLabel("Início").fill("2026-08-02T12:00");
+  await page.getByLabel("Término").fill("2026-08-03T12:00");
+  await page.getByLabel("Fuso horário").fill("America/Sao_Paulo");
+  await page.getByRole("button", { name: "Validar e agendar" }).click();
   await expect(page.getByText("SCHEDULED", { exact: false })).toBeVisible();
   await page.getByRole("button", { name: "Cancelar" }).click();
   await expect(page.getByText("CANCELLED", { exact: false })).toBeVisible();
+});
+
+test("wizard preserva estado, funciona no mobile e não possui violações Axe sérias", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "mobile-chromium", "validação específica do editor móvel");
+  await mockIdentity(page, admin);
+  await page.route("**/api/admin/events", route => json(route, { events: [] }));
+  await page.route("**/api/admin/assets?status=ACTIVE", route => json(route, { assets: [] }));
+  await page.route("**/api/admin/events/suggest-content?*", route => json(route, { options: [], counts: { available: 0, reserved: 0, archived: 0 } }));
+  await page.goto("/admin/eventos");
+  await page.getByLabel("Título").fill("Evento acessível");
+  await page.getByRole("button", { name: "Próximo" }).click();
+  await page.getByRole("button", { name: "Voltar" }).click();
+  await expect(page.getByLabel("Título")).toHaveValue("Evento acessível");
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
+  const results = await new AxeBuilder({ page }).include(".event-wizard").analyze();
+  expect(results.violations.filter(item => ["serious", "critical"].includes(item.impact ?? ""))).toEqual([]);
 });
 
 test("Home exibe Evento somente quando existe agendamento ativo", async ({ page }) => {

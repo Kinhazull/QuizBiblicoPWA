@@ -10,7 +10,7 @@ Documentos de release, auditorias e arquivos em `docs/AI/HISTORY/` preservam con
 
 A baseline local é **`2.0.0-rc.1`**, confirmada no `package.json`. Ela não é a release final, não significa aprovação pública e não possui tag `v2.0.0`. O desenvolvimento funcional foi reaberto antes do lançamento para reavaliar e concluir as Fases 6 e 7; a Fase 8 concentrará Release Readiness e o Go/No-Go.
 
-As Fases 1–5 estão concluídas como fundação histórica. As Sprints **25.1–25.7** da Fase 6 estão concluídas. A Fase 7 possui a **Central Administrativa (26.1)** e a **Biblioteca Inteligente (26.2)** implementadas localmente, ambas como projeções read-only sobre fontes existentes.
+As Fases 1–5 estão concluídas como fundação histórica. As Sprints **25.1–25.7** da Fase 6 estão concluídas. A Fase 7 possui a **Central Administrativa (26.1)**, a **Biblioteca Inteligente (26.2)** e o **Editor Visual de Eventos (26.3)** implementados localmente.
 
 ## Maturidade dos subsistemas
 
@@ -23,7 +23,7 @@ As Fases 1–5 estão concluídas como fundação histórica. As Sprints **25.1�
 | CMS/editorial | MADURO LOCALMENTE: workflow DRAFT → IN_REVIEW → PUBLISHED → ARCHIVED, comentários, histórico, rollback e importação JSON/CSV. A ativação remota depende da 0037. |
 | Conteúdo | MADURO: Quiz universal e pacote modular oficial de 380 conteúdos; nenhuma alteração editorial foi feita na Sprint 25.0. |
 | Biblioteca/Gerador/Loader | MADURO: fonte publicada, elegibilidade, geração e providers sustentam os sete jogos; a Biblioteca calcula sinais determinísticos de cobertura, diversidade, uso, reservas e projeção, sem alterar conteúdo automaticamente. |
-| Eventos | V1 COMPLETA: criação, validação, sugestão/seleção, reservas, agendamento, cancelamento e participante; Eventos 2.0 é evolução. |
+| Eventos | V2 LOCAL: editor guiado em oito etapas sobre o Event Engine v1, com catálogo elegível, Asset Registry, revisão, revalidação concorrente, reservas e agendamento existentes. |
 | Economia/coleção | V2 LOCAL: política centralizada, 16 cosméticos em duas coleções, progresso derivado, raridade/origem, 14 itens de Loja e dois grants determinísticos sobre os ledgers existentes. |
 | Administração/Analytics | MADURO: a Central Administrativa resume atenção, Health operacional, uso do dia, Eventos, conteúdo, reservas e atividade auditada, com atalhos para os módulos especializados; Analytics e Diagnóstico continuam sendo as superfícies detalhadas. |
 | Operação/privacidade | FUNCIONAL: contrato de schema, reconciliação, backup/restore, diagnóstico, observabilidade, exportação e anonimização abrangem os domínios atuais. |
@@ -53,6 +53,7 @@ As Fases 1–5 estão concluídas como fundação histórica. As Sprints **25.1�
 - A área `/recompensas` apresenta duas coleções e as 14 conquistas oficiais sem criar uma API pública de concessão.
 - O Perfil 2.0 compõe Progress, Statistics e Collections existentes; mostra os sete jogos, deriva o mais jogado por conclusões e usa apenas conquistas com timestamp real como feitos recentes.
 - A saúde editorial da Biblioteca é calculada sob demanda com quatro consultas agregadas, thresholds explícitos e severidades `info`, `attention` e `critical`; baixo uso não é tratado como baixa qualidade.
+- O Editor Visual de Eventos não expõe JSON/IDs arbitrários e não persiste um segundo modelo; criação e edição continuam usando os contratos, validações e reservas do Event Engine existente.
 
 ## Baseline de validação registrada
 

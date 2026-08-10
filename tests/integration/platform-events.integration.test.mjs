@@ -5,7 +5,7 @@ import { createUniversalDraft, transitionUniversalContentStatus } from "../../fu
 import { ContentStatus, GameType } from "../../shared/content.ts";
 import {
   cancelPlatformEvent, createPlatformEvent, getEventSelection, getParticipantEvent,
-  reconcileFinishedEvents, reconcilePlatformEvents, schedulePlatformEvent, startEventSelection, validatePlatformEvent,
+  listEventContentOptions, reconcileFinishedEvents, reconcilePlatformEvents, schedulePlatformEvent, startEventSelection, validatePlatformEvent,
 } from "../../functions/_lib/platform-events.ts";
 import { generateFreePlaySelection } from "../../functions/_lib/platform-free-play.ts";
 import { getDailyObjective } from "../../functions/_lib/platform-daily-objectives.ts";
@@ -22,6 +22,19 @@ async function fixture(t) {
 const input = (contentId, version) => ({ title: "Evento da Comunidade", description: "Desafio especial", startsAt: 1_000, endsAt: 10_000,
   timeZone: "America/Sao_Paulo", participationXp: 20, victoryCoins: 2, completionBonusXp: 10, perfectBonusCoins: 1,
   games: [{ gameType: GameType.WORDLE, contentItems: [{ contentId, contentVersion: version }] }] });
+
+test("editor lista somente conteúdo elegível da organização com metadados seguros", async t => {
+  const { ctx, contentId, version } = await fixture(t);
+  seedOrganization(ctx, { id: "org-2", name: "Organização 2" });
+  const result = await listEventContentOptions(ctx.env, "org-1", { gameType: GameType.WORDLE, search: "palavras" });
+  assert.equal(result.options.length, 1);
+  assert.deepEqual(result.options[0], {
+    contentId, contentVersion: version, gameType: GameType.WORDLE, difficulty: "MEDIUM", themes: ["Palavras"], tags: ["fé"],
+    title: "Palavras", category: "Palavras", biblicalReference: "Efésios 2:8",
+  });
+  assert.deepEqual(result.counts, { available: 1, reserved: 0, archived: 0 });
+  assert.deepEqual(await listEventContentOptions(ctx.env, "org-2", { gameType: GameType.WORDLE }), { options: [], counts: { available: 0, reserved: 0, archived: 0 } });
+});
 
 test("evento valida, agenda seleção imutável e reserva conteúdo", async t => {
   const { ctx, contentId, version } = await fixture(t); const identity = { organizationId: "org-1", userId: "admin" };

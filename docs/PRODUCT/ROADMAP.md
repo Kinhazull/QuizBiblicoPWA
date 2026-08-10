@@ -122,10 +122,13 @@ Qualidade da primeira versão pública tem prioridade sobre velocidade de public
 
 ### 26.3 — Eventos 2.0
 
-- **Objetivo:** evoluir o Evento v1 sem reconstruir editor, reservas ou lifecycle.
-- **Escopo:** recorrência/temporadas somente se aprovadas, apresentação, premiação, acompanhamento e operação.
+**Estado:** concluído localmente como Editor Visual de Eventos.
+
+- **Objetivo:** tornar o Evento v1 configurável por pessoas não técnicas sem reconstruir engine, reservas ou lifecycle.
+- **Escopo entregue:** wizard em oito etapas, seleção fechada de jogos, Catálogo Elegível, alertas de reserva, regras/recompensas tipadas, Asset Registry, revisão e agendamento.
 - **Dependências:** 25.2, 26.1 e validação do uso real de Eventos v1.
 - **Aceite macro:** configuração segura, reservas consistentes, uma tentativa por jogo e encerramento recuperável.
+- **Pendências intencionais:** calendário/planejamento em 26.4; automações em 26.6; política editorial de teto econômico depende do proprietário.
 
 ### 26.4 — Planejamento editorial e operacional
 

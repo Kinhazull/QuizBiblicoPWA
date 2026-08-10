@@ -4,7 +4,7 @@ import { requireAnyPermission, requirePermission } from "../../_lib/permissions"
 import { json } from "../../_lib/security";
 
 export const onRequestGet = async ({ request, env }: { request: Request; env: AppEnv }) => {
-  try { const user = await requireAnyPermission(request, env, ["content.manage", "content.review"]);
+  try { const user = await requireAnyPermission(request, env, ["content.manage", "content.review", "events.manage"]);
     return json({ assets: await listAssets(env, String(user.organizationId), new URL(request.url).searchParams.get("status")) }, 200, { "cache-control": "no-store" });
   } catch (error) { if (error instanceof Response) return error; throw error; }
 };

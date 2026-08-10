@@ -461,3 +461,51 @@ export async function suggestEventContent(env: AppEnv, organizationId: string, i
   return items.slice(0, count).map(item => ({ contentId: item.contentId, contentVersion: item.contentVersion, gameType: item.gameType,
     difficulty: item.difficulty, themes: item.themes, books: item.books, tags: item.tags }));
 }
+
+export async function listEventContentOptions(env: AppEnv, organizationId: string, input: Record<string, unknown>) {
+  const gameType = String(input.gameType ?? "");
+  if (!GAME_TYPES.has(gameType as GameType)) throw new Error("invalid_event_game");
+  const difficulty = normalizedText(input.difficulty, 30) || undefined;
+  const theme = normalizedText(input.theme, 100) || undefined;
+  const search = normalizedText(input.search, 120).toLocaleLowerCase("pt-BR");
+  const eligible = await listEligibleUniversalContent(env, {
+    organizationId,
+    gameType,
+    difficulty: difficulty as any,
+    theme,
+    limit: 200,
+  });
+  const ids = eligible.map(item => item.contentId);
+  const details = new Map<string, { title: string; category: string; biblicalReference: string | null }>();
+  for (let offset = 0; offset < ids.length; offset += 90) {
+    const batch = ids.slice(offset, offset + 90);
+    if (!batch.length) continue;
+    const placeholders = batch.map((_, index) => `?${index + 2}`).join(",");
+    const rows = await env.DB.prepare(`SELECT id,category,biblical_reference biblicalReference,
+      COALESCE(json_extract(payload_json,'$.title'),json_extract(payload_json,'$.question'),category) title
+      FROM content_items WHERE organization_id=?1 AND id IN (${placeholders}) AND status='PUBLISHED'`)
+      .bind(organizationId, ...batch).all<any>();
+    for (const row of rows.results) details.set(String(row.id), {
+      title: normalizedText(row.title, 180) || "Conteúdo publicado",
+      category: normalizedText(row.category, 100),
+      biblicalReference: row.biblicalReference ? normalizedText(row.biblicalReference, 160) : null,
+    });
+  }
+  const availability = await env.DB.prepare(`SELECT availability_status status,COUNT(*) total
+    FROM universal_content_library WHERE organization_id=?1 AND game_type=?2 GROUP BY availability_status`)
+    .bind(organizationId, gameType).all<{ status: string; total: number }>();
+  const counts = Object.fromEntries(availability.results.map(row => [row.status, Number(row.total)]));
+  const options = eligible.map(item => ({
+    contentId: item.contentId,
+    contentVersion: item.contentVersion,
+    gameType: item.gameType,
+    difficulty: item.difficulty,
+    themes: item.themes,
+    tags: item.tags,
+    title: details.get(item.contentId)?.title ?? "Conteúdo publicado",
+    category: details.get(item.contentId)?.category ?? "",
+    biblicalReference: details.get(item.contentId)?.biblicalReference ?? null,
+  })).filter(item => !search || [item.title, item.category, item.biblicalReference, ...item.themes, ...item.tags]
+    .filter(Boolean).some(value => String(value).toLocaleLowerCase("pt-BR").includes(search)));
+  return { options, counts: { available: counts.AVAILABLE ?? 0, reserved: counts.RESERVED_EVENT ?? 0, archived: counts.ARCHIVED ?? 0 } };
+}
