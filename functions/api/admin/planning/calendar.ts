@@ -2,7 +2,7 @@ import { requirePermission } from "../../../_lib/permissions";
 import type { AppEnv } from "../../../_lib/auth";
 import { json } from "../../../_lib/security";
 import { getPlatformPlanningCalendar } from "../../../_lib/platform-planning";
-import { PublicErrorCategory, publicDomainError } from "../../../_lib/public-error";
+import { PublicErrorCategory, publicDomainError } from "../../../_lib/operational-observability";
 
 export const onRequestGet = async ({ request, env }: { request: Request; env: AppEnv }) => {
   try {
