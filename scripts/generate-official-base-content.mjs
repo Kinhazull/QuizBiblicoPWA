@@ -161,17 +161,105 @@ const diversityFacts = [
   ["Fé", "confiança em Deus", "Hebreus 11:1", ["Relaciono-me ao que se espera", "Sou exemplificada por muitas testemunhas", "Sem mim é impossível agradar a Deus"]],
   ["Nova Aliança", "promessa escrita no coração", "Jeremias 31:31", ["Fui anunciada por um profeta", "Não repito a aliança quebrada pelos antepassados", "A lei é colocada no interior do povo"]],
   ["Igreja", "comunidade reunida em Cristo", "Atos 2:42", ["Persevero no ensino e na comunhão", "Partilho o pão e as orações", "Sou descrita como corpo de Cristo"]],
+  ["Tabernáculo", "santuário móvel no deserto", "Êxodo 25:8", ["Fui construído conforme um modelo mostrado a Moisés", "Acompanhei Israel durante a peregrinação", "Abriguei o Lugar Santo e o Santíssimo"]],
+  ["Candelabro", "luz do santuário", "Êxodo 25:31", ["Fui moldado em ouro puro", "Possuía sete lâmpadas", "Iluminava o interior do santuário"]],
+  ["Muralhas de Jericó", "barreira vencida na conquista", "Josué 6:20", ["Cercava uma cidade de Canaã", "Israel marchou ao meu redor durante sete dias", "Caí após o toque das trombetas e o clamor do povo"]],
+  ["Forno ardente", "livramento dos três jovens", "Daniel 3:27", ["Fui aquecido além do habitual", "Recebi três homens fiéis como condenados", "Eles saíram de mim sem cheiro de fumaça"]],
+  ["Multiplicação dos pães", "milagre que alimentou a multidão", "João 6:11", ["Comecei com uma provisão pequena", "Uma multidão se assentou para comer", "Doze cestos de pedaços foram recolhidos"]],
+  ["Tempestade acalmada", "milagre no mar da Galileia", "Marcos 4:39", ["Aconteci durante uma travessia", "Os discípulos temeram as ondas", "Jesus repreendeu o vento e o mar"]],
+  ["Filho Pródigo", "parábola sobre retorno e acolhimento", "Lucas 15:20", ["Minha história envolve uma herança antecipada", "Voltei para casa depois de perder tudo", "Meu pai me recebeu com festa"]],
+  ["Dez Virgens", "parábola sobre vigilância", "Mateus 25:1", ["Minha história apresenta lâmpadas e azeite", "Metade do grupo estava preparada", "Ensino a necessidade de vigilância"]],
+  ["Salmos", "livro de cânticos e orações", "Salmos 1:1", ["Reúno louvor, lamento e sabedoria", "Muitos de meus textos são associados a Davi", "Sou o maior livro da Bíblia em número de capítulos"]],
+  ["Provérbios", "livro de sabedoria prática", "Provérbios 1:2", ["Ensino prudência e entendimento", "Grande parte de minha coleção é associada a Salomão", "Declaro que o temor do Senhor é o princípio do conhecimento"]],
+  ["Evangelho de Lucas", "narrativa ordenada sobre Jesus", "Lucas 1:3", ["Fui dirigido a Teófilo", "Destaco pessoas frequentemente esquecidas pela sociedade", "Tenho continuação no livro de Atos"]],
+  ["Carta aos Romanos", "exposição do evangelho e da justiça de Deus", "Romanos 1:16", ["Fui enviada a cristãos da capital do império", "Explico a justificação pela fé", "Paulo é meu autor"]],
+  ["Torre de Babel", "dispersão das línguas", "Gênesis 11:9", ["Fui planejada numa planície de Sinear", "Meus construtores desejavam fazer um nome para si", "Minha história explica a confusão das línguas"]],
+  ["Queda de Jericó", "primeira grande vitória em Canaã", "Josué 6:20", ["Aconteci após a travessia do Jordão", "Sacerdotes tocaram trombetas durante o cerco", "As muralhas cederam depois do clamor do povo"]],
+  ["Transfiguração", "revelação da glória de Jesus", "Mateus 17:2", ["Aconteci num monte diante de três discípulos", "Moisés e Elias apareceram", "O rosto de Jesus brilhou como o sol"]],
+  ["Concílio de Jerusalém", "decisão da Igreja sobre os gentios", "Atos 15:6", ["Reuni apóstolos e presbíteros", "Debati a entrada dos gentios na comunidade", "Uma carta comunicou minha decisão às igrejas"]],
+  ["Amor ao próximo", "mandamento de cuidado com o outro", "Marcos 12:31", ["Sou apresentado junto ao amor a Deus", "Oriento a tratar o outro como a si mesmo", "Jesus me chamou de grande mandamento"]],
+  ["Fruto do Espírito", "caráter produzido pelo Espírito", "Gálatas 5:22-23", ["Sou descrito em contraste com as obras da carne", "Incluo domínio próprio e mansidão", "Minha lista começa com amor, alegria e paz"]],
+  ["Armadura de Deus", "figura da preparação espiritual", "Efésios 6:11", ["Uso imagens do equipamento de um soldado", "Incluo escudo, capacete e espada", "Represento recursos para permanecer firme"]],
+  ["Nova Jerusalém", "cidade da esperança final", "Apocalipse 21:2", ["Desço do céu da parte de Deus", "Sou comparada a uma noiva preparada", "Em mim não há necessidade de templo"]],
 ];
-const mixedFacts = [...facts.slice(0, 40), ...diversityFacts];
+const mixedFacts = [...facts.slice(0, 20), ...diversityFacts];
 if (mixedFacts.length !== 60 || new Set(mixedFacts.map(([answer]) => answer)).size !== 60) throw new Error("Diverse facts catalogue must contain 60 unique entries.");
 
-const common = (gameType, externalId, index, reference, category = "Personagens") => ({
+const categoryAnswers = new Map([
+  ["Lugares", ["Jerusalém", "Belém", "Jordão", "Sinai", "Mar Vermelho", "Nova Jerusalém"]],
+  ["Objetos", ["Templo", "Arca da Aliança", "Maná", "Serpente de bronze", "Sarça ardente", "Tabernáculo", "Candelabro", "Muralhas de Jericó", "Forno ardente", "Armadura de Deus"]],
+  ["Milagres", ["Multiplicação dos pães", "Tempestade acalmada"]],
+  ["Parábolas", ["Bom Samaritano", "Ovelha perdida", "Semeador", "Filho Pródigo", "Dez Virgens"]],
+  ["Eventos", ["Pentecostes", "Ressurreição", "Páscoa", "Torre de Babel", "Queda de Jericó", "Transfiguração", "Concílio de Jerusalém"]],
+  ["Livros", ["Salmos", "Provérbios", "Evangelho de Lucas", "Carta aos Romanos"]],
+  ["Ensinamentos", ["Graça", "Fé", "Nova Aliança", "Amor ao próximo", "Fruto do Espírito"]],
+  ["Atos", ["Igreja"]],
+].flatMap(([category, answers]) => answers.map(answer => [answer, category])));
+
+const factCategory = fact => categoryAnswers.get(fact[0]) ?? "Personagens";
+const factTestament = fact => /^(Mateus|Marcos|Lucas|João|Atos|Romanos|Gálatas|Efésios|Apocalipse)/.test(fact[2])
+  ? "Novo Testamento"
+  : "Antigo Testamento";
+const factsForSet = index => mixedFacts.slice((index % 20) * 3, (index % 20) * 3 + 3);
+const setMetadata = index => {
+  const selectedFacts = factsForSet(index);
+  const categories = selectedFacts.map(factCategory);
+  const category = categories.every(value => value === categories[0]) ? categories[0] : "Conceitos";
+  return {
+    category,
+    biblicalReference: selectedFacts.map(fact => fact[2]).join("; "),
+    tags: [...new Set([...selectedFacts.map(factTestament), ...categories, "Acervo oficial v1"])],
+  };
+};
+
+const setTitle = (gameType, index) => {
+  const category = setMetadata(index).category;
+  const titles = {
+    "memoria-biblica": {
+      Personagens: "Personagens e seus feitos",
+      Lugares: "Lugares da história bíblica",
+      Objetos: "Símbolos e objetos bíblicos",
+      Milagres: "Milagres de Jesus",
+      Parábolas: "Parábolas e seus ensinamentos",
+      Eventos: "Acontecimentos marcantes",
+      Livros: "Livros e mensagens",
+      Ensinamentos: "Verdades para recordar",
+      Atos: "A comunidade da fé",
+      Conceitos: "Conexões da narrativa bíblica",
+    },
+    "associacao-de-temas": {
+      Personagens: "Personagens e acontecimentos",
+      Lugares: "Lugares e acontecimentos",
+      Objetos: "Objetos e significados",
+      Milagres: "Milagres e seus sinais",
+      Parábolas: "Parábolas e mensagens",
+      Eventos: "Eventos e contexto bíblico",
+      Livros: "Livros e temas centrais",
+      Ensinamentos: "Ensinamentos e significados",
+      Atos: "Igreja e missão",
+      Conceitos: "Conecte histórias e ensinamentos",
+    },
+    "jogo-tres-pistas": {
+      Personagens: "Personagens da Bíblia",
+      Lugares: "Lugares da Bíblia",
+      Objetos: "Objetos e símbolos",
+      Milagres: "Milagres de Jesus",
+      Parábolas: "Parábolas de Jesus",
+      Eventos: "Momentos da história bíblica",
+      Livros: "Livros da Bíblia",
+      Ensinamentos: "Ensinos e promessas",
+      Atos: "Igreja e missão",
+      Conceitos: "Descubra pelas pistas",
+    },
+  };
+  return titles[gameType][category];
+};
+
+const common = (gameType, externalId, index) => ({
   externalId,
   gameType,
-  category,
+  ...setMetadata(index),
   difficulty: index % 5 === 0 ? "HARD" : index % 2 === 0 ? "MEDIUM" : "EASY",
-  biblicalReference: reference,
-  tags: ["Personagens bíblicos", "Acervo oficial v1"],
 });
 
 const chunked = (bank, count, width, build) => Array.from({ length: count }, (_, index) =>
@@ -182,8 +270,8 @@ const memoryPairBank = [
   ...mixedFacts.map(([answer, , , hints]) => ({ front: hints[2], back: answer })),
 ];
 const memory = chunked(memoryPairBank, 40, 3, (selected, index) => ({
-  ...common("memoria-biblica", `memory-${String(index + 1).padStart(3, "0")}`, index, mixedFacts[index % mixedFacts.length][2], index % 20 >= 13 ? ["Lugares", "Objetos", "Eventos", "Milagres", "Parábolas", "Ensinamentos", "Atos"][Math.min(6, index % 20 - 13)] : "Personagens"),
-  payload: { title: `Personagens e feitos bíblicos ${index + 1}`, pairs: selected },
+  ...common("memoria-biblica", `memory-${String(index + 1).padStart(3, "0")}`, index),
+  payload: { title: setTitle("memoria-biblica", index), pairs: selected },
 }));
 
 const associationPairBank = [
@@ -192,8 +280,8 @@ const associationPairBank = [
   ...mixedFacts.map(([answer, , , hints]) => ({ left: hints[2], right: answer })),
 ];
 const association = chunked(associationPairBank, 60, 3, (selected, index) => ({
-  ...common("associacao-de-temas", `association-${String(index + 1).padStart(3, "0")}`, index, mixedFacts[index % mixedFacts.length][2], index % 20 >= 13 ? ["Lugares", "Objetos", "Eventos", "Milagres", "Parábolas", "Ensinamentos", "Atos"][Math.min(6, index % 20 - 13)] : "Personagens"),
-  payload: { title: `Associações bíblicas ${index + 1}`, pairs: selected },
+  ...common("associacao-de-temas", `association-${String(index + 1).padStart(3, "0")}`, index),
+  payload: { title: setTitle("associacao-de-temas", index), pairs: selected },
 }));
 
 const whoChallengeBank = [
@@ -212,8 +300,8 @@ const threeCluesBank = [
   ...mixedFacts.map(([answer, association, , clues]) => ({ answer, clues: [`Apareço em uma narrativa importante das Escrituras.`, clues[0], `Sou lembrado por ${association}.`] })),
 ];
 const threeClues = chunked(threeCluesBank, 60, 3, (selected, index) => ({
-  ...common("jogo-tres-pistas", `three-clues-${String(index + 1).padStart(3, "0")}`, index, mixedFacts[index % mixedFacts.length][2], index % 20 >= 13 ? ["Lugares", "Objetos", "Eventos", "Milagres", "Parábolas", "Ensinamentos", "Atos"][Math.min(6, index % 20 - 13)] : "Personagens"),
-  payload: { title: `Três pistas bíblicas ${index + 1}`, challenges: selected },
+  ...common("jogo-tres-pistas", `three-clues-${String(index + 1).padStart(3, "0")}`, index),
+  payload: { title: setTitle("jogo-tres-pistas", index), challenges: selected },
 }));
 
 const contents = [...wordle, ...timeline, ...memory, ...association, ...whoAmI, ...threeClues];

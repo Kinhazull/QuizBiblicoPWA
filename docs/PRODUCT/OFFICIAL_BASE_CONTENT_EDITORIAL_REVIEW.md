@@ -650,17 +650,17 @@ Seleção determinística e distribuída: para cada jogo e dificuldade, o primei
 #### memory-002
 
 - **ID:** `memory-002`
-- **Título:** Personagens e feitos bíblicos 2
+- **Título:** Personagens e seus feitos
 - **Categoria:** Personagens
-- **Tema:** Personagens bíblicos
+- **Tema:** Personagens
 - **Dificuldade:** EASY
-- **Referência bíblica:** Gênesis 2:22
+- **Referência bíblica:** Gênesis 12:2; Gênesis 21:2; Gênesis 21:3
 
 **Payload completo**
 
 ```json
 {
-  "title": "Personagens e feitos bíblicos 2",
+  "title": "Personagens e seus feitos",
   "pairs": [
     {
       "front": "Abraão",
@@ -691,29 +691,29 @@ Seleção determinística e distribuída: para cada jogo e dificuldade, o primei
 #### memory-020
 
 - **ID:** `memory-020`
-- **Título:** Personagens e feitos bíblicos 20
-- **Categoria:** Atos
-- **Tema:** Personagens bíblicos
+- **Título:** Conexões da narrativa bíblica
+- **Categoria:** Conceitos
+- **Tema:** Ensinamentos, Objetos, Lugares
 - **Dificuldade:** EASY
-- **Referência bíblica:** 1 Reis 18:38
+- **Referência bíblica:** Gálatas 5:22-23; Efésios 6:11; Apocalipse 21:2
 
 **Payload completo**
 
 ```json
 {
-  "title": "Personagens e feitos bíblicos 20",
+  "title": "Conexões da narrativa bíblica",
   "pairs": [
     {
-      "front": "Fé",
-      "back": "confiança em Deus"
+      "front": "Fruto do Espírito",
+      "back": "caráter produzido pelo Espírito"
     },
     {
-      "front": "Nova Aliança",
-      "back": "promessa escrita no coração"
+      "front": "Armadura de Deus",
+      "back": "figura da preparação espiritual"
     },
     {
-      "front": "Igreja",
-      "back": "comunidade reunida em Cristo"
+      "front": "Nova Jerusalém",
+      "back": "cidade da esperança final"
     }
   ]
 }
@@ -732,29 +732,29 @@ Seleção determinística e distribuída: para cada jogo e dificuldade, o primei
 #### memory-040
 
 - **ID:** `memory-040`
-- **Título:** Personagens e feitos bíblicos 40
-- **Categoria:** Atos
-- **Tema:** Personagens bíblicos
+- **Título:** Conexões da narrativa bíblica
+- **Categoria:** Conceitos
+- **Tema:** Ensinamentos, Objetos, Lugares
 - **Dificuldade:** EASY
-- **Referência bíblica:** Mateus 9:9
+- **Referência bíblica:** Gálatas 5:22-23; Efésios 6:11; Apocalipse 21:2
 
 **Payload completo**
 
 ```json
 {
-  "title": "Personagens e feitos bíblicos 40",
+  "title": "Conexões da narrativa bíblica",
   "pairs": [
     {
-      "front": "Sem mim é impossível agradar a Deus",
-      "back": "Fé"
+      "front": "Minha lista começa com amor, alegria e paz",
+      "back": "Fruto do Espírito"
     },
     {
-      "front": "A lei é colocada no interior do povo",
-      "back": "Nova Aliança"
+      "front": "Represento recursos para permanecer firme",
+      "back": "Armadura de Deus"
     },
     {
-      "front": "Sou descrita como corpo de Cristo",
-      "back": "Igreja"
+      "front": "Em mim não há necessidade de templo",
+      "back": "Nova Jerusalém"
     }
   ]
 }
@@ -775,17 +775,17 @@ Seleção determinística e distribuída: para cada jogo e dificuldade, o primei
 #### memory-003
 
 - **ID:** `memory-003`
-- **Título:** Personagens e feitos bíblicos 3
+- **Título:** Personagens e seus feitos
 - **Categoria:** Personagens
-- **Tema:** Personagens bíblicos
+- **Tema:** Personagens
 - **Dificuldade:** MEDIUM
-- **Referência bíblica:** Gênesis 6:14
+- **Referência bíblica:** Gênesis 35:10; Gênesis 41:41; Êxodo 3:10
 
 **Payload completo**
 
 ```json
 {
-  "title": "Personagens e feitos bíblicos 3",
+  "title": "Personagens e seus feitos",
   "pairs": [
     {
       "front": "Jacó",
@@ -816,29 +816,29 @@ Seleção determinística e distribuída: para cada jogo e dificuldade, o primei
 #### memory-019
 
 - **ID:** `memory-019`
-- **Título:** Personagens e feitos bíblicos 19
-- **Categoria:** Ensinamentos
-- **Tema:** Personagens bíblicos
+- **Título:** Conexões da narrativa bíblica
+- **Categoria:** Conceitos
+- **Tema:** Eventos, Ensinamentos
 - **Dificuldade:** MEDIUM
-- **Referência bíblica:** 1 Reis 3:12
+- **Referência bíblica:** Mateus 17:2; Atos 15:6; Marcos 12:31
 
 **Payload completo**
 
 ```json
 {
-  "title": "Personagens e feitos bíblicos 19",
+  "title": "Conexões da narrativa bíblica",
   "pairs": [
     {
-      "front": "Ressurreição",
-      "back": "vitória de Jesus sobre a morte"
+      "front": "Transfiguração",
+      "back": "revelação da glória de Jesus"
     },
     {
-      "front": "Páscoa",
-      "back": "memorial da libertação"
+      "front": "Concílio de Jerusalém",
+      "back": "decisão da Igreja sobre os gentios"
     },
     {
-      "front": "Graça",
-      "back": "favor de Deus oferecido em Cristo"
+      "front": "Amor ao próximo",
+      "back": "mandamento de cuidado com o outro"
     }
   ]
 }
@@ -857,29 +857,29 @@ Seleção determinística e distribuída: para cada jogo e dificuldade, o primei
 #### memory-039
 
 - **ID:** `memory-039`
-- **Título:** Personagens e feitos bíblicos 39
-- **Categoria:** Ensinamentos
-- **Tema:** Personagens bíblicos
+- **Título:** Conexões da narrativa bíblica
+- **Categoria:** Conceitos
+- **Tema:** Eventos, Ensinamentos
 - **Dificuldade:** MEDIUM
-- **Referência bíblica:** João 13:23
+- **Referência bíblica:** Mateus 17:2; Atos 15:6; Marcos 12:31
 
 **Payload completo**
 
 ```json
 {
-  "title": "Personagens e feitos bíblicos 39",
+  "title": "Conexões da narrativa bíblica",
   "pairs": [
     {
-      "front": "Jesus apareceu vivo aos discípulos",
-      "back": "Ressurreição"
+      "front": "O rosto de Jesus brilhou como o sol",
+      "back": "Transfiguração"
     },
     {
-      "front": "Recordo a libertação da escravidão",
-      "back": "Páscoa"
+      "front": "Uma carta comunicou minha decisão às igrejas",
+      "back": "Concílio de Jerusalém"
     },
     {
-      "front": "Sou descrita como dom de Deus",
-      "back": "Graça"
+      "front": "Jesus me chamou de grande mandamento",
+      "back": "Amor ao próximo"
     }
   ]
 }
@@ -900,17 +900,17 @@ Seleção determinística e distribuída: para cada jogo e dificuldade, o primei
 #### memory-001
 
 - **ID:** `memory-001`
-- **Título:** Personagens e feitos bíblicos 1
+- **Título:** Personagens e seus feitos
 - **Categoria:** Personagens
-- **Tema:** Personagens bíblicos
+- **Tema:** Personagens
 - **Dificuldade:** HARD
-- **Referência bíblica:** Gênesis 2:7
+- **Referência bíblica:** Gênesis 2:7; Gênesis 2:22; Gênesis 6:14
 
 **Payload completo**
 
 ```json
 {
-  "title": "Personagens e feitos bíblicos 1",
+  "title": "Personagens e seus feitos",
   "pairs": [
     {
       "front": "Adão",
@@ -941,29 +941,29 @@ Seleção determinística e distribuída: para cada jogo e dificuldade, o primei
 #### memory-016
 
 - **ID:** `memory-016`
-- **Título:** Personagens e feitos bíblicos 16
-- **Categoria:** Eventos
-- **Tema:** Personagens bíblicos
+- **Título:** Conexões da narrativa bíblica
+- **Categoria:** Conceitos
+- **Tema:** Milagres, Parábolas
 - **Dificuldade:** HARD
-- **Referência bíblica:** 1 Samuel 3:10
+- **Referência bíblica:** Marcos 4:39; Lucas 15:20; Mateus 25:1
 
 **Payload completo**
 
 ```json
 {
-  "title": "Personagens e feitos bíblicos 16",
+  "title": "Conexões da narrativa bíblica",
   "pairs": [
     {
-      "front": "Arca da Aliança",
-      "back": "símbolo da presença e da aliança"
+      "front": "Tempestade acalmada",
+      "back": "milagre no mar da Galileia"
     },
     {
-      "front": "Maná",
-      "back": "alimento no deserto"
+      "front": "Filho Pródigo",
+      "back": "parábola sobre retorno e acolhimento"
     },
     {
-      "front": "Serpente de bronze",
-      "back": "sinal levantado no deserto"
+      "front": "Dez Virgens",
+      "back": "parábola sobre vigilância"
     }
   ]
 }
@@ -982,29 +982,29 @@ Seleção determinística e distribuída: para cada jogo e dificuldade, o primei
 #### memory-036
 
 - **ID:** `memory-036`
-- **Título:** Personagens e feitos bíblicos 36
-- **Categoria:** Eventos
-- **Tema:** Personagens bíblicos
+- **Título:** Conexões da narrativa bíblica
+- **Categoria:** Conceitos
+- **Tema:** Milagres, Parábolas
 - **Dificuldade:** HARD
-- **Referência bíblica:** Mateus 16:18
+- **Referência bíblica:** Marcos 4:39; Lucas 15:20; Mateus 25:1
 
 **Payload completo**
 
 ```json
 {
-  "title": "Personagens e feitos bíblicos 36",
+  "title": "Conexões da narrativa bíblica",
   "pairs": [
     {
-      "front": "As tábuas da aliança foram guardadas em mim",
-      "back": "Arca da Aliança"
+      "front": "Jesus repreendeu o vento e o mar",
+      "back": "Tempestade acalmada"
     },
     {
-      "front": "Alimentei Israel no deserto",
-      "back": "Maná"
+      "front": "Meu pai me recebeu com festa",
+      "back": "Filho Pródigo"
     },
     {
-      "front": "Quem olhava para mim permanecia vivo",
-      "back": "Serpente de bronze"
+      "front": "Ensino a necessidade de vigilância",
+      "back": "Dez Virgens"
     }
   ]
 }
@@ -1027,17 +1027,17 @@ Seleção determinística e distribuída: para cada jogo e dificuldade, o primei
 #### association-002
 
 - **ID:** `association-002`
-- **Título:** Associações bíblicas 2
+- **Título:** Personagens e acontecimentos
 - **Categoria:** Personagens
-- **Tema:** Personagens bíblicos
+- **Tema:** Personagens
 - **Dificuldade:** EASY
-- **Referência bíblica:** Gênesis 2:22
+- **Referência bíblica:** Gênesis 12:2; Gênesis 21:2; Gênesis 21:3
 
 **Payload completo**
 
 ```json
 {
-  "title": "Associações bíblicas 2",
+  "title": "Personagens e acontecimentos",
   "pairs": [
     {
       "left": "Abraão",
@@ -1068,29 +1068,29 @@ Seleção determinística e distribuída: para cada jogo e dificuldade, o primei
 #### association-030
 
 - **ID:** `association-030`
-- **Título:** Associações bíblicas 30
-- **Categoria:** Personagens
-- **Tema:** Personagens bíblicos
+- **Título:** Conecte histórias e ensinamentos
+- **Categoria:** Conceitos
+- **Tema:** Objetos, Lugares
 - **Dificuldade:** EASY
-- **Referência bíblica:** Jonas 1:17
+- **Referência bíblica:** Números 21:9; Êxodo 14:21; Êxodo 3:2
 
 **Payload completo**
 
 ```json
 {
-  "title": "Associações bíblicas 30",
+  "title": "Conecte histórias e ensinamentos",
   "pairs": [
     {
-      "left": "Ezequiel 37:1",
-      "right": "Ezequiel"
+      "left": "Números 21:9",
+      "right": "Serpente de bronze"
     },
     {
-      "left": "Daniel 6:16",
-      "right": "Daniel"
+      "left": "Êxodo 14:21",
+      "right": "Mar Vermelho"
     },
     {
-      "left": "Jonas 1:17",
-      "right": "Jonas"
+      "left": "Êxodo 3:2",
+      "right": "Sarça ardente"
     }
   ]
 }
@@ -1109,29 +1109,29 @@ Seleção determinística e distribuída: para cada jogo e dificuldade, o primei
 #### association-060
 
 - **ID:** `association-060`
-- **Título:** Associações bíblicas 60
-- **Categoria:** Atos
-- **Tema:** Personagens bíblicos
+- **Título:** Conecte histórias e ensinamentos
+- **Categoria:** Conceitos
+- **Tema:** Ensinamentos, Objetos, Lugares
 - **Dificuldade:** EASY
-- **Referência bíblica:** Atos 2:42
+- **Referência bíblica:** Gálatas 5:22-23; Efésios 6:11; Apocalipse 21:2
 
 **Payload completo**
 
 ```json
 {
-  "title": "Associações bíblicas 60",
+  "title": "Conecte histórias e ensinamentos",
   "pairs": [
     {
-      "left": "Sem mim é impossível agradar a Deus",
-      "right": "Fé"
+      "left": "Minha lista começa com amor, alegria e paz",
+      "right": "Fruto do Espírito"
     },
     {
-      "left": "A lei é colocada no interior do povo",
-      "right": "Nova Aliança"
+      "left": "Represento recursos para permanecer firme",
+      "right": "Armadura de Deus"
     },
     {
-      "left": "Sou descrita como corpo de Cristo",
-      "right": "Igreja"
+      "left": "Em mim não há necessidade de templo",
+      "right": "Nova Jerusalém"
     }
   ]
 }
@@ -1152,17 +1152,17 @@ Seleção determinística e distribuída: para cada jogo e dificuldade, o primei
 #### association-003
 
 - **ID:** `association-003`
-- **Título:** Associações bíblicas 3
+- **Título:** Personagens e acontecimentos
 - **Categoria:** Personagens
-- **Tema:** Personagens bíblicos
+- **Tema:** Personagens
 - **Dificuldade:** MEDIUM
-- **Referência bíblica:** Gênesis 6:14
+- **Referência bíblica:** Gênesis 35:10; Gênesis 41:41; Êxodo 3:10
 
 **Payload completo**
 
 ```json
 {
-  "title": "Associações bíblicas 3",
+  "title": "Personagens e acontecimentos",
   "pairs": [
     {
       "left": "Jacó",
@@ -1193,29 +1193,29 @@ Seleção determinística e distribuída: para cada jogo e dificuldade, o primei
 #### association-029
 
 - **ID:** `association-029`
-- **Título:** Associações bíblicas 29
-- **Categoria:** Personagens
-- **Tema:** Personagens bíblicos
+- **Título:** Objetos e significados
+- **Categoria:** Objetos
+- **Tema:** Objetos
 - **Dificuldade:** MEDIUM
-- **Referência bíblica:** Daniel 6:16
+- **Referência bíblica:** 1 Reis 6:1; Êxodo 25:10; Êxodo 16:15
 
 **Payload completo**
 
 ```json
 {
-  "title": "Associações bíblicas 29",
+  "title": "Objetos e significados",
   "pairs": [
     {
-      "left": "Jó 1:21",
-      "right": "Jó"
+      "left": "1 Reis 6:1",
+      "right": "Templo"
     },
     {
-      "left": "Isaías 6:1",
-      "right": "Isaías"
+      "left": "Êxodo 25:10",
+      "right": "Arca da Aliança"
     },
     {
-      "left": "Jeremias 1:5",
-      "right": "Jeremias"
+      "left": "Êxodo 16:15",
+      "right": "Maná"
     }
   ]
 }
@@ -1234,29 +1234,29 @@ Seleção determinística e distribuída: para cada jogo e dificuldade, o primei
 #### association-059
 
 - **ID:** `association-059`
-- **Título:** Associações bíblicas 59
-- **Categoria:** Ensinamentos
-- **Tema:** Personagens bíblicos
+- **Título:** Conecte histórias e ensinamentos
+- **Categoria:** Conceitos
+- **Tema:** Eventos, Ensinamentos
 - **Dificuldade:** MEDIUM
-- **Referência bíblica:** Jeremias 31:31
+- **Referência bíblica:** Mateus 17:2; Atos 15:6; Marcos 12:31
 
 **Payload completo**
 
 ```json
 {
-  "title": "Associações bíblicas 59",
+  "title": "Conecte histórias e ensinamentos",
   "pairs": [
     {
-      "left": "Jesus apareceu vivo aos discípulos",
-      "right": "Ressurreição"
+      "left": "O rosto de Jesus brilhou como o sol",
+      "right": "Transfiguração"
     },
     {
-      "left": "Recordo a libertação da escravidão",
-      "right": "Páscoa"
+      "left": "Uma carta comunicou minha decisão às igrejas",
+      "right": "Concílio de Jerusalém"
     },
     {
-      "left": "Sou descrita como dom de Deus",
-      "right": "Graça"
+      "left": "Jesus me chamou de grande mandamento",
+      "right": "Amor ao próximo"
     }
   ]
 }
@@ -1277,17 +1277,17 @@ Seleção determinística e distribuída: para cada jogo e dificuldade, o primei
 #### association-001
 
 - **ID:** `association-001`
-- **Título:** Associações bíblicas 1
+- **Título:** Personagens e acontecimentos
 - **Categoria:** Personagens
-- **Tema:** Personagens bíblicos
+- **Tema:** Personagens
 - **Dificuldade:** HARD
-- **Referência bíblica:** Gênesis 2:7
+- **Referência bíblica:** Gênesis 2:7; Gênesis 2:22; Gênesis 6:14
 
 **Payload completo**
 
 ```json
 {
-  "title": "Associações bíblicas 1",
+  "title": "Personagens e acontecimentos",
   "pairs": [
     {
       "left": "Adão",
@@ -1318,17 +1318,17 @@ Seleção determinística e distribuída: para cada jogo e dificuldade, o primei
 #### association-026
 
 - **ID:** `association-026`
-- **Título:** Associações bíblicas 26
+- **Título:** Personagens e acontecimentos
 - **Categoria:** Personagens
-- **Tema:** Personagens bíblicos
+- **Tema:** Personagens
 - **Dificuldade:** HARD
-- **Referência bíblica:** Isaías 6:1
+- **Referência bíblica:** 1 Samuel 3:10; 1 Samuel 10:1; 1 Samuel 16:13
 
 **Payload completo**
 
 ```json
 {
-  "title": "Associações bíblicas 26",
+  "title": "Personagens e acontecimentos",
   "pairs": [
     {
       "left": "1 Samuel 3:10",
@@ -1359,29 +1359,29 @@ Seleção determinística e distribuída: para cada jogo e dificuldade, o primei
 #### association-056
 
 - **ID:** `association-056`
-- **Título:** Associações bíblicas 56
-- **Categoria:** Eventos
-- **Tema:** Personagens bíblicos
+- **Título:** Conecte histórias e ensinamentos
+- **Categoria:** Conceitos
+- **Tema:** Milagres, Parábolas
 - **Dificuldade:** HARD
-- **Referência bíblica:** Êxodo 12:14
+- **Referência bíblica:** Marcos 4:39; Lucas 15:20; Mateus 25:1
 
 **Payload completo**
 
 ```json
 {
-  "title": "Associações bíblicas 56",
+  "title": "Conecte histórias e ensinamentos",
   "pairs": [
     {
-      "left": "As tábuas da aliança foram guardadas em mim",
-      "right": "Arca da Aliança"
+      "left": "Jesus repreendeu o vento e o mar",
+      "right": "Tempestade acalmada"
     },
     {
-      "left": "Alimentei Israel no deserto",
-      "right": "Maná"
+      "left": "Meu pai me recebeu com festa",
+      "right": "Filho Pródigo"
     },
     {
-      "left": "Quem olhava para mim permanecia vivo",
-      "right": "Serpente de bronze"
+      "left": "Ensino a necessidade de vigilância",
+      "right": "Dez Virgens"
     }
   ]
 }
@@ -1406,9 +1406,9 @@ Seleção determinística e distribuída: para cada jogo e dificuldade, o primei
 - **ID:** `who-am-i-002`
 - **Título:** Quem sou eu? — conjunto 2
 - **Categoria:** Personagens
-- **Tema:** Personagens bíblicos
+- **Tema:** Personagens
 - **Dificuldade:** EASY
-- **Referência bíblica:** Gênesis 2:22
+- **Referência bíblica:** Gênesis 12:2; Gênesis 21:2; Gênesis 21:3
 
 **Payload completo**
 
@@ -1458,10 +1458,10 @@ Seleção determinística e distribuída: para cada jogo e dificuldade, o primei
 
 - **ID:** `who-am-i-030`
 - **Título:** Quem sou eu? — conjunto 30
-- **Categoria:** Personagens
-- **Tema:** Personagens bíblicos
+- **Categoria:** Conceitos
+- **Tema:** Objetos, Lugares
 - **Dificuldade:** EASY
-- **Referência bíblica:** Jonas 1:17
+- **Referência bíblica:** Números 21:9; Êxodo 14:21; Êxodo 3:2
 
 **Payload completo**
 
@@ -1511,10 +1511,10 @@ Seleção determinística e distribuída: para cada jogo e dificuldade, o primei
 
 - **ID:** `who-am-i-060`
 - **Título:** Quem sou eu? — conjunto 60
-- **Categoria:** Personagens
-- **Tema:** Personagens bíblicos
+- **Categoria:** Conceitos
+- **Tema:** Ensinamentos, Objetos, Lugares
 - **Dificuldade:** EASY
-- **Referência bíblica:** Colossenses 4:14
+- **Referência bíblica:** Gálatas 5:22-23; Efésios 6:11; Apocalipse 21:2
 
 **Payload completo**
 
@@ -1570,9 +1570,9 @@ Seleção determinística e distribuída: para cada jogo e dificuldade, o primei
 - **ID:** `who-am-i-003`
 - **Título:** Quem sou eu? — conjunto 3
 - **Categoria:** Personagens
-- **Tema:** Personagens bíblicos
+- **Tema:** Personagens
 - **Dificuldade:** MEDIUM
-- **Referência bíblica:** Gênesis 6:14
+- **Referência bíblica:** Gênesis 35:10; Gênesis 41:41; Êxodo 3:10
 
 **Payload completo**
 
@@ -1622,10 +1622,10 @@ Seleção determinística e distribuída: para cada jogo e dificuldade, o primei
 
 - **ID:** `who-am-i-029`
 - **Título:** Quem sou eu? — conjunto 29
-- **Categoria:** Personagens
-- **Tema:** Personagens bíblicos
+- **Categoria:** Objetos
+- **Tema:** Objetos
 - **Dificuldade:** MEDIUM
-- **Referência bíblica:** Daniel 6:16
+- **Referência bíblica:** 1 Reis 6:1; Êxodo 25:10; Êxodo 16:15
 
 **Payload completo**
 
@@ -1675,10 +1675,10 @@ Seleção determinística e distribuída: para cada jogo e dificuldade, o primei
 
 - **ID:** `who-am-i-059`
 - **Título:** Quem sou eu? — conjunto 59
-- **Categoria:** Personagens
-- **Tema:** Personagens bíblicos
+- **Categoria:** Conceitos
+- **Tema:** Eventos, Ensinamentos
 - **Dificuldade:** MEDIUM
-- **Referência bíblica:** Tito 1:5
+- **Referência bíblica:** Mateus 17:2; Atos 15:6; Marcos 12:31
 
 **Payload completo**
 
@@ -1734,9 +1734,9 @@ Seleção determinística e distribuída: para cada jogo e dificuldade, o primei
 - **ID:** `who-am-i-001`
 - **Título:** Quem sou eu? — conjunto 1
 - **Categoria:** Personagens
-- **Tema:** Personagens bíblicos
+- **Tema:** Personagens
 - **Dificuldade:** HARD
-- **Referência bíblica:** Gênesis 2:7
+- **Referência bíblica:** Gênesis 2:7; Gênesis 2:22; Gênesis 6:14
 
 **Payload completo**
 
@@ -1787,9 +1787,9 @@ Seleção determinística e distribuída: para cada jogo e dificuldade, o primei
 - **ID:** `who-am-i-026`
 - **Título:** Quem sou eu? — conjunto 26
 - **Categoria:** Personagens
-- **Tema:** Personagens bíblicos
+- **Tema:** Personagens
 - **Dificuldade:** HARD
-- **Referência bíblica:** Isaías 6:1
+- **Referência bíblica:** 1 Samuel 3:10; 1 Samuel 10:1; 1 Samuel 16:13
 
 **Payload completo**
 
@@ -1839,10 +1839,10 @@ Seleção determinística e distribuída: para cada jogo e dificuldade, o primei
 
 - **ID:** `who-am-i-056`
 - **Título:** Quem sou eu? — conjunto 56
-- **Categoria:** Personagens
-- **Tema:** Personagens bíblicos
+- **Categoria:** Conceitos
+- **Tema:** Milagres, Parábolas
 - **Dificuldade:** HARD
-- **Referência bíblica:** Atos 18:24
+- **Referência bíblica:** Marcos 4:39; Lucas 15:20; Mateus 25:1
 
 **Payload completo**
 
@@ -1898,17 +1898,17 @@ Seleção determinística e distribuída: para cada jogo e dificuldade, o primei
 #### three-clues-002
 
 - **ID:** `three-clues-002`
-- **Título:** Três pistas bíblicas 2
+- **Título:** Personagens da Bíblia
 - **Categoria:** Personagens
-- **Tema:** Personagens bíblicos
+- **Tema:** Personagens
 - **Dificuldade:** EASY
-- **Referência bíblica:** Gênesis 2:22
+- **Referência bíblica:** Gênesis 12:2; Gênesis 21:2; Gênesis 21:3
 
 **Payload completo**
 
 ```json
 {
-  "title": "Três pistas bíblicas 2",
+  "title": "Personagens da Bíblia",
   "challenges": [
     {
       "answer": "Abraão",
@@ -1951,40 +1951,40 @@ Seleção determinística e distribuída: para cada jogo e dificuldade, o primei
 #### three-clues-030
 
 - **ID:** `three-clues-030`
-- **Título:** Três pistas bíblicas 30
-- **Categoria:** Personagens
-- **Tema:** Personagens bíblicos
+- **Título:** Descubra pelas pistas
+- **Categoria:** Conceitos
+- **Tema:** Objetos, Lugares
 - **Dificuldade:** EASY
-- **Referência bíblica:** Jonas 1:17
+- **Referência bíblica:** Números 21:9; Êxodo 14:21; Êxodo 3:2
 
 **Payload completo**
 
 ```json
 {
-  "title": "Três pistas bíblicas 30",
+  "title": "Descubra pelas pistas",
   "challenges": [
     {
-      "answer": "Ezequiel",
+      "answer": "Serpente de bronze",
       "clues": [
-        "Profetizei entre exilados",
-        "Vi rodas numa visão",
-        "Minha identidade se relaciona a vale de ossos secos."
+        "Fui feita durante uma crise no deserto",
+        "Moisés me colocou sobre uma haste",
+        "Minha identidade se relaciona a sinal levantado no deserto."
       ]
     },
     {
-      "answer": "Daniel",
+      "answer": "Mar Vermelho",
       "clues": [
-        "Fui levado para Babilônia",
-        "Interpretei sonhos",
-        "Minha identidade se relaciona a cova dos leões."
+        "Um vento forte soprou sobre mim",
+        "Abri caminho para Israel",
+        "Minha identidade se relaciona a travessia durante o Êxodo."
       ]
     },
     {
-      "answer": "Jonas",
+      "answer": "Sarça ardente",
       "clues": [
-        "Fugi de uma missão",
-        "Fui lançado ao mar",
-        "Minha identidade se relaciona a grande peixe."
+        "Estava no Horebe",
+        "Queimava sem ser consumida",
+        "Minha identidade se relaciona a chamado de Moisés."
       ]
     }
   ]
@@ -2004,40 +2004,40 @@ Seleção determinística e distribuída: para cada jogo e dificuldade, o primei
 #### three-clues-060
 
 - **ID:** `three-clues-060`
-- **Título:** Três pistas bíblicas 60
-- **Categoria:** Atos
-- **Tema:** Personagens bíblicos
+- **Título:** Descubra pelas pistas
+- **Categoria:** Conceitos
+- **Tema:** Ensinamentos, Objetos, Lugares
 - **Dificuldade:** EASY
-- **Referência bíblica:** Atos 2:42
+- **Referência bíblica:** Gálatas 5:22-23; Efésios 6:11; Apocalipse 21:2
 
 **Payload completo**
 
 ```json
 {
-  "title": "Três pistas bíblicas 60",
+  "title": "Descubra pelas pistas",
   "challenges": [
     {
-      "answer": "Fé",
+      "answer": "Fruto do Espírito",
       "clues": [
         "Apareço em uma narrativa importante das Escrituras.",
-        "Relaciono-me ao que se espera",
-        "Sou lembrado por confiança em Deus."
+        "Sou descrito em contraste com as obras da carne",
+        "Sou lembrado por caráter produzido pelo Espírito."
       ]
     },
     {
-      "answer": "Nova Aliança",
+      "answer": "Armadura de Deus",
       "clues": [
         "Apareço em uma narrativa importante das Escrituras.",
-        "Fui anunciada por um profeta",
-        "Sou lembrado por promessa escrita no coração."
+        "Uso imagens do equipamento de um soldado",
+        "Sou lembrado por figura da preparação espiritual."
       ]
     },
     {
-      "answer": "Igreja",
+      "answer": "Nova Jerusalém",
       "clues": [
         "Apareço em uma narrativa importante das Escrituras.",
-        "Persevero no ensino e na comunhão",
-        "Sou lembrado por comunidade reunida em Cristo."
+        "Desço do céu da parte de Deus",
+        "Sou lembrado por cidade da esperança final."
       ]
     }
   ]
@@ -2059,17 +2059,17 @@ Seleção determinística e distribuída: para cada jogo e dificuldade, o primei
 #### three-clues-003
 
 - **ID:** `three-clues-003`
-- **Título:** Três pistas bíblicas 3
+- **Título:** Personagens da Bíblia
 - **Categoria:** Personagens
-- **Tema:** Personagens bíblicos
+- **Tema:** Personagens
 - **Dificuldade:** MEDIUM
-- **Referência bíblica:** Gênesis 6:14
+- **Referência bíblica:** Gênesis 35:10; Gênesis 41:41; Êxodo 3:10
 
 **Payload completo**
 
 ```json
 {
-  "title": "Três pistas bíblicas 3",
+  "title": "Personagens da Bíblia",
   "challenges": [
     {
       "answer": "Jacó",
@@ -2112,40 +2112,40 @@ Seleção determinística e distribuída: para cada jogo e dificuldade, o primei
 #### three-clues-029
 
 - **ID:** `three-clues-029`
-- **Título:** Três pistas bíblicas 29
-- **Categoria:** Personagens
-- **Tema:** Personagens bíblicos
+- **Título:** Objetos e símbolos
+- **Categoria:** Objetos
+- **Tema:** Objetos
 - **Dificuldade:** MEDIUM
-- **Referência bíblica:** Daniel 6:16
+- **Referência bíblica:** 1 Reis 6:1; Êxodo 25:10; Êxodo 16:15
 
 **Payload completo**
 
 ```json
 {
-  "title": "Três pistas bíblicas 29",
+  "title": "Objetos e símbolos",
   "challenges": [
     {
-      "answer": "Jó",
+      "answer": "Templo",
       "clues": [
-        "Era íntegro e rico",
-        "Perdi bens e filhos",
-        "Minha identidade se relaciona a perseverança no sofrimento."
+        "Salomão iniciou minha construção",
+        "Possuía Lugar Santo e Santíssimo",
+        "Minha identidade se relaciona a casa de adoração em Jerusalém."
       ]
     },
     {
-      "answer": "Isaías",
+      "answer": "Arca da Aliança",
       "clues": [
-        "Vi serafins",
-        "Meus lábios foram tocados por uma brasa",
-        "Minha identidade se relaciona a visão do trono."
+        "Fui feita de madeira revestida de ouro",
+        "Minha tampa era o propiciatório",
+        "Minha identidade se relaciona a símbolo da presença e da aliança."
       ]
     },
     {
-      "answer": "Jeremias",
+      "answer": "Maná",
       "clues": [
-        "Fui chamado antes de nascer",
-        "Usei um jugo como sinal",
-        "Minha identidade se relaciona a profeta choroso."
+        "Aparecia pela manhã",
+        "Era recolhido conforme a necessidade diária",
+        "Minha identidade se relaciona a alimento no deserto."
       ]
     }
   ]
@@ -2165,40 +2165,40 @@ Seleção determinística e distribuída: para cada jogo e dificuldade, o primei
 #### three-clues-059
 
 - **ID:** `three-clues-059`
-- **Título:** Três pistas bíblicas 59
-- **Categoria:** Ensinamentos
-- **Tema:** Personagens bíblicos
+- **Título:** Descubra pelas pistas
+- **Categoria:** Conceitos
+- **Tema:** Eventos, Ensinamentos
 - **Dificuldade:** MEDIUM
-- **Referência bíblica:** Jeremias 31:31
+- **Referência bíblica:** Mateus 17:2; Atos 15:6; Marcos 12:31
 
 **Payload completo**
 
 ```json
 {
-  "title": "Três pistas bíblicas 59",
+  "title": "Descubra pelas pistas",
   "challenges": [
     {
-      "answer": "Ressurreição",
+      "answer": "Transfiguração",
       "clues": [
         "Apareço em uma narrativa importante das Escrituras.",
-        "Ocorri no primeiro dia da semana",
-        "Sou lembrado por vitória de Jesus sobre a morte."
+        "Aconteci num monte diante de três discípulos",
+        "Sou lembrado por revelação da glória de Jesus."
       ]
     },
     {
-      "answer": "Páscoa",
+      "answer": "Concílio de Jerusalém",
       "clues": [
         "Apareço em uma narrativa importante das Escrituras.",
-        "Fui instituída no Egito",
-        "Sou lembrado por memorial da libertação."
+        "Reuni apóstolos e presbíteros",
+        "Sou lembrado por decisão da Igreja sobre os gentios."
       ]
     },
     {
-      "answer": "Graça",
+      "answer": "Amor ao próximo",
       "clues": [
         "Apareço em uma narrativa importante das Escrituras.",
-        "Não sou resultado de mérito humano",
-        "Sou lembrado por favor de Deus oferecido em Cristo."
+        "Sou apresentado junto ao amor a Deus",
+        "Sou lembrado por mandamento de cuidado com o outro."
       ]
     }
   ]
@@ -2220,17 +2220,17 @@ Seleção determinística e distribuída: para cada jogo e dificuldade, o primei
 #### three-clues-001
 
 - **ID:** `three-clues-001`
-- **Título:** Três pistas bíblicas 1
+- **Título:** Personagens da Bíblia
 - **Categoria:** Personagens
-- **Tema:** Personagens bíblicos
+- **Tema:** Personagens
 - **Dificuldade:** HARD
-- **Referência bíblica:** Gênesis 2:7
+- **Referência bíblica:** Gênesis 2:7; Gênesis 2:22; Gênesis 6:14
 
 **Payload completo**
 
 ```json
 {
-  "title": "Três pistas bíblicas 1",
+  "title": "Personagens da Bíblia",
   "challenges": [
     {
       "answer": "Adão",
@@ -2273,17 +2273,17 @@ Seleção determinística e distribuída: para cada jogo e dificuldade, o primei
 #### three-clues-026
 
 - **ID:** `three-clues-026`
-- **Título:** Três pistas bíblicas 26
+- **Título:** Personagens da Bíblia
 - **Categoria:** Personagens
-- **Tema:** Personagens bíblicos
+- **Tema:** Personagens
 - **Dificuldade:** HARD
-- **Referência bíblica:** Isaías 6:1
+- **Referência bíblica:** 1 Samuel 3:10; 1 Samuel 10:1; 1 Samuel 16:13
 
 **Payload completo**
 
 ```json
 {
-  "title": "Três pistas bíblicas 26",
+  "title": "Personagens da Bíblia",
   "challenges": [
     {
       "answer": "Samuel",
@@ -2326,40 +2326,40 @@ Seleção determinística e distribuída: para cada jogo e dificuldade, o primei
 #### three-clues-056
 
 - **ID:** `three-clues-056`
-- **Título:** Três pistas bíblicas 56
-- **Categoria:** Eventos
-- **Tema:** Personagens bíblicos
+- **Título:** Descubra pelas pistas
+- **Categoria:** Conceitos
+- **Tema:** Milagres, Parábolas
 - **Dificuldade:** HARD
-- **Referência bíblica:** Êxodo 12:14
+- **Referência bíblica:** Marcos 4:39; Lucas 15:20; Mateus 25:1
 
 **Payload completo**
 
 ```json
 {
-  "title": "Três pistas bíblicas 56",
+  "title": "Descubra pelas pistas",
   "challenges": [
     {
-      "answer": "Arca da Aliança",
+      "answer": "Tempestade acalmada",
       "clues": [
         "Apareço em uma narrativa importante das Escrituras.",
-        "Fui feita de madeira revestida de ouro",
-        "Sou lembrado por símbolo da presença e da aliança."
+        "Aconteci durante uma travessia",
+        "Sou lembrado por milagre no mar da Galileia."
       ]
     },
     {
-      "answer": "Maná",
+      "answer": "Filho Pródigo",
       "clues": [
         "Apareço em uma narrativa importante das Escrituras.",
-        "Aparecia pela manhã",
-        "Sou lembrado por alimento no deserto."
+        "Minha história envolve uma herança antecipada",
+        "Sou lembrado por parábola sobre retorno e acolhimento."
       ]
     },
     {
-      "answer": "Serpente de bronze",
+      "answer": "Dez Virgens",
       "clues": [
         "Apareço em uma narrativa importante das Escrituras.",
-        "Fui feita durante uma crise no deserto",
-        "Sou lembrado por sinal levantado no deserto."
+        "Minha história apresenta lâmpadas e azeite",
+        "Sou lembrado por parábola sobre vigilância."
       ]
     }
   ]
@@ -2393,33 +2393,54 @@ Seleção determinística e distribuída: para cada jogo e dificuldade, o primei
 
 | Testamento | Conteúdos |
 |---|---:|
-| Antigo Testamento | 288 |
-| Novo Testamento | 92 |
+| Antigo Testamento | 268 |
+| Novo Testamento | 112 |
 
 ### Categorias
 
 | Categoria | Conteúdos |
 |---|---:|
-| Personagens | 186 |
-| Conceitos | 60 |
-| Eventos | 48 |
-| Objetos | 38 |
-| Lugares | 16 |
-| Atos | 8 |
-| Ensinamentos | 8 |
-| Milagres | 8 |
-| Parábolas | 8 |
+| Conceitos | 148 |
+| Personagens | 88 |
+| Eventos | 51 |
+| Objetos | 41 |
+| Lugares | 19 |
+| Ensinamentos | 11 |
+| Livros | 11 |
+| Parábolas | 11 |
 
 ### Temas/tags
 
 | Tema ou tag | Ocorrências |
 |---|---:|
+| Antigo Testamento | 312 |
 | Acervo oficial v1 | 220 |
-| Personagens bíblicos | 220 |
-| Antigo Testamento | 136 |
+| Novo Testamento | 134 |
 | Palavra bíblica | 120 |
+| Personagens | 77 |
+| Objetos | 55 |
+| Lugares | 44 |
 | Cronologia bíblica | 40 |
-| Novo Testamento | 24 |
+| Ensinamentos | 33 |
+| Eventos | 33 |
+| Livros | 22 |
+| Milagres | 22 |
+| Parábolas | 22 |
+| Atos | 11 |
+
+## Consolidação editorial — Sprint 25.7
+
+A curadoria preservou os IDs, volumes e dificuldades dos três catálogos, substituiu títulos numerados por títulos editoriais, corrigiu tags genéricas e passou a registrar as três referências que sustentam cada conjunto.
+
+| Jogo | Conteúdos | Categoria Personagens | Categorias representadas | Títulos técnicos restantes |
+|---|---:|---:|---:|---:|
+| Jogo das 3 Pistas | 60 | 18 (30%) | 8 | 0 |
+| Associação de Temas | 60 | 18 (30%) | 8 | 0 |
+| Memória Bíblica | 40 | 12 (30%) | 8 | 0 |
+
+- Associação: os dois lados permanecem únicos dentro de cada conjunto; as referências agora cobrem os três pares.
+- Três Pistas: o banco inclui personagens, lugares, objetos, eventos, livros, conceitos, milagres, parábolas e vida da Igreja; as pistas continuam progressivas e sem revelar a resposta normalizada.
+- Memória: o catálogo textual foi diversificado. Imagens não foram incorporadas nesta revisão porque o contrato jogável vigente aceita apenas `front` e `back`; o Asset Registry não projeta assets nos pares enviados ao jogo. A evolução visual deve ocorrer em sprint própria, com contrato e fallback acessível explícitos.
 
 ## Resultado da correção editorial
 
@@ -2430,7 +2451,7 @@ Seleção determinística e distribuída: para cada jogo e dificuldade, o primei
 | Palavra pouco natural no Wordle | 7 | 7 | 0 |
 | Cronologia sem qualificação narrativa | 8 | 8 | 0 |
 
-O detector bruto sinalizava 60 respostas recorrentes e agora sinaliza 63. A ampliação de diversidade acrescentou referentes não pessoais que reaparecem entre mecânicas. Após revisão contextual, há zero repetições injustificadas: cada recorrência mantida aparece em mecânica, relação ou progressão de pistas distinta, sem duplicação de payload ou de conjunto de pistas.
+O detector bruto sinalizava 60 respostas recorrentes e agora sinaliza 66. A ampliação de diversidade acrescentou referentes não pessoais que reaparecem entre mecânicas. Após revisão contextual, há zero repetições injustificadas: cada recorrência mantida aparece em mecânica, relação ou progressão de pistas distinta, sem duplicação de payload ou de conjunto de pistas.
 
 ## Verificações automáticas adicionais
 
@@ -2448,42 +2469,43 @@ O detector bruto sinalizava 60 respostas recorrentes e agora sinaliza 63. A ampl
 
 ### Referências repetidas em excesso (8 ou mais)
 
-- Nenhum caso detectado automaticamente.
+- 1 Reis 3:12; 1 Reis 18:38; Salmos 122:6: 11 conteúdos
+- 1 Reis 6:1; Êxodo 25:10; Êxodo 16:15: 11 conteúdos
+- 1 Samuel 3:10; 1 Samuel 10:1; 1 Samuel 16:13: 11 conteúdos
+- Atos 2:1; Mateus 28:6; Êxodo 12:14: 11 conteúdos
+- Atos 2:42; Êxodo 25:8; Êxodo 25:31: 11 conteúdos
+- Efésios 2:8; Hebreus 11:1; Jeremias 31:31: 11 conteúdos
+- Êxodo 28:1; Josué 1:6; Josué 2:18: 11 conteúdos
+- Gálatas 5:22-23; Efésios 6:11; Apocalipse 21:2: 11 conteúdos
+- Gênesis 12:2; Gênesis 21:2; Gênesis 21:3: 11 conteúdos
+- Gênesis 2:7; Gênesis 2:22; Gênesis 6:14: 11 conteúdos
+- Gênesis 35:10; Gênesis 41:41; Êxodo 3:10: 11 conteúdos
+- Josué 6:20; Daniel 3:27; João 6:11: 11 conteúdos
+- Juízes 7:7; Juízes 16:17; Rute 1:16: 11 conteúdos
+- Lucas 10:33; Lucas 15:4; Mateus 13:3: 11 conteúdos
+- Marcos 4:39; Lucas 15:20; Mateus 25:1: 11 conteúdos
+- Mateus 17:2; Atos 15:6; Marcos 12:31: 11 conteúdos
+- Miqueias 5:2; Josué 3:17; Êxodo 19:20: 11 conteúdos
+- Números 21:9; Êxodo 14:21; Êxodo 3:2: 11 conteúdos
+- Romanos 1:16; Gênesis 11:9; Josué 6:20: 11 conteúdos
+- Salmos 1:1; Provérbios 1:2; Lucas 1:3: 11 conteúdos
 
 ### Mesma resposta usada excessivamente (4 ou mais)
 
 - Elias: 12 ocorrências
-- Jonas: 12 ocorrências
 - Josué: 12 ocorrências
-- Maria: 12 ocorrências
-- Pedro: 12 ocorrências
 - Abraão: 11 ocorrências
 - Adão: 11 ocorrências
-- André: 11 ocorrências
 - Arão: 11 ocorrências
-- Daniel: 11 ocorrências
 - Davi: 11 ocorrências
-- Eliseu: 11 ocorrências
-- Esdras: 11 ocorrências
-- Ester: 11 ocorrências
 - Eva: 11 ocorrências
-- Ezequiel: 11 ocorrências
 - Gideão: 11 ocorrências
-- Isaías: 11 ocorrências
 - Isaque: 11 ocorrências
 - Jacó: 11 ocorrências
-- Jeremias: 11 ocorrências
-- Jó: 11 ocorrências
-- João: 11 ocorrências
-- João Batista: 11 ocorrências
 - José: 11 ocorrências
-- José de Nazaré: 11 ocorrências
-- Mateus: 11 ocorrências
 - Moisés: 11 ocorrências
-- Mordecai: 11 ocorrências
-- Naamã: 11 ocorrências
-- Neemias: 11 ocorrências
 - Noé: 11 ocorrências
+- Queda de Jericó: 11 ocorrências
 - Raabe: 11 ocorrências
 - Rute: 11 ocorrências
 - Salomão: 11 ocorrências
@@ -2491,29 +2513,50 @@ O detector bruto sinalizava 60 respostas recorrentes e agora sinaliza 63. A ampl
 - Sansão: 11 ocorrências
 - Sara: 11 ocorrências
 - Saul: 11 ocorrências
-- Tiago: 11 ocorrências
+- Concílio de Jerusalém: 10 ocorrências
 - Pentecostes: 10 ocorrências
+- Transfiguração: 10 ocorrências
 - Graça: 9 ocorrências
 - Ressurreição: 9 ocorrências
 - Sinai: 9 ocorrências
+- Amor ao próximo: 8 ocorrências
 - Arca da Aliança: 8 ocorrências
+- Armadura de Deus: 8 ocorrências
 - Belém: 8 ocorrências
 - Bom Samaritano: 8 ocorrências
+- Candelabro: 8 ocorrências
+- Carta aos Romanos: 8 ocorrências
+- Dez Virgens: 8 ocorrências
+- Evangelho de Lucas: 8 ocorrências
 - Fé: 8 ocorrências
+- Filho Pródigo: 8 ocorrências
+- Forno ardente: 8 ocorrências
+- Fruto do Espírito: 8 ocorrências
 - Igreja: 8 ocorrências
 - Jerusalém: 8 ocorrências
 - Jordão: 8 ocorrências
 - Maná: 8 ocorrências
 - Mar Vermelho: 8 ocorrências
+- Multiplicação dos pães: 8 ocorrências
+- Muralhas de Jericó: 8 ocorrências
 - Nova Aliança: 8 ocorrências
+- Nova Jerusalém: 8 ocorrências
 - Ovelha perdida: 8 ocorrências
 - Páscoa: 8 ocorrências
+- Provérbios: 8 ocorrências
+- Salmos: 8 ocorrências
 - Sarça ardente: 8 ocorrências
 - Semeador: 8 ocorrências
 - Serpente de bronze: 8 ocorrências
+- Tabernáculo: 8 ocorrências
+- Tempestade acalmada: 8 ocorrências
 - Templo: 8 ocorrências
+- Torre de Babel: 8 ocorrências
+- Jonas: 4 ocorrências
 - Lucas: 4 ocorrências
+- Maria: 4 ocorrências
 - Paulo: 4 ocorrências
+- Pedro: 4 ocorrências
 - Silas: 4 ocorrências
 
 ### Palavras pouco naturais no Wordle
@@ -2543,23 +2586,23 @@ O detector bruto sinalizava 60 respostas recorrentes e agora sinaliza 63. A ampl
 
 - Repetições listadas acima: confirmar na revisão humana se a diferença de abordagem editorial justifica cada recorrência.
 - Elias: aparece 12 vezes em relações/desafios; decidir se a repetição é editorialmente aceitável.
-- Jonas: aparece 12 vezes em relações/desafios; decidir se a repetição é editorialmente aceitável.
 - Josué: aparece 12 vezes em relações/desafios; decidir se a repetição é editorialmente aceitável.
-- Maria: aparece 12 vezes em relações/desafios; decidir se a repetição é editorialmente aceitável.
-- Pedro: aparece 12 vezes em relações/desafios; decidir se a repetição é editorialmente aceitável.
 - Abraão: aparece 11 vezes em relações/desafios; decidir se a repetição é editorialmente aceitável.
 - Adão: aparece 11 vezes em relações/desafios; decidir se a repetição é editorialmente aceitável.
-- André: aparece 11 vezes em relações/desafios; decidir se a repetição é editorialmente aceitável.
 - Arão: aparece 11 vezes em relações/desafios; decidir se a repetição é editorialmente aceitável.
-- Daniel: aparece 11 vezes em relações/desafios; decidir se a repetição é editorialmente aceitável.
 - Davi: aparece 11 vezes em relações/desafios; decidir se a repetição é editorialmente aceitável.
-- Eliseu: aparece 11 vezes em relações/desafios; decidir se a repetição é editorialmente aceitável.
-- Esdras: aparece 11 vezes em relações/desafios; decidir se a repetição é editorialmente aceitável.
-- Ester: aparece 11 vezes em relações/desafios; decidir se a repetição é editorialmente aceitável.
 - Eva: aparece 11 vezes em relações/desafios; decidir se a repetição é editorialmente aceitável.
-- Ezequiel: aparece 11 vezes em relações/desafios; decidir se a repetição é editorialmente aceitável.
 - Gideão: aparece 11 vezes em relações/desafios; decidir se a repetição é editorialmente aceitável.
-- Isaías: aparece 11 vezes em relações/desafios; decidir se a repetição é editorialmente aceitável.
 - Isaque: aparece 11 vezes em relações/desafios; decidir se a repetição é editorialmente aceitável.
 - Jacó: aparece 11 vezes em relações/desafios; decidir se a repetição é editorialmente aceitável.
+- José: aparece 11 vezes em relações/desafios; decidir se a repetição é editorialmente aceitável.
+- Moisés: aparece 11 vezes em relações/desafios; decidir se a repetição é editorialmente aceitável.
+- Noé: aparece 11 vezes em relações/desafios; decidir se a repetição é editorialmente aceitável.
+- Queda de Jericó: aparece 11 vezes em relações/desafios; decidir se a repetição é editorialmente aceitável.
+- Raabe: aparece 11 vezes em relações/desafios; decidir se a repetição é editorialmente aceitável.
+- Rute: aparece 11 vezes em relações/desafios; decidir se a repetição é editorialmente aceitável.
+- Salomão: aparece 11 vezes em relações/desafios; decidir se a repetição é editorialmente aceitável.
+- Samuel: aparece 11 vezes em relações/desafios; decidir se a repetição é editorialmente aceitável.
+- Sansão: aparece 11 vezes em relações/desafios; decidir se a repetição é editorialmente aceitável.
+- Sara: aparece 11 vezes em relações/desafios; decidir se a repetição é editorialmente aceitável.
 

@@ -95,9 +95,31 @@ test("potentially disputed timelines explicitly identify narrative order", () =>
 
 test("official package includes non-character editorial categories", () => {
   const diversifiedGames = ["memoria-biblica", "associacao-de-temas", "jogo-tres-pistas"];
-  const categories = new Set(pack.contents.filter(entry => diversifiedGames.includes(entry.gameType)).map(entry => entry.category));
-  for (const category of ["Lugares", "Objetos", "Eventos", "Milagres", "Parábolas", "Ensinamentos", "Atos"]) {
-    assert.ok(categories.has(category), category);
+  for (const gameType of diversifiedGames) {
+    const entries = pack.contents.filter(entry => entry.gameType === gameType);
+    const categories = new Set(entries.map(entry => entry.category));
+    assert.ok(categories.size >= 7, `${gameType}: ${[...categories].join(", ")}`);
+    assert.ok(entries.filter(entry => entry.category === "Personagens").length / entries.length <= 0.35, gameType);
+  }
+});
+
+test("curated set metadata is descriptive and covers every item in the set", () => {
+  const games = ["memoria-biblica", "associacao-de-temas", "jogo-tres-pistas"];
+  for (const entry of pack.contents.filter(item => games.includes(item.gameType))) {
+    assert.doesNotMatch(entry.payload.title, /(?:conjunto|associações bíblicas|três pistas bíblicas|personagens e feitos bíblicos)\s*\d+$/i);
+    assert.equal(entry.biblicalReference.split(";").length, 3, entry.externalId);
+    assert.ok(!entry.tags.includes("Personagens bíblicos") || entry.category === "Personagens", entry.externalId);
+  }
+});
+
+test("association sets are unambiguous on both sides", () => {
+  const normalized = value => String(value).normalize("NFD").replace(/\p{M}/gu, "")
+    .toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  for (const entry of pack.contents.filter(item => item.gameType === "associacao-de-temas")) {
+    const left = entry.payload.pairs.map(pair => normalized(pair.left));
+    const right = entry.payload.pairs.map(pair => normalized(pair.right));
+    assert.equal(new Set(left).size, left.length, `${entry.externalId}: item repetido`);
+    assert.equal(new Set(right).size, right.length, `${entry.externalId}: associação repetida`);
   }
 });
 

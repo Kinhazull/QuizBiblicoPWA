@@ -193,12 +193,25 @@ export function renderEditorialReview(pack) {
   }
   const checks = automatedChecks(pack);
   const table = object => Object.entries(object).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(([key, count]) => `| ${key} | ${count} |`).join("\n");
+  const curatedGames = ["jogo-tres-pistas", "associacao-de-temas", "memoria-biblica"];
+  const curationRows = curatedGames.map(gameType => {
+    const entries = pack.contents.filter(entry => entry.gameType === gameType);
+    const characters = entries.filter(entry => entry.category === "Personagens").length;
+    const technicalTitles = entries.filter(entry => /(?:conjunto|associações bíblicas|três pistas bíblicas|personagens e feitos bíblicos)\s*\d+$/i.test(titleOf(entry))).length;
+    return `| ${GAME_LABELS[gameType]} | ${entries.length} | ${characters} (${Math.round(characters / entries.length * 100)}%) | ${new Set(entries.map(entry => entry.category)).size} | ${technicalTitles} |`;
+  });
   lines.push(
     "", "## Distribuição completa do pacote", "",
     "### Por jogo", "", "| Jogo | Conteúdos |", "|---|---:|", ...GAME_ORDER.map(gameType => `| ${GAME_LABELS[gameType]} | ${countsByGame[gameType]} |`),
     "", "### Antigo e Novo Testamento", "", "| Testamento | Conteúdos |", "|---|---:|", table(testament),
     "", "### Categorias", "", "| Categoria | Conteúdos |", "|---|---:|", table(categories),
     "", "### Temas/tags", "", "| Tema ou tag | Ocorrências |", "|---|---:|", table(themes),
+    "", "## Consolidação editorial — Sprint 25.7", "",
+    "A curadoria preservou os IDs, volumes e dificuldades dos três catálogos, substituiu títulos numerados por títulos editoriais, corrigiu tags genéricas e passou a registrar as três referências que sustentam cada conjunto.",
+    "", "| Jogo | Conteúdos | Categoria Personagens | Categorias representadas | Títulos técnicos restantes |", "|---|---:|---:|---:|---:|", ...curationRows,
+    "", "- Associação: os dois lados permanecem únicos dentro de cada conjunto; as referências agora cobrem os três pares.",
+    "- Três Pistas: o banco inclui personagens, lugares, objetos, eventos, livros, conceitos, milagres, parábolas e vida da Igreja; as pistas continuam progressivas e sem revelar a resposta normalizada.",
+    "- Memória: o catálogo textual foi diversificado. Imagens não foram incorporadas nesta revisão porque o contrato jogável vigente aceita apenas `front` e `back`; o Asset Registry não projeta assets nos pares enviados ao jogo. A evolução visual deve ocorrer em sprint própria, com contrato e fallback acessível explícitos.",
     "", "## Resultado da correção editorial", "",
     "| Verificação | Alertas anteriores | Corrigidos | Restantes |", "|---|---:|---:|---:|",
     `| Resposta revelada | ${PREVIOUS_ALERTS.answerReveals} | ${PREVIOUS_ALERTS.answerReveals - checks.answerReveals.length} | ${checks.answerReveals.length} |`,
