@@ -1,123 +1,23 @@
 "use client";
-import { useCallback, useEffect, useState } from "react";
-const months = [
-  "Janeiro",
-  "Fevereiro",
-  "Março",
-  "Abril",
-  "Maio",
-  "Junho",
-  "Julho",
-  "Agosto",
-  "Setembro",
-  "Outubro",
-  "Novembro",
-  "Dezembro",
-];
-export default function CalendarPage() {
-  const [cursor, setCursor] = useState(() => new Date()),
-    [data, setData] = useState<any>({
-      rounds: [],
-      seasons: [],
-      conflictIds: [],
-    });
-  const year = cursor.getFullYear(),
-    month = cursor.getMonth(),
-    first = new Date(year, month, 1),
-    start = new Date(year, month, 1 - first.getDay()),
-    days = Array.from(
-      { length: 42 },
-      (_, index) =>
-        new Date(
-          start.getFullYear(),
-          start.getMonth(),
-          start.getDate() + index,
-        ),
-    );
-  const load = useCallback(async () => {
-    const from = new Date(year, month, 1).getTime(),
-      to = new Date(year, month + 1, 1).getTime() - 1;
-    const response = await fetch(`/api/admin/calendar?from=${from}&to=${to}`);
-    if (!response.ok) {
-      location.href = "/admin";
-      return;
-    }
-    setData(await response.json());
-  }, [year, month]);
-  useEffect(() => {
-    load();
-  }, [load]);
-  const dayRounds = (date: Date) =>
-    data.rounds.filter((round: any) => {
-      const local = new Date(round.opens_at).toLocaleDateString("en-CA", {
-        timeZone: "America/Sao_Paulo",
-      });
-      return (
-        local ===
-        `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`
-      );
-    });
-  return (
-    <main className="admin-shell">
-      <section className="admin-title">
-        <p className="eyebrow">PLANEJAMENTO</p>
-        <h1>
-          Calendário de <em>rodadas</em>
-        </h1>
-        <p>
-          {data.seasons[0]?.title || "Nenhuma temporada neste período"}
-          {data.conflictIds.length
-            ? ` · ${data.conflictIds.length} rodada(s) em conflito`
-            : ""}
-        </p>
-      </section>
-      <nav className="calendar-nav">
-        <button onClick={() => setCursor(new Date(year, month - 1, 1))}>
-          ←
-        </button>
-        <h2>
-          {months[month]} de {year}
-        </h2>
-        <button onClick={() => setCursor(new Date(year, month + 1, 1))}>
-          →
-        </button>
-      </nav>
-      <section className="calendar-grid">
-        {["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map((label) => (
-          <b className="weekday" key={label}>
-            {label}
-          </b>
-        ))}
-        {days.map((date) => (
-          <article
-            className={date.getMonth() === month ? "" : "outside"}
-            key={date.toISOString()}
-          >
-            <span>{date.getDate()}</span>
-            {dayRounds(date).map((round: any) => (
-              <a
-                className={`${round.round_type} ${data.conflictIds.includes(round.id) ? "conflict" : ""}`}
-                href={`/admin/rodadas/detalhes?id=${round.id}`}
-                key={round.id}
-              >
-                <small>
-                  {new Date(round.opens_at).toLocaleTimeString("pt-BR", {
-                    timeZone: "America/Sao_Paulo",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </small>
-                {round.title}
-              </a>
-            ))}
-          </article>
-        ))}
-      </section>
-      <p className="calendar-legend">
-        <span>● Regular</span>
-        <span>★ Evento especial</span>
-        <span className="conflict">! Conflito de horário</span>
-      </p>
-    </main>
-  );
-}
+import { useCallback,useEffect,useMemo,useState } from "react";
+const MONTHS=["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+const GAMES:Record<string,string>={"quiz-biblico":"Quiz Bíblico","wordle-biblico":"Wordle Bíblico","linha-do-tempo-biblica":"Linha do Tempo","memoria-biblica":"Memória","associacao-de-temas":"Associação","quem-sou-eu":"Quem Sou Eu?","jogo-tres-pistas":"Três Pistas"};
+const STATES:Record<string,string>={DRAFT:"Rascunho",SCHEDULED:"Agendado",ACTIVE:"Em andamento",FINISHED:"Encerrado",CANCELLED:"Cancelado"};
+type Event={id:string;title:string;status:string;startsAt:number;endsAt:number;timeZone:string;games:Array<{gameType:string}>;reservations:Array<{gameType:string;count:number}>;checklist:{ready:boolean;issues:Array<{code:string;label:string}>};editorHref:string};
+type Data={timeZone:string;events:Event[];summary:{totalEvents:number;reservations:number;noEventsNext14Days:boolean;conflicts:number};editorial:{awaitingReview:number;insights:Array<{id:string;title:string;description:string}>}};
+const EMPTY:Data={timeZone:"America/Sao_Paulo",events:[],summary:{totalEvents:0,reservations:0,noEventsNext14Days:false,conflicts:0},editorial:{awaitingReview:0,insights:[]}};
+function key(value:number|Date,zone:string){const parts=new Intl.DateTimeFormat("en-CA",{timeZone:zone,year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(value instanceof Date?value:new Date(value));const get=(type:string)=>parts.find(part=>part.type===type)?.value||"";return `${get("year")}-${get("month")}-${get("day")}`}
+const date=(value:number,zone:string)=>new Intl.DateTimeFormat("pt-BR",{timeZone:zone,dateStyle:"short",timeStyle:"short"}).format(value);
+export default function PlanningCalendarPage(){
+ const [cursor,setCursor]=useState(()=>new Date());const [data,setData]=useState<Data>(EMPTY);const [status,setStatus]=useState("");const [gameType,setGameType]=useState("");const [loading,setLoading]=useState(true);const [error,setError]=useState("");
+ const year=cursor.getUTCFullYear(),month=cursor.getUTCMonth(),from=Date.UTC(year,month,1)-172800000,to=Date.UTC(year,month+1,1)+172800000;
+ const load=useCallback(async()=>{setLoading(true);setError("");const query=new URLSearchParams({from:String(from),to:String(to)});if(status)query.set("status",status);if(gameType)query.set("gameType",gameType);try{const response=await fetch(`/api/admin/planning/calendar?${query}`,{cache:"no-store"});if(!response.ok)throw new Error();setData(await response.json())}catch{setError("Não foi possível carregar o planejamento.")}finally{setLoading(false)}},[from,to,status,gameType]);useEffect(()=>{void load()},[load]);
+ const first=new Date(Date.UTC(year,month,1)),start=new Date(first);start.setUTCDate(1-first.getUTCDay());const days=Array.from({length:42},(_,index)=>new Date(Date.UTC(start.getUTCFullYear(),start.getUTCMonth(),start.getUTCDate()+index)));const agenda=useMemo(()=>[...data.events].sort((a,b)=>a.startsAt-b.startsAt),[data.events]);
+ const onDay=(day:Date)=>{const dayKey=key(day,data.timeZone);return data.events.filter(item=>dayKey>=key(item.startsAt,data.timeZone)&&dayKey<=key(item.endsAt-1,data.timeZone))};
+ return <main className="admin-shell planning-page"><section className="admin-title"><p className="eyebrow">PLANEJAMENTO OPERACIONAL</p><h1>Calendário da <em>plataforma</em></h1><p>Eventos, reservas e necessidades editoriais no fuso <strong>{data.timeZone}</strong>.</p></section>
+ <section className="planning-toolbar admin-panel"><div><button onClick={()=>setCursor(new Date(Date.UTC(year,month-1,1)))} aria-label="Mês anterior">←</button><h2>{MONTHS[month]} de {year}</h2><button onClick={()=>setCursor(new Date(Date.UTC(year,month+1,1)))} aria-label="Próximo mês">→</button></div><label>Estado<select value={status} onChange={e=>setStatus(e.target.value)}><option value="">Operacionais</option>{Object.entries(STATES).map(([value,label])=><option value={value} key={value}>{label}</option>)}</select></label><label>Jogo<select value={gameType} onChange={e=>setGameType(e.target.value)}><option value="">Todos</option>{Object.entries(GAMES).map(([value,label])=><option value={value} key={value}>{label}</option>)}</select></label></section>
+ {error&&<p className="planning-state error" role="alert">{error} <button onClick={()=>void load()}>Tentar novamente</button></p>}{loading&&<p className="planning-state" role="status">Carregando planejamento…</p>}
+ {!loading&&!error&&<><section className="planning-metrics"><article><strong>{data.summary.totalEvents}</strong><span>Eventos no período</span></article><article><strong>{data.summary.reservations}</strong><span>Reservas ativas</span></article><article><strong>{data.editorial.awaitingReview}</strong><span>Aguardando revisão</span></article><article><strong>{data.summary.conflicts}</strong><span>Conflitos reais</span></article></section>{data.summary.noEventsNext14Days&&<p className="planning-notice" role="status">Não há Eventos programados nos próximos 14 dias.</p>}
+ <section className="planning-layout"><div className="planning-calendar admin-panel"><div className="planning-grid" aria-label={`${MONTHS[month]} de ${year}`}>{["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"].map(label=><b key={label}>{label}</b>)}{days.map(day=><article className={day.getUTCMonth()===month?"":"outside"} key={day.toISOString()}><span>{day.getUTCDate()}</span>{onDay(day).map(item=><a href={`#planning-${item.id}`} className={`planning-event ${item.status.toLowerCase()}`} key={item.id}><small>{STATES[item.status]||item.status}</small>{item.title}</a>)}</article>)}</div></div>
+ <aside className="planning-sidebar"><section className="admin-panel"><h2>Próxima agenda</h2>{agenda.length===0?<p className="planning-empty">Nenhum Evento neste período.</p>:agenda.map(item=><article className="planning-agenda-item" id={`planning-${item.id}`} key={item.id}><header><span className={`planning-badge ${item.status.toLowerCase()}`}>{STATES[item.status]||item.status}</span><h3>{item.title}</h3></header><p>{date(item.startsAt,item.timeZone)} → {date(item.endsAt,item.timeZone)}</p><p><strong>Jogos:</strong> {item.games.map(game=>GAMES[game.gameType]||game.gameType).join(", ")||"Nenhum"}</p>{item.reservations.map(entry=><p key={entry.gameType}><strong>{GAMES[entry.gameType]||entry.gameType}:</strong> {entry.count} conteúdo(s) reservado(s)</p>)}<div className={item.checklist.ready?"planning-ready":"planning-checklist"}>{item.checklist.ready?<strong>✓ Pronto para execução</strong>:<><strong>O que falta preparar?</strong><ul>{item.checklist.issues.map(issue=><li key={issue.code}>{issue.label}</li>)}</ul></>}</div><a className="planning-editor-link" href={item.editorHref}>Abrir no Editor de Eventos →</a></article>)}</section><section className="admin-panel"><h2>Necessidades editoriais</h2>{data.editorial.insights.length===0?<p className="planning-empty">Nenhum alerta editorial relevante.</p>:data.editorial.insights.map(item=><article className="planning-insight" key={item.id}><strong>{item.title}</strong><p>{item.description}</p></article>)}</section></aside></section></>}
+ </main>}

@@ -90,7 +90,7 @@ export function EventWizard() {
 
   return <>
     <section className="event-wizard admin-panel" aria-labelledby="event-editor-title">
-      <header><div><p className="eyebrow">{editingId ? "EDITAR RASCUNHO" : "NOVO EVENTO"}</p><h2 id="event-editor-title">{STEPS[step]}</h2></div><strong>Etapa {step + 1} de {STEPS.length}</strong></header>
+      <header><div><p className="eyebrow">{editingId ? "EDITAR RASCUNHO" : "NOVO EVENTO"}</p><h2 id="event-editor-title">{STEPS[step]}</h2></div><div><a className="event-calendar-link" href="/admin/calendario">Ver calendário</a><strong>Etapa {step + 1} de {STEPS.length}</strong></div></header>
       <nav className="event-wizard-steps" aria-label="Etapas do editor">{STEPS.map((label, index) => <button type="button" key={label} className={index === step ? "active" : index < step ? "done" : ""} aria-current={index === step ? "step" : undefined} onClick={() => index <= step && setStep(index)}><span>{index + 1}</span>{label}</button>)}</nav>
       <div className="event-wizard-body">
         {step === 0 && <section className="event-fields"><label>Título<input value={draft.title} onChange={event => setDraft(value => ({ ...value, title: event.target.value }))} minLength={3} maxLength={120} required /></label><label>Descrição<textarea value={draft.description} onChange={event => setDraft(value => ({ ...value, description: event.target.value }))} maxLength={1000} /></label><p className="field-note">O evento será criado como rascunho. Identificadores técnicos são gerados pela plataforma.</p></section>}

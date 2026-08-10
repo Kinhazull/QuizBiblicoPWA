@@ -16,7 +16,8 @@ test("admin navigation promotes universal content while legacy operational route
   for (const route of ["/admin/perguntas/revisao", "/admin/perguntas/importar", "/admin/perguntas/colaboracao"]) {
     assert.ok(navigation.includes(route), route);
   }
-  assert.doesNotMatch(navigation, /\/admin\/rodadas|\/admin\/temporadas|\/admin\/calendario/);
+  assert.doesNotMatch(navigation, /\/admin\/rodadas|\/admin\/temporadas/);
+  assert.match(navigation, /\/admin\/calendario/);
   assert.equal(readFileSync(new URL("../app/admin/rodadas/lista/page.tsx", import.meta.url), "utf8").length > 0, true);
   assert.match(navigation, /label: "Criar conteúdo"[\s\S]*?href: "\/admin\/conteudo\/editor"/);
   assert.doesNotMatch(navigation, /label: "Criar conteúdo"[\s\S]*?disabled: true/);

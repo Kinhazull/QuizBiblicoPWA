@@ -132,10 +132,12 @@ Qualidade da primeira versão pública tem prioridade sobre velocidade de public
 
 ### 26.4 — Planejamento editorial e operacional
 
+**Estado:** concluído localmente como Planejamento e Calendário Administrativo.
+
 - **Objetivo:** unificar calendário de conteúdo, publicação, Eventos e capacidade operacional.
 - **Escopo:** visão temporal e conflitos; substituir gradualmente ferramentas centradas em Jornada.
 - **Dependências:** 26.2–26.3.
-- **Aceite macro:** planejamento universal sem tornar o calendário legado fonte de verdade.
+- **Aceite macro:** planejamento universal sem tornar o calendário legado fonte de verdade. Entregue com visão mensal, agenda, reservas agregadas, filtros e checklist derivado.
 
 ### 26.5 — Analytics 2.0
 

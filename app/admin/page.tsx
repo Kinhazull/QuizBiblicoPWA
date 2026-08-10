@@ -36,7 +36,7 @@ const numberFormatter = new Intl.NumberFormat("pt-BR");
 const dateFormatter = new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" });
 const shortcuts: Array<{ icon: IconName; title: string; description: string; href: string }> = [
   { icon: "database", title: "Biblioteca", description: "Acervo e fluxo editorial", href: "/admin/conteudo/acervo" },
-  { icon: "calendar", title: "Eventos", description: "Criar, validar e agendar", href: "/admin/eventos" },
+  { icon: "calendar", title: "Planejamento", description: "Agenda, reservas e preparo", href: "/admin/calendario" },
   { icon: "chart", title: "Analytics", description: "Uso detalhado da plataforma", href: "/admin/analytics" },
   { icon: "health", title: "Health", description: "Diagnóstico operacional completo", href: "/admin/diagnostico" },
   { icon: "users", title: "Usuários", description: "Acessos e participantes", href: "/admin/membros" },

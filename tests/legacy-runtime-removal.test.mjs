@@ -23,7 +23,8 @@ test("active navigation does not expose journey medals rankings seasons or dorma
   const learning = read("app/LearningQuickNav.tsx");
   const dashboard = read("app/admin/page.tsx");
   assert.doesNotMatch(navigation, /href: "\/(?:jornada|rankings|medalhas|temporadas)"/);
-  assert.doesNotMatch(navigation, /\/admin\/(?:rodadas|temporadas|calendario)/);
+  assert.doesNotMatch(navigation, /\/admin\/(?:rodadas|temporadas)/);
+  assert.match(navigation, /\/admin\/calendario/);
   assert.doesNotMatch(navigation, /Sugestões com IA/);
   assert.doesNotMatch(dashboard, /\/admin\/rodadas|Jornadas cadastradas/);
   assert.match(learning, /platformHomeNavigation/);

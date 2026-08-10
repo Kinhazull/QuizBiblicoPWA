@@ -1,0 +1,22 @@
+.planning-toolbar label,
+.planning-agenda-item p,
+.planning-agenda-item p strong,
+.planning-insight p,
+.planning-empty {
+  color: #425466;
+}
+
+.planning-editor-link,
+.event-calendar-link {
+  color: #0753a5;
+}
+
+.planning-grid > article.outside {
+  opacity: 1;
+  background: #11263a;
+}
+
+.planning-event,
+.planning-event small {
+  color: #ffffff;
+}

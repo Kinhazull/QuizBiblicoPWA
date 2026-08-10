@@ -185,6 +185,12 @@ export const adminNavigation: NavigationGroup[] = [
       icon: "calendar",
       description: "Criar, validar e acompanhar eventos da plataforma.",
       permissions: ["events.manage"],
+    }, {
+      label: "Planejamento",
+      href: "/admin/calendario",
+      icon: "calendar",
+      description: "Acompanhar agenda, reservas e preparo dos Eventos.",
+      permissions: ["events.manage"],
     }],
   },
   {

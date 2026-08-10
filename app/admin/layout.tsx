@@ -16,6 +16,8 @@ import "../permissions.css";
 import "../review.css";
 import "../collaboration.css";
 import "../calendar.css";
+import "../planning-calendar.css";
+import "../planning-calendar-accessibility.css";
 import "../round-rules.css";
 import "../analytics.css";
 import "../ai.css";

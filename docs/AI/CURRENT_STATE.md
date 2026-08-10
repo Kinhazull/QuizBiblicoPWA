@@ -10,7 +10,7 @@ Documentos de release, auditorias e arquivos em `docs/AI/HISTORY/` preservam con
 
 A baseline local é **`2.0.0-rc.1`**, confirmada no `package.json`. Ela não é a release final, não significa aprovação pública e não possui tag `v2.0.0`. O desenvolvimento funcional foi reaberto antes do lançamento para reavaliar e concluir as Fases 6 e 7; a Fase 8 concentrará Release Readiness e o Go/No-Go.
 
-As Fases 1–5 estão concluídas como fundação histórica. As Sprints **25.1–25.7** da Fase 6 estão concluídas. A Fase 7 possui a **Central Administrativa (26.1)**, a **Biblioteca Inteligente (26.2)** e o **Editor Visual de Eventos (26.3)** implementados localmente.
+As Fases 1–5 estão concluídas como fundação histórica. As Sprints **25.1–25.7** da Fase 6 estão concluídas. A Fase 7 possui a **Central Administrativa (26.1)**, a **Biblioteca Inteligente (26.2)**, o **Editor Visual de Eventos (26.3)** e o **Planejamento/Calendário Administrativo (26.4)** implementados localmente.
 
 ## Maturidade dos subsistemas
 
@@ -24,6 +24,7 @@ As Fases 1–5 estão concluídas como fundação histórica. As Sprints **25.1�
 | Conteúdo | MADURO: Quiz universal e pacote modular oficial de 380 conteúdos; nenhuma alteração editorial foi feita na Sprint 25.0. |
 | Biblioteca/Gerador/Loader | MADURO: fonte publicada, elegibilidade, geração e providers sustentam os sete jogos; a Biblioteca calcula sinais determinísticos de cobertura, diversidade, uso, reservas e projeção, sem alterar conteúdo automaticamente. |
 | Eventos | V2 LOCAL: editor guiado em oito etapas sobre o Event Engine v1, com catálogo elegível, Asset Registry, revisão, revalidação concorrente, reservas e agendamento existentes. |
+| Planejamento | V1 LOCAL: calendário mensal e agenda agregam Eventos, reservas, revisão, alertas da Biblioteca e checklist derivado, em leitura tenant-scoped e sem persistência paralela. |
 | Economia/coleção | V2 LOCAL: política centralizada, 16 cosméticos em duas coleções, progresso derivado, raridade/origem, 14 itens de Loja e dois grants determinísticos sobre os ledgers existentes. |
 | Administração/Analytics | MADURO: a Central Administrativa resume atenção, Health operacional, uso do dia, Eventos, conteúdo, reservas e atividade auditada, com atalhos para os módulos especializados; Analytics e Diagnóstico continuam sendo as superfícies detalhadas. |
 | Operação/privacidade | FUNCIONAL: contrato de schema, reconciliação, backup/restore, diagnóstico, observabilidade, exportação e anonimização abrangem os domínios atuais. |
