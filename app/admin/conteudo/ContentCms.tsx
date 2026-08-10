@@ -38,6 +38,17 @@ type ContentResponse = {
   pagination: { page: number; pageSize: number; total: number; totalPages: number; hasMore: boolean };
   totals: DashboardData;
 };
+type LibraryHealthSeverity = "info" | "attention" | "critical";
+type LibraryHealthData = {
+  generatedAt: number;
+  status: "healthy" | LibraryHealthSeverity;
+  total: number;
+  counts: Record<LibraryHealthSeverity, number>;
+  insights: Array<{
+    id: string; rule: string; severity: LibraryHealthSeverity; gameType: GameType | null;
+    title: string; description: string; recommendation: string; count: number; percentage: number | null;
+  }>;
+};
 type QuizCatalogDiagnosticsData = {
   generatedAt: number;
   cms: { published: number; totalQuiz: number };
@@ -120,6 +131,12 @@ const isContentResponse = (value: unknown): value is ContentResponse => {
     && Boolean(data.facets)
     && Boolean(data.pagination)
     && isDashboardData(data.totals);
+};
+const isLibraryHealthData = (value: unknown): value is LibraryHealthData => {
+  if (!value || typeof value !== "object") return false;
+  const data = value as Partial<LibraryHealthData>;
+  return typeof data.generatedAt === "number" && typeof data.total === "number"
+    && Boolean(data.counts) && Array.isArray(data.insights);
 };
 const isQuizCatalogDiagnostics = (value: unknown): value is QuizCatalogDiagnosticsData => {
   if (!value || typeof value !== "object") return false;
@@ -346,6 +363,7 @@ export function UniversalContentArchive() {
     setPage(1);
   };
   return <>
+    <LibraryHealthPanel />
     <form className="universal-content-filters admin-panel" onSubmit={submit} aria-label="Filtros do Acervo">
       <label className="wide">Busca textual<input value={draft.q} onChange={event => setDraft({ ...draft, q: event.target.value })} placeholder="Enunciado, referência ou tema" /></label>
       <label>Jogo<select value={draft.game} onChange={event => setDraft({ ...draft, game: event.target.value })}><option value="">Todos os jogos</option>{Object.entries(gameLabels).map(([value, label]) => <option value={value} key={value}>{label}</option>)}</select></label>
@@ -388,4 +406,32 @@ export function UniversalContentArchive() {
       <button type="button" disabled={!data.pagination.hasMore || loading} onClick={() => setPage(value => value + 1)}>Próxima →</button>
     </nav>}
   </>;
+}
+
+function LibraryHealthPanel() {
+  const [reload, setReload] = useState(0);
+  const [game, setGame] = useState("");
+  const [severity, setSeverity] = useState("");
+  const { data, loading, error } = useCmsRequest("/api/admin/content/library-health", isLibraryHealthData, reload);
+  const insights = data?.insights.filter(insight => (!game || insight.gameType === game) && (!severity || insight.severity === severity)) || [];
+  return <section className="admin-panel library-health" aria-labelledby="library-health-title">
+    <header>
+      <div><p className="eyebrow">SAÚDE EDITORIAL DETERMINÍSTICA</p><h2 id="library-health-title">Biblioteca inteligente</h2><p>Sinais explicáveis ajudam a priorizar a curadoria; a decisão editorial continua humana.</p></div>
+      {data && <div className="library-health-counts" aria-label={`${data.total} sinais editoriais`}><span className="critical">{data.counts.critical} críticos</span><span className="attention">{data.counts.attention} atenção</span><span className="info">{data.counts.info} informativos</span></div>}
+    </header>
+    {loading && !data && <CmsLoadingState label="Calculando saúde da Biblioteca…" />}
+    {error && <CmsErrorState forbidden={error === "forbidden"} retry={() => setReload(value => value + 1)} />}
+    {data && <>
+      <div className="library-health-filters">
+        <label>Jogo<select value={game} onChange={event => setGame(event.target.value)}><option value="">Todos os jogos</option>{Object.entries(gameLabels).map(([value, label]) => <option value={value} key={value}>{label}</option>)}</select></label>
+        <label>Severidade<select value={severity} onChange={event => setSeverity(event.target.value)}><option value="">Todas</option><option value="critical">Crítico</option><option value="attention">Atenção</option><option value="info">Informativo</option></select></label>
+      </div>
+      {data.total === 0 && <div className="library-health-empty" role="status"><BrandIcon name="health" /><div><strong>Nenhum sinal editorial relevante</strong><p>O catálogo atende aos thresholds determinísticos atuais.</p></div></div>}
+      {data.total > 0 && insights.length === 0 && <p className="library-health-empty" role="status">Nenhum insight corresponde aos filtros selecionados.</p>}
+      {insights.length > 0 && <ol className="library-health-list" aria-live="polite">{insights.map(insight => <li className={insight.severity} key={insight.id}>
+        <div><span className={`library-health-severity ${insight.severity}`}>{insight.severity === "critical" ? "Crítico" : insight.severity === "attention" ? "Atenção" : "Informativo"}</span>{insight.gameType && <ContentGameBadge gameType={insight.gameType} />}</div>
+        <strong>{insight.title}</strong><p>{insight.description}</p><small>{insight.recommendation}</small>
+      </li>)}</ol>}
+    </>}
+  </section>;
 }

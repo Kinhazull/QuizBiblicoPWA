@@ -494,6 +494,7 @@
 .overview-stats div { min-width: 0; padding: 12px; border-radius: 11px; background: var(--admin-accent-soft); }
 .overview-stats dt { color: var(--admin-muted); font-size: 9px; font-weight: 800; text-transform: uppercase; }
 .overview-stats dd { margin: 6px 0 0; color: var(--admin-ink); font-size: 20px; font-weight: 900; }
+.library-health-summary{margin:0;border-radius:10px;padding:11px;background:#f5f1fa;color:var(--brand-text-muted);font-size:11px;line-height:1.45}.library-health-summary strong{color:var(--brand-text)}
 
 .recent-card ol { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 0; padding: 0; list-style: none; }
 .recent-card li { display: grid; min-width: 0; gap: 4px; padding: 12px; border: 1px solid var(--admin-border); border-radius: 11px; }
@@ -706,7 +707,7 @@
   .hub-summary a { padding: 15px; }
   .hub-summary a > strong { font-size: 27px; }
   .hub-groups nav { grid-template-columns: 1fr; }
-  .overview-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.overview-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .admin-shortcuts nav { grid-template-columns: 1fr; }
 }
 

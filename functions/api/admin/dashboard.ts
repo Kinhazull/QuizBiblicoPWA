@@ -4,6 +4,7 @@ import { json } from "../../_lib/security";
 import { getPlatformAnalytics } from "../../_lib/platform-analytics";
 import { buildOperationalHealth, type HealthStatus } from "../../_lib/operational-health";
 import { EXPECTED_MIGRATION_COUNT } from "../../../shared/operational-schema-contract.mjs";
+import { getLibraryHealth } from "../../_lib/library-health";
 
 type CountRow = { total?: number };
 type AttentionSeverity = "critical" | "warning" | "info";
@@ -25,7 +26,7 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: Ap
     startOfToday.setHours(0, 0, 0, 0);
 
     const migrationRows = await count(env, "SELECT COUNT(*) total FROM d1_migrations").catch(() => 0);
-    const [analytics, operational, pending, members, needsReview, contentSummary, reservations, activeEvent, nextEvent, recent] = await Promise.all([
+    const [analytics, operational, libraryHealth, pending, members, needsReview, contentSummary, reservations, activeEvent, nextEvent, recent] = await Promise.all([
       getPlatformAnalytics(env, organizationId, { key: "today", from: startOfToday.getTime(), to: now }),
       buildOperationalHealth(env, organizationId, {
         now,
@@ -33,6 +34,7 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: Ap
         expectedMigrations: EXPECTED_MIGRATION_COUNT,
         schemaProblems: 0,
       }),
+      getLibraryHealth(env, organizationId, now),
       count(env, "SELECT COUNT(*) total FROM users WHERE organization_id=?1 AND status='pending'", organizationId),
       count(env, "SELECT COUNT(*) total FROM users WHERE organization_id=?1 AND status='active'", organizationId),
       count(env, "SELECT COUNT(*) total FROM content_items WHERE organization_id=?1 AND editorial_status='IN_REVIEW'", organizationId),
@@ -82,6 +84,7 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: Ap
       published: Number(contentSummary?.published || 0),
       available: Number(contentSummary?.available || 0),
       unprojected: Number(contentSummary?.unprojected || 0),
+      libraryHealth: { total: libraryHealth.total, counts: libraryHealth.counts },
     };
     const reservationSummary = { active: Number(reservations?.active || 0), expired: Number(reservations?.expired || 0) };
     const health = { status: operational.status, checkedAt: operational.checkedAt };

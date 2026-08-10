@@ -6,6 +6,7 @@ import { BrandIcon, type IconName } from "../navigation";
 type DashboardHealth = "healthy" | "attention";
 type OperationalHealth = "HEALTHY" | "DEGRADED" | "CRITICAL" | "UNKNOWN";
 type AttentionSeverity = "critical" | "warning" | "info";
+type LibraryHealthCounts = { critical: number; attention: number; info: number };
 type EventSummary = { id: string; title: string; status: string; startsAt: number; endsAt: number };
 
 type AttentionItem = {
@@ -23,7 +24,7 @@ type Dashboard = {
   health: { status: OperationalHealth; checkedAt: number };
   usage: { activeUsers: number; started: number; completed: number; completionRate: number };
   events: { active: EventSummary | null; next: EventSummary | null };
-  content: { needsReview: number; published: number; available: number; unprojected: number };
+  content: { needsReview: number; published: number; available: number; unprojected: number; libraryHealth: { total: number; counts: LibraryHealthCounts } };
   reservations: { active: number; expired: number };
   recent: Array<{ action: string; entityType: string; createdAt: number }>;
   attention: AttentionItem[];
@@ -127,7 +128,7 @@ export default function AdminHub() {
 
     {data && <section className="admin-overview-grid" aria-label="Resumo operacional">
       <article className="admin-panel overview-card"><header><BrandIcon name="calendar" /><div><h2>Eventos</h2><p>Evento em andamento e próxima programação.</p></div></header><EventLine label="Ativo" event={data.events.active} empty="Nenhum Evento ativo." /><EventLine label="Próximo" event={data.events.next} empty="Nenhum Evento agendado." /><a className="overview-action" href="/admin/eventos">Gerenciar Eventos →</a></article>
-      <article className="admin-panel overview-card"><header><BrandIcon name="database" /><div><h2>Conteúdo e reservas</h2><p>Saúde editorial e disponibilidade operacional.</p></div></header><dl className="overview-stats"><div><dt>Publicados</dt><dd>{numberFormatter.format(data.content.published)}</dd></div><div><dt>Disponíveis</dt><dd>{numberFormatter.format(data.content.available)}</dd></div><div><dt>Em revisão</dt><dd>{numberFormatter.format(data.content.needsReview)}</dd></div><div><dt>Sem projeção</dt><dd>{numberFormatter.format(data.content.unprojected)}</dd></div><div><dt>Reservas ativas</dt><dd>{numberFormatter.format(data.reservations.active)}</dd></div><div><dt>Reservas expiradas</dt><dd>{numberFormatter.format(data.reservations.expired)}</dd></div></dl><a className="overview-action" href="/admin/conteudo">Abrir Central de Conteúdo →</a></article>
+      <article className="admin-panel overview-card"><header><BrandIcon name="database" /><div><h2>Conteúdo e reservas</h2><p>Saúde editorial e disponibilidade operacional.</p></div></header><dl className="overview-stats"><div><dt>Publicados</dt><dd>{numberFormatter.format(data.content.published)}</dd></div><div><dt>Disponíveis</dt><dd>{numberFormatter.format(data.content.available)}</dd></div><div><dt>Em revisão</dt><dd>{numberFormatter.format(data.content.needsReview)}</dd></div><div><dt>Sem projeção</dt><dd>{numberFormatter.format(data.content.unprojected)}</dd></div><div><dt>Reservas ativas</dt><dd>{numberFormatter.format(data.reservations.active)}</dd></div><div><dt>Reservas expiradas</dt><dd>{numberFormatter.format(data.reservations.expired)}</dd></div></dl><p className="library-health-summary"><strong>Biblioteca:</strong> {numberFormatter.format(data.content.libraryHealth.total)} sinal(is) — {data.content.libraryHealth.counts.critical} críticos, {data.content.libraryHealth.counts.attention} requerem atenção.</p><a className="overview-action" href="/admin/conteudo/acervo">Investigar na Biblioteca →</a></article>
       <article className="admin-panel overview-card recent-card"><header><BrandIcon name="activity" /><div><h2>Atividade recente</h2><p>Últimos registros administrativos e operacionais confiáveis.</p></div></header>{data.recent.length ? <ol>{data.recent.map((item, index) => <li key={`${item.action}:${item.createdAt}:${index}`}><span>{activityLabel(item.action)}</span><small>{item.entityType} · {eventDate(item.createdAt)}</small></li>)}</ol> : <p className="overview-empty">Nenhuma atividade registrada.</p>}</article>
     </section>}
 

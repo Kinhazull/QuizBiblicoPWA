@@ -112,10 +112,13 @@ Qualidade da primeira versão pública tem prioridade sobre velocidade de public
 
 ### 26.2 — Biblioteca Inteligente
 
+**Estado:** concluída localmente.
+
 - **Objetivo:** evoluir a Biblioteca existente para apoiar qualidade, diversidade e planejamento editorial.
 - **Escopo:** busca, cobertura taxonômica, repetição, disponibilidade, qualidade e sugestões explicáveis.
 - **Dependências:** Asset Registry, governança editorial e metadados consistentes.
 - **Aceite macro:** decisões explicáveis, isolamento organizacional e nenhuma alteração automática de conteúdo publicado.
+- **Decisões:** cálculo read-only sob demanda; concentração acima de 50% em catálogos com 20+ itens; cobertura EASY/MEDIUM/HARD abaixo de 10%; mínimo operacional derivado das capacidades dos jogos; sobreuso em 3× a média e ao menos cinco utilizações; impacto de reservas a partir de 25%; publicação sem projeção é crítica. Os sinais apoiam, mas não substituem, revisão humana.
 
 ### 26.3 — Eventos 2.0
 
