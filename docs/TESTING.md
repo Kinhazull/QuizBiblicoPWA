@@ -1,4 +1,4 @@
-# Testes do Quiz Bíblico PWA
+# Testes da plataforma Conte os Feitos
 
 ## Pré-requisitos
 
@@ -16,8 +16,9 @@ Os testes nunca usam credenciais, D1 remoto ou dados de produção.
 - `pnpm run test:integration`: handlers reais com sessão e SQLite temporário migrado.
 - `pnpm run test:e2e`: Chromium desktop/mobile, axe e uma Jornada com handlers reais e banco temporário.
 - `pnpm run test:all`: unitários, contratos e integração, sem repetir o build.
+- `pnpm run typecheck`: verificação TypeScript explícita da aplicação sem emissão de artefatos.
 
-Execute também `pnpm run lint`, `pnpm run build` e `pnpm audit --audit-level=high`.
+Execute também `pnpm run lint`, `pnpm run build` e o audit gate oficial. A exceção temporária e restrita `GHSA-mh99-v99m-4gvg` deve ser revista quando ESLint/minimatch deixarem de exigir a versão incompatível; nenhum outro advisory alto ou crítico é permitido.
 
 ## Camadas de validação
 

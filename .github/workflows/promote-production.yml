@@ -1,0 +1,111 @@
+name: Promote verified build to production
+
+on:
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: Full commit SHA already validated on main
+        required: true
+        type: string
+      quality_run_id:
+        description: Quality workflow run ID that produced the artifact
+        required: true
+        type: string
+      confirmation:
+        description: Type PROMOVER_PRODUCAO
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: production-promotion
+  cancel-in-progress: false
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: c9804b247feba1dfe55516404b851d61
+      PAGES_PROJECT: quizbiblicopwa
+      RELEASE_SHA: ${{ inputs.sha }}
+    steps:
+      - name: Require explicit production confirmation
+        shell: bash
+        run: test "${{ inputs.confirmation }}" = "PROMOVER_PRODUCAO"
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: ${{ inputs.sha }}
+          fetch-depth: 0
+      - name: Verify immutable release SHA belongs to main
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$RELEASE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "$RELEASE_SHA"
+          git fetch origin main
+          git merge-base --is-ancestor "$RELEASE_SHA" origin/main
+      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: pages-build-${{ inputs.sha }}
+          path: verified-release
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          run-id: ${{ inputs.quality_run_id }}
+      - name: Verify artifact provenance and contents
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(tr -d '\r\n' < verified-release/source-sha.txt)" = "$RELEASE_SHA"
+          test -s verified-release/out/_routes.json
+          test -s verified-release/pages-functions-index.js
+          (cd verified-release && sha256sum -c pages-functions.sha256)
+      - name: Validate Worker before any production deploy
+        run: pnpm run worker:awards:types:check && pnpm run worker:awards:check
+      - name: Require Git auto-deploy to be disabled
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN"
+          enabled=$(curl --fail --silent --show-error \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/$PAGES_PROJECT" \
+            | jq -r '.result.source.config.production_deployments_enabled // false')
+          test "$enabled" = "false"
+      - name: Confirm production migration prerequisites
+        run: pnpm run db:reconcile-migrations:verify-final
+      - name: Deploy verified Pages artifact
+        run: |
+          pnpm exec wrangler pages deploy verified-release/out \
+            --project-name="$PAGES_PROJECT" \
+            --branch=main \
+            --commit-hash="$RELEASE_SHA" \
+            --commit-dirty=false | tee pages-deploy.log
+          grep -q "Uploading Functions bundle" pages-deploy.log
+      - name: Smoke deployed Pages Functions
+        shell: bash
+        run: |
+          set -euo pipefail
+          deployment_url=$(grep -Eo 'https://[a-zA-Z0-9.-]+\.pages\.dev' pages-deploy.log | tail -1)
+          test -n "$deployment_url"
+          status=""
+          for attempt in 1 2 3 4 5 6; do
+            status=$(curl --silent --show-error --output /tmp/auth-me.json --write-out '%{http_code}' "$deployment_url/api/auth/me")
+            [ "$status" = "401" ] && break
+            sleep 5
+          done
+          test "$status" = "401"
+      - name: Reconfirm migrations and deploy matching Worker SHA
+        run: |
+          pnpm run db:reconcile-migrations:verify-final
+          pnpm run worker:awards:deploy

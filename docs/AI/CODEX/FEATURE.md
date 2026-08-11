@@ -26,8 +26,9 @@ Implemente somente a feature descrita.
 [preencher]
 
 ## Proibições
-- não trabalhar na `main`;
-- não fazer push, merge, deploy ou migration remota;
+- trabalhar em branch própria por padrão; usar a `main` somente com autorização explícita do proprietário;
+- não inferir de uma autorização de edição permissão para commit, push, merge, deploy, migration remota ou tag;
+- executar operações remotas somente quando autorizadas de forma específica;
 - não ampliar escopo;
 - não reduzir testes.
 

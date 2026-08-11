@@ -1,7 +1,7 @@
 # Regras de domínio
 
 - Jornadas pertencem ao Quiz.
-- Ranking pertence ao Quiz.
+- Ranking Universal pertence à plataforma; apenas o ranking histórico pertence ao legado do Quiz.
 - Medalhas pertencem às Jornadas.
 - Conquistas pertencem à plataforma.
 - Novos jogos possuem regras e persistência próprias.

@@ -1,45 +1,20 @@
 # Problemas conhecidos
 
-Este arquivo registra somente problemas correntes. Itens resolvidos permanecem no histórico operacional. A classificação completa de backlog está em `BACKLOG.md`.
+**Status:** CURRENT — somente riscos atuais ou validações pendentes.
 
-## KI-008 — Aceite final público/mobile
+| ID | Tema | Severidade | Estado / próximo passo |
+|---|---|---|---|
+| KI-001 | PWA e Android real | Release blocker externo | Validar instalação, atualização, background, retomada e aparelho físico. |
+| KI-002 | Restore real | Release blocker técnico | Ensaiar backup/restore em D1 isolado e registrar RTO/RPO observados. |
+| KI-003 | Jurídico e licenças | Release blocker humano | Confirmar textos, assets, privacidade de menores, termos e Data Safety. |
+| KI-004 | Asset Registry × CSP | Alto | Definir hospedagem confiável e CSP sem dependência indefinida de URLs externas. |
+| KI-005 | Legado exposto | Médio | Remover gradualmente apenas com telemetria, compatibilidade e rollback. |
+| KI-006 | CI/release | Médio | Validar em execução real o novo gate manual por SHA/artefato e manter auto-deploy Git desativado. |
+| KI-007 | Custo e retenção | Médio | Formalizar orçamento zero, limites, retenção e limpeza por domínio. |
+| KI-008 | Alertas operacionais | Médio | Conectar os sinais existentes a um canal efetivamente monitorado. |
+| KI-009 | Advisory transitivo temporário | Baixo | Revisar periodicamente `GHSA-mh99-v99m-4gvg`; manter exceção exclusiva até existir correção upstream compatível. |
 
-**Status:** validação externa pendente
-**Prioridade:** P1 / EXTERNAL_VALIDATION
+## Encerrados
 
-Instalação, atualização entre deploys, background/foreground, bloqueio/encerramento, teclado virtual, recorte maskable e Web Vitals públicos precisam ser validados em Android físico e no domínio HTTPS final. Package ID/domínio dependem do dono; Data Safety, menores e licenças bíblicas exigem revisão humana/jurídica.
-
-## KI-006 — Storage binário do Asset Registry
-
-**Status:** preparado, não ativado
-**Prioridade:** P2 / OPERATIONS
-
-O Registry aceita URLs HTTPS controladas. Bucket R2, binding, upload e entrega autenticada não foram configurados remotamente. A migração visual integral da Memória depende dessa decisão ou de outra estratégia aprovada.
-
-## KI-007 — Promoção da migration 0037
-
-**Status:** pendente de processo operacional
-**Prioridade:** P1 / OPERATIONS
-
-A migration existe e foi validada localmente. Seu estado remoto não foi consultado na Sprint 25.0. A ativação em produção exige autorização, backup, `verify-promotable`, promoção controlada, `verify-final` e comparação de snapshot.
-
-## KI-009 — Cobertura E2E cartesiana
-
-**Status:** cobertura distribuída, centralização incompleta
-**Prioridade:** P2 / TECH_DEBT
-
-Há testes dos jogos e modos, mas a matriz parametrizada dos sete jogos × `FREE_PLAY`/`DAILY`/`EVENT` ainda não está totalmente centralizada. Isso aumenta o custo de provar regressão zero em mudanças compartilhadas.
-
-## KI-010 — Ranking universal sem decisão
-
-**Status:** requer decisão de produto e arquitetura
-**Prioridade:** P2 / FEATURE
-
-O ranking atual é histórico e específico do Quiz. Um ranking de plataforma não deve reutilizá-lo automaticamente; exige critérios comparáveis, privacidade, períodos, moderação e competição saudável.
-
-## KI-005 — Sugestões com IA desativadas
-
-**Status:** dormente
-**Prioridade:** P3 / TECH_DEBT
-
-A superfície permanece desativada e preservada para decisão posterior. Não é blocker da `v2.0.0`.
+- decisão e implementação do Ranking Universal;
+- “migration 0037 pendente” como afirmação geral. O estado remoto agora é sempre obtido operacionalmente e a migration local mais recente é 0038.

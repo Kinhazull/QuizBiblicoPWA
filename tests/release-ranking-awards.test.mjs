@@ -35,29 +35,46 @@ test("Worker histórico executa somente operações modernas da plataforma", asy
   assert.match(migration, /round_id TEXT PRIMARY KEY/);
 });
 
-test("pipeline publica Pages e Worker somente após qualidade e nunca altera migrations no push", async () => {
-  const [workflow, pkg, migration] = await Promise.all([
+test("push valida e empacota, mas promoção de Pages e Worker é manual e vinculada ao SHA", async () => {
+  const [workflow, promotion, pkg, migration] = await Promise.all([
     read(".github/workflows/quality-security.yml"),
+    read(".github/workflows/promote-production.yml"),
     read("package.json"),
     read("drizzle/0019_round_award_processing.sql"),
   ]);
-  assert.match(workflow, /deploy-journey-awards:/);
-  assert.match(workflow, /deploy-pages:/);
-  assert.match(workflow, /needs: \[quality, browser-smoke, deploy-pages\]/);
-  assert.match(workflow, /wrangler pages deploy out/);
+  assert.doesNotMatch(workflow, /wrangler pages deploy/);
+  assert.doesNotMatch(workflow, /worker:awards:deploy/);
+  assert.match(workflow, /pnpm run test:all/);
+  assert.match(workflow, /pnpm run typecheck/);
+  assert.match(workflow, /worker:awards:types:check && pnpm run worker:awards:check/);
   assert.match(workflow, /build:pages-functions/);
   assert.match(workflow, /\.pages-functions\/index\.js/);
   assert.match(workflow, /test ! -e out\/_worker\.js/);
-  assert.match(workflow, /Uploading Functions bundle/);
-  assert.match(workflow, /\/api\/auth\/me: HTTP/);
-  assert.match(workflow, /production_deployments_enabled/);
-  assert.match(workflow, /github\.event_name == 'push'/);
-  assert.match(workflow, /secrets\.CLOUDFLARE_API_TOKEN/);
-  assert.match(workflow, /db:reconcile-migrations:verify-final/);
+  assert.match(workflow, /source-sha\.txt/);
+  assert.match(workflow, /retention-days: 14/);
+  assert.match(promotion, /workflow_dispatch:/);
+  assert.doesNotMatch(promotion, /\n  push:/);
+  assert.match(promotion, /PROMOVER_PRODUCAO/);
+  assert.match(promotion, /quality_run_id/);
+  assert.match(promotion, /git merge-base --is-ancestor/);
+  assert.match(promotion, /source-sha\.txt/);
+  assert.match(promotion, /worker:awards:types:check && pnpm run worker:awards:check/);
+  const workerPreflight = promotion.indexOf("Validate Worker before any production deploy");
+  const pagesDeploy = promotion.indexOf("wrangler pages deploy");
+  const workerDeploy = promotion.indexOf("worker:awards:deploy");
+  assert.ok(workerPreflight >= 0 && pagesDeploy > workerPreflight && workerDeploy > pagesDeploy);
+  assert.match(promotion, /Uploading Functions bundle/);
+  assert.match(promotion, /\/api\/auth\/me/);
+  assert.match(promotion, /production_deployments_enabled/);
+  assert.match(promotion, /db:reconcile-migrations:verify-final/);
+  assert.match(promotion, /verified-release\/out/);
   assert.doesNotMatch(workflow, /worker:awards:migrate/);
   assert.doesNotMatch(workflow, /db:reconcile-migrations:apply/);
-  assert.match(workflow, /pnpm run worker:awards:deploy/);
+  assert.doesNotMatch(promotion, /worker:awards:migrate/);
+  assert.doesNotMatch(promotion, /db:reconcile-migrations:apply/);
+  assert.match(promotion, /pnpm run worker:awards:deploy/);
   assert.match(pkg, /worker:awards:check/);
+  assert.match(pkg, /"typecheck": "tsc --noEmit --incremental false"/);
   assert.match(migration, /CREATE TABLE IF NOT EXISTS/);
 });
 

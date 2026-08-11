@@ -1,5 +1,7 @@
 # Phase 4 Release Candidate
 
+> **Status: HISTORICAL / SUPERSEDED.** Para o estado corrente use `docs/AI/CURRENT_STATE.md` e `docs/PRODUCT/RELEASE_SNAPSHOT.md`.
+
 Status: candidato validado localmente  
 Data da auditoria: 03/08/2026  
 Commit auditado: `38cb868` (`implement universal platform events`)

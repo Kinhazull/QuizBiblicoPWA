@@ -24,6 +24,7 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm run typecheck
       - run: pnpm run lint
       - run: pnpm run build
       - name: Package Pages Functions with the verified build
@@ -34,19 +35,30 @@ jobs:
           test -s .pages-functions/index.js
           test -s out/_routes.json
           test ! -e out/_worker.js
-      - run: pnpm run test:quick
-      - run: pnpm run test:integration
+      - run: pnpm run test:all
+      - name: Validate standalone Worker before any production promotion
+        run: pnpm run worker:awards:types:check && pnpm run worker:awards:check
       # Temporary dev-only exception: ESLint/minimatch@3 requires brace-expansion 1.x,
       # while forcing the fixed 5.x release is API-incompatible. Remove after upstream updates.
       - run: pnpm audit --audit-level=high --ignore GHSA-mh99-v99m-4gvg
       - name: Store verified Pages build
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p verified-release
+          cp -R out verified-release/out
+          cp .pages-functions/index.js verified-release/pages-functions-index.js
+          printf '%s\n' "${GITHUB_SHA}" > verified-release/source-sha.txt
+          sha256sum verified-release/pages-functions-index.js > verified-release/pages-functions.sha256
+      - name: Upload verified release artifact
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: pages-build-${{ github.sha }}
-          path: out
+          path: verified-release
           if-no-files-found: error
-          retention-days: 2
+          retention-days: 14
 
   browser-smoke:
     needs: quality
@@ -62,110 +74,3 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm run test:e2e
-
-  deploy-pages:
-    name: Deploy verified Pages build
-    needs: [quality, browser-smoke]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    concurrency:
-      group: pages-production
-      cancel-in-progress: false
-    env:
-      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      CLOUDFLARE_ACCOUNT_ID: c9804b247feba1dfe55516404b851d61
-      PAGES_PROJECT: quizbiblicopwa
-    steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
-      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        with:
-          node-version: 22
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
-        with:
-          name: pages-build-${{ github.sha }}
-          path: out
-      - name: Require Git auto-deploy to be disabled
-        shell: bash
-        run: |
-          set -euo pipefail
-          test -n "$CLOUDFLARE_API_TOKEN"
-          enabled=$(curl --fail --silent --show-error \
-            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
-            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/$PAGES_PROJECT" \
-            | jq -r '.result.source.config.production_deployments_enabled // false')
-          if [ "$enabled" != "false" ]; then
-            echo "::error::Git auto-deploy ainda esta ativo. Execute uma vez o workflow Configure gated Pages deployment."
-            exit 1
-          fi
-      - name: Confirm production migration prerequisites
-        run: pnpm run db:reconcile-migrations:verify-final
-      - name: Deploy tested Pages artifact
-        run: |
-          pnpm exec wrangler pages deploy out \
-            --project-name="$PAGES_PROJECT" \
-            --branch=main \
-            --commit-hash="${{ github.sha }}" \
-            --commit-dirty=false | tee pages-deploy.log
-          grep -q "Uploading Functions bundle" pages-deploy.log
-      - name: Verify deployed Pages Functions
-        shell: bash
-        run: |
-          set -euo pipefail
-          deployment_url=$(grep -Eo 'https://[a-zA-Z0-9.-]+\.pages\.dev' pages-deploy.log | tail -1)
-          test -n "$deployment_url"
-          echo "Verifying Pages Functions at $deployment_url"
-          status=""
-          for attempt in 1 2 3 4 5 6; do
-            status=$(curl --silent --show-error \
-              --output /tmp/auth-me.json \
-              --write-out '%{http_code}' \
-              "$deployment_url/api/auth/me")
-            if [ "$status" = "401" ]; then
-              break
-            fi
-            echo "Attempt $attempt returned HTTP $status; waiting for deployment propagation."
-            sleep 5
-          done
-          if [ "$status" != "401" ]; then
-            echo "::error::Pages Functions smoke check failed at $deployment_url/api/auth/me: HTTP $status (expected 401)."
-            head -c 2000 /tmp/auth-me.json
-            exit 1
-          fi
-
-  deploy-journey-awards:
-    name: Deploy journey awards Worker
-    needs: [quality, browser-smoke, deploy-pages]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    concurrency:
-      group: journey-awards-production
-      cancel-in-progress: false
-    env:
-      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      CLOUDFLARE_ACCOUNT_ID: c9804b247feba1dfe55516404b851d61
-    steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
-      - name: Confirm Cloudflare deployment credential
-        shell: bash
-        run: |
-          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
-            echo "::error::Configure the GitHub Actions secret CLOUDFLARE_API_TOKEN before deploying the journey awards Worker."
-            exit 1
-          fi
-      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        with:
-          node-version: 22
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - name: Validate standalone Worker
-        run: pnpm run worker:awards:types:check && pnpm run worker:awards:check
-      - name: Confirm production migration prerequisites
-        run: pnpm run db:reconcile-migrations:verify-final
-      - name: Deploy standalone Worker and Cron Trigger
-        run: pnpm run worker:awards:deploy

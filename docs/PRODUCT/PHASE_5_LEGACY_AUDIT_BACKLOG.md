@@ -1,5 +1,7 @@
 # Phase 5 Legacy Audit Backlog
 
+> **Status: HISTORICAL / PARTIALLY SUPERSEDED.** A classificação corrente está em `docs/PRODUCT/DEPRECATIONS.md`; este arquivo preserva a auditoria original.
+
 Status: inventário para a Sprint 24.1  
 Data: 03/08/2026
 

@@ -27,8 +27,8 @@ Em caso de conflito:
 - Não remover testes ou proteções para fazer algo passar.
 - O servidor é a fonte da verdade para valores persistentes.
 - O cliente nunca concede XP, moedas, pontuação ou recompensas persistentes.
-- Jornadas, Ranking e Medalhas pertencem exclusivamente ao Quiz Bíblico enquanto o legado estiver ativo.
-- Conquistas da plataforma são separadas das Medalhas do Quiz.
+- Ranking Universal e Conquistas são recursos modernos da plataforma.
+- Ranking histórico, Jornadas e Medalhas do Quiz são estruturas legadas distintas; Conquistas da plataforma permanecem separadas das Medalhas históricas.
 - Mudanças arquiteturais exigem decisão formal.
 - Conteúdo bíblico sugerido por IA entra como rascunho e exige revisão humana.
 - Toda tarefa deve declarar objetivo, escopo, riscos, critérios de aceite e validações.
