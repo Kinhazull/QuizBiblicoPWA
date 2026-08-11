@@ -8,7 +8,7 @@ on:
         required: true
         type: string
       quality_run_id:
-        description: Quality workflow run ID that produced the artifact
+        description: Numeric ID from /actions/runs/<ID> (not the sequential run number such as #105)
         required: true
         type: string
       confirmation:
@@ -68,7 +68,7 @@ jobs:
           set -euo pipefail
           test "$(tr -d '\r\n' < verified-release/source-sha.txt)" = "$RELEASE_SHA"
           test -s verified-release/out/_routes.json
-          test -s verified-release/pages-functions-index.js
+          test -s verified-release/out/_worker.js
           (cd verified-release && sha256sum -c pages-functions.sha256)
       - name: Validate Worker before any production deploy
         run: pnpm run worker:awards:types:check && pnpm run worker:awards:check
@@ -91,7 +91,7 @@ jobs:
             --branch=main \
             --commit-hash="$RELEASE_SHA" \
             --commit-dirty=false | tee pages-deploy.log
-          grep -q "Uploading Functions bundle" pages-deploy.log
+          grep -Eq "Uploading (Functions|Worker) bundle" pages-deploy.log
       - name: Smoke deployed Pages Functions
         shell: bash
         run: |

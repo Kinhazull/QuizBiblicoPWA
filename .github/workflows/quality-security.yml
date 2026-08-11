@@ -48,9 +48,10 @@ jobs:
           set -euo pipefail
           mkdir -p verified-release
           cp -R out verified-release/out
-          cp .pages-functions/index.js verified-release/pages-functions-index.js
+          # Advanced-mode Pages deploy: preserve the exact Functions bundle validated above.
+          cp .pages-functions/index.js verified-release/out/_worker.js
           printf '%s\n' "${GITHUB_SHA}" > verified-release/source-sha.txt
-          sha256sum verified-release/pages-functions-index.js > verified-release/pages-functions.sha256
+          (cd verified-release && sha256sum out/_worker.js > pages-functions.sha256)
       - name: Upload verified release artifact
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
