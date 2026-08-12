@@ -49,6 +49,8 @@ Concluídas: piloto, fundação modular, Core Platform, plataforma universal e c
 | 27.3 | Retirada do legado e superfícies administrativas incompletas | DONE localmente |
 | 27.3.1 | Sustentabilidade Operacional e Custo Zero | DONE localmente |
 | 27.4 | Qualidade Real, CI e PWA | DONE localmente; Android físico pendente |
+| 27.5 | Conteúdo, Arte e Licenças | DONE localmente; revisão/licenças e arte final pendentes |
+| 27.6 | Jurídico, privacidade e Go/No-Go | NEXT |
 
 Progressão e Economia administrativas não terão painéis duplicados: Analytics 2.0 permanece o destino agregado. Uma Sprint 27.3.2 só será necessária se requisitos operacionais especializados, distintos dos Analytics atuais, forem aprovados.
 
@@ -70,6 +72,7 @@ Direção futura, sem implementação nesta baseline:
 - Wordle Bíblico 2.0 separando respostas bíblicas de palavras válidas para tentativa;
 - evolução dos sete jogos e novos jogos posteriormente;
 - expansão editorial e arte final autoral/licenciada.
+- Bíblia completa, ACF/traduções modernas e léxico PT-BR somente com licença documental; Aurélio apenas se o licenciamento permitir, caso contrário usar alternativa aberta/aprovada.
 
 ## Pós-release no radar
 

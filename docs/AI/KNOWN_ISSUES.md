@@ -5,8 +5,9 @@
 | ID | Tema | Severidade | Estado / próximo passo |
 |---|---|---|---|
 | KI-001 | Android real | Release blocker externo | SW/cache/offline/update passaram no runtime local production-like; executar checklist de instalação, background, lock/unlock e atualização em aparelho físico. |
-| KI-003 | Jurídico e licenças | Release blocker humano | Confirmar textos, assets, privacidade de menores, termos e Data Safety. |
-| KI-004 | Asset Registry × CSP | Alto | Definir hospedagem confiável e CSP sem dependência indefinida de URLs externas. |
+| KI-003 | Jurídico e licenças | Release blocker humano | ACF/Almeida completas não entram no runtime, mas não possuem prova de redistribuição no repositório; confirmar também autoria/licença do acervo histórico, privacidade de menores, termos e Data Safety. |
+| KI-004 | Asset Registry × CSP | Alto | Para a v2, aprovar somente hosts/assets controlados com proveniência; não ampliar CSP para URLs externas desconhecidas. |
+| KI-014 | Arte dos colecionáveis | Release blocker humano/visual | Os 16 itens usam emoji provisório. Aprovar arte final autoral/licenciada e acessível ou decidir conscientemente adiar a release. |
 | KI-005 | Legado preservado | Médio | Jornada/Medalhas e Analytics antigo redirecionam para superfícies modernas; APIs/dados históricos e perfil público legado permanecem até prova de não uso ou decisão de produto. |
 | KI-006 | CI/release | Médio | Validar em execução real o novo gate manual por SHA/artefato e manter auto-deploy Git desativado. |
 | KI-007 | Custo e retenção | Médio | Política e contrato existem; proprietário deve preencher quotas/consumo reais e aprovar retenção antes de automatizar limpeza. |

@@ -15,6 +15,10 @@
 - medir por 30 dias o Cron de um minuto antes de decidir entre 1, 2 ou 5 minutos;
 - executar rehash progressivo de senhas sem quebra de sessão;
 - concluir arte final e acessibilidade dos assets essenciais.
+- executar `docs/PRODUCT/CONTENT_HUMAN_REVIEW_CHECKLIST.md` e registrar evidência da revisão do Quiz/base oficial;
+- comprovar autoria/licença do acervo histórico e decidir o tratamento de `bible-acf.json`/`bible-almeida.json` sem distribuí-los por padrão;
+- substituir ou aprovar conscientemente os 16 emojis provisórios dos colecionáveis antes do Go/No-Go;
+- revisar todos os assets `ACTIVE` e hosts do Asset Registry contra o manifesto de proveniência e a CSP.
 
 ## Evolução controlada
 

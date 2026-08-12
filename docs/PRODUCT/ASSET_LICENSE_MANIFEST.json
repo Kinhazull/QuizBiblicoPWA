@@ -1,0 +1,113 @@
+{
+  "version": 1,
+  "updatedAt": "2026-08-12",
+  "statuses": [
+    "APPROVED_INTERNAL",
+    "LICENSE_DOCUMENTED",
+    "PENDING_HUMAN_REVIEW",
+    "PROVISIONAL",
+    "REPLACE_BEFORE_RELEASE",
+    "POST_RELEASE_ONLY"
+  ],
+  "entries": [
+    {
+      "id": "official-base-content-v1",
+      "kind": "content",
+      "path": "content/official-base-content-v1.json",
+      "origin": "Conte os Feitos; pacote editorial versionado",
+      "license": "Conteúdo interno; revisão bíblica humana ainda necessária",
+      "status": "APPROVED_INTERNAL",
+      "use": "380 conteúdos CMS para seis jogos",
+      "evidence": "tests/unit/official-base-content.test.mjs"
+    },
+    {
+      "id": "quiz-universal-legacy-source",
+      "kind": "content",
+      "path": "Quiz.csv",
+      "origin": "Acervo histórico do Quiz migrado para o CMS",
+      "license": null,
+      "status": "PENDING_HUMAN_REVIEW",
+      "use": "Fonte histórica das perguntas universais do Quiz",
+      "evidence": "docs/PRODUCT/REPOSITORY_ARTIFACT_INVENTORY.md"
+    },
+    {
+      "id": "bible-acf",
+      "kind": "biblical-source",
+      "path": "bible-acf.json",
+      "origin": "Declarada no nome como Almeida Corrigida Fiel; origem documental não anexada",
+      "license": null,
+      "status": "PENDING_HUMAN_REVIEW",
+      "use": "Ferramentas históricas e gerador editorial; fora do bundle/runtime",
+      "evidence": "docs/PRODUCT/REPOSITORY_ARTIFACT_INVENTORY.md"
+    },
+    {
+      "id": "bible-almeida",
+      "kind": "biblical-source",
+      "path": "bible-almeida.json",
+      "origin": "Declarada internamente como Almeida Atualizada; origem documental não anexada",
+      "license": null,
+      "status": "PENDING_HUMAN_REVIEW",
+      "use": "Auditoria histórica local; fora do bundle/runtime",
+      "evidence": "docs/PRODUCT/REPOSITORY_ARTIFACT_INVENTORY.md"
+    },
+    {
+      "id": "platform-app-icons",
+      "kind": "identity",
+      "paths": [
+        "public/app-icon.svg",
+        "public/app-icon-192.png",
+        "public/app-icon-512.png",
+        "public/apple-touch-icon.png",
+        "public/favicon.svg"
+      ],
+      "origin": "Identidade interna Conte os Feitos v001",
+      "license": "Uso interno aprovado pelo proprietário do projeto",
+      "status": "APPROVED_INTERNAL",
+      "use": "PWA, metadata, instalação e favicon",
+      "evidence": "assets/branding/approved/v001/README.md"
+    },
+    {
+      "id": "brand-reference-v001",
+      "kind": "identity-reference",
+      "paths": [
+        "assets/branding/approved/v001/brand-identity-v001.png",
+        "assets/branding/approved/v001/branding-kit-v001.png"
+      ],
+      "origin": "Identidade interna Conte os Feitos v001",
+      "license": "Uso interno aprovado pelo proprietário do projeto",
+      "status": "APPROVED_INTERNAL",
+      "use": "Referência de marca; pasta não servida pela aplicação",
+      "evidence": "assets/branding/approved/v001/README.md"
+    },
+    {
+      "id": "collectible-emoji-art",
+      "kind": "collectible-art",
+      "path": "shared/platform-economy.ts",
+      "origin": "Representações Unicode/emoji, sem arquivo externo incorporado",
+      "license": "Renderização depende da fonte emoji do sistema",
+      "status": "REPLACE_BEFORE_RELEASE",
+      "use": "Arte provisória dos 16 avatares e molduras",
+      "evidence": "docs/COLLECTIONS_AND_ACHIEVEMENTS.md"
+    },
+    {
+      "id": "memory-image-assets",
+      "kind": "game-art",
+      "path": "app/games/memory/MemoryGame.tsx",
+      "origin": "Não aplicável; versão atual é textual",
+      "license": null,
+      "status": "POST_RELEASE_ONLY",
+      "use": "Evolução futura da Memória; não necessária para a v2",
+      "evidence": "docs/ASSET_REGISTRY.md"
+    },
+    {
+      "id": "asset-registry-external-urls",
+      "kind": "registry-policy",
+      "path": "functions/_lib/asset-registry.ts",
+      "origin": "Informada pelo administrador por asset",
+      "license": "Obrigatória como metadado para status ACTIVE; comprovação é humana",
+      "status": "PENDING_HUMAN_REVIEW",
+      "use": "Assets editoriais e capas de Eventos",
+      "evidence": "docs/ASSET_REGISTRY.md"
+    }
+  ]
+}

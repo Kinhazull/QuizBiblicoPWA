@@ -25,6 +25,8 @@
 ## Bloqueadores humanos
 
 - licenças de textos/assets e revisão jurídica;
+- revisão humana do acervo bíblico e prova de autoria/licença da origem histórica; textos ACF/Almeida completos não fazem parte do runtime, mas sua redistribuição não está comprovada;
+- arte final autoral/licenciada para os 16 colecionáveis atualmente representados por emoji;
 - privacidade de menores, termos e Data Safety;
 - decisões de domínio/package ID e publicação Google Play;
 - responsável e canal de alertas operacionais.
@@ -50,6 +52,14 @@
 ## Decisão atual
 
 **NO-GO para release pública final.** A baseline é tecnicamente candidata, mas os bloqueadores humanos e validações externas acima ainda precisam ser fechados. Analytics 2.0 não faz parte deste snapshot e ainda não foi iniciado.
+
+## Conteúdo e assets — Sprint 27.5
+
+- 380 conteúdos oficiais revalidados por schema/contratos sem alteração editorial em massa;
+- Wordle usa exclusivamente palavras `PUBLISHED` do CMS da organização e não depende dos JSON bíblicos em runtime;
+- manifesto de proveniência e checklist humano criados;
+- imagens da Memória permanecem `POST_RELEASE_ONLY`;
+- nenhum blocker técnico novo; o Go/No-Go continua dependente de revisão bíblica/licenças, Asset Registry e arte final dos colecionáveis.
 
 ## Segurança de contas — Sprint 27.1
 

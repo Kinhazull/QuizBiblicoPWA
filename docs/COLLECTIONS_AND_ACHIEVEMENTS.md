@@ -91,4 +91,4 @@ Home e Perfil continuam consumindo o equipamento existente; as novas molduras us
 
 ## Assets e decisões futuras
 
-Os ícones atuais são representações internas simples e não baixam assets externos. A arte final deve substituir os placeholders por arquivos autorais/licenciados e acessíveis, preservando os mesmos IDs. Expandir grants para Eventos ou Missões exige regra de produto explícita e testes do gatilho; Eventos permanecem fora desta etapa. Recompensa por coleção completa também permanece decisão de produto, não comportamento implícito.
+Os ícones atuais são representações Unicode/emoji internas e não baixam assets externos. Para a v2, os 16 itens permanecem classificados como `REPLACE_BEFORE_RELEASE`: a arte final deve usar arquivos autorais/licenciados e acessíveis, preservando os mesmos IDs. Expandir grants para Eventos ou Missões exige regra de produto explícita e testes do gatilho; Eventos permanecem fora desta etapa. Recompensa por coleção completa também permanece decisão de produto, não comportamento implícito.

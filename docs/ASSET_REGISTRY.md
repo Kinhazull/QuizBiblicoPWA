@@ -10,6 +10,8 @@ A prova funcional usa URL HTTPS controlada. Formatos aceitos: PNG, JPEG e WEBP; 
 
 R2 Ã© o destino preparado para binÃ¡rios futuros, mas esta sprint nÃ£o cria bucket, binding ou secret remoto.
 
+Para a v2, o cadastro técnico não substitui a comprovação humana de origem/licença. Assets destinados ao release devem constar em `docs/PRODUCT/ASSET_LICENSE_MANIFEST.json`; URLs externas permanecem `PENDING_HUMAN_REVIEW` até host, autoria, licença e compatibilidade com CSP serem aprovados. Não se deve abrir a CSP genericamente para acomodar origem desconhecida.
+
 ## RelaÃ§Ã£o com conteÃºdo e Eventos
 
 `content_assets` vincula `contentId + contentVersion` ao `assetId`, com papÃ©is `PRIMARY`, `THUMBNAIL`, `CLUE`, `PAIR_A`, `PAIR_B` e `BACKGROUND`. Nenhum jogo Ã© obrigado a usar imagem.
@@ -19,4 +21,3 @@ Eventos aceitam `cover_asset_id` preferencial e preservam `cover_url` como fallb
 ## Prova da MemÃ³ria
 
 O contrato suporta textoâ€“texto sem alteraÃ§Ã£o, imagemâ€“texto por um vÃ­nculo `PAIR_A`/`PAIR_B`, e imagemâ€“imagem por dois vÃ­nculos posicionais. A interface participante permanece textual; a conversÃ£o dos 40 conteÃºdos fica fora desta sprint.
-

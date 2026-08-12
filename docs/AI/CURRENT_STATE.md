@@ -33,6 +33,7 @@ Auditorias e relatórios de fases anteriores são históricos. Em caso de diverg
 - 27.3 Retirada do Legado: concluída localmente; navegação moderna desacoplada de Jornada/Medalhas e de entradas administrativas históricas, sem remoção de dados/APIs.
 - 27.3.1 Sustentabilidade Operacional e Custo Zero: concluída localmente; política e orçamento versionado criados, classificados como `ZERO-COST PLAUSIBLE, MEASUREMENT REQUIRED`.
 - 27.4 Qualidade Real, CI e PWA: concluída localmente; suíte PWA production-like e gate manual implementados. Android físico/Web Vitals públicos permanecem validações humanas pré-RC.
+- 27.5 Conteúdo, Arte e Licenças: concluída localmente; proveniência e readiness documentados, sem blocker técnico novo. Revisão bíblica/licenças e arte final dos 16 colecionáveis permanecem blockers humanos de publicação. 27.6 é a próxima sprint.
 
 ## Capacidades atuais
 
@@ -67,6 +68,8 @@ Auditorias e relatórios de fases anteriores são históricos. Em caso de diverg
 
 - PWA/Android físico e Web Vitals públicos não validados;
 - licenças bíblicas, privacidade de menores e Data Safety aguardam revisão humana/jurídica;
+- `bible-acf.json`, `bible-almeida.json` e a origem do acervo histórico não possuem prova de redistribuição no repositório; não entram no runtime/bundle atual, mas exigem decisão humana antes da publicação;
+- os 16 colecionáveis são funcionais com emoji, porém permanecem `REPLACE_BEFORE_RELEASE` até aprovação de arte autoral/licenciada;
 - Asset Registry ainda depende de URLs externas e precisa ser conciliado com CSP futura;
 - APIs, dados e rotas diretas históricas permanecem por compatibilidade, mas Jornada, Medalhas e CMS antigo não fazem parte da navegação moderna;
 - retenção por domínio, orçamento comercial e canal externo de alertas ainda precisam de decisão humana; a chave de backup `v1` já está provisionada e custodiada;
