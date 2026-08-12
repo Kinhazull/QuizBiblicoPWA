@@ -4,7 +4,7 @@
 
 ## Antes da release pública
 
-- validar PWA/Android real e publicação na Google Play;
+- executar `docs/ANDROID_PHYSICAL_CHECKLIST.md`, medir Web Vitals no domínio candidato e só depois avaliar Google Play;
 - executar restore real em ambiente D1 isolado;
 - concluir revisão jurídica/licenças, privacidade de menores e Data Safety;
 - reconciliar Asset Registry, hospedagem de assets e CSP;

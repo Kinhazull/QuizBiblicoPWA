@@ -4,7 +4,7 @@
 
 | ID | Tema | Severidade | Estado / próximo passo |
 |---|---|---|---|
-| KI-001 | PWA e Android real | Release blocker externo | Validar instalação, atualização, background, retomada e aparelho físico. |
+| KI-001 | Android real | Release blocker externo | SW/cache/offline/update passaram no runtime local production-like; executar checklist de instalação, background, lock/unlock e atualização em aparelho físico. |
 | KI-003 | Jurídico e licenças | Release blocker humano | Confirmar textos, assets, privacidade de menores, termos e Data Safety. |
 | KI-004 | Asset Registry × CSP | Alto | Definir hospedagem confiável e CSP sem dependência indefinida de URLs externas. |
 | KI-005 | Legado preservado | Médio | Jornada/Medalhas e Analytics antigo redirecionam para superfícies modernas; APIs/dados históricos e perfil público legado permanecem até prova de não uso ou decisão de produto. |

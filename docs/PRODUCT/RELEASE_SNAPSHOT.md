@@ -20,6 +20,7 @@
 - Progress, Reward, Statistics, Achievements, Missions, Economia 2.0, Coleções, Perfil 2.0 e Ranking Universal.
 - navegação participante e administrativa sem atalhos para Jornada, Medalhas, Analytics do Quiz ou CMS antigo; rotas históricas compatíveis redirecionam para equivalentes modernos.
 - política de sustentabilidade e orçamento operacional versionado concluídos; capacidade em usuários aguarda quotas externas e medição real.
+- suíte PWA Release separada valida artifact avançado, SW real, manifest, cache seguro, fallback offline e atualização em Chromium desktop/mobile emulado.
 
 ## Bloqueadores humanos
 
@@ -31,7 +32,7 @@
 
 ## Bloqueadores técnicos/externos
 
-- PWA/Android real e Web Vitals públicos;
+- Android físico e Web Vitals públicos; PWA production-like automatizada está aprovada localmente;
 - restore local e remoto isolado integralmente comprovados com dataset sintético;
 - Asset Registry/hospedagem/CSP;
 - decisão sobre manter ou substituir o perfil público legado; o atalho administrativo foi retirado, mas rota e API permanecem protegidas por organização e privacidade;

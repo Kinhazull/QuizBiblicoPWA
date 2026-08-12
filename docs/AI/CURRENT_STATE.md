@@ -32,7 +32,7 @@ Auditorias e relatórios de fases anteriores são históricos. Em caso de diverg
 - 27.2 Operação e Recuperação: **DONE**; chave de backup provisionada/custodiada e restore remoto comprovado em D1 isolado com dataset sintético.
 - 27.3 Retirada do Legado: concluída localmente; navegação moderna desacoplada de Jornada/Medalhas e de entradas administrativas históricas, sem remoção de dados/APIs.
 - 27.3.1 Sustentabilidade Operacional e Custo Zero: concluída localmente; política e orçamento versionado criados, classificados como `ZERO-COST PLAUSIBLE, MEASUREMENT REQUIRED`.
-- 27.4 Qualidade Real, CI e PWA: **NEXT**.
+- 27.4 Qualidade Real, CI e PWA: concluída localmente; suíte PWA production-like e gate manual implementados. Android físico/Web Vitals públicos permanecem validações humanas pré-RC.
 
 ## Capacidades atuais
 
@@ -51,7 +51,7 @@ Auditorias e relatórios de fases anteriores são históricos. Em caso de diverg
 | Administração | Central Administrativa e Analytics 2.0 implementados. Placeholders vazios de Progressão/Economia e links do CMS antigo foram retirados; áreas especializadas só serão retomadas se tiverem objetivo distinto de Analytics. |
 | Operação | Reconciliação, backup cifrado com chave dedicada/checksum, restore local e remoto isolado, diagnósticos, observabilidade e runbooks estão implementados; heartbeat e alertas externos permanecem evolução futura. |
 | Sustentabilidade | Política canônica e orçamento configurável existem; consumo real e quotas vigentes dependem de revisão manual dos painéis Cloudflare/GitHub. |
-| PWA/mobile | RC local; instalação e comportamento em Android real ainda exigem validação externa. |
+| PWA/mobile | Artifact production-like validado com SW real, cache, offline e update em desktop/mobile emulado; Android físico ainda exige validação humana. |
 
 ## Invariantes
 

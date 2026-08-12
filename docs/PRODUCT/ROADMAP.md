@@ -48,7 +48,7 @@ Concluídas: piloto, fundação modular, Core Platform, plataforma universal e c
 | 27.2 | Operação e recuperação | DONE |
 | 27.3 | Retirada do legado e superfícies administrativas incompletas | DONE localmente |
 | 27.3.1 | Sustentabilidade Operacional e Custo Zero | DONE localmente |
-| 27.4 | Qualidade Real, CI e PWA | NEXT |
+| 27.4 | Qualidade Real, CI e PWA | DONE localmente; Android físico pendente |
 
 Progressão e Economia administrativas não terão painéis duplicados: Analytics 2.0 permanece o destino agregado. Uma Sprint 27.3.2 só será necessária se requisitos operacionais especializados, distintos dos Analytics atuais, forem aprovados.
 
