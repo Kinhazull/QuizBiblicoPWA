@@ -36,7 +36,7 @@ Concluídas: piloto, fundação modular, Core Platform, plataforma universal e c
 | 26.3 | Editor Visual de Eventos | DONE |
 | 26.4 | Planejamento e Calendário Administrativo | DONE |
 | 26.4.1 | Release Truth e Integridade da Baseline | DONE localmente |
-| 26.5 | Analytics 2.0 | **NEXT** |
+| 26.5 | Analytics 2.0 | DONE localmente |
 | 26.6 | Automação Administrativa | FUTURE |
 
 ## Fase 8 — Release Readiness

@@ -13,9 +13,9 @@ test("fonte corrente não reconstrói entregas nem inventa ledger remoto", async
   assert.match(state, /Status:\*\* CURRENT/);
   assert.match(state, /0038_platform_rankings_indexes\.sql/);
   assert.match(state, /requer verificação operacional/i);
-  assert.match(state, /26\.5 Analytics 2\.0: \*\*não iniciada\*\*/);
+  assert.match(state, /26\.5 Analytics 2\.0: concluída localmente, ainda não commitada/);
   assert.match(roadmap, /25\.5 \| Ranking Universal \| DONE/);
-  assert.match(roadmap, /26\.5 \| Analytics 2\.0 \| \*\*NEXT\*\*/);
+  assert.match(roadmap, /26\.5 \| Analytics 2\.0 \| DONE localmente/);
   assert.match(roadmap, /Fase 9 — Evolução dos Jogos e Base de Conhecimento/);
   assert.match(snapshot, /\*\*NO-GO para release pública final\.\*\*/);
 });

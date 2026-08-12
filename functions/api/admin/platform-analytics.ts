@@ -7,7 +7,9 @@ import { json } from "../../_lib/security";
 export const onRequestGet = async ({ request, env }: { request: Request; env: AppEnv }) => {
   try {
     const user: any = await requirePermission(request, env, "analytics.view");
-    const period = parseAnalyticsPeriod(new URL(request.url));
+    const organization = await env.DB.prepare("SELECT timezone FROM organizations WHERE id=?1")
+      .bind(user.organizationId).first<{ timezone: string | null }>();
+    const period = parseAnalyticsPeriod(new URL(request.url), Date.now(), String(organization?.timezone || "America/Sao_Paulo"));
     const result = await getPlatformAnalytics(env, user.organizationId, period);
     return json(result, 200, { "cache-control": "no-store, private" });
   } catch (error) {

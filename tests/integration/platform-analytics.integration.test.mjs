@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createAuthenticatedRequest, createSession, createTestDatabase, seedOrganization, seedUser } from "../helpers/integration.mjs";
-import { getPlatformAnalytics, parseAnalyticsPeriod } from "../../functions/_lib/platform-analytics.ts";
+import { compareAnalyticsMetric, getPlatformAnalytics, parseAnalyticsPeriod } from "../../functions/_lib/platform-analytics.ts";
 import { onRequestGet } from "../../functions/api/admin/platform-analytics.ts";
 import { effectivePermissions, hasPermission } from "../../functions/_lib/permissions.ts";
 
@@ -40,8 +40,10 @@ test("platform analytics aggregates existing data and isolates organizations wit
   assert.equal(result.overview.started,1);assert.equal(result.overview.completed,1);assert.equal(result.overview.wins,1);
   assert.equal(result.games.length,7);assert.equal(result.games.find(game=>game.gameType==="wordle-biblico").usedContent,1);
   assert.equal(result.economy.xpGranted,20);assert.equal(result.economy.coinsGranted,2);
+  assert.deepEqual(result.comparisons.started,{current:1,previous:0,difference:1,percentChange:null});
+  assert.equal(result.trends.length,1);assert.equal(result.definitions.difficultyMinimumSample,10);
   const serialized=JSON.stringify(result);assert.doesNotMatch(serialized,/Secret Name|secret@example\.test|correctAnswer|payload_json/);
-  assert.ok(prepared.length<=14,"analytics must keep a constant query budget");
+  assert.ok(prepared.length<=31,"analytics must keep a constant query budget for current, previous and trend data");
   assert.ok(prepared.every(sql=>!/(?<![A-Z])IN\s*\(\s*\?/i.test(sql)),"analytics must not build a bound-parameter IN list");
   ctx.close();
 });
@@ -69,6 +71,8 @@ test("daily analytics milestones count victories and exclude completed losses", 
   assert.equal(result.daily.wins,3);
   assert.equal(result.daily.completed3,1);
   assert.equal(result.daily.completed7,0);
+  assert.deepEqual(result.daily.funnel.stages.map(stage=>stage.name),["opened","started","completed3","completed7"]);
+  assert.equal(result.daily.funnel.stages[2].users,1);
   ctx.close();
 });
 
@@ -77,4 +81,13 @@ test("analytics periods reject invalid and overlong custom ranges", () => {
   assert.equal(parseAnalyticsPeriod(new URL("http://local?period=30d"),now).key,"30d");
   assert.throws(()=>parseAnalyticsPeriod(new URL(`http://local?period=custom&from=0&to=${now}`),now),/analytics_invalid_period/);
   assert.throws(()=>parseAnalyticsPeriod(new URL("http://local?period=forever"),now),/analytics_invalid_period/);
+});
+
+test("period comparison handles zero and today respects the organization timezone", () => {
+  assert.deepEqual(compareAnalyticsMetric(5,0),{current:5,previous:0,difference:5,percentChange:null});
+  assert.deepEqual(compareAnalyticsMetric(15,10),{current:15,previous:10,difference:5,percentChange:50});
+  const now=Date.UTC(2026,7,8,2);
+  const period=parseAnalyticsPeriod(new URL("http://local?period=today"),now,"America/Sao_Paulo");
+  assert.equal(period.from,Date.UTC(2026,7,7,3));
+  assert.equal(period.timeZone,"America/Sao_Paulo");
 });

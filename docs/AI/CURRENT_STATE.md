@@ -25,7 +25,7 @@ Auditorias e relatórios de fases anteriores são históricos. Em caso de diverg
 - 26.3 Editor Visual de Eventos: concluída;
 - 26.4 Planejamento e Calendário Administrativo: concluída;
 - 26.4.1 Release Truth e Integridade da Baseline: concluída localmente, ainda não commitada;
-- 26.5 Analytics 2.0: **não iniciada**;
+- 26.5 Analytics 2.0: concluída localmente, ainda não commitada;
 - 26.6 Automação Administrativa: futura.
 
 ## Capacidades atuais
@@ -42,7 +42,7 @@ Auditorias e relatórios de fases anteriores são históricos. Em caso de diverg
 | Biblioteca | Biblioteca Inteligente, Catálogo Elegível, Gerador e sinais editoriais implementados. |
 | Eventos | Editor Visual, reservas, lifecycle e experiência participante implementados. |
 | Planejamento | Calendário e agenda administrativos implementados sobre fontes existentes. |
-| Administração | Central Administrativa e módulos especializados implementados. Analytics 2.0 ainda não começou. |
+| Administração | Central Administrativa e Analytics 2.0 implementados, com comparações, tendências, funis, retenção, jogos, conteúdo, economia e Eventos agregados. |
 | Operação | Reconciliação, backup, diagnósticos, observabilidade e privacidade possuem infraestrutura; restore real ainda precisa ser exercitado. |
 | PWA/mobile | RC local; instalação e comportamento em Android real ainda exigem validação externa. |
 
