@@ -45,9 +45,9 @@ Concluídas: piloto, fundação modular, Core Platform, plataforma universal e c
 |---|---|---|
 | 27.1 | Segurança e Contas | DONE localmente |
 | 27.1.1 | MFA administrativo e autoridade owner | DONE localmente |
+| 27.2 | Operação e recuperação | DONE |
 
 - validar PWA e Android físico, atualização e ciclo de vida;
-- ensaiar restore real em banco isolado;
 - concluir revisão jurídica de licenças, privacidade de menores e Data Safety;
 - alinhar Asset Registry, hospedagem e CSP;
 - reduzir superfícies legadas com telemetria e rollback;

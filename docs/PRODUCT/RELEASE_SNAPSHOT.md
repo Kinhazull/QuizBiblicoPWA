@@ -29,7 +29,7 @@
 ## Bloqueadores técnicos/externos
 
 - PWA/Android real e Web Vitals públicos;
-- ensaio real de restore em ambiente isolado;
+- restore local e remoto isolado integralmente comprovados com dataset sintético;
 - Asset Registry/hospedagem/CSP;
 - confirmação operacional do ledger remoto;
 - primeira execução validada do workflow manual de promoção.
@@ -51,3 +51,12 @@
 - rehash oportunista de credenciais legadas, recuperação single-use e rate limits sensíveis foram implementados localmente;
 - TOTP administrativo, recovery codes MFA e autoridade owner foram implementados localmente; falta provisionar o segredo, promover a migration 0039 e validar a operação;
 - decisão permanece **NO-GO** para abertura pública de contas privilegiadas até esses itens serem tratados.
+
+## Operação e recuperação — Sprint 27.2
+
+- workflows de escrita remota passaram a exigir chave de backup independente e checksum do artifact cifrado;
+- exercício local comprovou integridade, FKs, ledger 0039, MFA, progresso/economia e Outbox após restauração;
+- exercício remoto isolado confirmou `quick_check = ok`, FKs, 40 migrations até 0039 e preservação do dataset sintético; o D1 descartável foi excluído;
+- `D1_BACKUP_ENCRYPTION_KEY` v1 está provisionada no Environment `production` e custodiada externamente;
+- runbooks de deploy, migration, perda de dados, Cron/consumers e segredos foram consolidados;
+- heartbeat persistido e alerta proativo permanecem ações futuras, mas não blockers da Sprint 27.2. Restore real de produção só deve ocorrer diante de incidente e autorização, nunca preventivamente.

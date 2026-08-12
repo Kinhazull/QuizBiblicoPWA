@@ -21,6 +21,10 @@ Depois da promoção:
 4. bloqueia alterações inesperadas, remoções e regressões de linhas;
 5. executa a comparação com o snapshot anterior.
 
+O backup usa o secret dedicado `D1_BACKUP_ENCRYPTION_KEY`, nunca `CLOUDFLARE_API_TOKEN`, e o artifact inclui checksum SHA-256 do arquivo cifrado. A chave permanece fora do repositório e separada da credencial de deploy.
+
+Desde 12/08/2026, a chave `v1` está provisionada no GitHub Environment `production` e custodiada externamente. O restore remoto foi comprovado em D1 isolado usando dataset sintético. Nesse banco descartável não vinculado ao `wrangler.jsonc`, o ledger foi validado por consulta direta a `d1_migrations`; o reconciliador e `migrations list` continuam sendo o contrato obrigatório do banco de produção configurado.
+
 Quando não há migrations pendentes, `verify-promotable` considera o estado válido. A aplicação informa `No migrations to apply`, e `verify-final` e `compare` continuam protegendo o fluxo.
 
 ## Contrato obrigatório para toda nova migration

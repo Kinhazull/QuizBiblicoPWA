@@ -9,6 +9,8 @@
 
 O sink padrão é `log-only`. Email, webhook ou monitoramento externo poderão implementar o mesmo contrato futuramente, sem alterar produtores e sem exigir segredo nesta fase.
 
+Não existe heartbeat persistido do Cron. Por isso o grupo `WORKER` retorna `UNKNOWN` para a última execução, mesmo quando sinais indiretos estão saudáveis. Logs confirmam execuções; backlog, retries e reservas detectam efeitos, mas não provam pontualidade sem acesso aos logs. Persistir heartbeat exige decisão explícita e migration aditiva futura.
+
 ## Logs permitidos
 
 Os logs podem conter timestamp, nível, operação, componente, supportId, código público, gameType, mode, eventId não sensível, duração, resultado, retryable e contagens técnicas. Email, nome, senha/token, sessão, resposta correta, payload de jogo, SQL integral e conteúdo privado são proibidos.
@@ -29,3 +31,16 @@ Os sinais incluem projeções ausentes/divergentes, catálogo mínimo, distribui
 
 São thresholds técnicos, não prazos legais. Alterações devem ocorrer somente na fonte compartilhada e incluir teste.
 
+## Monitoramento externo recomendado
+
+Sem contratar SaaS nesta sprint, os sinais mínimos futuros são:
+
+- aplicação pública respondendo por HTTPS;
+- `/api/auth/me` respondendo 401 sem sessão, provando Pages Functions sem expor dados;
+- endpoint `fetch` do Worker respondendo com `no-store`;
+- alerta por ausência do Cron quando houver heartbeat confiável;
+- abertura diária da Central/Health até existir alerta proativo.
+
+Detecção interna cobre schema/ledger, catálogo, seleções, reservas, Outbox e consumers. Alerta externo/proativo continua pendente e deve respeitar o objetivo de custo zero.
+
+O restore remoto isolado da Sprint 27.2 foi aprovado e não depende de alerta externo. Heartbeat persistido do Cron, monitor externo e alerta proativo permanecem melhorias operacionais futuras, não blockers de conclusão da 27.2.

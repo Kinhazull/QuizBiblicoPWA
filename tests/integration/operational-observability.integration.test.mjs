@@ -53,6 +53,7 @@ test("admin health is read-only, organization-scoped and exposes unified operati
   assert.match(data.operational.status, /^(HEALTHY|DEGRADED|CRITICAL|UNKNOWN)$/);
   assert.deepEqual(Object.keys(data.operational.groups).sort(), ["CMS", "DATABASE", "ECONOMY", "EVENTS", "EVENT_ENGINE", "GENERATOR", "MIGRATIONS", "OUTBOX", "PRIVACY", "UNIVERSAL_LIBRARY", "WORKER"].sort());
   assert.equal(data.operational.groups.OUTBOX.checks.find(item => item.code === "outbox.dead_letters").value, 1);
+  assert.equal(data.operational.groups.WORKER.checks.find(item => item.code === "worker.cron_heartbeat_unavailable").status, "UNKNOWN");
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM quiz_core_event_outbox").get().total, before);
   const other = await responseJson(await readHealth({ request: createAuthenticatedRequest("https://test/api/admin/health", { token: otherToken }), env: ctx.env }));
   assert.equal(other.operational.groups.OUTBOX.checks.find(item => item.code === "outbox.dead_letters").value, 0);
@@ -64,4 +65,3 @@ test("operational thresholds have one immutable shared source", () => {
   assert.ok(OPERATIONAL_THRESHOLDS.outbox.degradedCount < OPERATIONAL_THRESHOLDS.outbox.criticalCount);
   assert.ok(OPERATIONAL_THRESHOLDS.outbox.degradedAgeMs < OPERATIONAL_THRESHOLDS.outbox.criticalAgeMs);
 });
-

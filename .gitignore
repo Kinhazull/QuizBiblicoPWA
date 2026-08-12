@@ -31,6 +31,10 @@ yarn-error.log*
 /package-lock.json
 /npm-audit*.json
 /tore package-lock.json
+/*backup*.sql
+/*backup*.sql.enc
+/*backup*.sha256
+/*snapshot*.json
 
 # env files (can opt-in for committing if needed)
 .env*

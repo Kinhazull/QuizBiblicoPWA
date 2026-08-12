@@ -26,6 +26,7 @@ jobs:
     environment: production
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      D1_BACKUP_ENCRYPTION_KEY: ${{ secrets.D1_BACKUP_ENCRYPTION_KEY }}
       CLOUDFLARE_ACCOUNT_ID: c9804b247feba1dfe55516404b851d61
     steps:
       - name: Require exact production confirmation
@@ -45,6 +46,10 @@ jobs:
           set -euo pipefail
           if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
             echo "::error::O secret CLOUDFLARE_API_TOKEN não está configurado."
+            exit 1
+          fi
+          if [ -z "$D1_BACKUP_ENCRYPTION_KEY" ]; then
+            echo "::error::O secret D1_BACKUP_ENCRYPTION_KEY não está configurado."
             exit 1
           fi
 
@@ -81,9 +86,10 @@ jobs:
           openssl enc -aes-256-cbc -pbkdf2 -iter 200000 -salt \
             -in d1-production-backup.sql \
             -out d1-production-backup.sql.enc \
-            -pass env:CLOUDFLARE_API_TOKEN
+            -pass env:D1_BACKUP_ENCRYPTION_KEY
           shred -u d1-production-backup.sql
           test -s d1-production-backup.sql.enc
+          sha256sum d1-production-backup.sql.enc > d1-production-backup.sql.enc.sha256
 
       - name: Store confidential backup artifact
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -91,6 +97,7 @@ jobs:
           name: d1-production-backup-${{ github.run_id }}
           path: |
             d1-production-backup.sql.enc
+            d1-production-backup.sql.enc.sha256
             d1-before.json
           if-no-files-found: error
           retention-days: 7
