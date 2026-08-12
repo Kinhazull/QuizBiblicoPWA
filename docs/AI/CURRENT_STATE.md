@@ -30,6 +30,8 @@ Auditorias e relatórios de fases anteriores são históricos. Em caso de diverg
 - 27.1 Segurança e Contas: concluída localmente, ainda não commitada.
 - 27.1.1 MFA Administrativo: concluída localmente, ainda não commitada.
 - 27.2 Operação e Recuperação: **DONE**; chave de backup provisionada/custodiada e restore remoto comprovado em D1 isolado com dataset sintético.
+- 27.3 Retirada do Legado: em validação local; navegação moderna desacoplada de Jornada/Medalhas e de entradas administrativas históricas, sem remoção de dados/APIs.
+- 27.3.1 Sustentabilidade Operacional e Custo Zero: **NEXT**, ainda não iniciada.
 
 ## Capacidades atuais
 
@@ -45,7 +47,7 @@ Auditorias e relatórios de fases anteriores são históricos. Em caso de diverg
 | Biblioteca | Biblioteca Inteligente, Catálogo Elegível, Gerador e sinais editoriais implementados. |
 | Eventos | Editor Visual, reservas, lifecycle e experiência participante implementados. |
 | Planejamento | Calendário e agenda administrativos implementados sobre fontes existentes. |
-| Administração | Central Administrativa e Analytics 2.0 implementados, com comparações, tendências, funis, retenção, jogos, conteúdo, economia e Eventos agregados. |
+| Administração | Central Administrativa e Analytics 2.0 implementados. Placeholders vazios de Progressão/Economia e links do CMS antigo foram retirados; áreas especializadas só serão retomadas se tiverem objetivo distinto de Analytics. |
 | Operação | Reconciliação, backup cifrado com chave dedicada/checksum, restore local e remoto isolado, diagnósticos, observabilidade e runbooks estão implementados; heartbeat e alertas externos permanecem evolução futura. |
 | PWA/mobile | RC local; instalação e comportamento em Android real ainda exigem validação externa. |
 
@@ -64,7 +66,7 @@ Auditorias e relatórios de fases anteriores são históricos. Em caso de diverg
 - PWA/Android físico e Web Vitals públicos não validados;
 - licenças bíblicas, privacidade de menores e Data Safety aguardam revisão humana/jurídica;
 - Asset Registry ainda depende de URLs externas e precisa ser conciliado com CSP futura;
-- legado compatível continua exposto em superfícies controladas;
+- APIs, dados e rotas diretas históricas permanecem por compatibilidade, mas Jornada, Medalhas e CMS antigo não fazem parte da navegação moderna;
 - retenção futura dos backups e canal externo de alertas ainda precisam de decisão humana; a chave de backup `v1` já está provisionada e custodiada;
 - Cron não possui heartbeat persistido; sua última execução depende dos logs e sinais indiretos;
 - estado remoto de migrations requer verificação operacional antes de qualquer promoção.

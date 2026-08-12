@@ -143,7 +143,7 @@ export function PlatformHome({
             <div className="platform-progress"><i style={{ width: `${platformProgress.levelProgress.percent}%` }} /></div>
             <small>{platformProgress.levelProgress.currentXp.toLocaleString("pt-BR")} / {platformProgress.levelProgress.targetXp.toLocaleString("pt-BR")} XP</small>
           </div>
-          <a className="platform-ranking-link" href="/ranking">Ver Ranking <span aria-hidden="true">→</span></a>
+          <a className="platform-ranking-link" href="/rankings">Ver Ranking <span aria-hidden="true">→</span></a>
         </div>
         <div className="platform-currencies" aria-label="Saldo da plataforma">
           <span><b aria-hidden="true">🪙</b><strong>{platformProgress.coins.toLocaleString("pt-BR")}</strong><small>Moedas</small></span>

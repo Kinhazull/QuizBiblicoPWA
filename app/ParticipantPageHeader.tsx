@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 
-const supported = new Set(["/jornada", "/rankings", "/medalhas", "/perfil"]);
+const supported = new Set(["/rankings", "/perfil"]);
 
 export function ParticipantPageHeader() {
   const path = usePathname();

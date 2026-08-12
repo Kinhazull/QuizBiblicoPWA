@@ -145,12 +145,12 @@ export function PlatformProfileOverview({ displayName }: { displayName: string }
 
   if (status === "loading") return <section className="platform-profile-overview" aria-busy="true" aria-labelledby="platform-profile-title">
     <header><p>IDENTIDADE DO JOGADOR</p><h2 id="platform-profile-title">Preparando seu perfil</h2></header>
-    <div className="platform-profile-skeleton" role="status" aria-live="polite"><span>Carregando sua jornada...</span><i /><i /><i /></div>
+    <div className="platform-profile-skeleton" role="status" aria-live="polite"><span>Carregando seu progresso...</span><i /><i /><i /></div>
   </section>;
 
   if (status === "error" || !data) return <section className="platform-profile-overview" aria-labelledby="platform-profile-title">
     <header><p>IDENTIDADE DO JOGADOR</p><h2 id="platform-profile-title">Seu perfil</h2></header>
-    <div className="platform-profile-error" role="alert"><strong>Não foi possível carregar sua jornada.</strong><span>Verifique sua conexão e tente novamente.</span><button type="button" onClick={() => setReloadKey(value => value + 1)}>Tentar novamente</button></div>
+    <div className="platform-profile-error" role="alert"><strong>Não foi possível carregar seu progresso.</strong><span>Verifique sua conexão e tente novamente.</span><button type="button" onClick={() => setReloadKey(value => value + 1)}>Tentar novamente</button></div>
   </section>;
 
   const { progress, statistics, collections, equipment, ranking } = data;
@@ -168,7 +168,7 @@ export function PlatformProfileOverview({ displayName }: { displayName: string }
   return <section className="platform-profile-overview" aria-labelledby="platform-profile-title">
     <header className="platform-profile-identity">
       <EquippedAvatar displayName={displayName} equipment={equipment} size="large" />
-      <div className="platform-profile-identity-copy"><p>IDENTIDADE DO JOGADOR</p><h2 id="platform-profile-title">{displayName}</h2><span>{equippedItems.length ? equippedItems.map(item => item.name).join(" · ") : "Sua jornada, do seu jeito."}</span></div>
+      <div className="platform-profile-identity-copy"><p>IDENTIDADE DO JOGADOR</p><h2 id="platform-profile-title">{displayName}</h2><span>{equippedItems.length ? equippedItems.map(item => item.name).join(" · ") : "Seu perfil, do seu jeito."}</span></div>
       <div className="platform-profile-identity-level"><strong>Nível {progress.level}</strong><span>🔥 {global.currentDailyStreak} dia{global.currentDailyStreak === 1 ? "" : "s"} de sequência</span></div>
     </header>
 
@@ -179,8 +179,8 @@ export function PlatformProfileOverview({ displayName }: { displayName: string }
     </section>
 
     <section aria-labelledby="profile-journey-title">
-      <div className="platform-profile-section-heading"><div><p>SUA JORNADA</p><h3 id="profile-journey-title">Um retrato do seu caminho</h3></div>{mostPlayed ? <span>Mais jogado: <strong>{mostPlayed.name}</strong></span> : null}</div>
-      <div className="platform-profile-summary" aria-label="Resumo da jornada">
+      <div className="platform-profile-section-heading"><div><p>SEU PROGRESSO</p><h3 id="profile-journey-title">Um retrato da sua evolução</h3></div>{mostPlayed ? <span>Mais jogado: <strong>{mostPlayed.name}</strong></span> : null}</div>
+      <div className="platform-profile-summary" aria-label="Resumo do progresso">
         <article><small>Partidas concluídas</small><strong>{formatNumber(global.sessionsCompleted)}</strong><span>em todos os modos</span></article>
         <article><small>XP total</small><strong>{formatNumber(progress.totalXp)}</strong><span>acumulados</span></article>
         <article><small>Conquistas</small><strong>{formatNumber(collections.summary.unlockedAchievements)}/{formatNumber(collections.summary.achievements)}</strong><span>desbloqueadas</span></article>

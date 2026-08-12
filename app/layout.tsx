@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import "./medals.css";
 import "./status.css";
 import "./back-navigation.css";
 import "./profile.css";
 import "./navigation-cleanup.css";
-import "./journey.css";
 import "./notifications.css";
 import "./platform-polish.css";
 import "./legal.css";

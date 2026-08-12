@@ -7,7 +7,7 @@
 | KI-001 | PWA e Android real | Release blocker externo | Validar instalação, atualização, background, retomada e aparelho físico. |
 | KI-003 | Jurídico e licenças | Release blocker humano | Confirmar textos, assets, privacidade de menores, termos e Data Safety. |
 | KI-004 | Asset Registry × CSP | Alto | Definir hospedagem confiável e CSP sem dependência indefinida de URLs externas. |
-| KI-005 | Legado exposto | Médio | Remover gradualmente apenas com telemetria, compatibilidade e rollback. |
+| KI-005 | Legado preservado | Médio | Jornada/Medalhas e Analytics antigo redirecionam para superfícies modernas; APIs/dados históricos e perfil público legado permanecem até prova de não uso ou decisão de produto. |
 | KI-006 | CI/release | Médio | Validar em execução real o novo gate manual por SHA/artefato e manter auto-deploy Git desativado. |
 | KI-007 | Custo e retenção | Médio | Formalizar orçamento zero, limites, retenção e limpeza por domínio. |
 | KI-008 | Alertas e heartbeat | Médio | Health/logs detectam falhas, mas não há heartbeat persistido do Cron nem canal externo proativo; decidir mecanismo de custo zero antes da abertura. |

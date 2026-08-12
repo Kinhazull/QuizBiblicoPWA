@@ -77,13 +77,6 @@ export const adminNavigation: NavigationGroup[] = [
         description: "Uso agregado dos jogos, modos, conte\u00fado, reten\u00e7\u00e3o e economia.",
         permissions: ["analytics.view"],
       },
-      {
-        label: "Indicadores",
-        href: "/admin/analises",
-        icon: "chart",
-        description: "Acompanhar participação, resultados e desempenho.",
-        permissions: ["reports.view"],
-      },
     ],
   },
   {
@@ -153,27 +146,6 @@ export const adminNavigation: NavigationGroup[] = [
         description: "Montar e validar rascunhos locais para todos os jogos.",
         permissions: ["content.manage"],
       },
-      {
-        label: "Revisão",
-        href: "/admin/perguntas/revisao",
-        icon: "review",
-        description: "Usar temporariamente a revisão atual do Quiz.",
-        permissions: ["questions.review"],
-      },
-      {
-        label: "Importação",
-        href: "/admin/perguntas/importar",
-        icon: "upload",
-        description: "Usar temporariamente o importador atual do Quiz.",
-        permissions: ["questions.edit"],
-      },
-      {
-        label: "Colaboração e versões",
-        href: "/admin/perguntas/colaboracao",
-        icon: "history",
-        description: "Usar temporariamente a área colaborativa do Quiz.",
-        permissions: ["questions.edit", "questions.review"],
-      },
     ],
   },
   {
@@ -192,18 +164,6 @@ export const adminNavigation: NavigationGroup[] = [
       description: "Acompanhar agenda, reservas e preparo dos Eventos.",
       permissions: ["events.manage"],
     }],
-  },
-  {
-    label: "Progressão",
-    icon: "activity",
-    items: [],
-    emptyLabel: "XP, níveis, missões e conquistas em preparação.",
-  },
-  {
-    label: "Economia",
-    icon: "coins",
-    items: [],
-    emptyLabel: "Saldos, recompensas, inventário e itens em preparação.",
   },
   {
     label: "Operações",

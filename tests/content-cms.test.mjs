@@ -14,7 +14,7 @@ test("admin navigation promotes universal content while legacy operational route
   assert.match(navigation, /href: "\/admin\/conteudo"/);
   assert.match(navigation, /href: "\/admin\/conteudo\/acervo"/);
   for (const route of ["/admin/perguntas/revisao", "/admin/perguntas/importar", "/admin/perguntas/colaboracao"]) {
-    assert.ok(navigation.includes(route), route);
+    assert.ok(!navigation.includes(route), route);
   }
   assert.doesNotMatch(navigation, /\/admin\/rodadas|\/admin\/temporadas/);
   assert.match(navigation, /\/admin\/calendario/);

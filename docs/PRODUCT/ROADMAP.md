@@ -46,6 +46,10 @@ Concluídas: piloto, fundação modular, Core Platform, plataforma universal e c
 | 27.1 | Segurança e Contas | DONE localmente |
 | 27.1.1 | MFA administrativo e autoridade owner | DONE localmente |
 | 27.2 | Operação e recuperação | DONE |
+| 27.3 | Retirada do legado e superfícies administrativas incompletas | EM VALIDAÇÃO LOCAL |
+| 27.3.1 | Sustentabilidade Operacional e Custo Zero | NEXT |
+
+Progressão e Economia administrativas não terão painéis duplicados: Analytics 2.0 permanece o destino agregado. Uma Sprint 27.3.2 só será necessária se requisitos operacionais especializados, distintos dos Analytics atuais, forem aprovados.
 
 - validar PWA e Android físico, atualização e ciclo de vida;
 - concluir revisão jurídica de licenças, privacidade de menores e Data Safety;

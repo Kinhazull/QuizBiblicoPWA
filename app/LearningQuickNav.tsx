@@ -5,7 +5,7 @@ import { useAuth } from "./AuthProvider";
 import { isGamePlayRoute } from "./games/sdk/gameModules";
 import { BrandIcon, platformHomeNavigation } from "./navigation";
 
-const participantRoutes = new Set(["/", "/jornada", "/rankings", "/medalhas", "/perfil"]);
+const participantRoutes = new Set(["/", "/rankings", "/perfil"]);
 
 export function LearningQuickNav() {
   const path = usePathname();

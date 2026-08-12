@@ -12,7 +12,7 @@ const css = read("app/content-editor.css");
 
 test("editor route is active for the existing administrative content permission", () => {
   assert.match(page, /UniversalContentEditor/);
-  assert.match(navigation, /label: "Criar conteúdo"[\s\S]*?href: "\/admin\/conteudo\/editor"[\s\S]*?permissions: \["questions\.edit"\]/);
+  assert.match(navigation, /label: "Criar conteúdo"[\s\S]*?href: "\/admin\/conteudo\/editor"[\s\S]*?permissions: \["content\.manage"\]/);
   assert.doesNotMatch(navigation, /label: "Criar conteúdo"[\s\S]*?disabled: true/);
 });
 
