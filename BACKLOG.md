@@ -10,8 +10,9 @@
 - reconciliar Asset Registry, hospedagem de assets e CSP;
 - validar o workflow manual de promoção e o mesmo artefato em produção;
 - definir canal operacional de alerta e responsável por resposta;
-- formalizar orçamento operacional de custo zero para o primeiro ano;
-- definir retenção e limpeza por domínio/tabela;
+- preencher o orçamento operacional versionado com quotas e consumo reais dos painéis;
+- aprovar juridicamente a retenção proposta e só então desenhar limpeza por domínio/tabela;
+- medir por 30 dias o Cron de um minuto antes de decidir entre 1, 2 ou 5 minutos;
 - executar rehash progressivo de senhas sem quebra de sessão;
 - concluir arte final e acessibilidade dos assets essenciais.
 

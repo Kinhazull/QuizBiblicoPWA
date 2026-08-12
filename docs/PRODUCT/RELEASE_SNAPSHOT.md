@@ -19,6 +19,7 @@
 - sete jogos, CMS/Biblioteca/Gerador/Loader e modos FREE_PLAY/DAILY/EVENT;
 - Progress, Reward, Statistics, Achievements, Missions, Economia 2.0, Coleções, Perfil 2.0 e Ranking Universal.
 - navegação participante e administrativa sem atalhos para Jornada, Medalhas, Analytics do Quiz ou CMS antigo; rotas históricas compatíveis redirecionam para equivalentes modernos.
+- política de sustentabilidade e orçamento operacional versionado concluídos; capacidade em usuários aguarda quotas externas e medição real.
 
 ## Bloqueadores humanos
 
@@ -26,6 +27,7 @@
 - privacidade de menores, termos e Data Safety;
 - decisões de domínio/package ID e publicação Google Play;
 - responsável e canal de alertas operacionais.
+- quotas vigentes dos planos Cloudflare/GitHub e aprovação da retenção por domínio.
 
 ## Bloqueadores técnicos/externos
 

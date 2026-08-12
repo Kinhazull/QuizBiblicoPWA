@@ -46,8 +46,9 @@ Concluídas: piloto, fundação modular, Core Platform, plataforma universal e c
 | 27.1 | Segurança e Contas | DONE localmente |
 | 27.1.1 | MFA administrativo e autoridade owner | DONE localmente |
 | 27.2 | Operação e recuperação | DONE |
-| 27.3 | Retirada do legado e superfícies administrativas incompletas | EM VALIDAÇÃO LOCAL |
-| 27.3.1 | Sustentabilidade Operacional e Custo Zero | NEXT |
+| 27.3 | Retirada do legado e superfícies administrativas incompletas | DONE localmente |
+| 27.3.1 | Sustentabilidade Operacional e Custo Zero | DONE localmente |
+| 27.4 | Qualidade Real, CI e PWA | NEXT |
 
 Progressão e Economia administrativas não terão painéis duplicados: Analytics 2.0 permanece o destino agregado. Uma Sprint 27.3.2 só será necessária se requisitos operacionais especializados, distintos dos Analytics atuais, forem aprovados.
 
@@ -55,7 +56,7 @@ Progressão e Economia administrativas não terão painéis duplicados: Analytic
 - concluir revisão jurídica de licenças, privacidade de menores e Data Safety;
 - alinhar Asset Registry, hospedagem e CSP;
 - reduzir superfícies legadas com telemetria e rollback;
-- formalizar orçamento de custo zero, retenção de dados e alertas operacionais;
+- preencher o orçamento operacional com quotas/consumo reais e aprovar retenção por domínio;
 - executar segurança, desempenho, acessibilidade e Go/No-Go sobre um SHA imutável;
 - promover produção apenas pelo workflow manual usando o artefato validado.
 

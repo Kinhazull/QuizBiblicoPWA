@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "lastReviewedAt": "2026-08-12",
+  "thresholdsPercent": {
+    "normalBelow": 50,
+    "observeAt": 50,
+    "attentionAt": 70,
+    "criticalAt": 85
+  },
+  "resources": [
+    { "resource": "cloudflare.pages.builds", "unit": "builds/month", "referenceBudget": null, "source": "OWNER_PLAN_DASHBOARD", "lastReviewedAt": null, "measurement": "MANUAL" },
+    { "resource": "cloudflare.functions.requests", "unit": "requests/day", "referenceBudget": null, "source": "OWNER_PLAN_DASHBOARD", "lastReviewedAt": null, "measurement": "MANUAL" },
+    { "resource": "cloudflare.worker.scheduled_invocations", "unit": "invocations/day", "referenceBudget": null, "source": "REPOSITORY_CRON_DERIVATION", "lastReviewedAt": "2026-08-12", "measurement": "DERIVED" },
+    { "resource": "cloudflare.d1.rows_read", "unit": "rows/day", "referenceBudget": null, "source": "OWNER_PLAN_DASHBOARD", "lastReviewedAt": null, "measurement": "MANUAL" },
+    { "resource": "cloudflare.d1.rows_written", "unit": "rows/day", "referenceBudget": null, "source": "OWNER_PLAN_DASHBOARD", "lastReviewedAt": null, "measurement": "MANUAL" },
+    { "resource": "cloudflare.d1.storage", "unit": "bytes", "referenceBudget": null, "source": "OWNER_PLAN_DASHBOARD", "lastReviewedAt": null, "measurement": "MANUAL" },
+    { "resource": "cloudflare.worker.logs", "unit": "events/day", "referenceBudget": null, "source": "OWNER_PLAN_DASHBOARD", "lastReviewedAt": null, "measurement": "MANUAL" },
+    { "resource": "github.actions", "unit": "minutes/month", "referenceBudget": null, "source": "GITHUB_BILLING_DASHBOARD", "lastReviewedAt": null, "measurement": "MANUAL" },
+    { "resource": "github.artifacts", "unit": "byte-days", "referenceBudget": null, "source": "GITHUB_ACTIONS_DASHBOARD", "lastReviewedAt": null, "measurement": "MANUAL" },
+    { "resource": "external.asset.storage", "unit": "bytes", "referenceBudget": null, "source": "NOT_CONFIGURED", "lastReviewedAt": null, "measurement": "UNAVAILABLE" },
+    { "resource": "external.monitoring", "unit": "checks/month", "referenceBudget": null, "source": "NOT_CONFIGURED", "lastReviewedAt": null, "measurement": "UNAVAILABLE" }
+  ]
+}

@@ -44,3 +44,9 @@ Sem contratar SaaS nesta sprint, os sinais mínimos futuros são:
 Detecção interna cobre schema/ledger, catálogo, seleções, reservas, Outbox e consumers. Alerta externo/proativo continua pendente e deve respeitar o objetivo de custo zero.
 
 O restore remoto isolado da Sprint 27.2 foi aprovado e não depende de alerta externo. Heartbeat persistido do Cron, monitor externo e alerta proativo permanecem melhorias operacionais futuras, não blockers de conclusão da 27.2.
+
+## Orçamento operacional
+
+`docs/PRODUCT/ZERO_COST_OPERATIONS.md` é a política canônica e `config/zero-cost-operational-budget.json` registra recursos, unidades, fonte e disponibilidade da medição. Os estados relativos são NORMAL abaixo de 50%, OBSERVAR em 50%, ATENÇÃO em 70% e CRÍTICO em 85% do orçamento configurado. Eles não representam quotas comerciais da Cloudflare ou GitHub.
+
+Nesta baseline, somente a frequência do Cron é derivável automaticamente do repositório. Consumo de D1, requests, logs, Actions e artifacts exige leitura manual dos painéis; heartbeat, coleta de cotas e alertas proativos não devem ser simulados como existentes.

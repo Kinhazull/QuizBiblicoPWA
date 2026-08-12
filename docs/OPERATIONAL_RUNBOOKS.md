@@ -57,3 +57,13 @@ Fila não vazia, sozinha, não prova falha.
 ## Responsabilidade humana
 
 O proprietário aprova operações remotas, custódia das chaves, retenção/descarte, escolha do backup, restore produtivo e monitor externo. A chave de backup `v1` está provisionada e sob custódia externa; rotação futura deve preservar chaves antigas enquanto seus artifacts estiverem retidos. O sistema detecta internamente, mas não envia alerta proativo nesta baseline.
+
+## Revisão mensal de custo zero
+
+1. consultar os painéis vigentes de Cloudflare e GitHub sem copiar secrets;
+2. preencher os budgets e a data de revisão em `config/zero-cost-operational-budget.json`;
+3. classificar cada consumo segundo `docs/PRODUCT/ZERO_COST_OPERATIONS.md`;
+4. em OBSERVAR, revisar tendência; em ATENÇÃO, preparar mitigação; em CRÍTICO, aplicar a degradação segura aprovada;
+5. registrar decisão humana antes de mudar Cron, retenção, plano ou funcionalidade.
+
+Ausência de número não é consumo zero: deve permanecer `MANUAL` ou `UNAVAILABLE`.
