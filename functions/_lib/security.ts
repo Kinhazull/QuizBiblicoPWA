@@ -31,18 +31,18 @@ export async function hashPassword(password: string, salt = randomToken(16)) {
 }
 
 export async function verifyPasswordDetails(password: string, salt: string, expected: string) {
-  if (password.length > 128) return false;
+  if (password.length > 128) return { valid: false, needsUpgrade: false };
   const encoded=expected.match(/^pbkdf2-sha256\$(\d+)\$([A-Za-z0-9_-]+)$/);
   if(encoded){
     const iterations=Number(encoded[1]);
     if(!Number.isSafeInteger(iterations)||iterations<25_000||iterations>1_000_000)return{valid:false,needsUpgrade:false};
     const valid=timingSafeEqual(await derivePassword(password,salt,iterations),encoded[2]);
-    return{valid,needsUpgrade:false};
+    return{valid,needsUpgrade:valid && iterations !== PASSWORD_ITERATIONS};
   }
   // Compatibilidade com hashes sem metadados criados nas versões de 100 mil e 25 mil iterações.
   for(const iterations of [100_000,25_000]){
     const valid=timingSafeEqual(await derivePassword(password,salt,iterations),expected);
-    if(valid)return{valid:true,needsUpgrade:false};
+    if(valid)return{valid:true,needsUpgrade:true};
   }
   return{valid:false,needsUpgrade:false};
 }

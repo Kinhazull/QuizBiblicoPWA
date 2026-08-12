@@ -11,7 +11,7 @@ test("dashboard returns real organization-scoped metrics and attention", async t
   const response = await dashboard({ request: createAuthenticatedRequest("https://test/api/admin/dashboard", { token }), env: ctx.env });
   assert.equal(response.status, 200); assert.equal(response.headers.get("cache-control"), "no-store, private");
   const data = await responseJson(response); assert.equal(data.metrics.pending, 1); assert.equal(data.metrics.members, 2);
-  assert.ok(data.attention.some(item => item.id === "pending-users" && item.count === 1)); assert.ok(!data.attention.some(item => item.id === "ai"));
+  assert.ok(data.recommendations.some(item => item.id === "operations:pending-users" && item.severity === "ATTENTION")); assert.ok(!data.recommendations.some(item => item.id === "ai"));
   assert.deepEqual(data.events, { active: null, next: null });
   assert.deepEqual(data.reservations, { active: 0, expired: 0 });
   assert.equal(data.usage.activeUsers, 0); assert.equal(data.content.needsReview, 0);
@@ -20,7 +20,7 @@ test("dashboard returns real organization-scoped metrics and attention", async t
 test("dashboard exposes operational attention safely and rejects participants", async t => {
   const { ctx } = await setup(t), adminToken = await createSession(ctx, "admin", { token: "admin-two" }), participantToken = await createSession(ctx, "participant", { token: "participant-token" });
   const allowed = await dashboard({ request: createAuthenticatedRequest("https://test/api/admin/dashboard", { token: adminToken }), env: { ...ctx.env, AI: { run: async () => ({}) } } });
-  const data = await responseJson(allowed); assert.equal(data.metrics.pending, 0); assert.ok(data.attention.every(item => !Object.hasOwn(item, "userId")));
+  const data = await responseJson(allowed); assert.equal(data.metrics.pending, 0); assert.ok(data.recommendations.every(item => !Object.hasOwn(item, "userId")));
   const denied = await dashboard({ request: createAuthenticatedRequest("https://test/api/admin/dashboard", { token: participantToken }), env: ctx.env }); assert.equal(denied.status, 403);
 });
 
@@ -36,4 +36,5 @@ test("dashboard returns only tenant-scoped event and recent activity summaries",
   assert.equal(data.events.active.title, "Evento ativo"); assert.equal(data.events.next.title, "Próximo evento");
   assert.deepEqual(data.recent, [{ action: "content.published", entityType: "content", createdAt: now }]);
   assert.ok(!JSON.stringify(data).includes("secret-id")); assert.ok(!JSON.stringify(data).includes("Evento alheio"));
+  assert.ok(data.recommendations.every(item => item.entity?.id !== "event-other"));
 });

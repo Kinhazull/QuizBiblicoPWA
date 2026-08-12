@@ -30,8 +30,11 @@ export async function getPlatformPlanningCalendar(env: AppEnv, organizationId: s
 
   const [eventRows, gameRows, reservationRows, reviewRow, conflictRows, health] = await Promise.all([
     env.DB.prepare(`SELECT event.id,event.title,event.description,event.starts_at startsAt,event.ends_at endsAt,
-      event.time_zone timeZone,event.status,event.cover_asset_id coverAssetId
-      FROM platform_events event WHERE ${windowWhere} ORDER BY event.starts_at,event.id LIMIT 100`).bind(...bindings).all<Row>(),
+      event.time_zone timeZone,event.status,event.cover_asset_id coverAssetId,asset.status coverAssetStatus,
+      event.participation_xp participationXp,event.victory_coins victoryCoins,
+      event.completion_bonus_xp completionBonusXp,event.perfect_bonus_coins perfectBonusCoins
+      FROM platform_events event LEFT JOIN asset_registry asset ON asset.id=event.cover_asset_id AND asset.organization_id=event.organization_id
+      WHERE ${windowWhere} ORDER BY event.starts_at,event.id LIMIT 100`).bind(...bindings).all<Row>(),
     env.DB.prepare(`SELECT event.id eventId,game.game_type gameType,COUNT(content.content_id) selectedCount,
       SUM(CASE WHEN item.status='PUBLISHED' AND item.version=content.content_version
         AND library.availability_status IN ('AVAILABLE','RESERVED_EVENT') THEN 1 ELSE 0 END) validCount
@@ -72,7 +75,9 @@ export async function getPlatformPlanningCalendar(env: AppEnv, organizationId: s
     }
     if (number(row.endsAt) <= number(row.startsAt)) issues.push({ code: "invalid_dates", label: "Revise o período do Evento." });
     if (conflicted.has(String(row.id))) issues.push({ code: "reservation_conflict", label: "Há conflito real de reserva." });
-    return { id: String(row.id), title: String(row.title), description: String(row.description || ""), status: String(row.status), startsAt: number(row.startsAt), endsAt: number(row.endsAt), timeZone: String(row.timeZone || PLATFORM_PLANNING_DEFAULT_TIME_ZONE), games: eventGames, reservations: reservations.get(String(row.id)) || [], checklist: { ready: issues.length === 0, issues }, editorHref: "/admin/eventos" };
+    return { id: String(row.id), title: String(row.title), description: String(row.description || ""), status: String(row.status), startsAt: number(row.startsAt), endsAt: number(row.endsAt), timeZone: String(row.timeZone || PLATFORM_PLANNING_DEFAULT_TIME_ZONE), coverAssetId: row.coverAssetId ? String(row.coverAssetId) : null, coverAssetStatus: row.coverAssetStatus ? String(row.coverAssetStatus) : null,
+      rewards: { participationXp: number(row.participationXp), victoryCoins: number(row.victoryCoins), completionBonusXp: number(row.completionBonusXp), perfectBonusCoins: number(row.perfectBonusCoins) },
+      games: eventGames, reservations: reservations.get(String(row.id)) || [], checklist: { ready: issues.length === 0, issues }, editorHref: "/admin/eventos" };
   });
   const upcoming = events.some(event => event.status !== "CANCELLED" && event.endsAt > now && event.startsAt < now + 14 * DAY);
   return {
@@ -80,6 +85,7 @@ export async function getPlatformPlanningCalendar(env: AppEnv, organizationId: s
     timeZone: events[0]?.timeZone || PLATFORM_PLANNING_DEFAULT_TIME_ZONE,
     events,
     editorial: { awaitingReview: number(reviewRow?.total), insights: health.insights.filter(item => ["critical", "attention"].includes(item.severity)).slice(0, 6) },
+    libraryHealth: health,
     summary: { totalEvents: events.length, reservations: [...reservations.values()].flat().reduce((sum, item) => sum + item.count, 0), noEventsNext14Days: !upcoming, conflicts: conflicted.size },
   };
 }

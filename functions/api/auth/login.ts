@@ -1,4 +1,4 @@
-import { json, normalizeUsername, randomToken, sessionCookie, sha256, verifyPasswordDetails } from "../../_lib/security";
+import { hashPassword, json, normalizeUsername, randomToken, sessionCookie, sha256, verifyPasswordDetails } from "../../_lib/security";
 import type { AppEnv } from "../../_lib/auth";
 import { enforceRateLimit, requestFingerprint } from "../../_lib/abuse";
 import { effectivePermissions } from "../../_lib/permissions";
@@ -30,6 +30,16 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
   }
   if (user.status === "pending") return json({ error: "pending_approval" }, 403);
   if (user.status !== "active") return json({ error: "account_unavailable" }, 403);
+  if (passwordCheck.needsUpgrade) {
+    try {
+      const upgraded = await hashPassword(password);
+      await env.DB.prepare(`UPDATE users SET password_hash=?1,password_salt=?2,updated_at=?3
+        WHERE id=?4 AND password_hash=?5 AND password_salt=?6`)
+        .bind(upgraded.hash, upgraded.salt, now, user.id, user.password_hash, user.password_salt).run();
+    } catch {
+      // Login remains valid; compare-and-swap keeps concurrent upgrades safe.
+    }
+  }
   const permissions = await effectivePermissions(env, user);
   const token = randomToken();
   const expires = now + (persistent ? 30 : .5) * 24 * 60 * 60 * 1000;

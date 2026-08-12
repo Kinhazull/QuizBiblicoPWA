@@ -1,7 +1,7 @@
 # Snapshot de release e Go/No-Go
 
 **Status:** CURRENT  
-**Data:** 10/08/2026
+**Data:** 12/08/2026
 
 ## Identificação
 
@@ -45,3 +45,9 @@
 ## Decisão atual
 
 **NO-GO para release pública final.** A baseline é tecnicamente candidata, mas os bloqueadores humanos e validações externas acima ainda precisam ser fechados. Analytics 2.0 não faz parte deste snapshot e ainda não foi iniciado.
+
+## Segurança de contas — Sprint 27.1
+
+- rehash oportunista de credenciais legadas, recuperação single-use e rate limits sensíveis foram implementados localmente;
+- TOTP administrativo e canal remoto de recuperação permanecem bloqueadores explícitos;
+- decisão permanece **NO-GO** para abertura pública de contas privilegiadas até esses itens serem tratados.

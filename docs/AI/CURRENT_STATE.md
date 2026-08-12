@@ -1,7 +1,7 @@
 # Estado operacional corrente
 
 **Status:** CURRENT — fonte oficial de verdade operacional
-**Atualização:** 10/08/2026
+**Atualização:** 12/08/2026
 **Roadmap canônico:** `docs/PRODUCT/ROADMAP.md`
 **Snapshot de release:** `docs/PRODUCT/RELEASE_SNAPSHOT.md`
 
@@ -26,7 +26,8 @@ Auditorias e relatórios de fases anteriores são históricos. Em caso de diverg
 - 26.4 Planejamento e Calendário Administrativo: concluída;
 - 26.4.1 Release Truth e Integridade da Baseline: concluída localmente, ainda não commitada;
 - 26.5 Analytics 2.0: concluída localmente, ainda não commitada;
-- 26.6 Automação Administrativa: futura.
+- 26.6 Automação Administrativa: concluída localmente, ainda não commitada.
+- 27.1 Segurança e Contas: concluída localmente, ainda não commitada.
 
 ## Capacidades atuais
 

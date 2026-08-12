@@ -13,6 +13,8 @@
 | KI-007 | Custo e retenção | Médio | Formalizar orçamento zero, limites, retenção e limpeza por domínio. |
 | KI-008 | Alertas operacionais | Médio | Conectar os sinais existentes a um canal efetivamente monitorado. |
 | KI-009 | Advisory transitivo temporário | Baixo | Revisar periodicamente `GHSA-mh99-v99m-4gvg`; manter exceção exclusiva até existir correção upstream compatível. |
+| KI-010 | MFA administrativo | Alto | TOTP requer migration e segundo estágio de autenticação; planejar implementação dedicada antes da abertura pública de contas privilegiadas. |
+| KI-011 | Canal de recuperação | Médio | Recuperação é segura por códigos locais, mas não há entrega por e-mail; documentar suporte e recuperação assistida antes da abertura pública. |
 
 ## Encerrados
 

@@ -17,13 +17,13 @@ test("new credentials use the production-safe Workers work factor", async () => 
 });
 
 for (const iterations of [100_000, 25_000]) {
-  test(`legacy ${iterations} credential logs in without synchronous rehash`, async t => {
+  test(`legacy ${iterations} credential logs in and is opportunistically rehashed`, async t => {
     const ctx = createTestDatabase(); t.after(ctx.close); seedOrganization(ctx);
     const password = "SenhaSegura123!", salt = `legacy-${iterations}`;
     const passwordHash = await legacyHash(password, salt, iterations);
     seedUser(ctx, { id: `legacy-${iterations}`, username: `legacy-${iterations}`, passwordHash, passwordSalt: salt });
     const verification = await verifyPasswordDetails(password, salt, passwordHash);
-    assert.deepEqual(verification, { valid: true, needsUpgrade: false });
+    assert.deepEqual(verification, { valid: true, needsUpgrade: true });
     const response = await login({
       request: new Request("https://test/api/auth/login", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ username: `legacy-${iterations}`, password }) }),
       env: ctx.env,
@@ -31,6 +31,24 @@ for (const iterations of [100_000, 25_000]) {
     assert.equal(response.status, 200);
     assert.equal((await responseJson(response)).ok, true);
     assert.equal(ctx.raw.prepare("SELECT COUNT(*) n FROM sessions WHERE user_id=?").get(`legacy-${iterations}`).n, 1);
-    assert.equal(ctx.raw.prepare("SELECT password_hash FROM users WHERE id=?").get(`legacy-${iterations}`).password_hash, passwordHash);
+    const upgraded = ctx.raw.prepare("SELECT password_hash,password_salt FROM users WHERE id=?").get(`legacy-${iterations}`);
+    assert.match(upgraded.password_hash, /^pbkdf2-sha256\$100000\$/);
+    assert.notEqual(upgraded.password_hash, passwordHash);
+    assert.notEqual(upgraded.password_salt, salt);
   });
 }
+
+
+test("invalid legacy password never upgrades the stored credential", async t => {
+  const ctx = createTestDatabase(); t.after(ctx.close); seedOrganization(ctx);
+  const salt = "legacy-invalid", passwordHash = await legacyHash("SenhaSegura123!", salt, 25_000);
+  seedUser(ctx, { id: "legacy-invalid", username: "legacy-invalid", passwordHash, passwordSalt: salt });
+  const response = await login({
+    request: new Request("https://test/api/auth/login", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ username: "legacy-invalid", password: "SenhaErrada123!" }) }),
+    env: ctx.env,
+  });
+  assert.equal(response.status, 401);
+  const stored = ctx.raw.prepare("SELECT password_hash,password_salt FROM users WHERE id=?").get("legacy-invalid");
+  assert.equal(stored.password_hash, passwordHash);
+  assert.equal(stored.password_salt, salt);
+});

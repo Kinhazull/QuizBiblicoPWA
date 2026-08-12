@@ -37,9 +37,13 @@ Concluídas: piloto, fundação modular, Core Platform, plataforma universal e c
 | 26.4 | Planejamento e Calendário Administrativo | DONE |
 | 26.4.1 | Release Truth e Integridade da Baseline | DONE localmente |
 | 26.5 | Analytics 2.0 | DONE localmente |
-| 26.6 | Automação Administrativa | FUTURE |
+| 26.6 | Automação Administrativa | DONE localmente |
 
 ## Fase 8 — Release Readiness
+
+| Sprint | Entrega | Estado |
+|---|---|---|
+| 27.1 | Segurança e Contas | DONE localmente |
 
 - validar PWA e Android físico, atualização e ciclo de vida;
 - ensaiar restore real em banco isolado;

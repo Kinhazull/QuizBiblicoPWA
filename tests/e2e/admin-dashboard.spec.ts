@@ -14,7 +14,7 @@ const dashboard = {
   content: { needsReview: 3, published: 1364, available: 1320, unprojected: 0, libraryHealth: { total: 3, counts: { critical: 1, attention: 2, info: 0 } } },
   reservations: { active: 12, expired: 1 },
   recent: [{ action: "content.published", entityType: "content", createdAt: now }],
-  attention: [{ id: "health-events", severity: "warning", count: 1, title: "EVENTS: requer atenção", description: "Reservas expiradas ainda ativas.", href: "/admin/diagnostico", action: "Abrir diagnóstico" }],
+  recommendations: [{ id: "operations:health:events", severity: "ATTENTION", domain:"OPERATIONS", title: "EVENTS: verificar saúde operacional", reason: "Reservas expiradas ainda ativas.", entity:{type:"health_group",id:"EVENTS"}, suggestedAction:"Abrir o diagnóstico.", href: "/admin/diagnostico", calculatedAt:now }],
 };
 
 async function mock(page: Page, payload = dashboard) {
@@ -26,7 +26,10 @@ test("Central Administrativa resume operação com drill-down acessível", async
   await mock(page);
   await page.goto("/admin");
   await expect(page.getByRole("heading", { name: "Central Administrativa" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Requer atenção" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Ações recomendadas" })).toBeVisible();
+  await expect(page.getByText("Por que:")).toBeVisible();
+  await page.getByLabel("Severidade").selectOption("ATTENTION");
+  await page.getByLabel("Domínio").selectOption("OPERATIONS");
   await expect(page.getByText("Semana da Esperança")).toBeVisible();
   await expect(page.getByText("Desafio dos Evangelhos")).toBeVisible();
   await expect(page.getByText("1.364", { exact: true })).toBeVisible();
@@ -38,7 +41,7 @@ test("Central Administrativa resume operação com drill-down acessível", async
 });
 
 test("Central apresenta estado saudável quando não há alertas", async ({ page }) => {
-  await mock(page, { ...dashboard, health: { status: "HEALTHY", checkedAt: now }, metrics: { ...dashboard.metrics, health: "healthy" }, attention: [], reservations: { active: 0, expired: 0 } });
+  await mock(page, { ...dashboard, health: { status: "HEALTHY", checkedAt: now }, metrics: { ...dashboard.metrics, health: "healthy" }, recommendations: [], reservations: { active: 0, expired: 0 } });
   await page.goto("/admin");
-  await expect(page.getByText("Plataforma saudável, sem pendências relevantes")).toBeVisible();
+  await expect(page.getByText("Nenhuma ação recomendada neste momento")).toBeVisible();
 });

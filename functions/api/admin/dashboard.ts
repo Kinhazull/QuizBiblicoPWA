@@ -2,20 +2,17 @@ import { requirePermission } from "../../_lib/permissions";
 import type { AppEnv } from "../../_lib/auth";
 import { json } from "../../_lib/security";
 import { getPlatformAnalytics } from "../../_lib/platform-analytics";
-import { buildOperationalHealth, type HealthStatus } from "../../_lib/operational-health";
+import { buildOperationalHealth } from "../../_lib/operational-health";
 import { EXPECTED_MIGRATION_COUNT } from "../../../shared/operational-schema-contract.mjs";
-import { getLibraryHealth } from "../../_lib/library-health";
+import { getPlatformPlanningCalendar } from "../../_lib/platform-planning";
+import { deriveAdminRecommendations } from "../../_lib/admin-recommendations";
 
 type CountRow = { total?: number };
-type AttentionSeverity = "critical" | "warning" | "info";
 
 async function count(env: AppEnv, sql: string, ...values: unknown[]) {
   const row = await env.DB.prepare(sql).bind(...values).first<CountRow>();
   return Number(row?.total || 0);
 }
-
-const healthSeverity = (status: HealthStatus): AttentionSeverity =>
-  status === "CRITICAL" ? "critical" : status === "DEGRADED" ? "warning" : "info";
 
 export const onRequestGet = async ({ request, env }: { request: Request; env: AppEnv }) => {
   try {
@@ -26,7 +23,7 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: Ap
     startOfToday.setHours(0, 0, 0, 0);
 
     const migrationRows = await count(env, "SELECT COUNT(*) total FROM d1_migrations").catch(() => 0);
-    const [analytics, operational, libraryHealth, pending, members, needsReview, contentSummary, reservations, activeEvent, nextEvent, recent] = await Promise.all([
+    const [analytics, operational, planning, pending, members, needsReview, contentSummary, reservations, activeEvent, nextEvent, recent] = await Promise.all([
       getPlatformAnalytics(env, organizationId, { key: "today", from: startOfToday.getTime(), to: now }),
       buildOperationalHealth(env, organizationId, {
         now,
@@ -34,7 +31,7 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: Ap
         expectedMigrations: EXPECTED_MIGRATION_COUNT,
         schemaProblems: 0,
       }),
-      getLibraryHealth(env, organizationId, now),
+      getPlatformPlanningCalendar(env, organizationId, { from: now, to: now + 14 * 86_400_000, now }),
       count(env, "SELECT COUNT(*) total FROM users WHERE organization_id=?1 AND status='pending'", organizationId),
       count(env, "SELECT COUNT(*) total FROM users WHERE organization_id=?1 AND status='active'", organizationId),
       count(env, "SELECT COUNT(*) total FROM content_items WHERE organization_id=?1 AND editorial_status='IN_REVIEW'", organizationId),
@@ -59,32 +56,14 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: Ap
         FROM audit_logs WHERE organization_id=?1 ORDER BY created_at DESC LIMIT 8`).bind(organizationId).all<any>(),
     ]);
 
-    const attention: Array<{ id: string; severity: AttentionSeverity; count: number; title: string; description: string; href: string; action: string }> = [];
-    for (const [groupName, group] of Object.entries(operational.groups)) {
-      const failing = group.checks.filter(check => check.status === "CRITICAL" || check.status === "DEGRADED");
-      if (!failing.length) continue;
-      const worst = failing.some(check => check.status === "CRITICAL") ? "CRITICAL" : "DEGRADED";
-      attention.push({
-        id: `health-${groupName.toLowerCase()}`,
-        severity: healthSeverity(worst),
-        count: failing.reduce((total, check) => total + Number(check.value || 0), 0),
-        title: `${groupName.replaceAll("_", " ")}: requer atenção`,
-        description: failing[0].description,
-        href: "/admin/diagnostico",
-        action: "Abrir diagnóstico",
-      });
-    }
-    if (needsReview > 0) attention.push({ id: "editorial-review", severity: "warning", count: needsReview, title: `${needsReview} conteúdo(s) aguardando revisão`, description: "Há itens no fluxo editorial prontos para avaliação.", href: "/admin/conteudo/acervo?status=IN_REVIEW", action: "Abrir revisão" });
-    if (pending > 0) attention.push({ id: "pending-users", severity: "warning", count: pending, title: `${pending} cadastro(s) pendente(s)`, description: "Novos participantes aguardam uma decisão.", href: "/admin/acessos", action: "Revisar acessos" });
-    const severityOrder: Record<AttentionSeverity, number> = { critical: 0, warning: 1, info: 2 };
-    attention.sort((left, right) => severityOrder[left.severity] - severityOrder[right.severity] || right.count - left.count || left.id.localeCompare(right.id));
+    const recommendations = deriveAdminRecommendations({ now, pendingUsers: pending, libraryInsights: planning.libraryHealth.insights, planning, operationalGroups: operational.groups });
 
     const content = {
       needsReview,
       published: Number(contentSummary?.published || 0),
       available: Number(contentSummary?.available || 0),
       unprojected: Number(contentSummary?.unprojected || 0),
-      libraryHealth: { total: libraryHealth.total, counts: libraryHealth.counts },
+      libraryHealth: { total: planning.libraryHealth.total, counts: planning.libraryHealth.counts },
     };
     const reservationSummary = { active: Number(reservations?.active || 0), expired: Number(reservations?.expired || 0) };
     const health = { status: operational.status, checkedAt: operational.checkedAt };
@@ -108,7 +87,7 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: Ap
       content,
       reservations: reservationSummary,
       recent: (recent.results || []).map(row => ({ action: String(row.action), entityType: String(row.entityType), createdAt: Number(row.createdAt) })),
-      attention: attention.slice(0, 8),
+      recommendations,
     }, 200, {
       "Cache-Control": "no-store, private",
       "X-Content-Type-Options": "nosniff",

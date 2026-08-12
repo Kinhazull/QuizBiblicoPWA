@@ -16,7 +16,7 @@ export type EventStatus = typeof EventStatus[keyof typeof EventStatus];
 
 const GAME_TYPES = new Set(Object.values(GameType));
 const ID = /^[a-zA-Z0-9._:-]{8,160}$/;
-const MAX_REWARDS = Object.freeze({ participationXp: 100, victoryCoins: 20, completionBonusXp: 250, perfectBonusCoins: 50 });
+export const EVENT_MAX_REWARDS = Object.freeze({ participationXp: 100, victoryCoins: 20, completionBonusXp: 250, perfectBonusCoins: 50 });
 const GAME_ROUTES: Readonly<Record<GameType, string>> = {
   [GameType.QUIZ]: "/jogar",
   [GameType.WORDLE]: "/jogos/wordle-biblico",
@@ -96,10 +96,10 @@ function normalizeEvent(input: EventInput) {
   };
   if (title.length < 3 || !Number.isSafeInteger(startsAt) || !Number.isSafeInteger(endsAt) || endsAt <= startsAt
     || minimumParticipations < 1 || minimumParticipations > games.length
-    || rewards.participationXp < 0 || rewards.participationXp > MAX_REWARDS.participationXp
-    || rewards.victoryCoins < 0 || rewards.victoryCoins > MAX_REWARDS.victoryCoins
-    || rewards.completionBonusXp < 0 || rewards.completionBonusXp > MAX_REWARDS.completionBonusXp
-    || rewards.perfectBonusCoins < 0 || rewards.perfectBonusCoins > MAX_REWARDS.perfectBonusCoins) {
+    || rewards.participationXp < 0 || rewards.participationXp > EVENT_MAX_REWARDS.participationXp
+    || rewards.victoryCoins < 0 || rewards.victoryCoins > EVENT_MAX_REWARDS.victoryCoins
+    || rewards.completionBonusXp < 0 || rewards.completionBonusXp > EVENT_MAX_REWARDS.completionBonusXp
+    || rewards.perfectBonusCoins < 0 || rewards.perfectBonusCoins > EVENT_MAX_REWARDS.perfectBonusCoins) {
     throw new Error("invalid_event");
   }
   return { title, description, coverUrl, coverAssetId, startsAt, endsAt, timeZone, completionRule, minimumParticipations, rewards, games };

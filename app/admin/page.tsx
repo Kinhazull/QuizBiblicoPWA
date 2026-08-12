@@ -5,18 +5,21 @@ import { BrandIcon, type IconName } from "../navigation";
 
 type DashboardHealth = "healthy" | "attention";
 type OperationalHealth = "HEALTHY" | "DEGRADED" | "CRITICAL" | "UNKNOWN";
-type AttentionSeverity = "critical" | "warning" | "info";
+type RecommendationSeverity = "CRITICAL" | "ATTENTION" | "INFO";
+type RecommendationDomain = "EVENTS" | "CONTENT" | "PLANNING" | "OPERATIONS";
 type LibraryHealthCounts = { critical: number; attention: number; info: number };
 type EventSummary = { id: string; title: string; status: string; startsAt: number; endsAt: number };
 
-type AttentionItem = {
+type Recommendation = {
   id: string;
-  severity: AttentionSeverity;
-  count: number;
+  severity: RecommendationSeverity;
+  domain: RecommendationDomain;
   title: string;
-  description: string;
+  reason: string;
+  entity: { type: string; id: string | null; label?: string };
+  suggestedAction: string;
   href: string;
-  action: string;
+  calculatedAt: number;
 };
 
 type Dashboard = {
@@ -27,7 +30,7 @@ type Dashboard = {
   content: { needsReview: number; published: number; available: number; unprojected: number; libraryHealth: { total: number; counts: LibraryHealthCounts } };
   reservations: { active: number; expired: number };
   recent: Array<{ action: string; entityType: string; createdAt: number }>;
-  attention: AttentionItem[];
+  recommendations: Recommendation[];
 };
 
 type MetricCard = { icon: IconName; title: string; description: string; value: number | string; href: string; status?: DashboardHealth };
@@ -48,12 +51,12 @@ function isDashboard(value: unknown): value is Dashboard {
   const data = value as Partial<Dashboard>;
   return Boolean(
     data.metrics && data.health && data.usage && data.events && data.content && data.reservations &&
-    Array.isArray(data.recent) && Array.isArray(data.attention),
+    Array.isArray(data.recent) && Array.isArray(data.recommendations),
   );
 }
 
-function attentionIcon(severity: AttentionSeverity): IconName {
-  return severity === "critical" ? "shield" : severity === "warning" ? "health" : "bell";
+function attentionIcon(severity: RecommendationSeverity): IconName {
+  return severity === "CRITICAL" ? "shield" : severity === "ATTENTION" ? "health" : "bell";
 }
 
 function healthLabel(status: OperationalHealth) {
@@ -73,6 +76,8 @@ export default function AdminHub() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [reloadKey, setReloadKey] = useState(0);
+  const [severityFilter, setSeverityFilter] = useState("");
+  const [domainFilter, setDomainFilter] = useState("");
 
   const loadDashboard = useCallback((signal: AbortSignal) => {
     setIsLoading(true);
@@ -106,6 +111,8 @@ export default function AdminHub() {
     { icon: "review", title: "Aguardando revisão", description: "Fluxo editorial universal", value: data.content.needsReview, href: "/admin/conteudo/acervo?status=IN_REVIEW" },
     { icon: "database", title: "Conteúdo disponível", description: `${numberFormatter.format(data.content.published)} publicados`, value: data.content.available, href: "/admin/conteudo/acervo" },
   ] : [], [data]);
+  const recommendations = useMemo(() => (data?.recommendations || []).filter(item =>
+    (!severityFilter || item.severity === severityFilter) && (!domainFilter || item.domain === domainFilter)), [data, severityFilter, domainFilter]);
 
   return <main className="admin-shell admin-hub">
     <section className="admin-title" aria-labelledby="admin-hub-title">
@@ -115,11 +122,13 @@ export default function AdminHub() {
     </section>
 
     <section className="attention-section" aria-labelledby="attention-title">
-      <header><div><p className="eyebrow">PRIORIDADE</p><h2 id="attention-title">Requer atenção</h2></div><a href="/admin/diagnostico">Abrir Health detalhado</a></header>
+      <header><div><p className="eyebrow">DECISÃO HUMANA</p><h2 id="attention-title">Ações recomendadas</h2><span>Regras determinísticas explicam o motivo; nenhuma ação é executada automaticamente.</span></div><a href="/admin/diagnostico">Abrir Health detalhado</a></header>
+      {data && <div className="recommendation-filters" aria-label="Filtros das ações recomendadas"><label>Severidade<select value={severityFilter} onChange={event => setSeverityFilter(event.target.value)}><option value="">Todas</option><option value="CRITICAL">Crítica</option><option value="ATTENTION">Atenção</option><option value="INFO">Informativa</option></select></label><label>Domínio<select value={domainFilter} onChange={event => setDomainFilter(event.target.value)}><option value="">Todos</option><option value="EVENTS">Eventos</option><option value="CONTENT">Conteúdo</option><option value="PLANNING">Planejamento</option><option value="OPERATIONS">Analytics/Operação</option></select></label></div>}
       {isLoading && !data && <p className="dashboard-state" role="status" aria-live="polite">Carregando sinais operacionais…</p>}
       {error && <div className="dashboard-state error" role="alert"><p>{error}</p><button type="button" onClick={() => setReloadKey(key => key + 1)} disabled={isLoading}>{isLoading ? "Carregando…" : "Tentar novamente"}</button></div>}
-      {data && data.attention.length === 0 && <div className="attention-empty" role="status"><BrandIcon name="health" /><div><strong>Plataforma saudável, sem pendências relevantes</strong><span>Os sinais operacionais disponíveis não exigem ação neste momento.</span></div></div>}
-      {data && data.attention.length > 0 && <div className="attention-list">{data.attention.map(item => <article className={`attention-item ${item.severity}`} key={item.id}><BrandIcon name={attentionIcon(item.severity)} /><div className="attention-copy"><div className="attention-heading"><strong>{item.title}</strong>{item.count > 0 && <span className="attention-count" aria-label={`${item.count} ocorrências`}>{numberFormatter.format(item.count)}</span>}</div><p>{item.description}</p></div><a href={item.href}>{item.action}</a></article>)}</div>}
+      {data && data.recommendations.length === 0 && <div className="attention-empty" role="status"><BrandIcon name="health" /><div><strong>Nenhuma ação recomendada neste momento</strong><span>Os sinais confiáveis disponíveis não exigem decisão administrativa.</span></div></div>}
+      {data && data.recommendations.length > 0 && recommendations.length === 0 && <p className="dashboard-state" role="status">Nenhuma recomendação corresponde aos filtros.</p>}
+      {recommendations.length > 0 && <div className="attention-list">{recommendations.map(item => <article className={`attention-item ${item.severity.toLowerCase()}`} key={item.id}><BrandIcon name={attentionIcon(item.severity)} /><div className="attention-copy"><div className="attention-heading"><strong>{item.title}</strong><span className="recommendation-domain">{item.domain}</span></div><p><b>Por que:</b> {item.reason}</p><small><b>Próxima ação:</b> {item.suggestedAction}</small></div><a href={item.href}>Abrir contexto</a></article>)}</div>}
     </section>
 
     <section className="hub-summary" aria-label="Indicadores essenciais" aria-busy={isLoading}>
