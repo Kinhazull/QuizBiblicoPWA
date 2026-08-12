@@ -77,8 +77,7 @@ test("offline contract serves only the public fallback and recovers online", asy
 
 test("browser updates from service worker A to B without a stale loop", async ({ browser }) => {
   let version = "A";
-  let server: Server | undefined;
-  server = createServer((request, response) => {
+  const server: Server = createServer((request, response) => {
     if (request.url === "/sw.js") {
       response.writeHead(200, { "content-type": "text/javascript", "cache-control": "no-store" });
       response.end(`const V=${JSON.stringify(version)};self.addEventListener('install',()=>self.skipWaiting());self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));self.addEventListener('fetch',()=>{});self.addEventListener('message',e=>e.source?.postMessage({version:V}));`);
