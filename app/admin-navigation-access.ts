@@ -13,7 +13,7 @@ export function visibleAdminNavigation<T extends PermissionItem, G extends Permi
   access: AdminNavigationAccess,
 ): G[] {
   if (!access) return [];
-  if (access.role === "admin") return navigation;
+  if (["owner", "admin"].includes(access.role)) return navigation;
   const permissions = new Set(access.role === "leader"
     ? [...leaderPermissions, ...(access.permissions || [])]
     : access.permissions || []);

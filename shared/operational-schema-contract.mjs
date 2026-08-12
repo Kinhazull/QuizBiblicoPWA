@@ -1,5 +1,5 @@
-export const OPERATIONAL_SCHEMA_VERSION = 38;
-export const EXPECTED_MIGRATION_COUNT = 39;
+export const OPERATIONAL_SCHEMA_VERSION = 39;
+export const EXPECTED_MIGRATION_COUNT = 40;
 
 export const APPLICATION_TABLES = Object.freeze([
   "organizations", "groups", "users", "invitations", "sessions", "rounds", "questions", "choices", "attempts",
@@ -17,7 +17,7 @@ export const APPLICATION_TABLES = Object.freeze([
   "platform_event_participations", "platform_event_reward_ledger", "user_platform_statistics",
   "user_platform_game_statistics", "user_platform_game_difficulty_statistics", "user_platform_statistics_active_days",
   "platform_statistics_event_checkpoints", "quiz_core_event_outbox", "user_platform_statistics_official_days_utc",
-  "content_review_comments", "asset_registry", "content_assets",
+  "content_review_comments", "asset_registry", "content_assets", "user_mfa", "mfa_recovery_codes", "mfa_login_challenges",
 ]);
 
 export const CRITICAL_INDEXES = Object.freeze([
@@ -46,6 +46,7 @@ export const CRITICAL_INDEXES = Object.freeze([
   "user_platform_game_difficulty_statistics_lookup_idx",
   "user_platform_progress_org_ranking_idx", "platform_xp_ledger_org_applied_user_idx",
   "user_platform_game_statistics_org_game_score_idx", "user_platform_game_statistics_org_game_performance_idx",
+  "mfa_recovery_codes_user_idx", "mfa_login_challenges_expiry_idx", "users_one_active_owner_per_org_uq",
 ]);
 
 export const CRITICAL_TRIGGERS = Object.freeze(["choices_fill_position_after_insert", "platform_event_reservation_no_overlap"]);
@@ -53,7 +54,7 @@ export const CRITICAL_TRIGGERS = Object.freeze(["choices_fill_position_after_ins
 export const REQUIRED_COLUMNS = Object.freeze({
   users: Object.freeze(["nickname", "use_nickname_in_ranking", "profile_public", "bio", "favorite_book", "favorite_verse"]),
   attempts: Object.freeze(["resumed_count", "last_resumed_at", "question_order_json", "current_question_started_at"]),
-  sessions: Object.freeze(["user_agent", "ip_hash"]),
+  sessions: Object.freeze(["user_agent", "ip_hash", "mfa_verified"]),
   questions: Object.freeze(["source_question_id"]),
   choices: Object.freeze(["position"]),
   question_bank: Object.freeze(["review_status", "version", "updated_by"]),
@@ -79,6 +80,7 @@ export const REQUIRED_COLUMNS = Object.freeze({
 // Columns added to pre-existing tables must be excluded from the promotion
 // baseline until their owning migration is present in the migration ledger.
 export const INTRODUCED_COLUMNS_BY_MIGRATION = Object.freeze({
+  "0039_administrative_mfa.sql": Object.freeze({ sessions: Object.freeze(["mfa_verified"]) }),
   "0038_platform_rankings_indexes.sql": Object.freeze({
     user_platform_game_statistics: Object.freeze(["best_normalized_performance"]),
   }),
@@ -91,7 +93,7 @@ export const INTRODUCED_COLUMNS_BY_MIGRATION = Object.freeze({
   }),
 });
 
-const security = new Set(["sessions", "login_security", "account_recovery_codes", "abuse_counters"]);
+const security = new Set(["sessions", "login_security", "account_recovery_codes", "abuse_counters", "user_mfa", "mfa_recovery_codes", "mfa_login_challenges"]);
 const operational = new Set(["quiz_core_event_outbox"]);
 export const BACKUP_TABLE_CLASSIFICATION = Object.freeze(Object.fromEntries(APPLICATION_TABLES.map(table => [table,
   security.has(table) ? "SECRET_OR_SECURITY" : operational.has(table) ? "OPERATIONAL_ONLY" : "INCLUDED",
@@ -101,7 +103,7 @@ const preserve = new Set(["organizations", "groups", "users", "invitations", "le
   "question_bank_choices", "question_collaborators", "question_revisions", "content_items", "content_versions",
   "platform_achievement_definitions", "platform_mission_definitions", "audit_logs",
   "platform_events", "platform_event_games", "platform_event_content_items", "asset_registry", "content_assets"]);
-const securityPreserve = new Set(["sessions", "login_security", "account_recovery_codes", "abuse_counters", "user_permissions", "privacy_requests"]);
+const securityPreserve = new Set(["sessions", "login_security", "account_recovery_codes", "abuse_counters", "user_permissions", "privacy_requests", "user_mfa", "mfa_recovery_codes", "mfa_login_challenges"]);
 export const RESET_TABLE_CLASSIFICATION = Object.freeze(Object.fromEntries(APPLICATION_TABLES.map(table => [table,
   preserve.has(table) ? "PRESERVE" : securityPreserve.has(table) ? "SECURITY_PRESERVE" :
     ["ai_question_suggestions", "batch_operations"].includes(table) ? "LEGACY_PRESERVE" :
@@ -109,7 +111,7 @@ export const RESET_TABLE_CLASSIFICATION = Object.freeze(Object.fromEntries(APPLI
     ["generated_game_selections", "generated_game_selection_items", "platform_event_content_reservations"].includes(table) ? "REBUILD" : "RESET",
 ])));
 
-const directPersonal = new Set(["users", "invitations", "sessions", "legal_consents", "account_recovery_codes", "privacy_requests"]);
+const directPersonal = new Set(["users", "invitations", "sessions", "legal_consents", "account_recovery_codes", "privacy_requests", "user_mfa", "mfa_recovery_codes", "mfa_login_challenges"]);
 const indirectPersonal = new Set([
   "attempts", "attempt_answers", "audit_logs", "login_security", "user_badges", "notification_receipts",
   "user_permissions", "question_collaborators", "question_revisions", "round_collaborators", "user_review_progress",
@@ -129,7 +131,7 @@ const editorial = new Set([
   "platform_event_games", "platform_event_content_items", "platform_event_content_reservations",
   "content_review_comments", "asset_registry", "content_assets",
 ]);
-const securityData = new Set(["sessions", "login_security", "audit_logs", "account_recovery_codes", "abuse_counters"]);
+const securityData = new Set(["sessions", "login_security", "audit_logs", "account_recovery_codes", "abuse_counters", "user_mfa", "mfa_recovery_codes", "mfa_login_challenges"]);
 const virtualEconomy = new Set(["user_platform_progress", "platform_xp_ledger", "platform_coin_ledger", "platform_event_reward_ledger"]);
 const idempotency = new Set([
   "platform_xp_ledger", "platform_coin_ledger", "user_platform_mission_progress_events", "core_platform_events",

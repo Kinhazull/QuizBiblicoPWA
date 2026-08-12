@@ -13,8 +13,9 @@
 | KI-007 | Custo e retenção | Médio | Formalizar orçamento zero, limites, retenção e limpeza por domínio. |
 | KI-008 | Alertas operacionais | Médio | Conectar os sinais existentes a um canal efetivamente monitorado. |
 | KI-009 | Advisory transitivo temporário | Baixo | Revisar periodicamente `GHSA-mh99-v99m-4gvg`; manter exceção exclusiva até existir correção upstream compatível. |
-| KI-010 | MFA administrativo | Alto | TOTP requer migration e segundo estágio de autenticação; planejar implementação dedicada antes da abertura pública de contas privilegiadas. |
-| KI-011 | Canal de recuperação | Médio | Recuperação é segura por códigos locais, mas não há entrega por e-mail; documentar suporte e recuperação assistida antes da abertura pública. |
+| KI-010 | MFA administrativo | Alto | Implementado localmente na Sprint 27.1.1; provisionar `MFA_ENCRYPTION_KEY`, promover migration 0039 e validar operação antes da abertura pública. |
+| KI-011 | Recuperação do owner | Médio | Recovery codes existem; perda simultânea de senha, TOTP e códigos do owner depende de procedimento operacional externo controlado. |
+| KI-012 | Advisories transitivos de `image-size` | Baixo | `vinext` fixa `image-size@2.0.2`; a correção anunciada `2.0.3` ainda não foi publicada. Exceções restritas a `GHSA-w3rx-r6r6-pgpr` e `GHSA-5p2g-fcmc-qvqq`, somente para assets locais controlados no build, devem ser removidas assim que o upstream corrigir a cadeia. |
 
 ## Encerrados
 

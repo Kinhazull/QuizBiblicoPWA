@@ -12,7 +12,7 @@ test("participant navigation exposes only the current platform destinations", ()
 
 test("participant controls expose notices settings active state and safe areas", () => {
   const chrome = read("app/ParticipantChrome.tsx"), nav = read("app/LearningQuickNav.tsx"), css = read("app/brand-system.css");
-  assert.match(chrome, /avisos não lidos/); assert.match(chrome, /aria-label="Abrir painel administrativo"/); assert.match(chrome, /\["admin", "leader"\]/);
+  assert.match(chrome, /avisos não lidos/); assert.match(chrome, /aria-label="Abrir painel administrativo"/); assert.match(chrome, /\["owner", "admin", "leader"\]/);
   assert.match(nav, /aria-current=.*page/); assert.match(nav, /aria-label="Navegação principal"/);
   assert.match(css, /safe-area-inset-bottom/); assert.match(css, /min-height:44px/); assert.match(css, /prefers-reduced-motion/); assert.match(css, /overflow:hidden/);
 });
@@ -37,7 +37,7 @@ test("admin navigation is one-column collapsible accessible and centrally named"
 test("admin menu applies existing role and permission visibility without replacing server authorization", () => {
   const menu = read("app/AdminQuickNav.tsx"), config = read("app/navigation.tsx"), access = read("app/admin-navigation-access.ts"), permissions = read("functions/_lib/permissions.ts");
   assert.match(menu, /visibleAdminNavigation\(adminNavigation, user\)/);
-  assert.match(access, /access\.role === "admin"/);
+  assert.match(access, /\["owner", "admin"\]\.includes\(access\.role\)/);
   assert.match(access, /access\.role === "leader"/);
   assert.match(config, /requireAllPermissions/);
   assert.match(config, /permissions: \["permissions\.manage"\]/);

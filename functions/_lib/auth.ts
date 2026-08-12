@@ -1,6 +1,6 @@
 import { readCookie, sha256 } from "./security";
 
-export type AppEnv = { DB: D1Database; BOOTSTRAP_SECRET?: string; LOCAL_LAN_DEVELOPMENT?: string; QUIZ_OUTBOX_BATCH_LIMIT?: string; AI?: { run(model:string,input:Record<string,unknown>):Promise<any> } };
+export type AppEnv = { DB: D1Database; BOOTSTRAP_SECRET?: string; MFA_ENCRYPTION_KEY?: string; LOCAL_LAN_DEVELOPMENT?: string; QUIZ_OUTBOX_BATCH_LIMIT?: string; AI?: { run(model:string,input:Record<string,unknown>):Promise<any> } };
 
 export async function currentUser(request: Request, env: AppEnv) {
   const token = readCookie(request, "quiz_session");
@@ -10,8 +10,9 @@ export async function currentUser(request: Request, env: AppEnv) {
   return env.DB.prepare(`
     SELECT u.id, u.organization_id AS organizationId, u.group_id AS groupId,
            u.username, u.display_name AS displayName, u.role, u.status,
-           u.must_change_password AS mustChangePassword
-      FROM sessions s JOIN users u ON u.id = s.user_id
+           u.must_change_password AS mustChangePassword,s.mfa_verified AS mfaVerified,
+           COALESCE(m.status,'disabled') AS mfaStatus,COALESCE(m.requires_enrollment,1) AS mfaRequiresEnrollment
+      FROM sessions s JOIN users u ON u.id = s.user_id LEFT JOIN user_mfa m ON m.user_id=u.id
      WHERE s.token_hash = ?1 AND s.expires_at > ?2 AND u.status = 'active'
   `).bind(hash, now).first();
 }
@@ -25,6 +26,7 @@ export async function requireUser(request: Request, env: AppEnv, allowPasswordCh
 
 export async function requireAdmin(request: Request, env: AppEnv) {
   const user: any = await requireUser(request, env);
-  if (!['admin', 'leader'].includes(user.role)) throw new Response(JSON.stringify({ error: "forbidden" }), { status: 403, headers: { "content-type": "application/json" } });
+  if (!['owner','admin', 'leader'].includes(user.role)) throw new Response(JSON.stringify({ error: "forbidden" }), { status: 403, headers: { "content-type": "application/json" } });
+  if(['owner','admin'].includes(user.role)&&!user.mfaVerified)throw new Response(JSON.stringify({error:"mfa_enrollment_required"}),{status:403,headers:{"content-type":"application/json"}});
   return user;
 }

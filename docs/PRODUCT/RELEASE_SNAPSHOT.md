@@ -9,7 +9,7 @@
 - branch integrada: `main`;
 - HEAD integrado antes das alterações locais da Sprint 26.4.1: `2b8fd2fd35e86296a938ce1364b72b007803de79`;
 - alterações desta sprint: locais e não commitadas;
-- migration local mais recente: `0038_platform_rankings_indexes.sql`;
+- migration local mais recente: `0039_administrative_mfa.sql`;
 - ledger/schema remoto: **DESCONHECIDO — requer verificação operacional** pelo reconciliador oficial.
 
 ## Entregas concluídas
@@ -49,5 +49,5 @@
 ## Segurança de contas — Sprint 27.1
 
 - rehash oportunista de credenciais legadas, recuperação single-use e rate limits sensíveis foram implementados localmente;
-- TOTP administrativo e canal remoto de recuperação permanecem bloqueadores explícitos;
+- TOTP administrativo, recovery codes MFA e autoridade owner foram implementados localmente; falta provisionar o segredo, promover a migration 0039 e validar a operação;
 - decisão permanece **NO-GO** para abertura pública de contas privilegiadas até esses itens serem tratados.

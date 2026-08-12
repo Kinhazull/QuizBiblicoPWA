@@ -2,6 +2,7 @@ import { hashPassword, json, normalizeUsername, randomToken, sessionCookie, sha2
 import type { AppEnv } from "../../_lib/auth";
 import { enforceRateLimit, requestFingerprint } from "../../_lib/abuse";
 import { effectivePermissions } from "../../_lib/permissions";
+import { MFA_CHALLENGE_TTL_MS } from "../../_lib/mfa";
 
 export const onRequestPost = async ({ request, env }: { request: Request; env: AppEnv }) => {
   const body: any = await request.json().catch(() => null);
@@ -40,15 +41,27 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
       // Login remains valid; compare-and-swap keeps concurrent upgrades safe.
     }
   }
+  const mfa: any = await env.DB.prepare("SELECT status FROM user_mfa WHERE user_id=?1").bind(user.id).first();
+  if (mfa?.status === "active") {
+    const challengeToken = randomToken();
+    await env.DB.batch([
+      env.DB.prepare("DELETE FROM mfa_login_challenges WHERE expires_at<=?1 OR used_at IS NOT NULL").bind(now),
+      env.DB.prepare(`INSERT INTO mfa_login_challenges(id,user_id,token_hash,persistent,expires_at,created_at)
+        VALUES(?1,?2,?3,?4,?5,?6)`).bind(crypto.randomUUID(), user.id, await sha256(challengeToken), persistent ? 1 : 0, now + MFA_CHALLENGE_TTL_MS, now),
+      env.DB.prepare("DELETE FROM login_security WHERE username_hash=?1").bind(usernameHash),
+    ]);
+    return json({ ok: true, mfaRequired: true, challengeToken });
+  }
   const permissions = await effectivePermissions(env, user);
   const token = randomToken();
   const expires = now + (persistent ? 30 : .5) * 24 * 60 * 60 * 1000;
   await env.DB.batch([
     env.DB.prepare(`DELETE FROM sessions WHERE expires_at <= ?1`).bind(now),
-    env.DB.prepare(`INSERT INTO sessions (id,user_id,token_hash,persistent,expires_at,last_seen_at,created_at,user_agent,ip_hash) VALUES (?1,?2,?3,?4,?5,?6,?6,?7,?8)`).bind(crypto.randomUUID(),user.id,await sha256(token),persistent?1:0,expires,now,String(request.headers.get('user-agent')||'').slice(0,180),await requestFingerprint(request)),
+    env.DB.prepare(`INSERT INTO sessions (id,user_id,token_hash,persistent,expires_at,last_seen_at,created_at,user_agent,ip_hash,mfa_verified) VALUES (?1,?2,?3,?4,?5,?6,?6,?7,?8,0)`).bind(crypto.randomUUID(),user.id,await sha256(token),persistent?1:0,expires,now,String(request.headers.get('user-agent')||'').slice(0,180),await requestFingerprint(request)),
     env.DB.prepare(`UPDATE users SET last_login_at = ?1, updated_at = ?1 WHERE id = ?2`).bind(now, user.id),
     env.DB.prepare(`DELETE FROM login_security WHERE username_hash=?1`).bind(usernameHash),
   ]);
   const secureCookie = String(env.LOCAL_LAN_DEVELOPMENT) !== "true";
-  return json({ ok: true, mustChangePassword: Boolean(user.must_change_password), user: { id: user.id, displayName: user.display_name, role: user.role, mustChangePassword: Boolean(user.must_change_password), permissions } }, 200, { "set-cookie": sessionCookie(token, persistent, secureCookie) });
+  const mfaEnrollmentRequired = ["owner", "admin"].includes(user.role);
+  return json({ ok: true, mustChangePassword: Boolean(user.must_change_password), mfaEnrollmentRequired, user: { id: user.id, displayName: user.display_name, role: user.role, mustChangePassword: Boolean(user.must_change_password), permissions, mfaStatus: "disabled", mfaVerified: false, mfaEnrollmentRequired } }, 200, { "set-cookie": sessionCookie(token, persistent, secureCookie) });
 };

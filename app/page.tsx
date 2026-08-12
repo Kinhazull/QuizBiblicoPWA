@@ -12,6 +12,7 @@ export default function Home() {
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
   const [authError, setAuthError] = useState("");
   const [authBusy, setAuthBusy] = useState(false);
+  const [mfaChallenge, setMfaChallenge] = useState("");
   const [achievementData, setAchievementData] = useState<PlatformAchievementData | null>(null);
   const [progress, setProgress] = useState<PlatformProgressData | null>(null);
   const [daily, setDaily] = useState<DailyRetentionData | null>(null);
@@ -29,6 +30,7 @@ export default function Home() {
 
   useEffect(() => {
     if (user?.mustChangePassword) location.href = "/alterar-senha";
+    else if (user?.mfaEnrollmentRequired) location.href = "/configurar-mfa";
   }, [user]);
 
   useEffect(() => {
@@ -127,11 +129,13 @@ export default function Home() {
     setAuthBusy(true);
     setAuthError("");
     const data = Object.fromEntries(new FormData(event.currentTarget));
-    const payload = authMode === "login"
+    const payload = mfaChallenge
+      ? { challengeToken: mfaChallenge, code: data.code }
+      : authMode === "login"
       ? { username: data.username, password: data.password, persistent: data.persistent === "on" }
       : { displayName: data.displayName, username: data.username, password: data.password, inviteCode: data.inviteCode, legalAccepted: data.legalAccepted === "on", termsVersion: LEGAL_VERSION, privacyVersion: LEGAL_VERSION };
     try {
-      const response = await fetch(`/api/auth/${authMode}`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload) });
+      const response = await fetch(mfaChallenge ? "/api/auth/mfa/verify" : `/api/auth/${authMode}`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload) });
       const result = await response.json();
       if (!response.ok) {
         const messages: any = { invalid_credentials: "Usuário ou senha incorretos.", pending_approval: "Seu cadastro ainda aguarda aprovação.", account_unavailable: "Esta conta não está disponível.", invalid_invitation: "O código de convite é inválido ou expirou.", invitation_limit: "O limite de cadastros deste convite foi atingido.", username_unavailable: "Este nome de usuário já está em uso.", invalid_fields: "Confira os dados. A senha deve ter pelo menos 10 caracteres.", legal_consent_required: "Você precisa aceitar os Termos de Uso e a Política de Privacidade.", too_many_attempts: "Muitas tentativas incorretas. O acesso foi protegido por 15 minutos." };
@@ -139,6 +143,7 @@ export default function Home() {
         setAuthError((messages[result.error] || "Não foi possível continuar.") + extra);
         return;
       }
+      if (result.mfaRequired) { setMfaChallenge(result.challengeToken); return; }
       if (authMode === "register") {
         setAuthError(result.status === "pending" ? "Cadastro enviado! Aguarde a aprovação do líder." : "Cadastro aprovado. Agora entre com sua conta.");
         setAuthMode("login");
@@ -154,6 +159,8 @@ export default function Home() {
   }
 
   if (authLoading) return <main className="platform-loading-screen"><div><span aria-hidden="true">C</span><strong>Conte os Feitos</strong><p role="status">Preparando a plataforma…</p></div></main>;
+
+  if (!user && mfaChallenge) return <main className="shell auth-screen"><section className="auth-card"><header className="brand"><span className="brand-dot">✦</span> CONTE OS FEITOS</header><p className="eyebrow">VERIFICAÇÃO EM DUAS ETAPAS</p><h1>Confirme sua <em>identidade</em></h1><p className="intro">Digite o código do aplicativo autenticador ou um código de recuperação.</p><form onSubmit={submitAuth}><label>Código de verificação<input name="code" autoComplete="one-time-code" inputMode="numeric" required autoFocus placeholder="000000"/></label>{authError&&<p className="auth-message" role="alert">{authError}</p>}<button className="primary" disabled={authBusy}>{authBusy?"AGUARDE...":"VERIFICAR"}<span>→</span></button></form><button className="auth-switch" onClick={()=>{setMfaChallenge("");setAuthError("")}}>Voltar ao login</button></section></main>;
 
   if (!user) return <main className="shell auth-screen"><div className="ambient one"/><div className="ambient two"/><section className="auth-card"><header className="brand"><span className="brand-dot">✦</span> CONTE OS FEITOS</header><p className="eyebrow">JOGOS BÍBLICOS</p><h1>{authMode === "login" ? <>Que bom ter você<br/><em>de volta</em></> : <>Entre para a<br/><em>plataforma</em></>}</h1><p className="intro">{authMode === "login" ? "Acesse sua conta para jogar, aprender e acompanhar seu progresso." : "Use o código do seu grupo. Seu cadastro será analisado por um líder."}</p><form onSubmit={submitAuth}>{authMode === "register" && <label>Seu nome<input name="displayName" autoComplete="name" required minLength={3} placeholder="Nome e sobrenome"/></label>}{authMode === "register" && <label>Código do grupo<input name="inviteCode" autoCapitalize="characters" required placeholder="Ex.: FAROL-2026" defaultValue={new URLSearchParams(location.search).get("convite") || ""}/></label>}<label>Nome de usuário<input name="username" autoCapitalize="none" autoComplete="username" required minLength={3} placeholder="Como você vai entrar"/></label><label>Senha<input name="password" type="password" autoComplete={authMode === "login" ? "current-password" : "new-password"} required minLength={10} placeholder="Mínimo de 10 caracteres"/></label>{authMode === "login" && <label className="remember"><input name="persistent" type="checkbox"/> Permanecer conectado neste aparelho</label>}{authMode === "register" && <label className="legal-consent"><input name="legalAccepted" type="checkbox" required/><span>Li e aceito os <a href="/termos" target="_blank" rel="noreferrer">Termos de Uso</a> e a <a href="/privacidade" target="_blank" rel="noreferrer">Política de Privacidade</a>.</span></label>}{authError && <p className="auth-message" role="status" aria-live="polite">{authError}</p>}<button className="primary" disabled={authBusy}>{authBusy ? "AGUARDE..." : authMode === "login" ? "ENTRAR" : "CRIAR MINHA CONTA"}<span>→</span></button></form><button className="auth-switch" onClick={() => { setAuthMode(authMode === "login" ? "register" : "login"); setAuthError(""); }}>{authMode === "login" ? "Ainda não tenho conta" : "Já tenho uma conta"}</button><nav className="legal-links" aria-label="Documentos legais"><a href="/termos">Termos de Uso</a><a href="/privacidade">Privacidade</a></nav></section></main>;
 

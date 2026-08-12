@@ -1,0 +1,20 @@
+import type { AppEnv } from "./auth";
+import { randomToken, secureEqual, sha256 } from "./security";
+
+export const TOTP_PERIOD_SECONDS = 30;
+export const MFA_CHALLENGE_TTL_MS = 5 * 60 * 1000;
+const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+
+function bytesToBase64Url(bytes: Uint8Array) { let binary=""; for(const byte of bytes)binary+=String.fromCharCode(byte); return btoa(binary).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/g,""); }
+function base64UrlToBytes(value:string){const normalized=value.replace(/-/g,"+").replace(/_/g,"/").padEnd(Math.ceil(value.length/4)*4,"=");const binary=atob(normalized);return Uint8Array.from(binary,c=>c.charCodeAt(0));}
+export function encodeBase32(bytes:Uint8Array){let bits=0,value=0,out="";for(const byte of bytes){value=(value<<8)|byte;bits+=8;while(bits>=5){out+=alphabet[(value>>>(bits-5))&31];bits-=5}}if(bits)out+=alphabet[(value<<(5-bits))&31];return out;}
+function decodeBase32(value:string){let bits=0,buffer=0;const out:number[]=[];for(const char of value.toUpperCase().replace(/=+$/,"")){const index=alphabet.indexOf(char);if(index<0)throw new Error("invalid_mfa_secret");buffer=(buffer<<5)|index;bits+=5;if(bits>=8){out.push((buffer>>>(bits-8))&255);bits-=8}}return new Uint8Array(out);}
+function encryptionKey(env:AppEnv){const raw=String(env.MFA_ENCRYPTION_KEY||"");const bytes=base64UrlToBytes(raw);if(bytes.length!==32)throw new Error("mfa_encryption_key_unavailable");return crypto.subtle.importKey("raw",bytes,"AES-GCM",false,["encrypt","decrypt"]);}
+export async function encryptMfaSecret(env:AppEnv,secret:string){const iv=crypto.getRandomValues(new Uint8Array(12));const encrypted=await crypto.subtle.encrypt({name:"AES-GCM",iv},await encryptionKey(env),new TextEncoder().encode(secret));return{encryptedSecret:bytesToBase64Url(new Uint8Array(encrypted)),secretIv:bytesToBase64Url(iv),keyVersion:1};}
+export async function decryptMfaSecret(env:AppEnv,row:any){if(Number(row.key_version)!==1)throw new Error("unsupported_mfa_key_version");const clear=await crypto.subtle.decrypt({name:"AES-GCM",iv:base64UrlToBytes(row.secret_iv)},await encryptionKey(env),base64UrlToBytes(row.encrypted_secret));return new TextDecoder().decode(clear);}
+export function generateMfaSecret(){return encodeBase32(crypto.getRandomValues(new Uint8Array(20)));}
+export function totpUri(username:string,secret:string){return `otpauth://totp/${encodeURIComponent(`Conte os Feitos:${username}`)}?secret=${secret}&issuer=${encodeURIComponent("Conte os Feitos")}&algorithm=SHA1&digits=6&period=30`;}
+export async function totpAt(secret:string,timeMs=Date.now()){const step=Math.floor(timeMs/1000/TOTP_PERIOD_SECONDS),counter=new Uint8Array(8),view=new DataView(counter.buffer);view.setUint32(0,Math.floor(step/0x1_0000_0000),false);view.setUint32(4,step>>>0,false);const key=await crypto.subtle.importKey("raw",decodeBase32(secret),{name:"HMAC",hash:"SHA-1"},false,["sign"]);const digest=new Uint8Array(await crypto.subtle.sign("HMAC",key,counter)),offset=digest[digest.length-1]&15,binary=((digest[offset]&127)<<24)|(digest[offset+1]<<16)|(digest[offset+2]<<8)|digest[offset+3];return{code:String(binary%1_000_000).padStart(6,"0"),step};}
+export async function verifyTotp(secret:string,code:string,now=Date.now(),lastStep:number|null=null){if(!/^\d{6}$/.test(code))return null;for(const drift of [-1,0,1]){const candidate=await totpAt(secret,now+drift*TOTP_PERIOD_SECONDS*1000);if((lastStep===null||candidate.step>lastStep)&&await secureEqual(candidate.code,code))return candidate.step}return null;}
+export function generateMfaRecoveryCodes(){return Array.from({length:8},()=>`${randomToken(6).slice(0,6)}-${randomToken(6).slice(0,6)}`.toUpperCase());}
+export async function recoveryCodeStatements(env:AppEnv,userId:string,codes:string[],now:number){const statements:D1PreparedStatement[]=[env.DB.prepare("DELETE FROM mfa_recovery_codes WHERE user_id=?1").bind(userId)];for(const code of codes)statements.push(env.DB.prepare("INSERT INTO mfa_recovery_codes(id,user_id,code_hash,created_at) VALUES(?1,?2,?3,?4)").bind(crypto.randomUUID(),userId,await sha256(code),now));return statements;}

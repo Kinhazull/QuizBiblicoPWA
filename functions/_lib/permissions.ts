@@ -28,7 +28,7 @@ export async function effectivePermissions(env: AppEnv, user: Record<string, unk
   const userId = typeof user.id === "string" ? user.id : "";
   const role = typeof user.role === "string" ? user.role : "";
   if (!userId) return [];
-  if (role === "admin") return [];
+  if (["owner","admin"].includes(role)) return [];
   const result = await env.DB.prepare("SELECT permission_code AS permissionCode FROM user_permissions WHERE user_id=?1")
     .bind(userId)
     .all<{ permissionCode: string }>();
@@ -39,7 +39,7 @@ export async function effectivePermissions(env: AppEnv, user: Record<string, unk
 }
 
 export async function hasPermission(env: AppEnv, user: any, permission: PermissionCode) {
-  if (user.role === "admin") return true;
+  if (["owner","admin"].includes(user.role)) return true;
   const compatible = [permission, ...(legacyPermissionCompatibility[permission] || [])];
   if (user.role === "leader" && compatible.some(code => legacyLeader.has(code))) return true;
   for (const code of compatible) {
@@ -51,12 +51,14 @@ export async function hasPermission(env: AppEnv, user: any, permission: Permissi
 
 export async function requirePermission(request: Request, env: AppEnv, permission: PermissionCode) {
   const user: any = await requireUser(request, env);
+  if(["owner","admin"].includes(user.role)&&!user.mfaVerified)throw new Response(JSON.stringify({error:"mfa_enrollment_required"}),{status:403,headers:{"content-type":"application/json"}});
   if (!await hasPermission(env, user, permission)) throw new Response(JSON.stringify({ error: "forbidden", permission }), { status: 403, headers: { "content-type": "application/json" } });
   return user;
 }
 
 export async function requireAnyPermission(request: Request, env: AppEnv, permissions: PermissionCode[]) {
   const user: any = await requireUser(request, env);
+  if(["owner","admin"].includes(user.role)&&!user.mfaVerified)throw new Response(JSON.stringify({error:"mfa_enrollment_required"}),{status:403,headers:{"content-type":"application/json"}});
   for (const permission of permissions) if (await hasPermission(env, user, permission)) return user;
   throw new Response(JSON.stringify({ error: "forbidden", permissions }), { status: 403, headers: { "content-type": "application/json" } });
 }

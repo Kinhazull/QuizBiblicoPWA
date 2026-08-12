@@ -12,7 +12,7 @@ Auditorias e relatórios de fases anteriores são históricos. Em caso de diverg
 - versão local: `2.0.0-rc.1`;
 - branch integrada: `main`;
 - HEAD integrado antes das alterações locais desta sprint: `2b8fd2fd35e86296a938ce1364b72b007803de79`;
-- migration local mais recente: `0038_platform_rankings_indexes.sql`;
+- migration local mais recente: `0039_administrative_mfa.sql`;
 - a migration 0038 pertence ao schema moderno e não deve ser tratada como legado;
 - o ledger remoto não pode ser inferido do Git. Seu estado atual **requer verificação operacional** pelo workflow oficial;
 - não existe evidência canônica local suficiente para declarar uma pendência remota específica da 0037.
@@ -28,6 +28,7 @@ Auditorias e relatórios de fases anteriores são históricos. Em caso de diverg
 - 26.5 Analytics 2.0: concluída localmente, ainda não commitada;
 - 26.6 Automação Administrativa: concluída localmente, ainda não commitada.
 - 27.1 Segurança e Contas: concluída localmente, ainda não commitada.
+- 27.1.1 MFA Administrativo: concluída localmente, ainda não commitada.
 
 ## Capacidades atuais
 

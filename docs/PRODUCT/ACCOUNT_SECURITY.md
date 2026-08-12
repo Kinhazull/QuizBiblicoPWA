@@ -1,6 +1,6 @@
 ﻿# Segurança de contas
 
-**Status:** CURRENT — Sprint 27.1
+**Status:** CURRENT — Sprint 27.1.1
 
 ## Credenciais
 
@@ -34,10 +34,18 @@
 - Geração de códigos: 3 por hora por usuário+IP.
 - Reset administrativo: 10 por hora por administrador+IP.
 
-## Administração e TOTP
+## Administração, owner e TOTP
 
 - A autorização continua server-side por papel/permissão e `organizationId`; a UI não concede acesso.
-- TOTP administrativo foi adiado. O baseline não possui segredo MFA, segundo estágio de login, recovery codes MFA ou ciclo de enrolamento. Uma implementação honesta exigirá migration aditiva e contrato próprio, e não deve ser simulada nesta sprint.
+- `owner` é a autoridade máxima da própria organização, possui o acesso administrativo de `admin` e existe no máximo uma conta owner ativa por organização.
+- Owner não é promovido pela UI. O provisionamento é operacional, explícito e auditável, após confirmar que não existe owner ativo: `UPDATE users SET role='owner', updated_at=<epoch_ms> WHERE id='<user_id>' AND organization_id='<organization_id>';`. A constraint parcial da migration 0039 recusa um segundo owner ativo.
+- Owner e admin devem concluir enrollment TOTP antes de acessar superfícies administrativas; leader pode optar pelo MFA.
+- TOTP segue RFC 6238: HMAC-SHA-1, 6 dígitos, período de 30 segundos e janela de ±1 período. O último contador aceito impede replay.
+- O segredo é cifrado com AES-256-GCM por `MFA_ENCRYPTION_KEY` (32 bytes em base64url); a chave não fica no banco nem no repositório.
+- O login com MFA ativo cria desafio de cinco minutos e somente após TOTP ou recovery code válido cria sessão marcada `mfa_verified`.
+- São gerados oito recovery codes MFA, armazenados apenas por SHA-256 e consumidos uma única vez.
+- Apenas owner com MFA completo pode revogar MFA de admin da mesma organização; a operação revoga sessões e é auditada. Admin não reseta admin/owner e owner não reseta owner.
+- A perda de senha, TOTP e recovery codes do próprio owner exige recuperação operacional externa controlada. Não existe bypass nem papel superior.
 
 ## CSP e headers
 
@@ -47,7 +55,7 @@
 
 ## Riscos restantes
 
-- TOTP administrativo ainda não existe.
+- `MFA_ENCRYPTION_KEY` precisa ser provisionada no ambiente antes da ativação da migration/código.
 - Não existe canal de entrega remoto de recuperação; os códigos precisam ser guardados pelo usuário.
 - A CSP ainda contém `unsafe-inline`.
 - A exceção exclusiva `GHSA-mh99-v99m-4gvg` permanece transitiva em tooling de desenvolvimento até correção upstream compatível.

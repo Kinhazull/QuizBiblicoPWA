@@ -58,6 +58,7 @@ const foundationMigrations = [
   "0036_platform_events.sql",
   "0037_editorial_governance_assets.sql",
   "0038_platform_rankings_indexes.sql",
+  "0039_administrative_mfa.sql",
 ];
 const expectedFinalLedger = [...baseline, targetMigration, ...foundationMigrations];
 const introducedTablesByMigration = {
@@ -76,6 +77,7 @@ const introducedTablesByMigration = {
     "platform_event_content_reservations", "platform_event_participations", "platform_event_reward_ledger",
   ],
   "0037_editorial_governance_assets.sql": ["content_review_comments", "asset_registry", "content_assets"],
+  "0039_administrative_mfa.sql": ["user_mfa", "mfa_recovery_codes", "mfa_login_challenges"],
 };
 const introducedIndexesByMigration = {
   "0032_universal_content_library.sql": [
@@ -102,6 +104,9 @@ const introducedIndexesByMigration = {
   "0038_platform_rankings_indexes.sql": [
     "user_platform_progress_org_ranking_idx", "platform_xp_ledger_org_applied_user_idx",
     "user_platform_game_statistics_org_game_score_idx", "user_platform_game_statistics_org_game_performance_idx",
+  ],
+  "0039_administrative_mfa.sql": [
+    "mfa_recovery_codes_user_idx", "mfa_login_challenges_expiry_idx", "users_one_active_owner_per_org_uq",
   ],
 };
 const modifiedSchemaObjectsByMigration = {
@@ -138,6 +143,7 @@ const reconcilerTables = [
   "user_platform_statistics", "user_platform_game_statistics", "user_platform_game_difficulty_statistics",
   "user_platform_statistics_active_days", "platform_statistics_event_checkpoints", "quiz_core_event_outbox",
   "user_platform_statistics_official_days_utc",
+  "user_mfa", "mfa_recovery_codes", "mfa_login_challenges",
 ];
 const requiredColumns = REQUIRED_COLUMNS;
 const requiredTables = [...APPLICATION_TABLES];
@@ -158,6 +164,7 @@ const reconcilerIndexes = [
   "platform_event_reservations_conflict_idx", "platform_event_participations_user_idx", "platform_event_rewards_user_idx",
   "content_items_org_editorial_status_idx", "content_review_comments_content_idx",
   "asset_registry_org_status_idx", "asset_registry_org_source_url_uq", "content_assets_asset_idx",
+  "mfa_recovery_codes_user_idx", "mfa_login_challenges_expiry_idx", "users_one_active_owner_per_org_uq",
 ];
 const requiredIndexes = [...CRITICAL_INDEXES];
 if (reconcilerTables.some(table => !requiredTables.includes(table)) || reconcilerIndexes.some(index => !requiredIndexes.includes(index))) {

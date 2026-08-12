@@ -44,6 +44,7 @@ Concluídas: piloto, fundação modular, Core Platform, plataforma universal e c
 | Sprint | Entrega | Estado |
 |---|---|---|
 | 27.1 | Segurança e Contas | DONE localmente |
+| 27.1.1 | MFA administrativo e autoridade owner | DONE localmente |
 
 - validar PWA e Android físico, atualização e ciclo de vida;
 - ensaiar restore real em banco isolado;

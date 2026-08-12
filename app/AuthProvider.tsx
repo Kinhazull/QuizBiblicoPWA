@@ -9,6 +9,9 @@ export type AuthenticatedUser = {
   role: string;
   mustChangePassword?: boolean;
   permissions?: string[];
+  mfaStatus?: "disabled" | "pending" | "active";
+  mfaVerified?: boolean;
+  mfaEnrollmentRequired?: boolean;
 };
 
 type AuthState = {
