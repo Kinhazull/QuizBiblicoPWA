@@ -1,10 +1,18 @@
 name: Reconcile production D1 migrations
 
-run-name: Reconcile production D1 migrations by ${{ github.actor }}
+run-name: ${{ inputs.operation == 'backup_only' && 'Back up production D1' || 'Reconcile production D1 migrations' }} by ${{ github.actor }}
 
 on:
   workflow_dispatch:
     inputs:
+      operation:
+        description: Operação controlada a executar
+        required: true
+        default: reconcile
+        type: choice
+        options:
+          - reconcile
+          - backup_only
       confirmation:
         description: Digite exatamente RECONCILIAR_MIGRATIONS_PRODUCAO
         required: true
@@ -18,9 +26,11 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  reconcile:
-    name: Validate, back up and reconcile D1
-    if: github.ref == 'refs/heads/main'
+  backup:
+    name: Validate and back up D1
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      (inputs.operation == 'reconcile' || inputs.operation == 'backup_only')
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment: production
@@ -29,12 +39,17 @@ jobs:
       D1_BACKUP_ENCRYPTION_KEY: ${{ secrets.D1_BACKUP_ENCRYPTION_KEY }}
       CLOUDFLARE_ACCOUNT_ID: c9804b247feba1dfe55516404b851d61
     steps:
-      - name: Require exact production confirmation
+      - name: Require exact production confirmation and operation
         shell: bash
         env:
           CONFIRMATION: ${{ inputs.confirmation }}
+          OPERATION: ${{ inputs.operation }}
         run: |
           set -euo pipefail
+          case "$OPERATION" in
+            reconcile|backup_only) ;;
+            *) echo "::error::Operação inválida. Nenhuma operação foi executada."; exit 1 ;;
+          esac
           if [ "$CONFIRMATION" != "RECONCILIAR_MIGRATIONS_PRODUCAO" ]; then
             echo "::error::Confirmação inválida. Nenhuma operação foi executada."
             exit 1
@@ -79,10 +94,11 @@ jobs:
           --config workers/journey-awards/wrangler.jsonc
           --output=d1-production-backup.sql
 
-      - name: Encrypt confidential D1 backup
+      - name: Encrypt and verify confidential D1 backup
         shell: bash
         run: |
           set -euo pipefail
+          trap 'rm -f d1-production-backup.sql' EXIT
           openssl enc -aes-256-cbc -pbkdf2 -iter 200000 -salt \
             -in d1-production-backup.sql \
             -out d1-production-backup.sql.enc \
@@ -90,6 +106,7 @@ jobs:
           shred -u d1-production-backup.sql
           test -s d1-production-backup.sql.enc
           sha256sum d1-production-backup.sql.enc > d1-production-backup.sql.enc.sha256
+          sha256sum -c d1-production-backup.sql.enc.sha256
 
       - name: Store confidential backup artifact
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -102,6 +119,63 @@ jobs:
           if-no-files-found: error
           retention-days: 7
           compression-level: 9
+
+      - name: Publish safe backup summary
+        shell: bash
+        env:
+          OPERATION: ${{ inputs.operation }}
+        run: |
+          {
+            echo "## Backup cifrado do D1 de produção concluído"
+            echo "- Operação: $OPERATION"
+            echo "- Banco: quiz-biblico-db"
+            echo "- Artifact: d1-production-backup-${GITHUB_RUN_ID}"
+            echo "- Retenção: 7 dias"
+            echo "- Plaintext removido antes do upload"
+            if [ "$OPERATION" = "backup_only" ]; then
+              echo "- Modo backup-only: nenhuma migration ou escrita no D1 executada"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  reconcile:
+    name: Apply and verify pending migrations
+    needs: backup
+    if: >-
+      needs.backup.result == 'success' &&
+      inputs.operation == 'reconcile'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: production
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: c9804b247feba1dfe55516404b851d61
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: main
+
+      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Restore verified pre-change snapshot
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: d1-production-backup-${{ github.run_id }}
+          path: backup-artifact
+
+      - name: Prepare snapshot for comparison
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s backup-artifact/d1-before.json
+          cp backup-artifact/d1-before.json d1-before.json
 
       - name: Revalidate pending migrations immediately before writing
         run: pnpm run db:reconcile-migrations:verify-promotable

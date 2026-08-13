@@ -41,6 +41,7 @@ Waves 1–5 estão `DONE`: Brand/PWA, sete jogos, recompensas, colecionáveis e 
 - 27.6 Jurídico e Google Play: concluída como auditoria/readiness; aprovação jurídica e publicação Play permanecem humanas/externas.
 - 27.7.0 Release Readiness Final: concluída com decisão `READY_FOR_27_7_1`.
 - 27.7.1 Fechamento dos blockers internos: concluída localmente; 27.7.2 é a próxima etapa operacional.
+- 27.7.2B.1 Backup-only: modo operacional local implementado no reconciliador, com job de migration inacessível em `backup_only`; o backup produtivo ainda não foi executado e a 0039 continua pendente conforme a verificação remota 27.7.2A.
 - ajuste pós-27.6: controlador pessoa física e `suporteconteosfeitos@gmail.com` definidos; CPF/endereço residencial não serão publicados e eventual endereço físico segue sujeito à revisão jurídica.
 - ajuste pós-27.6: público-alvo formal da v2 definido como adolescentes e adultos; crianças ficaram fora do público-alvo. Tratamento jurídico de adolescentes/acesso incidental infantil permanece pendente e contas supervisionadas são pós-release.
 - ajuste pós-27.6: v2 sem exclusão automática por inatividade; matriz técnica preliminar de retenção definida e possível processamento internacional reconhecido. Prazos/mecanismos jurídicos e qualquer automação permanecem pendentes.

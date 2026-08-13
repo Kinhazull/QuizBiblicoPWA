@@ -19,6 +19,8 @@ Os workflows de reconciliação de migrations e limpeza do piloto executam:
 5. SHA-256 do arquivo cifrado;
 6. upload privado e temporário do `.enc`, checksum e snapshot.
 
+O workflow manual `reconcile-production-d1.yml` possui duas operações explícitas. `reconcile` preserva o fluxo completo acima e, após o artifact, revalida e aplica somente migrations oficiais pendentes, executando `verify-final` e `compare`. `backup_only` encerra com sucesso imediatamente após exportação, criptografia, verificação do checksum, remoção do plaintext, upload do artifact e resumo seguro; o job mutável é separado e condicionado estruturalmente a `operation == 'reconcile'`. Valores ausentes ou inválidos falham antes do export. Esta separação foi adicionada após o safety finding da 27.7.2B; ela não constitui evidência de que um backup produtivo já tenha sido executado.
+
 A chave é o secret independente `D1_BACKUP_ENCRYPTION_KEY`. Ela não pode ser o token Cloudflare, não entra no banco, no Git, no artifact ou nos logs. O proprietário deve mantê-la em gerenciador de segredos com cópia de recuperação offline controlada. Perder essa chave torna os backups cifrados inutilizáveis.
 
 Antes de armazenar ou restaurar, execute `sha256sum -c <arquivo>.sha256`. O checksum detecta corrupção acidental; autenticidade também depende da proveniência do workflow/artifact e do controle de acesso.

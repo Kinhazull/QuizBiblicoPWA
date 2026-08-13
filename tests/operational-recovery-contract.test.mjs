@@ -16,6 +16,31 @@ test("remote write workflows encrypt backups with a dedicated secret and publish
   }
 });
 
+test("production reconciliation exposes a fail-closed backup-only operation", async () => {
+  const workflow = await read(".github/workflows/reconcile-production-d1.yml");
+  const backupJob = workflow.slice(workflow.indexOf("  backup:"), workflow.indexOf("  reconcile:"));
+  const reconcileJob = workflow.slice(workflow.indexOf("  reconcile:"));
+
+  assert.match(workflow, /operation:\s*[\s\S]*type: choice[\s\S]*- reconcile[\s\S]*- backup_only/);
+  const operationInput = workflow.slice(workflow.indexOf("      operation:"), workflow.indexOf("      confirmation:"));
+  assert.deepEqual([...operationInput.matchAll(/^\s{10}- (\S+)$/gm)].map(match => match[1]), ["reconcile", "backup_only"]);
+  assert.match(backupJob, /inputs\.operation == 'reconcile' \|\| inputs\.operation == 'backup_only'/);
+  assert.match(backupJob, /case "\$OPERATION" in[\s\S]*reconcile\|backup_only/);
+  assert.match(backupJob, /d1 export quiz-biblico-db --remote/);
+  assert.match(backupJob, /-pass env:D1_BACKUP_ENCRYPTION_KEY/);
+  assert.match(backupJob, /sha256sum -c d1-production-backup\.sql\.enc\.sha256/);
+  assert.match(backupJob, /trap 'rm -f d1-production-backup\.sql' EXIT/);
+  assert.match(backupJob, /shred -u d1-production-backup\.sql/);
+  assert.match(backupJob, /retention-days: 7/);
+  assert.doesNotMatch(backupJob, /worker:awards:migrate|verify-final|reconcile-migrations:compare/);
+
+  assert.match(reconcileJob, /needs: backup/);
+  assert.match(reconcileJob, /inputs\.operation == 'reconcile'/);
+  assert.match(reconcileJob, /worker:awards:migrate/);
+  assert.match(reconcileJob, /db:reconcile-migrations:verify-final/);
+  assert.match(reconcileJob, /db:reconcile-migrations:compare/);
+});
+
 test("real backups and recovery artifacts are excluded from version control", async () => {
   const ignore = await read(".gitignore");
   assert.match(ignore, /\/\*backup\*\.sql/);
