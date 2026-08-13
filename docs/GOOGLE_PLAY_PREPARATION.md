@@ -45,3 +45,15 @@ TWA mantém uma base Web e o modelo de custo mínimo. Um wrapper próprio duplic
 8. somente então promover para testes/produção no Play Console.
 
 Não inventar certificado, domínio, package ID, target SDK ou respostas de política antes dessas decisões.
+
+## Wave 7 — readiness visual do Asset Pack v2
+
+**Auditoria concluída em 13/08/2026; assets ainda não prontos para upload.** A fonte detalhada é `docs/PRODUCT/ASSET_ADOPTION_AUDIT.md` e o inventário verificável está em `docs/PRODUCT/ASSET_PACK_V2_MANIFEST.json`.
+
+- `play-store-icon.png`: exige exportação humana 512×512, PNG 32-bit com alpha, até 1024 KB e validação do recorte/safe zone.
+- `feature-graphic.png`: exige recomposição/exportação humana 1024×500 em JPEG ou PNG 24-bit sem alpha, preservando o foco nas zonas seguras.
+- cinco templates de screenshots: exigem captura da RC real; hoje possuem tela vazia, alpha e 941×1672.
+- `banner.png`: marketing opcional, não tratado como asset obrigatório da listagem de telefone.
+- `QR.png`: marketing opcional; não contém QR verificável e não deve ser usado antes de existir destino oficial.
+
+Requisitos visuais foram conferidos na documentação oficial [Add preview assets to showcase your app](https://support.google.com/googleplay/android-developer/answer/9866151?hl=en). Devem ser reconfirmados no Play Console no momento da submissão. Esta auditoria não altera o status geral `PLAY_STORE_BLOCKER`.

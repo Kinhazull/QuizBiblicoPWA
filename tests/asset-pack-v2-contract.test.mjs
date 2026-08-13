@@ -65,3 +65,17 @@ test("collectible provenance preserves exact functional IDs and reserves extras"
     [["frame-covenant", "frame-aliance"], ["frame-royal", "frame-real"]],
   );
 });
+
+test("Wave 7 audits every Store asset without claiming Google Play readiness", () => {
+  assert.equal(manifest.wave6Decision.status, "POST_RELEASE");
+  assert.deepEqual(manifest.wave6Decision.assets, ["welcome", "play", "progress", "participate"]);
+  assert.equal(manifest.wave7StoreAudit.status, "DONE");
+  assert.equal(manifest.wave7StoreAudit.scope, "ASSET_PACK_AUDITED_NOT_GOOGLE_PLAY_READY");
+  assert.equal(manifest.wave7StoreAudit.items.length, 9);
+  assert.equal(new Set(manifest.wave7StoreAudit.items.map(item => item.path)).size, 9);
+  const storeAssets = manifest.assets.filter(item => item.classification === "STORE_ONLY");
+  assert.deepEqual(manifest.wave7StoreAudit.items.map(item => item.path).sort(), storeAssets.map(item => item.path).sort());
+  assert.equal(storeAssets.reduce((sum, item) => sum + item.bytes, 0), manifest.wave7StoreAudit.totalBytes);
+  assert.equal(manifest.wave7StoreAudit.items.some(item => item.state === "READY_ASSET"), false);
+  assert.equal(manifest.wave7StoreAudit.items.filter(item => item.state === "NEEDS_RECAPTURE_AFTER_RC").length, 5);
+});

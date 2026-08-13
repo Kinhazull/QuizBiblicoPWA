@@ -1686,5 +1686,29 @@
       {"logicalId":"ranking-podium","status":"ADOPTED_RUNTIME","consumer":"cabeçalho do Ranking"},
       {"logicalId":"level-up","status":"EXTRA_RESERVED","consumer":null,"reason":"não existe feedback dedicado de subida de nível no runtime atual"},
       {"logicalId":"achievement-unlocked","status":"EXTRA_RESERVED","consumer":null,"reason":"não existe feedback dedicado de desbloqueio no runtime atual"}
-    ]
+    ],
+    "wave6Decision": {
+      "status": "POST_RELEASE",
+      "classification": "EXTRA_RESERVED",
+      "assets": ["welcome", "play", "progress", "participate"],
+      "reason": "não existe fluxo funcional de onboarding na v2.0.0"
+    },
+    "wave7StoreAudit": {
+      "status": "DONE",
+      "scope": "ASSET_PACK_AUDITED_NOT_GOOGLE_PLAY_READY",
+      "auditedAt": "2026-08-13",
+      "totalBytes": 17020211,
+      "publicArtifactImpact": "Os 9 arquivos estão sob public/store e são copiados para o artifact público embora não tenham consumidor runtime.",
+      "items": [
+        {"path":"public/store/play-store-icon.png","purpose":"GOOGLE_PLAY_SUBMISSION","state":"NEEDS_HUMAN_EDIT","reason":"master 1254×1254 com alpha e 1648266 bytes; requer exportação Play 512×512, até 1024 KB e validação da safe zone"},
+        {"path":"public/store/feature-graphic.png","purpose":"GOOGLE_PLAY_SUBMISSION","state":"NEEDS_HUMAN_EDIT","reason":"master opaco 1774×887; requer composição/exportação 1024×500 e revisão de texto, densidade e zonas de corte"},
+        {"path":"public/store/screenshots/01-games.png","purpose":"GOOGLE_PLAY_SUBMISSION","state":"NEEDS_RECAPTURE_AFTER_RC","reason":"template promocional 941×1672 com alpha e tela vazia; não demonstra UI real"},
+        {"path":"public/store/screenshots/02-progress.png","purpose":"GOOGLE_PLAY_SUBMISSION","state":"NEEDS_RECAPTURE_AFTER_RC","reason":"template promocional 941×1672 com alpha e tela vazia; não demonstra UI real"},
+        {"path":"public/store/screenshots/03-events.png","purpose":"GOOGLE_PLAY_SUBMISSION","state":"NEEDS_RECAPTURE_AFTER_RC","reason":"template promocional 941×1672 com alpha e tela vazia; não demonstra UI real"},
+        {"path":"public/store/screenshots/04-rewards.png","purpose":"GOOGLE_PLAY_SUBMISSION","state":"NEEDS_RECAPTURE_AFTER_RC","reason":"template promocional 941×1672 com alpha e tela vazia; não demonstra UI real"},
+        {"path":"public/store/screenshots/05-profile.png","purpose":"GOOGLE_PLAY_SUBMISSION","state":"NEEDS_RECAPTURE_AFTER_RC","reason":"template promocional 941×1672 com alpha e tela vazia; não demonstra UI real"},
+        {"path":"public/store/banner.png","purpose":"MARKETING_OPTIONAL","state":"NEEDS_HUMAN_EDIT","reason":"material promocional 1672×941 com alpha; contém mockup e textos que precisam ser reconciliados com a RC"},
+        {"path":"public/store/QR.png","purpose":"MARKETING_OPTIONAL","state":"NEEDS_EXTERNAL_VALIDATION","reason":"área do QR está vazia e não há destino verificável; também exibe badges de lojas ainda indisponíveis"}
+      ]
+    }
 }
