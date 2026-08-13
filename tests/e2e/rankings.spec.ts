@@ -26,6 +26,7 @@ async function mockRanking(page: Page) {
 test("Ranking Universal navega entre geral, semanal e jogos com posição própria", async ({ page }) => {
   await mockRanking(page);
   await page.goto("/rankings");
+  await expect(page.locator('[data-illustration="ranking-podium"]')).toBeVisible();
   await expect(page.getByRole("heading", { name: "Ranking Universal" })).toBeVisible();
   await expect(page.getByText("SUA POSIÇÃO")).toBeVisible();
   await expect(page.getByText("37º", { exact: true })).toBeVisible();
@@ -42,7 +43,7 @@ test("Ranking Universal navega entre geral, semanal e jogos com posição própr
 
 test("Ranking Universal é responsivo e sem violações Axe sérias", async ({ page }) => {
   await mockRanking(page);
-  for (const viewport of [{ width: 320, height: 720 }, { width: 390, height: 844 }, { width: 1366, height: 768 }]) {
+  for (const viewport of [{ width: 320, height: 720 }, { width: 360, height: 800 }, { width: 390, height: 844 }, { width: 1366, height: 768 }]) {
     await page.setViewportSize(viewport);
     await page.goto("/rankings");
     await expect(page.getByRole("heading", { name: "Ranking Universal" })).toBeVisible();

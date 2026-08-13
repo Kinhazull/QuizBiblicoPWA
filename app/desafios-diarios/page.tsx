@@ -5,6 +5,7 @@ import type { DailyChallengeData, DailyObjectiveData } from "../PlatformHome";
 import { GameArt } from "../GameArt";
 import { getGameModuleById } from "../games/sdk/gameModules";
 import { RewardArt } from "../RewardArt";
+import { PlatformIllustration } from "../PlatformIllustration";
 
 const STATUS_LABEL = {
   AVAILABLE: "Disponível",
@@ -20,6 +21,7 @@ export default function DailyChallengesPage() {
   const [error, setError] = useState("");
   const [celebration, setCelebration] = useState("");
   const [rewardLinks, setRewardLinks] = useState(false);
+  const [majorCelebration, setMajorCelebration] = useState(false);
 
   async function loadObjectives(signal?: AbortSignal) {
     const response = await fetch("/api/platform/daily-objectives", { cache: "no-store", signal });
@@ -83,6 +85,7 @@ export default function DailyChallengesPage() {
       setDaily(data.daily);
       const collectible = data.reward?.collectible?.name ? ` e ${data.reward.collectible.name}` : "";
       setCelebration(`Você recebeu ${data.reward?.label || `a recompensa de ${target}/7`}${collectible}.`);
+      setMajorCelebration(target === 7);
       setRewardLinks(true);
     } catch (cause) {
       setError(cause instanceof Error && cause.message === "daily_reward_locked"
@@ -130,7 +133,7 @@ export default function DailyChallengesPage() {
         </article>)}
       </section>
 
-      {celebration ? <aside className="daily-celebration" role="status"><RewardArt type="achievement" /><strong>Meta alcançada</strong><span>{celebration}</span>{rewardLinks ? <nav aria-label="Próximos passos"><a href="/recompensas">Ver recompensas</a><a href="/perfil">Ver perfil</a></nav> : null}</aside> : null}
+      {celebration ? <aside className="daily-celebration" role="status">{majorCelebration ? <PlatformIllustration id="celebration" className="daily-celebration-art" /> : <RewardArt type="achievement" />}<strong>Meta alcançada</strong><span>{celebration}</span>{rewardLinks ? <nav aria-label="Próximos passos"><a href="/recompensas">Ver recompensas</a><a href="/perfil">Ver perfil</a></nav> : null}</aside> : null}
       {error ? <p className="daily-challenges-error" role="alert">{error}</p> : null}
       {!daily ? <p className="daily-challenges-loading" role="status">Carregando desafios...</p> : null}
       <section className="daily-challenges-grid" aria-label="Jogos disponíveis hoje">

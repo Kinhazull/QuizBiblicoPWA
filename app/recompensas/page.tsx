@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import styles from "./collections.module.css";
 import { RewardArt } from "../RewardArt";
 import { CollectibleArt } from "../CollectibleArt";
+import { PlatformIllustration } from "../PlatformIllustration";
 
 type Item = {
   id: string;
@@ -162,9 +163,7 @@ export default function RewardsPage() {
                 {data.collections.map((collection) => (
                   <article className={styles.collection} key={collection.id}>
                     <header className={styles.collectionTop}>
-                      <span className={styles.cover} aria-hidden="true">
-                        {collection.coverIcon}
-                      </span>
+                      {collection.progress.status === "COMPLETE" ? <PlatformIllustration id="collection-complete" className={styles.cover} /> : <span className={styles.cover} aria-hidden="true">{collection.coverIcon}</span>}
                       <div>
                         <h3>{collection.name}</h3>
                         <small>

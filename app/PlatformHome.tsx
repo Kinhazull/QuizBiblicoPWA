@@ -5,6 +5,7 @@ import { BrandLogo } from "./BrandLogo";
 import { GameArt } from "./GameArt";
 import { gameModules } from "./games/sdk/gameModules";
 import { RewardArt } from "./RewardArt";
+import { eventIllustration, PlatformIllustration } from "./PlatformIllustration";
 
 type PlatformAchievement = {
   code: string;
@@ -74,6 +75,7 @@ export type PlatformEventSummary = {
   endsAt: number;
   status: "SCHEDULED" | "ACTIVE" | "FINISHED";
   games: unknown[];
+  coverUrl?: string | null;
 };
 
 type PlatformHomeProps = {
@@ -188,6 +190,7 @@ export function PlatformHome({
       </section>
 
       {featuredEvent && engagement.eventId !== featuredEvent.id ? <section className="platform-event-card" aria-labelledby="featured-event-title">
+        <PlatformIllustration id={eventIllustration(featuredEvent.status)} customUrl={featuredEvent.coverUrl} className="platform-event-art" eager />
         <div><p>{featuredEvent.status === "ACTIVE" ? "Evento ativo" : "Próximo evento"}</p>
           <h2 id="featured-event-title">{featuredEvent.title}</h2><span>{featuredEvent.description}</span></div>
         <a href={`/eventos/detalhes?id=${encodeURIComponent(featuredEvent.id)}`}>Ver evento <span aria-hidden="true">→</span></a>

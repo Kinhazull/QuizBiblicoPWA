@@ -1651,5 +1651,40 @@
       {"path":"public/collectibles/runtime/frames/frame-royal-standard.png","bytes":146838,"sha256":"3bff1db41e34b7fd290676de7df5d76f6142251e649ff5424f3b6abaf840baf0","width":320,"height":320,"logicalId":"frame-royal","variant":"standard","sourceMaster":"public/collectibles/v1/frames/frame-real.png","visualAlias":"frame-real"},
       {"path":"public/collectibles/runtime/frames/frame-silver-compact.png","bytes":12588,"sha256":"0e4eec8cb3f18f0923ae4caf63d444b39190dced4badeae89a90a59d6efbd688","width":96,"height":96,"logicalId":"frame-silver","variant":"compact"},
       {"path":"public/collectibles/runtime/frames/frame-silver-standard.png","bytes":103082,"sha256":"04eddbf1541883b0bd9a2ed93452659f343ecbe517d8a378663e231051d942d0","width":320,"height":320,"logicalId":"frame-silver","variant":"standard"}
+    ],
+    "platformIllustrationDerivativeDefaults": {
+      "format": "PNG",
+      "width": 320,
+      "height": 320,
+      "transparency": "YES",
+      "origin": "Derivado técnico do master oficial",
+      "method": "Resize contain em canvas transparente, sem alteração artística",
+      "approval": "ADOPTED_WAVE_5",
+      "licenseStatus": "INTERNAL_USE_CONFIRMED",
+      "adoptionStatus": "ADOPTED_RUNTIME"
+    },
+    "platformIllustrationDerivatives": [
+      {"path":"public/illustration/runtime/events/default-event-card.png","bytes":122769,"sha256":"8d8b2101d944a782bfecfbe3a892034da527957b6c760fb35c1fb1fbbde17b36","logicalId":"default-event","sourceMaster":"public/events/default-event.png"},
+      {"path":"public/illustration/runtime/events/event-completed-card.png","bytes":142912,"sha256":"e096bab02c8e10c94a8ecc5a6614e9f19c1ee9425f6dedb9da7cf1252a68f1cd","logicalId":"event-completed","sourceMaster":"public/events/event-completed.png"},
+      {"path":"public/illustration/runtime/events/event-unavailable-card.png","bytes":141844,"sha256":"c071120e3bb15adc8b2d25ccca85d5b6c8f68d45f4ea72a83d9baed5232eeca6","logicalId":"event-unavailable","sourceMaster":"public/events/event-unavailable.png"},
+      {"path":"public/illustration/runtime/progression/celebration-card.png","bytes":122448,"sha256":"d68f78bf64cedf85785839772539e3de575a2e33bb646070f6b6602b3f806694","logicalId":"celebration","sourceMaster":"public/illustration/celebration.png"},
+      {"path":"public/illustration/runtime/progression/collection-complete-card.png","bytes":167984,"sha256":"08cea2c542718f77bd955fcb3757cc51bdf42b15e9bd5e3399945134367be7c2","logicalId":"collection-complete","sourceMaster":"public/illustration/progression/collection-complete.png"},
+      {"path":"public/illustration/runtime/progression/ranking-podium-card.png","bytes":105686,"sha256":"4904919ad1e41dee0e638b1635956935816fa5219189f77bf420f5a3f343159d","logicalId":"ranking-podium","sourceMaster":"public/illustration/progression/ranking-podium.png"},
+      {"path":"public/illustration/runtime/system/empty-state-card.png","bytes":85360,"sha256":"810a35a6dd38188f93a95bede5bb6267ae1312afaa6283e38ef3b24966d524c5","logicalId":"empty-state","sourceMaster":"public/illustration/system/empty-state.png"},
+      {"path":"public/illustration/runtime/system/error-state-card.png","bytes":113906,"sha256":"40b248f915e2b1d210dab01ffb1364b13b21e53827b35d16843699ef93dc64e5","logicalId":"error-state","sourceMaster":"public/illustration/system/error-state.png"},
+      {"path":"public/illustration/runtime/system/offline-card.png","bytes":92974,"sha256":"30632943c55ce4ec4b4d9814e9031a6004d03dfcb933c99410e9475f39a6aaa2","logicalId":"offline","sourceMaster":"public/illustration/system/offline.png"}
+    ],
+    "wave5Adoption": [
+      {"logicalId":"offline","status":"ADOPTED_RUNTIME","consumer":"fallback offline existente"},
+      {"logicalId":"empty-state","status":"ADOPTED_RUNTIME","consumer":"estados vazios de Eventos"},
+      {"logicalId":"error-state","status":"ADOPTED_RUNTIME","consumer":"erro recuperável da lista de Eventos"},
+      {"logicalId":"celebration","status":"ADOPTED_RUNTIME","consumer":"celebração existente da meta Daily 7/7"},
+      {"logicalId":"default-event","status":"ADOPTED_RUNTIME","consumer":"Home, lista e detalhe de Evento sem capa customizada"},
+      {"logicalId":"event-completed","status":"ADOPTED_RUNTIME","consumer":"lista e detalhe de Evento encerrado"},
+      {"logicalId":"event-unavailable","status":"ADOPTED_RUNTIME","consumer":"Evento indisponível"},
+      {"logicalId":"collection-complete","status":"ADOPTED_RUNTIME","consumer":"coleção com status COMPLETE"},
+      {"logicalId":"ranking-podium","status":"ADOPTED_RUNTIME","consumer":"cabeçalho do Ranking"},
+      {"logicalId":"level-up","status":"EXTRA_RESERVED","consumer":null,"reason":"não existe feedback dedicado de subida de nível no runtime atual"},
+      {"logicalId":"achievement-unlocked","status":"EXTRA_RESERVED","consumer":null,"reason":"não existe feedback dedicado de desbloqueio no runtime atual"}
     ]
 }

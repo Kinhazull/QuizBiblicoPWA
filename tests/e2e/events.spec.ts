@@ -119,7 +119,9 @@ test("participante conclui Evento uma vez e recebe resultado fixo", async ({ pag
   await installParticipantEventApi(page, () => outcome, value => { outcome = value; });
 
   await page.goto("/eventos");
+  await expect(page.locator('[data-illustration="default-event"]')).toBeVisible();
   await page.getByRole("link", { name: "Ver detalhes" }).click();
+  await expect(page.locator('[data-illustration="default-event"]')).toBeVisible();
   await page.getByRole("button", { name: "Jogar" }).click();
   await expect(page).toHaveURL(/wordle-biblico\/?\?event=selection-event&eventId=event-e2e/);
   await expect(page.getByText(/Dica: O Salvador/)).toBeVisible();

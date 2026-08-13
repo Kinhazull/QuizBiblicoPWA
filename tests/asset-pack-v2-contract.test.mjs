@@ -30,6 +30,17 @@ test("asset pack manifest matches the repository bytes", () => {
     assert.equal(createHash("sha256").update(bytes).digest("hex"), item.sha256, `${item.path} sha256`);
     assert.deepEqual([item.width, item.height], item.variant === "compact" ? [96, 96] : [320, 320]);
   }
+  assert.equal(manifest.platformIllustrationDerivatives.length, 9);
+  assert.equal(manifest.platformIllustrationDerivativeDefaults.approval, "ADOPTED_WAVE_5");
+  for (const item of manifest.platformIllustrationDerivatives) {
+    const path = resolve(root, item.path);
+    assert.equal(existsSync(path), true, `${item.path} must exist`);
+    const bytes = readFileSync(path);
+    assert.equal(bytes.length, item.bytes, `${item.path} byte size`);
+    assert.equal(createHash("sha256").update(bytes).digest("hex"), item.sha256, `${item.path} sha256`);
+  }
+  assert.equal(manifest.wave5Adoption.filter(item => item.status === "ADOPTED_RUNTIME").length, 9);
+  assert.deepEqual(manifest.wave5Adoption.filter(item => item.status === "EXTRA_RESERVED").map(item => item.logicalId).sort(), ["achievement-unlocked", "level-up"]);
 });
 
 test("every public asset has one supported adoption classification", () => {

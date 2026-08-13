@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { COLLECTIBLE_CATALOG } from "../../shared/platform-collections";
 import { EquippedAvatar, type EquipmentView } from "../EquippedAvatar";
+import { PlatformIllustration } from "../PlatformIllustration";
 import styles from "./rankings.module.css";
 
 type Scope = "overall" | "weekly" | "game";
@@ -81,7 +82,7 @@ export default function Rankings() {
     {scope === "game" ? <section className={styles.gamePicker} aria-labelledby="game-ranking-title"><label id="game-ranking-title" htmlFor="ranking-game">Escolha o jogo</label><select id="ranking-game" value={gameId} onChange={event => setGameId(event.target.value)}>{(data?.games || []).map(game => <option key={game.id} value={game.id}>{game.name}{game.available ? "" : " — em preparação"}</option>)}</select></section> : null}
 
     <section className={styles.board} aria-busy={status === "loading"} aria-live="polite">
-      <header><div><p>{scope === "overall" ? "XP TOTAL" : scope === "weekly" ? "SEMANA ATUAL" : selectedGame?.name || "POR JOGO"}</p><h2>Top 10</h2></div>{data?.criterion ? <span>{data.criterion}</span> : null}</header>
+      <header><PlatformIllustration id="ranking-podium" className={styles.podiumArt} /><div><p>{scope === "overall" ? "XP TOTAL" : scope === "weekly" ? "SEMANA ATUAL" : selectedGame?.name || "POR JOGO"}</p><h2>Top 10</h2></div>{data?.criterion ? <span>{data.criterion}</span> : null}</header>
       {status === "loading" ? <div className={styles.state} role="status">Carregando classificação…</div> : null}
       {status === "error" ? <div className={styles.state} role="alert"><strong>Não foi possível carregar o ranking.</strong><button type="button" onClick={() => setReload(value => value + 1)}>Tentar novamente</button></div> : null}
       {status === "ready" && data?.unavailableReason ? <div className={styles.state}><strong>Ranking em preparação</strong><p>{data.unavailableReason}</p></div> : null}

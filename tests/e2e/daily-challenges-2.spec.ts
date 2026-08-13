@@ -82,6 +82,7 @@ test("Daily 7/7 comunica o Avatar Lâmpada e conduz à coleção", async ({ page
   await mockDaily(page, 7);
   await page.goto("/desafios-diarios");
   await page.getByRole("button", { name: "Resgatar" }).last().click();
+  await expect(page.locator('[data-illustration="celebration"]')).toBeVisible();
   await expect(page.getByText(/Você recebeu .+ Avatar Lâmpada/)).toBeVisible();
   await expect(page.getByRole("link", { name: "Ver recompensas" })).toBeVisible();
 });

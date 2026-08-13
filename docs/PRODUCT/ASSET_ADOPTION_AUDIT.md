@@ -170,6 +170,16 @@ O proprietário declarou que as novas artes foram produzidas especificamente par
 6. concluir testes visuais/mobile/acessibilidade em cada Wave.
 
 Nenhum desses pontos exige alteração funcional nesta auditoria.
+
+## Wave 5 — Sistema, Eventos e progressão visual concluída
+
+Foram adotados nove masters em consumidores funcionais já existentes, sempre por derivados locais determinísticos de 320×320: `offline`, `empty-state`, `error-state`, `celebration`, `default-event`, `event-completed`, `event-unavailable`, `collection-complete` e `ranking-podium`. Mensagens, ações recuperáveis, regras, estados e dados permanecem textuais e acessíveis; as artes são decorativas.
+
+- Eventos priorizam `coverUrl` customizada quando fornecida pelo contrato atual e mantêm `default-event` local como fallback. Eventos `FINISHED` usam `event-completed`; falha de detalhe usa `event-unavailable`.
+- O fallback PWA offline existente passou a usar a arte local sem alterar texto, recarga ou retorno ao início.
+- `celebration` aparece somente na recompensa 7/7 já existente; `collection-complete` somente em coleção cujo status já é `COMPLETE`; `ranking-podium` apenas identifica visualmente o cabeçalho do Ranking.
+- `level-up` e `achievement-unlocked` permanecem `EXTRA_RESERVED`: não há feedback dedicado correspondente no runtime atual, e a Wave não cria gatilhos ou funcionalidades.
+- Telas administrativas densas continuam sem ilustrações grandes. Masters não foram sobrescritos, renomeados ou excluídos.
 ## Wave 3 — recompensas e progressão visual
 
 - Os oito masters de `public/rewards/` permanecem como fonte oficial e não são servidos diretamente em contadores.
