@@ -1,6 +1,8 @@
 # Checklist humano de revisão bíblica e editorial
 
-Este checklist orienta a revisão; não representa parecer teológico ou jurídico automatizado.
+**Estado de release:** `PROVENANCE_RESOLVED / FINAL_EDITORIAL_REVIEW_REQUIRED`.
+
+Este checklist orienta a revisão; não representa parecer teológico ou jurídico automatizado. Itens desmarcados não foram presumidos como executados e não impedem a preparação técnica da 27.7.2, mas precisam de evidência antes do Go/No-Go público.
 
 ## Responsáveis e evidência
 
@@ -19,6 +21,7 @@ Este checklist orienta a revisão; não representa parecer teológico ou jurídi
 ## Amostra mínima pré-v2
 
 - [ ] Quiz: amostra estratificada por dificuldade, tema e Antigo/Novo Testamento do acervo de 984 perguntas;
+- [ ] Quiz: priorizar perguntas HARD, ambiguidades, resposta única e adequação das referências;
 - [ ] revisar 100% dos conteúdos HARD alterados na Curadoria 25.7;
 - [ ] Três Pistas: respostas únicas, progressão real das pistas e ausência de pistas equivalentes à resposta;
 - [ ] Associação: relação A↔B inequívoca e referência capaz de sustentar todos os pares;
@@ -26,6 +29,7 @@ Este checklist orienta a revisão; não representa parecer teológico ou jurídi
 - [ ] Quem Sou Eu: dicas progressivas e sem revelação nominal precoce;
 - [ ] Memória: pares semanticamente exclusivos dentro de cada conjunto;
 - [ ] Wordle: palavra reconhecível, dica clara e referência pertinente, sem dependência da redação de tradução específica.
+- [ ] conteúdo publicável da RC: registrar amostra final por jogo, dificuldade, categoria, tema e referência.
 
 ## Verificações por item
 

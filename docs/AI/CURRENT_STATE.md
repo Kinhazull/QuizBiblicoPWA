@@ -1,25 +1,21 @@
 # Estado operacional corrente
 
 **Status:** CURRENT — fonte oficial de verdade operacional
-**Atualização:** 12/08/2026
+**Atualização:** 13/08/2026
 **Roadmap canônico:** `docs/PRODUCT/ROADMAP.md`
 **Snapshot de release:** `docs/PRODUCT/RELEASE_SNAPSHOT.md`
 
 Auditorias e relatórios de fases anteriores são históricos. Em caso de divergência sobre o estado atual, este arquivo prevalece.
 
-## Asset Pack v2 — Wave 1
+## Asset Pack v2
 
-A Brand v2 e seus derivados leves estão adotados nas assinaturas de runtime, favicon, Apple Touch Icon e ícones instaláveis do PWA. O ícone maskable possui canvas opaco e área segura validada.
-
-## Asset Pack v2 — Wave 2
-
-As artes oficiais dos sete jogos estão adotadas no catálogo/Free Play, Home, Daily, Evento e Perfil por meio do catálogo central e de derivados leves 420×420. Emojis permanecem somente como fallback ou identificador funcional compacto. As Waves 3–7 permanecem fora do runtime.
+Waves 1–5 estão `DONE`: Brand/PWA, sete jogos, recompensas, colecionáveis e ilustrações de Sistema/Eventos/Progressão possuem registros centrais e consumidores reais com derivados leves. Emojis permanecem apenas como fallback/identificador compacto. Wave 6 (Onboarding) é `POST_RELEASE / EXTRA_RESERVED`. Wave 7 está `DONE` como auditoria/preparação de Store, sem declarar Google Play Ready.
 
 ## Baseline integrada
 
 - versão local: `2.0.0-rc.1`;
 - branch integrada: `main`;
-- HEAD integrado antes das alterações locais desta sprint: `2b8fd2fd35e86296a938ce1364b72b007803de79`;
+- HEAD observado antes das alterações locais da 27.7.0/27.7.1: `11fd739b7824854890662d075f2e9c0311590b68`;
 - migration local mais recente: `0039_administrative_mfa.sql`;
 - a migration 0038 pertence ao schema moderno e não deve ser tratada como legado;
 - o ledger remoto não pode ser inferido do Git. Seu estado atual **requer verificação operacional** pelo workflow oficial;
@@ -32,17 +28,19 @@ As artes oficiais dos sete jogos estão adotadas no catálogo/Free Play, Home, D
 - 26.2 Biblioteca Inteligente: concluída;
 - 26.3 Editor Visual de Eventos: concluída;
 - 26.4 Planejamento e Calendário Administrativo: concluída;
-- 26.4.1 Release Truth e Integridade da Baseline: concluída localmente, ainda não commitada;
-- 26.5 Analytics 2.0: concluída localmente, ainda não commitada;
-- 26.6 Automação Administrativa: concluída localmente, ainda não commitada.
-- 27.1 Segurança e Contas: concluída localmente, ainda não commitada.
-- 27.1.1 MFA Administrativo: concluída localmente, ainda não commitada.
+- 26.4.1 Release Truth e Integridade da Baseline: concluída;
+- 26.5 Analytics 2.0: concluída;
+- 26.6 Automação Administrativa: concluída;
+- 27.1 Segurança e Contas: concluída;
+- 27.1.1 MFA Administrativo: implementação local concluída; estado produtivo de secret/0039 é `REMOTE_UNKNOWN / TO_VERIFY_IN_27_7_2`.
 - 27.2 Operação e Recuperação: **DONE**; chave de backup provisionada/custodiada e restore remoto comprovado em D1 isolado com dataset sintético.
 - 27.3 Retirada do Legado: concluída localmente; navegação moderna desacoplada de Jornada/Medalhas e de entradas administrativas históricas, sem remoção de dados/APIs.
 - 27.3.1 Sustentabilidade Operacional e Custo Zero: concluída localmente; política e orçamento versionado criados, classificados como `ZERO-COST PLAUSIBLE, MEASUREMENT REQUIRED`.
 - 27.4 Qualidade Real, CI e PWA: concluída localmente; suíte PWA production-like e gate manual implementados. Android físico/Web Vitals públicos permanecem validações humanas pré-RC.
-- 27.5 Conteúdo, Arte e Licenças: concluída localmente; proveniência e readiness documentados. O Asset Pack v2 foi produzido e auditado em 27.5.x, mas ainda não foi integrado; Brand/PWA, dois aliases de moldura e otimização permanecem gates de adoção.
-- 27.6 Jurídico e Google Play: concluída localmente como auditoria/readiness; inventário de 70 tabelas, matriz Data Safety e estratégia TWA documentados. Release continua NO-GO por decisões jurídicas, licenças, arte, domínio/package ID e Android físico. 27.7 não foi iniciada.
+- 27.5 Conteúdo, Arte e Licenças: concluída; proveniência e readiness documentados. Asset Pack v2 Waves 1–5 integrado, Wave 6 pós-release e Wave 7 auditada.
+- 27.6 Jurídico e Google Play: concluída como auditoria/readiness; aprovação jurídica e publicação Play permanecem humanas/externas.
+- 27.7.0 Release Readiness Final: concluída com decisão `READY_FOR_27_7_1`.
+- 27.7.1 Fechamento dos blockers internos: concluída localmente; 27.7.2 é a próxima etapa operacional.
 - ajuste pós-27.6: controlador pessoa física e `suporteconteosfeitos@gmail.com` definidos; CPF/endereço residencial não serão publicados e eventual endereço físico segue sujeito à revisão jurídica.
 - ajuste pós-27.6: público-alvo formal da v2 definido como adolescentes e adultos; crianças ficaram fora do público-alvo. Tratamento jurídico de adolescentes/acesso incidental infantil permanece pendente e contas supervisionadas são pós-release.
 - ajuste pós-27.6: v2 sem exclusão automática por inatividade; matriz técnica preliminar de retenção definida e possível processamento internacional reconhecido. Prazos/mecanismos jurídicos e qualquer automação permanecem pendentes.

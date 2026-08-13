@@ -8,7 +8,7 @@
 - avaliar `splash-brand.png` somente quando existir uma splash nativa/Store real, sem criar atraso artificial;
 
 - executar `docs/ANDROID_PHYSICAL_CHECKLIST.md`, medir Web Vitals no domínio candidato e só depois avaliar Google Play;
-- executar restore real em ambiente D1 isolado;
+- verificar na 27.7.2 a configuração atual da chave de backup; restore remoto isolado já foi comprovado com dataset sintético;
 - concluir revisão jurídica/licenças, tratamento de adolescentes/acesso infantil incidental e Data Safety;
 - reconciliar Asset Registry, hospedagem de assets e CSP;
 - validar o workflow manual de promoção e o mesmo artefato em produção;
@@ -17,12 +17,11 @@
 - aprovar juridicamente os prazos da matriz preliminar e só então desenhar limpeza por domínio/tabela;
 - medir por 30 dias o Cron de um minuto antes de decidir entre 1, 2 ou 5 minutos;
 - executar rehash progressivo de senhas sem quebra de sessão;
-- concluir arte final e acessibilidade dos assets essenciais.
-- executar as Waves 1–7 de `docs/PRODUCT/ASSET_ADOPTION_AUDIT.md`, começando por Brand v2/PWA e mantendo os PNGs master preservados;
+- validar em aparelho real a nitidez/acessibilidade dos assets já integrados; Store continua etapa humana separada;
 - executar `docs/PRODUCT/CONTENT_HUMAN_REVIEW_CHECKLIST.md` e registrar evidência da revisão do Quiz/base oficial;
 - revisar humanamente citações específicas do acervo; autoria interna das 984 perguntas foi declarada, e `bible-acf.json`/`bible-almeida.json` foram retirados da árvore ativa;
 - decidir juridicamente se os blobs históricos dos textos integrais exigem purge dedicado e se ACF/Almeida poderão ter uso futuro;
-- confirmar os dois aliases de moldura e integrar os 16 assets de colecionáveis já produzidos, preservando IDs/economia e emoji como fallback;
+- preservar os aliases aprovados `frame-covenant`→`frame-aliance` e `frame-royal`→`frame-real`; emojis seguem somente como fallback;
 - revisar todos os assets `ACTIVE` e hosts do Asset Registry contra o manifesto de proveniência e a CSP.
 - confirmar eventual identidade/endereço necessários e aprovar bases/prazos legais, tratamento de adolescentes/acesso infantil incidental e mecanismo de transferência internacional; controlador, contato, público-alvo, ausência de exclusão por inatividade e matriz técnica preliminar já estão definidos;
 - revisar/publicar Termos, Privacidade e nota editorial v2 com versionamento e novo consentimento quando necessário;

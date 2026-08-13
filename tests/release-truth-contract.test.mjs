@@ -4,20 +4,28 @@ import { readFile } from "node:fs/promises";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("fonte corrente não reconstrói entregas nem inventa ledger remoto", async () => {
-  const [state, roadmap, snapshot] = await Promise.all([
+test("fonte corrente fecha 27.7.1 sem inventar estado remoto", async () => {
+  const [state, roadmap, snapshot, issues, deprecations] = await Promise.all([
     read("docs/AI/CURRENT_STATE.md"),
     read("docs/PRODUCT/ROADMAP.md"),
     read("docs/PRODUCT/RELEASE_SNAPSHOT.md"),
+    read("docs/AI/KNOWN_ISSUES.md"),
+    read("docs/PRODUCT/DEPRECATIONS.md"),
   ]);
   assert.match(state, /Status:\*\* CURRENT/);
   assert.match(state, /0039_administrative_mfa\.sql/);
   assert.match(state, /requer verificação operacional/i);
-  assert.match(state, /26\.5 Analytics 2\.0: concluída localmente, ainda não commitada/);
+  assert.match(state, /27\.7\.1 Fechamento dos blockers internos: concluída localmente/);
+  assert.doesNotMatch(state, /27\.7 não foi iniciada/);
   assert.match(roadmap, /25\.5 \| Ranking Universal \| DONE/);
-  assert.match(roadmap, /26\.5 \| Analytics 2\.0 \| DONE localmente/);
-  assert.match(roadmap, /Fase 9 — Evolução dos Jogos e Base de Conhecimento/);
-  assert.match(snapshot, /\*\*NO-GO para release pública final\.\*\*/);
+  assert.match(roadmap, /27\.7\.0 \| Release Readiness Final \| DONE/);
+  assert.match(roadmap, /27\.7\.2 \| Preparação de Produção \| NEXT/);
+  assert.match(snapshot, /0039: `LOCAL_VERIFIED`/);
+  assert.match(snapshot, /REMOTE_UNKNOWN \/ TO_VERIFY_IN_27_7_2/);
+  assert.doesNotMatch(snapshot, /Analytics 2\.0 não faz parte|ainda não foi iniciado/);
+  assert.doesNotMatch(issues, /runtime ainda usa a identidade anterior/);
+  assert.doesNotMatch(issues, /integrar 16 arquivos/);
+  assert.match(deprecations, /KEEP_HISTORICAL_COMPATIBILITY/);
 });
 
 test("regras permitem main apenas com autorização e separam operações remotas", async () => {

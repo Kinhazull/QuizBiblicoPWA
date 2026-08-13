@@ -53,19 +53,19 @@ Isso resolve o risco técnico de redistribuição pela árvore atual. Os blobs c
 
 ### Técnicos
 
-Nenhum novo blocker técnico foi encontrado. Não houve necessidade de modificar runtime, schemas, conteúdo ou banco.
+Nenhum novo blocker técnico foi encontrado. Não houve necessidade de modificar runtime, schemas, conteúdo ou banco. A autoria/proveniência interna está `PROVENANCE_RESOLVED`; a revisão bíblica/editorial final permanece `FINAL_EDITORIAL_REVIEW_REQUIRED` e deve ser evidenciada antes do Go/No-Go público, sem bloquear a preparação técnica da 27.7.2.
 
 ### Humanos/de publicação
 
 1. concluir a amostragem bíblica descrita em `CONTENT_HUMAN_REVIEW_CHECKLIST.md`;
-2. confirmar os aliases das molduras `frame-covenant`/`frame-royal` e integrar os 16 assets, mantendo emoji como fallback;
-3. adotar a Brand v2 no logo, favicon e ícones PWA, validando maskable/cache/Android;
+2. validar em aparelho real os 16 colecionáveis já integrados; aliases `frame-covenant`/`frame-royal` estão aprovados e emojis são apenas fallback;
+3. validar Brand v2/PWA já integrada em aparelho Android físico;
 4. revisar cada asset `ACTIVE` do Asset Registry e os hosts necessários antes de liberar a v2;
 5. decidir juridicamente se os blobs históricos precisam de purge e se ACF/Almeida poderão ter qualquer uso futuro.
 
 Esses itens mantêm o release em **NO-GO editorial/jurídico**, embora o runtime não dependa das traduções sem licença comprovada.
 
-A produção visual dos 8 avatares e 8 molduras está especificada em `COLLECTIBLES_ART_DIRECTION.md`. Nenhum asset final foi criado ou aprovado, portanto o blocker `REPLACE_BEFORE_RELEASE` permanece aberto.
+Os 8 avatares e 8 molduras funcionais estão integrados por derivados oficiais. Extras reservados não integram economia/grants; a validação física final permanece humana, não blocker interno de adoção.
 
 ## Separação da Fase 9
 

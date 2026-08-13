@@ -1,96 +1,78 @@
 # Snapshot de release e Go/No-Go
 
 **Status:** CURRENT  
-**Data:** 12/08/2026
+**Data:** 13/08/2026
+**Baseline:** `2.0.0-rc.1`
 
-## Identificação
+## Release Truth
 
-- versão: `2.0.0-rc.1`;
-- branch integrada: `main`;
-- HEAD integrado antes das alterações locais da Sprint 26.4.1: `2b8fd2fd35e86296a938ce1364b72b007803de79`;
-- alterações desta sprint: locais e não commitadas;
+- branch observada: `main`;
+- HEAD observado antes das alterações locais 27.7.0/27.7.1: `11fd739b7824854890662d075f2e9c0311590b68`;
+- alterações 27.7.0/27.7.1 permanecem locais e não commitadas;
 - migration local mais recente: `0039_administrative_mfa.sql`;
-- ledger/schema remoto: **DESCONHECIDO — requer verificação operacional** pelo reconciliador oficial.
+- 0039: `LOCAL_VERIFIED`; ledger/schema atual de produção: `REMOTE_UNKNOWN / TO_VERIFY_IN_27_7_2`;
+- MFA: implementação local pronta; `MFA_ENCRYPTION_KEY` em produção: `REMOTE_UNKNOWN / TO_VERIFY_IN_27_7_2`;
+- não houve deploy, migration, secret, tag ou release durante 27.7.0/27.7.1.
+
+Ausência de evidência remota atual não é tratada como falha nem sucesso. A 27.7.2 verificará o estado sem revelar secrets e aplicará somente o fluxo necessário.
 
 ## Entregas concluídas
 
-- Fases 1–5 e Sprints 25.1–25.7;
-- Central Administrativa, Biblioteca Inteligente, Editor Visual de Eventos e Planejamento/Calendário;
-- sete jogos, CMS/Biblioteca/Gerador/Loader e modos FREE_PLAY/DAILY/EVENT;
-- Progress, Reward, Statistics, Achievements, Missions, Economia 2.0, Coleções, Perfil 2.0 e Ranking Universal.
-- navegação participante e administrativa sem atalhos para Jornada, Medalhas, Analytics do Quiz ou CMS antigo; rotas históricas compatíveis redirecionam para equivalentes modernos.
-- política de sustentabilidade e orçamento operacional versionado concluídos; capacidade em usuários aguarda quotas externas e medição real.
-- suíte PWA Release separada valida artifact avançado, SW real, manifest, cache seguro, fallback offline e atualização em Chromium desktop/mobile emulado.
+- Fases 1–7 e Sprints 27.1–27.6;
+- Analytics 2.0 e Automação Administrativa;
+- sete jogos, CMS, Biblioteca, Gerador, Loader e modos FREE_PLAY/DAILY/EVENT;
+- Core Platform, economia, coleções, Perfil 2.0 e Ranking Universal;
+- PWA production-like, Quality gates e promoção manual vinculada ao SHA/artifact;
+- Asset Pack v2 Waves 1–5 integradas; Wave 6 `POST_RELEASE`; Wave 7 `DONE` como auditoria/preparação de Store;
+- 27.7.0 `DONE`; 27.7.1 `DONE localmente`; 27.7.2 `NEXT`.
 
-## Bloqueadores humanos
+## Conteúdo e proveniência
 
-- licenças de textos/assets e revisão jurídica;
-- revisão humana das citações bíblicas; textos ACF/Almeida integrais e derivados foram removidos da árvore ativa, e eventual purge histórico permanece decisão jurídica;
-- arte final autoral/licenciada para os 16 colecionáveis atualmente representados por emoji;
-- privacidade de menores, termos e Data Safety;
-- decisões de domínio/package ID e publicação Google Play;
-- responsável e canal de alertas operacionais.
-- quotas vigentes dos planos Cloudflare/GitHub e aprovação da retenção por domínio.
+- Quiz: `PROVENANCE_RESOLVED`, com autoria interna, assistência de IA e curadoria humana; `Quiz.csv` preservado; 984 itens permanecem evidência operacional anterior a reconfirmar na 27.7.2;
+- pacote oficial: 380 IDs únicos — Wordle 120, Timeline 40, Memória 40, Associação 60, Quem Sou Eu 60 e Três Pistas 60 — validado por schemas/contratos;
+- revisão editorial humana final: `HUMAN_APPROVAL_REQUIRED`, sem impedir preparação técnica ou RC privada;
+- textos bíblicos completos/derivados sem licença comprovada continuam fora da árvore ativa;
+- scripts que referenciam fontes removidas são `HISTORICAL / NOT_FOR_RELEASE_USE`;
+- purge do histórico Git: `HUMAN_LEGAL_REVIEW_REQUIRED`, não blocker técnico da RC.
 
-## Bloqueadores técnicos/externos
+## Asset Pack v2
 
-- Android físico e Web Vitals públicos; PWA production-like automatizada está aprovada localmente;
-- restore local e remoto isolado integralmente comprovados com dataset sintético;
-- Asset Registry/hospedagem/CSP;
-- decisão sobre manter ou substituir o perfil público legado; o atalho administrativo foi retirado, mas rota e API permanecem protegidas por organização e privacidade;
-- confirmação operacional do ledger remoto;
-- primeira execução validada do workflow manual de promoção.
+- `BrandLogo`, `GameArt`, `RewardArt`, `CollectibleArt` e `PlatformIllustration` possuem consumidores reais;
+- aliases aprovados: `frame-covenant` → `frame-aliance.png`; `frame-royal` → `frame-real.png`;
+- extras reservados não integram economia/grants; runtime usa derivados leves e masters permanecem fontes;
+- masters Store em `public/` acrescentam 16,23 MiB ao artifact: `RISK_ACCEPTABLE` para RC web e futura otimização;
+- nenhum asset Store está pronto para upload sem etapa humana. Isso não bloqueia RC web.
 
-## Gate de promoção
+## Compatibilidade histórica
 
-1. push na `main` executa Quality e Browser Smoke, sem deploy;
-2. Quality produz artefato nomeado pelo SHA;
-3. proprietário inicia `Promote verified build to production` informando SHA, run ID e `PROMOVER_PRODUCAO`;
-4. workflow confirma SHA pertencente à `main`, proveniência do artefato, Worker, auto-deploy desativado e migrations;
-5. Pages recebe o `out` verificado, passa smoke e somente então o Worker do mesmo SHA é publicado.
+- perfil público: `KEEP_HISTORICAL_COMPATIBILITY`; rota/API protegidas permanecem fora da navegação principal, sem reconstrução social na v2;
+- Jornada e Medalhas: APIs `KEEP_COMPATIBILITY`, superfícies participantes `REDIRECT_SURFACE`;
+- Analytics antigo e ranking histórico do Quiz: `SAFE_TO_RETIRE_LATER`; Analytics 2.0 e Ranking Universal são ativos;
+- APIs administrativas antigas permanecem até prova segura de ausência de consumidores/necessidade de retenção.
+
+## Operação e recuperação
+
+- `D1_BACKUP_ENCRYPTION_KEY`: `HISTORICAL_REMOTE_EVIDENCE` de provisionamento v1 e custódia externa; verificar estado atual na 27.7.2 sem revelar valor;
+- restore remoto isolado com dataset sintético: comprovado; D1 descartável excluído; produção não restaurada;
+- heartbeat persistido, monitor externo e alertas proativos: riscos aceitos/`POST_RELEASE`, não blockers internos;
+- backup, reconciliador, verify-promotable/final, compare e rollback seguem gates obrigatórios.
+
+## Jurídico e Google Play
+
+- controlador, contato institucional, público-alvo adolescentes/adultos, ausência de controles infantis fictícios e ausência de exclusão automática por inatividade são decisões registradas;
+- Termos/Privacidade, bases/prazos, adolescentes/acesso incidental, transferências e citações/licenças exigem `HUMAN_LEGAL_REVIEW_REQUIRED` antes do Go público;
+- Google Play é `BLOCKED_EXTERNAL / FUTURE_PUBLICATION_PREPARATION` e não bloqueia RC web.
+
+## Checklist operacional da 27.7.2
+
+1. consolidar SHA candidato e executar Quality/PWA gates;
+2. verificar `MFA_ENCRYPTION_KEY` e `D1_BACKUP_ENCRYPTION_KEY` sem expor valores;
+3. produzir backup cifrado/checksum;
+4. verificar ledger; aplicar 0039 somente se pendente; executar verify-final/compare;
+5. confirmar contagens/elegibilidade 984/380;
+6. promover exatamente o artifact validado e executar smoke operacional;
+7. registrar evidências e rollback sem dados pessoais/secrets.
 
 ## Decisão atual
 
-**NO-GO para release pública final.** A baseline é tecnicamente candidata, mas os bloqueadores humanos e validações externas acima ainda precisam ser fechados. Analytics 2.0 não faz parte deste snapshot e ainda não foi iniciado.
-
-## Conteúdo e assets — Sprint 27.5
-
-- 380 conteúdos oficiais revalidados por schema/contratos sem alteração editorial em massa;
-- Wordle usa exclusivamente palavras `PUBLISHED` do CMS da organização e não depende dos JSON bíblicos em runtime;
-- manifesto de proveniência e checklist humano criados;
-- imagens da Memória permanecem `POST_RELEASE_ONLY`;
-- nenhum blocker técnico novo; o Go/No-Go continua dependente de revisão bíblica/licenças, Asset Registry e arte final dos colecionáveis.
-
-## Isolamento de textos completos — pós-27.6
-
-- as 984 perguntas e os 380 conteúdos oficiais foram preservados com proveniência interna declarada (`AI_ASSISTED`, `HUMAN_CURATED`);
-- seis arquivos com textos bíblicos integrais ou derivados foram removidos da árvore ativa;
-- scripts antigos permanecem somente como evidência histórica e não fazem parte do release;
-- não houve reescrita do histórico Git, alteração do CMS ou mudança funcional.
-
-## Jurídico e Google Play — Sprint 27.6
-
-- inventário de privacidade reconciliado com 70 tabelas até 0039;
-- exportação e revogação de sessões estão implementadas; anonimização depende de resolução administrativa; contas inativas não possuem política automática;
-- documentos públicos existentes continuam drafts técnicos; aprovação histórica vale somente para o piloto v1;
-- TWA/Bubblewrap é a estratégia recomendada após estabilizar a PWA, sem package ID, domínio, assinatura ou AAB definidos;
-- matriz Data Safety foi preparada somente como insumo técnico;
-- decisão permanece `NO-GO`: há `LEGAL_BLOCKER` e `PLAY_STORE_BLOCKER`, não regressão técnica nova.
-- controlador pessoa física e contato institucional estão definidos; contato pessoal anterior foi retirado das superfícies jurídicas, sem publicar CPF ou endereço residencial.
-- público-alvo da v2 definido como adolescentes e adultos; crianças não são público-alvo formal. Faixas Play e tratamento jurídico de adolescentes/acesso infantil incidental seguem pendentes; contas infantis/supervisionadas são pós-release.
-- v2 não excluirá contas automaticamente por inatividade; pedido de exclusão existente permanece. Matriz técnica preliminar e possibilidade de processamento internacional estão reconhecidas, sem limpeza implementada ou mecanismo jurídico presumido.
-
-## Segurança de contas — Sprint 27.1
-
-- rehash oportunista de credenciais legadas, recuperação single-use e rate limits sensíveis foram implementados localmente;
-- TOTP administrativo, recovery codes MFA e autoridade owner foram implementados localmente; falta provisionar o segredo, promover a migration 0039 e validar a operação;
-- decisão permanece **NO-GO** para abertura pública de contas privilegiadas até esses itens serem tratados.
-
-## Operação e recuperação — Sprint 27.2
-
-- workflows de escrita remota passaram a exigir chave de backup independente e checksum do artifact cifrado;
-- exercício local comprovou integridade, FKs, ledger 0039, MFA, progresso/economia e Outbox após restauração;
-- exercício remoto isolado confirmou `quick_check = ok`, FKs, 40 migrations até 0039 e preservação do dataset sintético; o D1 descartável foi excluído;
-- `D1_BACKUP_ENCRYPTION_KEY` v1 está provisionada no Environment `production` e custodiada externamente;
-- runbooks de deploy, migration, perda de dados, Cron/consumers e segredos foram consolidados;
-- heartbeat persistido e alerta proativo permanecem ações futuras, mas não blockers da Sprint 27.2. Restore real de produção só deve ocorrer diante de incidente e autorização, nunca preventivamente.
+**Repositório internamente pronto para 27.7.2.** Ainda não existe autorização de release pública. Jurídico/editorial impedem `PUBLIC_RELEASE_GO`; Google Play permanece separado; produção depende da 27.7.2.

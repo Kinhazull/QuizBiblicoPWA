@@ -35,9 +35,9 @@ Concluídas: piloto, fundação modular, Core Platform, plataforma universal e c
 | 26.2 | Biblioteca Inteligente | DONE |
 | 26.3 | Editor Visual de Eventos | DONE |
 | 26.4 | Planejamento e Calendário Administrativo | DONE |
-| 26.4.1 | Release Truth e Integridade da Baseline | DONE localmente |
-| 26.5 | Analytics 2.0 | DONE localmente |
-| 26.6 | Automação Administrativa | DONE localmente |
+| 26.4.1 | Release Truth e Integridade da Baseline | DONE |
+| 26.5 | Analytics 2.0 | DONE |
+| 26.6 | Automação Administrativa | DONE |
 
 ## Fase 8 — Release Readiness
 
@@ -52,7 +52,14 @@ Concluídas: piloto, fundação modular, Core Platform, plataforma universal e c
 | 27.5 | Conteúdo, Arte e Licenças | DONE localmente; revisão/licenças e arte final pendentes |
 | 27.6 | Jurídico e Google Play | DONE localmente; decisões humanas bloqueiam release |
 | Pós-27.6 | Isolamento de textos bíblicos completos | DONE localmente; árvore ativa limpa, purge histórico sob decisão jurídica |
-| 27.7 | Go/No-Go final da baseline imutável | NEXT somente após ações do proprietário |
+| 27.7.0 | Release Readiness Final | DONE |
+| 27.7.1 | Fechamento dos blockers internos | DONE localmente |
+| 27.7.2 | Preparação de Produção | NEXT |
+| 27.7.3 | RC Final | PLANNED |
+| 27.7.4 | Validação Manual do Usuário | PLANNED |
+| 27.7.5 | Correções e Revalidação | PLANNED |
+| 27.7.6 | Go/No-Go Formal | PLANNED |
+| 27.7.7 | Release v2.0.0 | PLANNED |
 
 Progressão e Economia administrativas não terão painéis duplicados: Analytics 2.0 permanece o destino agregado. Uma Sprint 27.3.2 só será necessária se requisitos operacionais especializados, distintos dos Analytics atuais, forem aprovados.
 
