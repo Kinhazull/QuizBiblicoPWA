@@ -14,6 +14,7 @@ import {
 import {
   assertSnapshotTableAllowlist,
   authorizedSchemaChanges,
+  authorizedSchemaCreations,
   buildApplicationSchemaQuery,
   compareSchemaObjects,
   migrationsAppliedAfterSnapshot,
@@ -121,6 +122,14 @@ const modifiedSchemaObjectsByMigration = {
   ],
   "0038_platform_rankings_indexes.sql": [
     { type: "table", name: "user_platform_game_statistics" },
+  ],
+  "0039_administrative_mfa.sql": [
+    {
+      type: "table",
+      name: "sessions",
+      beforeSql: "CREATE TABLE sessions (id TEXT PRIMARY KEY NOT NULL, user_id TEXT NOT NULL REFERENCES users(id), token_hash TEXT NOT NULL UNIQUE, persistent INTEGER NOT NULL DEFAULT 0, expires_at INTEGER NOT NULL, last_seen_at INTEGER NOT NULL, created_at INTEGER NOT NULL, user_agent TEXT, ip_hash TEXT)",
+      afterSql: "CREATE TABLE sessions (id TEXT PRIMARY KEY NOT NULL, user_id TEXT NOT NULL REFERENCES users(id), token_hash TEXT NOT NULL UNIQUE, persistent INTEGER NOT NULL DEFAULT 0, expires_at INTEGER NOT NULL, last_seen_at INTEGER NOT NULL, created_at INTEGER NOT NULL, user_agent TEXT, ip_hash TEXT, mfa_verified INTEGER NOT NULL DEFAULT 0)",
+    },
   ],
 };
 
@@ -379,6 +388,11 @@ function compareSnapshot(path) {
     appliedMigrations,
     modifiedSchemaObjectsByMigration,
   );
+  const authorizedCreations = authorizedSchemaCreations(
+    appliedMigrations,
+    introducedTablesByMigration,
+    introducedIndexesByMigration,
+  );
   const snapshotTables = schemaTablesForLedger(
     snapshot.ledger,
     expectedFinalLedger,
@@ -410,6 +424,7 @@ function compareSnapshot(path) {
     snapshot.schemaObjects || [],
     currentSchema,
     authorizedChanges,
+    authorizedCreations,
   );
   for (const change of comparison.expectedModified) {
     console.log(

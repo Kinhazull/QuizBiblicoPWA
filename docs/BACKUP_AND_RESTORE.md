@@ -73,6 +73,39 @@ O banco descartável não foi adicionado ao `wrangler.jsonc`; portanto, `wrangle
 
 O secret `D1_BACKUP_ENCRYPTION_KEY` foi provisionado no GitHub Environment `production`, com passphrase aleatória de 64 caracteres, versão `v1` custodiada externamente e arquivo temporário removido. O valor nunca deve ser registrado.
 
+## Backup produtivo pré-migration 0039 — 13/08/2026
+
+Estado: `PRE_MIGRATION_BACKUP_VERIFIED`.
+
+- banco: `quiz-biblico-db`, UUID `33fc35a0-46cf-4756-b6be-89b07371256c`;
+- workflow run: `31742051309`, operação `backup_only`, concluído em `2026-08-13T20:43:15Z`;
+- artifact privado: `d1-production-backup-31742051309`, 7.155.577 bytes, retenção até `2026-08-20T20:43:13Z`;
+- arquivo cifrado: `d1-production-backup.sql.enc`, 7.142.608 bytes;
+- SHA-256 do arquivo cifrado: `65571640b719e9e99fc4838d89b12f4b77296331adab8dd671ac04c8d24c2d2a`;
+- artifact contém somente o arquivo cifrado, seu checksum e `d1-before.json`; o SQL em claro foi removido antes do upload;
+- job `Apply and verify pending migrations`: `SKIPPED`;
+- ledger pós-backup: 39 migrations, terminando em `0038_platform_rankings_indexes.sql`; `0039_administrative_mfa.sql` permanece pendente.
+
+Nenhum valor de secret foi acessado ou registrado e nenhuma migration, escrita no D1, promoção ou deploy ocorreu nesse run.
+
+## Secret MFA produtivo pré-migration 0039 — 13/08/2026
+
+Estado: `PRODUCTION_PRESENT_DEPLOY_REQUIRED`.
+
+O secret `MFA_ENCRYPTION_KEY` foi provisionado como valor cifrado no ambiente production do Pages `quizbiblicopwa`, usando material aleatório de 32 bytes compatível com AES-256-GCM. A verificação confirmou apenas a presença do nome e o estado cifrado; valor, hash, prefixo e sufixo não foram recuperados ou registrados. O provisionamento não criou deployment. Conforme o contrato do Cloudflare Pages, um deployment controlado posterior é necessário para disponibilizar o binding ao código implantado.
+
+Na conclusão desta etapa de secret, o ledger produtivo ainda permanecia com 39 migrations, terminando em `0038_platform_rankings_indexes.sql`; `0039_administrative_mfa.sql` estava pendente. MFA produtivo, enrollment, recovery codes e smoke funcional não foram ativados nesta etapa.
+
+## Promoção controlada da migration 0039 — 13/08/2026
+
+Estado: `MIGRATION_APPLIED_COMPARE_BLOCKED`.
+
+O run `31748776445`, operação `reconcile`, criou um novo backup cifrado e aplicou exclusivamente `0039_administrative_mfa.sql`. O ledger passou para 40 migrations e o `verify-final` aprovou o estado final. A etapa `compare` falhou com `Pre-existing schema object changed unexpectedly: table sessions`, embora a própria 0039 adicione intencionalmente `sessions.mfa_verified`.
+
+A inspeção read-only posterior confirmou `user_mfa`, `mfa_recovery_codes`, `mfa_login_challenges`, seus índices, o índice único de owner ativo, FKs com cascade, `quick_check = ok`, `foreign_key_check` sem linhas e zero registros nas tabelas MFA. Nenhum restore, retry, deployment ou enrollment foi executado. O artifact pré-migration original permanece a referência de recuperação; o novo artifact do run também foi produzido pelo fluxo obrigatório.
+
+A correção local 27.7.2C.3 tornou o compare consciente da transição exata da migration 0039: `sessions` somente é aceito quando muda da definição integral da baseline 0038 para a mesma definição acrescida exclusivamente de `mfa_verified INTEGER NOT NULL DEFAULT 0`. Objetos criados também precisam pertencer ao manifesto das migrations aplicadas. A correção foi validada localmente com SQLite, mas ainda não foi reexecutada contra produção.
+
 ## Metas operacionais iniciais
 
 São targets, não SLA:
