@@ -8,7 +8,8 @@ test("editor visual de Eventos não expõe JSON nem IDs arbitrários", async () 
   const source = await readFile(new URL("app/admin/eventos/EventWizard.tsx", root), "utf8");
   assert.equal(source.includes("JSON)"), false);
   assert.equal(source.includes("textarea name=\"games\""), false);
-  assert.match(source, /const GAMES = \[/);
+  assert.match(source, /import \{ gameModules \} from "\.\.\/\.\.\/games\/sdk\/gameModules"/);
+  assert.match(source, /const GAMES = gameModules\.map/);
   assert.match(source, /Asset Registry/);
   assert.match(source, /Validar e agendar/);
 });

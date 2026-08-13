@@ -1,6 +1,9 @@
 import { PLATFORM_HOME_PREVIEW } from "./platform-home-config";
 import { EquippedAvatar, type EquipmentView } from "./EquippedAvatar";
 import { selectHomeEngagementAction } from "./platform-engagement";
+import { BrandLogo } from "./BrandLogo";
+import { GameArt } from "./GameArt";
+import { gameModules } from "./games/sdk/gameModules";
 
 type PlatformAchievement = {
   code: string;
@@ -123,10 +126,7 @@ export function PlatformHome({
     <div className="platform-ambient platform-ambient-two" aria-hidden="true" />
     <div className="platform-home-inner">
       <header className="platform-brand-row">
-        <div className="platform-brand" aria-label="Conte os Feitos">
-          <span className="platform-brand-mark" aria-hidden="true"><b>C</b><i>✦</i></span>
-          <span>Conte os <strong>Feitos</strong></span>
-        </div>
+        <div className="platform-brand"><BrandLogo priority /></div>
         <nav className="platform-collection-actions" aria-label="Coleção">
           <a className="platform-shop-button" href="/inventario"><span aria-hidden="true">🎒</span> Inventário</a>
           <a className="platform-shop-button" href="/loja"><span aria-hidden="true">🛍️</span> Loja</a>
@@ -181,7 +181,7 @@ export function PlatformHome({
       </section>
 
       <section className="platform-play-hub" aria-labelledby="play-hub-title">
-        <div aria-hidden="true">🎮</div>
+        <div className="platform-play-art" aria-hidden="true">{gameModules.map(game => <GameArt key={game.id} art={game.art} fallback={game.image} sizes="48px" />)}</div>
         <div><p>Jogar</p><h2 id="play-hub-title">Escolha seu próximo desafio</h2><span>Todos os jogos da plataforma em um só lugar.</span></div>
         <a href="/jogos">Ver jogos <span aria-hidden="true">→</span></a>
       </section>

@@ -254,6 +254,7 @@ test("authenticated participant receives platform chrome and four-item navigatio
   await expect(navigation.locator("a").allTextContents()).resolves.toEqual(["Home", "Jogos", "Recompensas", "Perfil"]);
   await expect(page.locator(".notifications-action")).toBeVisible();
   await expect(page.locator(".settings-action")).toHaveCount(0);
+  await expect(page.locator(".platform-play-art img")).toHaveCount(gameCatalog.length);
   await expect(page.locator("body")).not.toHaveCSS("overflow-x", "scroll");
   const accessibility = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
   expect(accessibility.violations).toEqual([]);
@@ -376,6 +377,7 @@ test("catalog and Game SDK keep both platform games playable on mobile", async (
 
   await page.goto("/jogos");
   await expect(page.locator(".games-catalog-card")).toHaveCount(gameCatalog.length);
+  await expect(page.locator(".games-catalog-card .game-artwork img")).toHaveCount(gameCatalog.length);
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(
     await page.evaluate(() => document.documentElement.clientWidth),
   );

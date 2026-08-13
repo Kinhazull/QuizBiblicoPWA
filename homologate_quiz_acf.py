@@ -1,3 +1,8 @@
+"""HISTORICAL / NOT FOR RELEASE USE.
+
+Consumes a full-text biblical dump removed from the active v2 tree.
+"""
+
 import json,re,unicodedata,collections,math
 from pathlib import Path
 ROOT=Path(__file__).parent

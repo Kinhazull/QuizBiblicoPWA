@@ -6,7 +6,7 @@ import { readFileSync } from "node:fs";
 function harness({offline=false}={}){
   const listeners={},puts=[],deleted=[],offlinePage={kind:"offline"},stored=new Map([["/offline",offlinePage]]),response={ok:true,type:"basic",headers:{get(){return null}},clone(){return this}};
   const cache={addAll:async()=>{},put:async(request,value)=>{puts.push(new URL(request.url).pathname);stored.set(request.url,value)}};
-  const context={URL,location:{origin:"https://quiz.test"},fetch:async()=>{if(offline)throw new Error("offline");return response},caches:{open:async()=>cache,match:async request=>stored.get(typeof request==="string"?request:request.url),keys:async()=>["conte-os-feitos-v1","conte-os-feitos-v2-rc1"],delete:async key=>{deleted.push(key)}},self:{clients:{claim:async()=>{}},skipWaiting(){},addEventListener(type,fn){listeners[type]=fn}}};
+  const context={URL,location:{origin:"https://quiz.test"},fetch:async()=>{if(offline)throw new Error("offline");return response},caches:{open:async()=>cache,match:async request=>stored.get(typeof request==="string"?request:request.url),keys:async()=>["conte-os-feitos-v1","conte-os-feitos-v2-brand-v2"],delete:async key=>{deleted.push(key)}},self:{clients:{claim:async()=>{}},skipWaiting(){},addEventListener(type,fn){listeners[type]=fn}}};
   vm.runInNewContext(readFileSync(new URL("../public/sw.js",import.meta.url),"utf8"),context);
   return{listeners,puts,deleted,offlinePage};
 }

@@ -50,15 +50,17 @@ Concluídas: piloto, fundação modular, Core Platform, plataforma universal e c
 | 27.3.1 | Sustentabilidade Operacional e Custo Zero | DONE localmente |
 | 27.4 | Qualidade Real, CI e PWA | DONE localmente; Android físico pendente |
 | 27.5 | Conteúdo, Arte e Licenças | DONE localmente; revisão/licenças e arte final pendentes |
-| 27.6 | Jurídico, privacidade e Go/No-Go | NEXT |
+| 27.6 | Jurídico e Google Play | DONE localmente; decisões humanas bloqueiam release |
+| Pós-27.6 | Isolamento de textos bíblicos completos | DONE localmente; árvore ativa limpa, purge histórico sob decisão jurídica |
+| 27.7 | Go/No-Go final da baseline imutável | NEXT somente após ações do proprietário |
 
 Progressão e Economia administrativas não terão painéis duplicados: Analytics 2.0 permanece o destino agregado. Uma Sprint 27.3.2 só será necessária se requisitos operacionais especializados, distintos dos Analytics atuais, forem aprovados.
 
 - validar PWA e Android físico, atualização e ciclo de vida;
-- concluir revisão jurídica de licenças, privacidade de menores e Data Safety;
+- concluir revisão de citações/licenças remanescentes, purge histórico, tratamento de adolescentes/acesso infantil incidental e Data Safety;
 - alinhar Asset Registry, hospedagem e CSP;
 - reduzir superfícies legadas com telemetria e rollback;
-- preencher o orçamento operacional com quotas/consumo reais e aprovar retenção por domínio;
+- preencher o orçamento operacional com quotas/consumo reais e aprovar juridicamente os prazos da matriz de retenção antes de qualquer automação;
 - executar segurança, desempenho, acessibilidade e Go/No-Go sobre um SHA imutável;
 - promover produção apenas pelo workflow manual usando o artefato validado.
 
@@ -79,3 +81,5 @@ Direção futura, sem implementação nesta baseline:
 - evolução de colecionáveis/economia sem pagamentos prematuros;
 - Google Play quando o pacote mobile e obrigações legais estiverem aprovados;
 - expansão do catálogo condicionada à qualidade editorial, custo e capacidade operacional.
+- contas infantis e supervisionadas (`POST_RELEASE`): definir faixas suportadas, consentimento/vínculo responsável quando aplicável, privacidade/minimização, gestão e exclusão, UX, LGPD/ECA Digital, políticas Play/Families e testes específicos.
+- retenção/inatividade automatizadas (`POST_RELEASE`): definir prazos jurídicos, avisos, dependências por tabela, agregação segura e anonimização/exclusão controlada antes de implementar jobs.

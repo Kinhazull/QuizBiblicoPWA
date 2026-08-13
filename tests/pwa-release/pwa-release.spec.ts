@@ -21,7 +21,7 @@ test("production-like artifact installs and controls the platform", async ({ pag
   const workerResponse = await request.get("/sw.js");
   expect(workerResponse.status()).toBe(200);
   expect(workerResponse.headers()["content-type"]).toMatch(/javascript/);
-  for (const shell of ["/manifest.webmanifest", "/app-icon.svg", "/offline"]) {
+  for (const shell of ["/manifest.webmanifest", "/favicon.png", "/icons/icon-192.png", "/icons/icon-512.png", "/icons/icon-maskable-512.png", "/offline"]) {
     const response = await request.get(shell);
     expect(response.status(), shell).toBe(200);
   }
@@ -46,7 +46,37 @@ test("production-like artifact installs and controls the platform", async ({ pag
 
   await page.goto("/");
   await installPlatformWorker(page);
-  expect(await page.evaluate(async () => (await caches.keys()).includes("conte-os-feitos-v2-rc1"))).toBe(true);
+  expect(await page.evaluate(async () => (await caches.keys()).includes("conte-os-feitos-v2-brand-v2"))).toBe(true);
+});
+
+test("maskable Brand v2 icon has an opaque canvas and protected central artwork", async ({ page }) => {
+  await page.goto("/");
+  const result = await page.evaluate(async () => {
+    const image = new Image();
+    image.src = "/icons/icon-maskable-512.png";
+    await image.decode();
+    const canvas = document.createElement("canvas");
+    canvas.width = canvas.height = 512;
+    const context = canvas.getContext("2d", { willReadFrequently: true });
+    if (!context) throw new Error("canvas_context_unavailable");
+    context.drawImage(image, 0, 0);
+    const pixels = context.getImageData(0, 0, 512, 512).data;
+    const background = [...pixels.slice(0, 3)];
+    let minX = 512, minY = 512, maxX = -1, maxY = -1, transparent = 0;
+    for (let y = 0; y < 512; y += 1) for (let x = 0; x < 512; x += 1) {
+      const offset = (y * 512 + x) * 4;
+      if (pixels[offset + 3] !== 255) transparent += 1;
+      if (Math.abs(pixels[offset] - background[0]) + Math.abs(pixels[offset + 1] - background[1]) + Math.abs(pixels[offset + 2] - background[2]) > 24) {
+        minX = Math.min(minX, x); minY = Math.min(minY, y); maxX = Math.max(maxX, x); maxY = Math.max(maxY, y);
+      }
+    }
+    return { transparent, minX, minY, maxX, maxY };
+  });
+  expect(result.transparent).toBe(0);
+  expect(result.minX).toBeGreaterThanOrEqual(90);
+  expect(result.minY).toBeGreaterThanOrEqual(90);
+  expect(result.maxX).toBeLessThanOrEqual(421);
+  expect(result.maxY).toBeLessThanOrEqual(421);
 });
 
 test("real service worker never stores API or authenticated navigation responses", async ({ page }) => {
@@ -61,7 +91,7 @@ test("real service worker never stores API or authenticated navigation responses
     return urls;
   });
   expect(cached.some(path => path.startsWith("/api/") || ["/", "/perfil", "/admin"].includes(path))).toBe(false);
-  expect(cached).toEqual(expect.arrayContaining(["/manifest.webmanifest", "/app-icon.svg", "/offline"]));
+  expect(cached).toEqual(expect.arrayContaining(["/manifest.webmanifest", "/favicon.png", "/icons/icon-maskable-512.png", "/offline"]));
 });
 
 test("offline contract serves only the public fallback and recovers online", async ({ page, context }) => {

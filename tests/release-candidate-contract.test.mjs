@@ -20,7 +20,7 @@ test("v2 RC manifest is installable and platform branded", async () => {
 
 test("service worker update and offline contracts stay safe", async () => {
   const [worker, status, offline] = await Promise.all([read("public/sw.js"), read("app/PwaStatus.tsx"), read("public/offline.html")]);
-  assert.match(worker, /conte-os-feitos-v2-rc1/);
+  assert.match(worker, /conte-os-feitos-v2-brand-v2/);
   assert.match(worker, /startsWith\('\/api\/'\)/);
   assert.match(worker, /request\.mode==='navigate'/);
   assert.match(status, /controllerchange/);

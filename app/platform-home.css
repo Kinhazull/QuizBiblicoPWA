@@ -51,11 +51,6 @@
 .equipped-avatar[data-frame="frame-light"] { border-color: #fff4ad; box-shadow: 0 0 0 4px #d89f27,0 0 24px #ffe98988; }
 .equipped-avatar[data-frame="frame-royal"] { border-color: #f4b400; box-shadow: 0 0 0 4px #6d3b98,0 10px 25px #020a1899; }
 .equipped-avatar[data-frame="frame-celestial"] { border-color: #9bdcff; box-shadow: 0 0 0 4px #224d85,0 0 26px #79bfff77; }
-.platform-brand>span:last-child { display: flex; min-width: 0; flex-wrap: wrap; gap: 0 7px; }
-.platform-brand strong { color: #4190f2; }
-.platform-brand-mark { display: grid; place-items: center; position: relative; width: 54px; height: 54px; border-radius: 17px; background: linear-gradient(145deg,#1769d7,#092b70); box-shadow: 0 11px 30px #020b1a99; }
-.platform-brand-mark b { color: white; font-size: 36px; line-height: 1; }
-.platform-brand-mark i { position: absolute; color: var(--platform-gold); font-size: 14px; font-style: normal; }
 .platform-player-card,.platform-continue-card,.platform-daily-objectives,.platform-daily-objective,.platform-mission-card,.platform-section,.platform-daily-chest { border: 1px solid #77a6d522; border-radius: 20px; background: linear-gradient(145deg,#0b1d31ec,#071525ec); box-shadow: 0 18px 48px #0108164f; }
 .platform-player-card { display: grid; grid-template-columns: 112px minmax(0,1fr) auto; align-items: center; gap: 22px; padding: 24px; }
 .platform-avatar { display: grid; width: 104px; height: 104px; place-items: center; border: 4px solid #2684f4; border-radius: 50%; background: linear-gradient(145deg,#3a7bd5,#234e9a); color: white; font-size: 42px; font-weight: 700; box-shadow: 0 0 0 7px #07172a; }
@@ -156,8 +151,6 @@
   .platform-home { padding-top: max(76px,calc(env(safe-area-inset-top) + 68px)); }
   .platform-home-inner { gap: 13px; }
   .platform-brand { font-size: 22px; }
-  .platform-brand-mark { width: 44px; height: 44px; border-radius: 14px; }
-  .platform-brand-mark b { font-size: 29px; }
   .platform-player-card,.platform-continue-card,.platform-daily-objectives,.platform-mission-card,.platform-section,.platform-daily-chest { border-radius: 17px; padding: 16px; }
   .platform-daily-objective-grid { grid-template-columns: 1fr; }
   .platform-daily-objective { grid-template-columns: 48px minmax(0,1fr) auto; gap: 10px; padding: 12px; }
@@ -238,3 +231,4 @@
 .platform-play-hub>div:first-child{display:grid;width:58px;height:58px;place-items:center;border-radius:16px;background:#1767cf;font-size:28px}
 .platform-play-hub span{color:#aebdca;font-size:13px}
 @media(max-width:560px){.platform-daily-summary,.platform-play-hub,.platform-engagement-focus{padding:16px}.platform-engagement-focus{align-items:stretch;flex-direction:column}.platform-engagement-focus>a{width:100%}.platform-daily-summary>header{align-items:flex-start;flex-direction:column}.platform-daily-summary>header a{width:100%}.platform-play-hub{grid-template-columns:auto minmax(0,1fr)}.platform-play-hub>a{grid-column:1/-1;width:100%}}
+.platform-play-hub>div.platform-play-art{display:grid;width:72px;height:58px;grid-template-columns:repeat(4,1fr);gap:2px;padding:4px;border-radius:16px;background:#0d2e50}.platform-play-art .game-artwork{width:14px;height:14px;border-radius:4px;background:transparent}.platform-play-art .game-artwork>img{object-fit:contain}

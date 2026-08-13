@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { GameType } from "../shared/content";
 import type { PlatformGame } from "./data/gameCatalog";
 import { generateFreePlayGame } from "./games/loader";
+import { GameArt } from "./GameArt";
 
 export function GameCard({ game }: { game: PlatformGame }) {
   const available = game.status === "available";
@@ -23,7 +24,7 @@ export function GameCard({ game }: { game: PlatformGame }) {
   }
 
   return <article className="games-catalog-card">
-    <div className="games-catalog-art" role="img" aria-label={`Ilustração temporária de ${game.name}`}>{game.image}</div>
+    <div className="games-catalog-art"><GameArt art={game.art} fallback={game.image} /></div>
     <div className="games-catalog-copy">
       <span className={`games-status ${available ? "available" : "development"}`}>
         <i aria-hidden="true" />{available ? "Disponível" : "Em desenvolvimento"}

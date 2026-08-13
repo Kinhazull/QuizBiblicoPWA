@@ -28,7 +28,7 @@ test("RC exposes valid install resources and never caches API responses", async 
   expect(manifestResponse.ok()).toBeTruthy();
   const manifest = await manifestResponse.json();
   expect(manifest).toMatchObject({ name: expect.stringMatching(/^Conte os Feitos/), start_url: "/", scope: "/", display: "standalone" });
-  for (const icon of ["/app-icon-192.png", "/app-icon-512.png", "/apple-touch-icon.png"]) {
+  for (const icon of ["/icons/icon-192.png", "/icons/icon-512.png", "/icons/icon-maskable-512.png", "/apple-touch-icon.png", "/favicon.png"]) {
     expect((await request.get(icon)).ok(), icon).toBeTruthy();
   }
   const worker = await (await request.get("/sw.js")).text();

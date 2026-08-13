@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { BrandLogo } from "../BrandLogo";
 import {
   GameContentMode,
   generateFreePlayGame,
@@ -349,7 +350,7 @@ export default function PlayPage() {
     return (
       <main className="shell result-screen">
         <header className="brand">
-          <span className="brand-dot">✦</span> CONTE OS FEITOS
+          <BrandLogo />
         </header>
         <section className="result-card">
           <div className="trophy">🏆</div>
@@ -389,7 +390,7 @@ export default function PlayPage() {
     return (
       <main className="shell start-screen">
         <header className="brand">
-          <span className="brand-dot">✦</span> CONTE OS FEITOS
+          <BrandLogo />
         </header>
         <section className="hero-card">
           <div className="orbit">
@@ -472,7 +473,7 @@ export default function PlayPage() {
     <main className="shell game-screen">
       <header className="game-header">
         <div className="brand">
-          <span className="brand-dot">✦</span> CONTE OS FEITOS
+          <BrandLogo />
         </div>
         <div className="live-score" aria-live="polite">
           <small>PONTOS</small>

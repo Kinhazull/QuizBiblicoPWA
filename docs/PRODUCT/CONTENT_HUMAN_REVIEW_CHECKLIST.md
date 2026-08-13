@@ -9,6 +9,13 @@ Este checklist orienta a revisão; não representa parecer teológico ou jurídi
 - [ ] registrar decisão (`APROVADO`, `CORRIGIR`, `REJEITAR`) e justificativa curta;
 - [ ] manter a evidência fora de payloads públicos quando contiver dados pessoais.
 
+## Proveniência aprovada pelo proprietário
+
+- [x] Quiz universal: conteúdo original criado para o projeto com assistência de IA; a rastreabilidade CSV→984 itens ainda não é 1:1;
+- [x] base oficial de 380 itens: `ORIGINAL_PLATFORM_EDITORIAL_CONTENT`, `AI_ASSISTED`, `HUMAN_CURATED`;
+- [x] textos bíblicos completos sem licença comprovada foram retirados da árvore ativa;
+- [ ] decidir se o histórico Git requer purge e revisar citações específicas durante a amostragem.
+
 ## Amostra mínima pré-v2
 
 - [ ] Quiz: amostra estratificada por dificuldade, tema e Antigo/Novo Testamento do acervo de 984 perguntas;

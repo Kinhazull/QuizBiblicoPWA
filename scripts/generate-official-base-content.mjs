@@ -1,3 +1,7 @@
+// HISTORICAL / NOT FOR RELEASE USE.
+// The active 380-item pack is already versioned. This historical generator
+// depends on a blocked full-text source removed from the active v2 tree.
+
 import { readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { BrandLogo } from "../BrandLogo";
 
 export default function Recover() {
   const [msg, setMsg] = useState("");
@@ -27,7 +28,7 @@ export default function Recover() {
   }
 
   return <main className="shell auth-screen"><section className="auth-card">
-    <header className="brand"><span className="brand-dot">✦</span> CONTE OS FEITOS</header>
+    <header className="brand"><BrandLogo /></header>
     <p className="eyebrow">RECUPERAÇÃO SEGURA</p>
     <h1>Volte para a <em>plataforma</em></h1>
     <p className="intro">Use um dos códigos pessoais que você guardou no perfil.</p>

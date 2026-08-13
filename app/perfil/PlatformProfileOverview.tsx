@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { EquippedAvatar, type EquipmentView } from "../EquippedAvatar";
 import { gameModules } from "../games/sdk/gameModules";
+import { GameArt } from "../GameArt";
 
 type ProgressResponse = {
   progress: {
@@ -199,7 +200,7 @@ export function PlatformProfileOverview({ displayName }: { displayName: string }
       <div className="platform-profile-game-grid">{gameStatistics.map(game => {
         const statistic = game.statistic;
         return <article key={game.id} className={mostPlayed?.id === game.id ? "is-favorite" : ""}>
-          <span className="platform-profile-game-icon" aria-hidden="true">{game.image}</span>
+          <GameArt className="platform-profile-game-icon" art={game.art} fallback={game.image} sizes="44px" />
           <div><h4>{game.name}</h4><strong>{formatNumber(statistic?.sessionsCompleted || 0)}</strong><small>partida{statistic?.sessionsCompleted === 1 ? "" : "s"} concluída{statistic?.sessionsCompleted === 1 ? "" : "s"}</small></div>
           {statistic?.questionsAnswered ? <span className="platform-profile-game-detail">{formatNumber(statistic.accuracy || 0)}% de acertos</span> : statistic?.sessionsStarted ? <span className="platform-profile-game-detail">{formatNumber(statistic.sessionsStarted)} iniciada{statistic.sessionsStarted === 1 ? "" : "s"}</span> : <span className="platform-profile-game-detail">Pronto para começar</span>}
         </article>;

@@ -25,7 +25,7 @@
 ## Bloqueadores humanos
 
 - licenças de textos/assets e revisão jurídica;
-- revisão humana do acervo bíblico e prova de autoria/licença da origem histórica; textos ACF/Almeida completos não fazem parte do runtime, mas sua redistribuição não está comprovada;
+- revisão humana das citações bíblicas; textos ACF/Almeida integrais e derivados foram removidos da árvore ativa, e eventual purge histórico permanece decisão jurídica;
 - arte final autoral/licenciada para os 16 colecionáveis atualmente representados por emoji;
 - privacidade de menores, termos e Data Safety;
 - decisões de domínio/package ID e publicação Google Play;
@@ -60,6 +60,25 @@
 - manifesto de proveniência e checklist humano criados;
 - imagens da Memória permanecem `POST_RELEASE_ONLY`;
 - nenhum blocker técnico novo; o Go/No-Go continua dependente de revisão bíblica/licenças, Asset Registry e arte final dos colecionáveis.
+
+## Isolamento de textos completos — pós-27.6
+
+- as 984 perguntas e os 380 conteúdos oficiais foram preservados com proveniência interna declarada (`AI_ASSISTED`, `HUMAN_CURATED`);
+- seis arquivos com textos bíblicos integrais ou derivados foram removidos da árvore ativa;
+- scripts antigos permanecem somente como evidência histórica e não fazem parte do release;
+- não houve reescrita do histórico Git, alteração do CMS ou mudança funcional.
+
+## Jurídico e Google Play — Sprint 27.6
+
+- inventário de privacidade reconciliado com 70 tabelas até 0039;
+- exportação e revogação de sessões estão implementadas; anonimização depende de resolução administrativa; contas inativas não possuem política automática;
+- documentos públicos existentes continuam drafts técnicos; aprovação histórica vale somente para o piloto v1;
+- TWA/Bubblewrap é a estratégia recomendada após estabilizar a PWA, sem package ID, domínio, assinatura ou AAB definidos;
+- matriz Data Safety foi preparada somente como insumo técnico;
+- decisão permanece `NO-GO`: há `LEGAL_BLOCKER` e `PLAY_STORE_BLOCKER`, não regressão técnica nova.
+- controlador pessoa física e contato institucional estão definidos; contato pessoal anterior foi retirado das superfícies jurídicas, sem publicar CPF ou endereço residencial.
+- público-alvo da v2 definido como adolescentes e adultos; crianças não são público-alvo formal. Faixas Play e tratamento jurídico de adolescentes/acesso infantil incidental seguem pendentes; contas infantis/supervisionadas são pós-release.
+- v2 não excluirá contas automaticamente por inatividade; pedido de exclusão existente permanece. Matriz técnica preliminar e possibilidade de processamento internacional estão reconhecidas, sem limpeza implementada ou mecanismo jurídico presumido.
 
 ## Segurança de contas — Sprint 27.1
 

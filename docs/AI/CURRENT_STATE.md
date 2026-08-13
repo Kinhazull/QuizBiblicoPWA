@@ -7,6 +7,14 @@
 
 Auditorias e relatórios de fases anteriores são históricos. Em caso de divergência sobre o estado atual, este arquivo prevalece.
 
+## Asset Pack v2 — Wave 1
+
+A Brand v2 e seus derivados leves estão adotados nas assinaturas de runtime, favicon, Apple Touch Icon e ícones instaláveis do PWA. O ícone maskable possui canvas opaco e área segura validada.
+
+## Asset Pack v2 — Wave 2
+
+As artes oficiais dos sete jogos estão adotadas no catálogo/Free Play, Home, Daily, Evento e Perfil por meio do catálogo central e de derivados leves 420×420. Emojis permanecem somente como fallback ou identificador funcional compacto. As Waves 3–7 permanecem fora do runtime.
+
 ## Baseline integrada
 
 - versão local: `2.0.0-rc.1`;
@@ -33,7 +41,11 @@ Auditorias e relatórios de fases anteriores são históricos. Em caso de diverg
 - 27.3 Retirada do Legado: concluída localmente; navegação moderna desacoplada de Jornada/Medalhas e de entradas administrativas históricas, sem remoção de dados/APIs.
 - 27.3.1 Sustentabilidade Operacional e Custo Zero: concluída localmente; política e orçamento versionado criados, classificados como `ZERO-COST PLAUSIBLE, MEASUREMENT REQUIRED`.
 - 27.4 Qualidade Real, CI e PWA: concluída localmente; suíte PWA production-like e gate manual implementados. Android físico/Web Vitals públicos permanecem validações humanas pré-RC.
-- 27.5 Conteúdo, Arte e Licenças: concluída localmente; proveniência e readiness documentados, sem blocker técnico novo. Revisão bíblica/licenças e arte final dos 16 colecionáveis permanecem blockers humanos de publicação. 27.6 é a próxima sprint.
+- 27.5 Conteúdo, Arte e Licenças: concluída localmente; proveniência e readiness documentados. O Asset Pack v2 foi produzido e auditado em 27.5.x, mas ainda não foi integrado; Brand/PWA, dois aliases de moldura e otimização permanecem gates de adoção.
+- 27.6 Jurídico e Google Play: concluída localmente como auditoria/readiness; inventário de 70 tabelas, matriz Data Safety e estratégia TWA documentados. Release continua NO-GO por decisões jurídicas, licenças, arte, domínio/package ID e Android físico. 27.7 não foi iniciada.
+- ajuste pós-27.6: controlador pessoa física e `suporteconteosfeitos@gmail.com` definidos; CPF/endereço residencial não serão publicados e eventual endereço físico segue sujeito à revisão jurídica.
+- ajuste pós-27.6: público-alvo formal da v2 definido como adolescentes e adultos; crianças ficaram fora do público-alvo. Tratamento jurídico de adolescentes/acesso incidental infantil permanece pendente e contas supervisionadas são pós-release.
+- ajuste pós-27.6: v2 sem exclusão automática por inatividade; matriz técnica preliminar de retenção definida e possível processamento internacional reconhecido. Prazos/mecanismos jurídicos e qualquer automação permanecem pendentes.
 
 ## Capacidades atuais
 
@@ -67,11 +79,14 @@ Auditorias e relatórios de fases anteriores são históricos. Em caso de diverg
 ## Riscos correntes
 
 - PWA/Android físico e Web Vitals públicos não validados;
-- licenças bíblicas, privacidade de menores e Data Safety aguardam revisão humana/jurídica;
-- `bible-acf.json`, `bible-almeida.json` e a origem do acervo histórico não possuem prova de redistribuição no repositório; não entram no runtime/bundle atual, mas exigem decisão humana antes da publicação;
-- os 16 colecionáveis são funcionais com emoji, porém permanecem `REPLACE_BEFORE_RELEASE` até aprovação de arte autoral/licenciada;
+- licenças bíblicas, tratamento jurídico de adolescentes/acesso infantil incidental e Data Safety aguardam revisão humana/jurídica;
+- textos ACF/Almeida completos e quatro derivados foram removidos da árvore ativa da v2; não havia consumidor runtime. O histórico Git não foi reescrito e eventual purge permanece decisão jurídica;
+- as 984 perguntas e os 380 conteúdos oficiais têm proveniência interna declarada pelo proprietário (`AI_ASSISTED`, com curadoria humana); a lacuna CSV→CMS é de rastreabilidade, não de autoria externa;
+- os 16 colecionáveis seguem funcionais com emoji; o pack possui 14 correspondências nominais exatas e dois possíveis aliases que exigem confirmação antes da integração;
 - Asset Registry ainda depende de URLs externas e precisa ser conciliado com CSP futura;
 - APIs, dados e rotas diretas históricas permanecem por compatibilidade, mas Jornada, Medalhas e CMS antigo não fazem parte da navegação moderna;
-- retenção por domínio, orçamento comercial e canal externo de alertas ainda precisam de decisão humana; a chave de backup `v1` já está provisionada e custodiada;
+- matriz técnica de retenção por domínio está definida, mas prazos jurídicos, implementação, orçamento comercial e canal externo de alertas ainda precisam de decisão humana; a chave de backup `v1` já está provisionada e custodiada;
 - Cron não possui heartbeat persistido; sua última execução depende dos logs e sinais indiretos;
 - estado remoto de migrations requer verificação operacional antes de qualquer promoção.
+- documentos públicos atuais são drafts técnicos; a aprovação jurídica histórica cobre apenas o piloto v1, não a v2/Google Play;
+- Google Play permanece bloqueado por domínio, package ID, assinatura/DAL/AAB, target SDK vigente, Data Safety/classificação e Android físico.

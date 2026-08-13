@@ -31,6 +31,12 @@ yarn-error.log*
 /package-lock.json
 /npm-audit*.json
 /tore package-lock.json
+/bible-acf.json
+/bible-almeida.json
+/quiz_audit.json
+/quiz_acf_reestruturado.json
+/quiz_acf_homologacao.json
+/quiz_acf_obpc_final.json
 /*backup*.sql
 /*backup*.sql.enc
 /*backup*.sha256

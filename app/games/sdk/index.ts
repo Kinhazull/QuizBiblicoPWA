@@ -4,7 +4,7 @@ export { GameInstruction } from "./GameInstruction";
 export { GameFeedback } from "./GameFeedback";
 export type { GameFeedbackTone } from "./GameFeedback";
 export { GameResult } from "./GameResult";
-export { gameModules, getGameModule } from "./gameModules";
+export { gameModules, getGameModule, getGameModuleById } from "./gameModules";
 export { createGameSessionId, recordPlatformGameCompletion } from "./platformCompletion";
 export type { PlatformGameCompletionSubmission } from "./platformCompletion";
 export type { GameLayoutProps, GameModuleContract, GameModuleStatus, GamePlayStatus } from "./types";

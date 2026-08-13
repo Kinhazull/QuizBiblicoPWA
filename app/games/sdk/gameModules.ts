@@ -13,6 +13,7 @@ export const gameModules: readonly GameModuleContract[] = [
     primaryButton: "Jogar",
     route: "/jogar",
     image: "📖",
+    art: "/games/quiz/runtime/cover-card.png",
   },
   {
     id: "wordle-biblico",
@@ -26,6 +27,7 @@ export const gameModules: readonly GameModuleContract[] = [
     primaryButton: "Jogar",
     route: "/jogos/wordle-biblico",
     image: "🔤",
+    art: "/games/wordle/runtime/cover-card.png",
   },
   {
     id: "jogo-tres-pistas",
@@ -39,6 +41,7 @@ export const gameModules: readonly GameModuleContract[] = [
     primaryButton: "Jogar",
     route: "/jogos/jogo-das-3-pistas",
     image: "🔎",
+    art: "/games/three-clues/runtime/cover-card.png",
   },
   {
     id: "linha-do-tempo-biblica",
@@ -52,6 +55,7 @@ export const gameModules: readonly GameModuleContract[] = [
     primaryButton: "Jogar",
     route: "/jogos/linha-do-tempo-biblica",
     image: "⏳",
+    art: "/games/timeline/runtime/cover-card.png",
   },
   {
     id: "memoria-biblica",
@@ -65,6 +69,7 @@ export const gameModules: readonly GameModuleContract[] = [
     primaryButton: "Jogar",
     route: "/jogos/memoria-biblica",
     image: "🧠",
+    art: "/games/memory/runtime/cover-card.png",
   },
   {
     id: "associacao-de-temas",
@@ -78,6 +83,7 @@ export const gameModules: readonly GameModuleContract[] = [
     primaryButton: "Jogar",
     route: "/jogos/associacao-de-temas",
     image: "🔗",
+    art: "/games/association/runtime/cover-card.png",
   },
   {
     id: "quem-sou-eu",
@@ -91,11 +97,16 @@ export const gameModules: readonly GameModuleContract[] = [
     primaryButton: "Jogar",
     route: "/jogos/quem-sou-eu",
     image: "❓",
+    art: "/games/who-am-i/runtime/cover-card.png",
   },
 ] as const;
 
 export function getGameModule(slug: string) {
   return gameModules.find(module => module.slug === slug);
+}
+
+export function getGameModuleById(id: string) {
+  return gameModules.find(module => module.id === id);
 }
 
 export function isGamePlayRoute(pathname: string) {

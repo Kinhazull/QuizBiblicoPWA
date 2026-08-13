@@ -8,12 +8,13 @@
 
 | Superfície | Quantidade/forma | Estado | Decisão |
 |---|---:|---|---|
-| Quiz universal | 984 perguntas reportadas como publicadas | `PENDING_HUMAN_REVIEW` | validar amostra bíblica e a autoria/licença do acervo histórico antes da publicação |
+| Quiz universal | 984 perguntas reportadas como publicadas | `APPROVED_INTERNAL` | conteúdo criado para a plataforma pelo proprietário com assistência de IA; validar amostra bíblica final |
 | Base oficial dos outros seis jogos | 380 conteúdos versionados | `APPROVED_INTERNAL` | schemas e heurísticas aprovados; falta revisão bíblica humana direcionada |
 | Wordle | 120 conteúdos dentro dos 380 | `APPROVED_INTERNAL` | respostas e tentativas vêm exclusivamente do CMS publicado da organização |
-| Colecionáveis | 16 representações em emoji | `REPLACE_BEFORE_RELEASE` | funcionalmente completos, mas a arte está declarada como provisória |
+| Colecionáveis | 16 representações funcionais em emoji + 20 PNGs no pack | `REPLACE_BEFORE_RELEASE` até integração | 14 IDs possuem arquivo nominal exato; confirmar aliases de `frame-covenant` e `frame-royal`; quatro artes ficam reservadas |
 | Memória | experiência textual | `POST_RELEASE_ONLY` para imagens | imagens não são requisito da v2 |
-| Ícones PWA e identidade v001 | SVG/PNG internos | `APPROVED_INTERNAL` | tamanhos 192, 512 e 180 presentes; nenhum placeholder evidente |
+| Ícones PWA atuais | SVG/PNG internos | `FALLBACK` | permanecem ativos até adoção controlada da Brand v2 |
+| Asset Pack v2 | 70 PNGs finais | `APPROVED_INTERNAL`, adoção pendente | Brand, jogos, recompensas, colecionáveis, Eventos, sistema, onboarding e Store auditados por hash/dimensão |
 | Asset Registry/Eventos | metadados e URLs HTTPS | `PENDING_HUMAN_REVIEW` | v2 deve usar somente origem controlada e evidência revisada; não ampliar CSP genericamente |
 
 ## Resultado da revalidação automática
@@ -38,9 +39,15 @@ Conclusão: **não há blocker de licença de tradução bíblica no runtime atu
 
 ## Textos bíblicos completos
 
-`bible-acf.json` e `bible-almeida.json` são arquivos históricos/editoriais locais. Não há prova de licença de redistribuição anexada ao repositório. Eles não são servidos em `public/`, não são importados pelo runtime e não devem ser incluídos em release/artifacts públicos.
+`bible-acf.json`, `bible-almeida.json` e quatro derivados que preservavam texto integral foram removidos da árvore ativa da v2. A ACF está `BLOCKED_FOR_REDISTRIBUTION`; Almeida permanece `PENDING_HUMAN_REVIEW`. Nenhum deles era servido, importado pelo runtime ou necessário ao pacote oficial.
 
-Status: `PENDING_HUMAN_REVIEW`. A existência dos arquivos não prova direito de redistribuição.
+Isso resolve o risco técnico de redistribuição pela árvore atual. Os blobs continuam no histórico Git; eventual purge exige decisão jurídica e operação dedicada.
+
+## Proveniência dos acervos próprios
+
+- as aproximadamente 984 perguntas foram criadas especificamente para o Conte os Feitos pelo proprietário com assistência de IA; a ausência de manifesto 1:1 entre o CSV histórico e o CMS é lacuna de rastreabilidade, não indício de origem externa;
+- os 380 conteúdos oficiais são `ORIGINAL_PLATFORM_EDITORIAL_CONTENT`, `AI_ASSISTED` e `HUMAN_CURATED`;
+- referências bíblicas e tokens ACF foram usados historicamente como apoio editorial/validação; a auditoria não encontrou reprodução exata de versículos completos no pacote de 380 itens.
 
 ## Blockers
 
@@ -50,13 +57,15 @@ Nenhum novo blocker técnico foi encontrado. Não houve necessidade de modificar
 
 ### Humanos/de publicação
 
-1. comprovar autoria/licença do acervo histórico que originou as 984 perguntas do Quiz;
-2. concluir a amostragem bíblica descrita em `CONTENT_HUMAN_REVIEW_CHECKLIST.md`;
-3. decidir e aprovar arte final autoral/licenciada para os 16 colecionáveis;
+1. concluir a amostragem bíblica descrita em `CONTENT_HUMAN_REVIEW_CHECKLIST.md`;
+2. confirmar os aliases das molduras `frame-covenant`/`frame-royal` e integrar os 16 assets, mantendo emoji como fallback;
+3. adotar a Brand v2 no logo, favicon e ícones PWA, validando maskable/cache/Android;
 4. revisar cada asset `ACTIVE` do Asset Registry e os hosts necessários antes de liberar a v2;
-5. obter parecer humano/jurídico sobre textos completos mantidos no repositório e impedir sua distribuição acidental.
+5. decidir juridicamente se os blobs históricos precisam de purge e se ACF/Almeida poderão ter qualquer uso futuro.
 
 Esses itens mantêm o release em **NO-GO editorial/jurídico**, embora o runtime não dependa das traduções sem licença comprovada.
+
+A produção visual dos 8 avatares e 8 molduras está especificada em `COLLECTIBLES_ART_DIRECTION.md`. Nenhum asset final foi criado ou aprovado, portanto o blocker `REPLACE_BEFORE_RELEASE` permanece aberto.
 
 ## Separação da Fase 9
 

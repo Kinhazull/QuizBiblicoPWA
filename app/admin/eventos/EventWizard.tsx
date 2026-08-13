@@ -2,17 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { gameModules } from "../../games/sdk/gameModules";
 
 const STEPS = ["Informações", "Jogos", "Conteúdos", "Regras", "Recompensas", "Aparência", "Revisão", "Agendamento"] as const;
-const GAMES = [
-  { id: "quiz-biblico", name: "Quiz Bíblico", icon: "📖", required: 5 },
-  { id: "wordle-biblico", name: "Wordle Bíblico", icon: "🔤", required: 1 },
-  { id: "linha-do-tempo-biblica", name: "Linha do Tempo Bíblica", icon: "⌛", required: 1 },
-  { id: "memoria-biblica", name: "Memória Bíblica", icon: "🧠", required: 1 },
-  { id: "associacao-de-temas", name: "Associação de Temas", icon: "🔗", required: 1 },
-  { id: "quem-sou-eu", name: "Quem Sou Eu?", icon: "❓", required: 1 },
-  { id: "jogo-tres-pistas", name: "Jogo das 3 Pistas", icon: "🔎", required: 1 },
-] as const;
+const GAMES = gameModules.map(game => ({ id: game.id, name: game.name, icon: game.image, required: game.id === "quiz-biblico" ? 5 : 1 }));
 
 type ContentOption = { contentId: string; contentVersion: number; title: string; category: string; difficulty: string; themes: string[]; biblicalReference: string | null };
 type SelectedContent = Pick<ContentOption, "contentId" | "contentVersion" | "title">;

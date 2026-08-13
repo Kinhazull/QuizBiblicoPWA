@@ -1,26 +1,47 @@
-# Preparação para Google Play
+# Google Play / Android Readiness
 
-## Recomendação
+**Status:** `PLAY_STORE_BLOCKER` até decisões humanas e validação física. Nenhum app Android foi criado ou publicado.
 
-Para o produto atual, a evolução de menor risco é: PWA instalada pelo navegador primeiro e **Trusted Web Activity (TWA)** quando domínio e operação pública estiverem estabilizados. Não há requisito nativo confirmado que justifique wrapper híbrido agora.
+## Estratégia recomendada
 
-## Alternativas
+1. lançar e estabilizar primeiro a PWA HTTPS;
+2. validar `docs/ANDROID_PHYSICAL_CHECKLIST.md` em aparelho real;
+3. empacotar como **Trusted Web Activity com Bubblewrap** após domínio, package ID e assinatura estarem definidos;
+4. usar wrapper Android próprio somente se surgir requisito nativo real.
 
-- PWA: distribuição imediata pela Web, uma base de código; descoberta limitada na loja.
-- TWA: presença na Play Store e UI Web em tela cheia; exige PWA confiável, HTTPS e associação domínio/aplicativo.
-- Wrapper híbrido: acesso futuro a APIs nativas, porém acrescenta runtime, revisão, segurança e ciclo de releases duplicado.
+TWA mantém uma base Web e o modelo de custo mínimo. Um wrapper próprio duplica segurança, runtime e releases sem necessidade confirmada. Instalação direta da PWA continua alternativa válida fora da Play Store.
 
-## Pré-requisitos TWA
+## Decisões e artifacts pendentes
 
-- domínio HTTPS estável e controlado;
-- manifest e service worker aprovados em Android real;
-- package ID, keystore e assinatura protegidos;
-- `assetlinks.json` com fingerprint da assinatura;
-- conta Play Console e identidade jurídica;
-- política de privacidade pública e ficha Data Safety revisada;
-- screenshots, ícones, classificação indicativa e políticas da loja;
-- estratégia de atualização, rollout, rollback e suporte.
+| Item | Estado |
+|---|---|
+| Nome “Conte os Feitos” | definido |
+| package/application ID | `HUMAN_DECISION_REQUIRED`; nenhuma proposta é reserva ou decisão oficial |
+| domínio HTTPS canônico | `HUMAN_DECISION_REQUIRED` |
+| conta Play Console | não criada/auditada nesta sprint |
+| app signing/keystore | não gerado; decidir custódia e aderir ao Play App Signing |
+| Digital Asset Links | impossível sem domínio, package ID e fingerprint; publicar em `/.well-known/assetlinks.json` somente depois |
+| Android App Bundle | não gerado |
+| target SDK | confirmar requisito vigente no Play Console no momento da submissão (`HUMAN_REVIEW_REQUIRED`) |
+| ícones | PWA possui 192/512/maskable; validar recorte e produzir assets Play exigidos |
+| splash/branding | cores/identidade existem; validar TWA/Android real |
+| permissões | nenhuma permissão nativa necessária no escopo atual; câmera/microfone/geolocalização estão bloqueados |
+| deep links | somente escopo Web atual; decidir rotas suportadas antes de configurar intent filters |
+| offline | fallback público apenas; login/jogos/progressão exigem rede |
+| login/atualização | contratos PWA automatizados; Android físico pendente |
+| público-alvo v2 | adolescentes e adultos; crianças não são público-alvo formal (`RESOLVED_PRODUCT_DECISION`) |
+| Target Audience and Content | faixas exatas e consequências jurídicas/políticas são `HUMAN_REVIEW_REQUIRED`; nenhuma resposta foi submetida |
+| Families | não aderir automaticamente; suporte infantil/supervisionado é `POST_RELEASE` |
 
-## Package ID
+## Sequência segura futura
 
-Proposta reservada: `br.com.conteosfeitos.app`. **DECISÃO DO DONO** antes de publicação, condicionada ao domínio e à organização jurídica. Não foi fixada em configuração nem usada para assinatura.
+1. aprovar documentos jurídicos, Data Safety, classificação indicativa, tratamento de adolescentes e acesso incidental por crianças;
+2. escolher/controlar domínio e package ID;
+3. concluir arte final e store listing;
+4. executar checklist Android físico na PWA;
+5. criar projeto Bubblewrap local, assinatura protegida e `assetlinks.json` correspondente;
+6. testar AAB em faixa interna fechada;
+7. preencher Data Safety e classificação com revisão humana;
+8. somente então promover para testes/produção no Play Console.
+
+Não inventar certificado, domínio, package ID, target SDK ou respostas de política antes dessas decisões.

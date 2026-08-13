@@ -1,3 +1,8 @@
+"""HISTORICAL / NOT FOR RELEASE USE.
+
+Depends on a full-text biblical source pending human legal review.
+"""
+
 import csv, json, re, unicodedata, difflib, collections, math
 from pathlib import Path
 

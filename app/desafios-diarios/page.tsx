@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import type { DailyChallengeData, DailyObjectiveData } from "../PlatformHome";
+import { GameArt } from "../GameArt";
+import { getGameModuleById } from "../games/sdk/gameModules";
 
 const STATUS_LABEL = {
   AVAILABLE: "Disponível",
@@ -132,7 +134,9 @@ export default function DailyChallengesPage() {
       <section className="daily-challenges-grid" aria-label="Jogos disponíveis hoje">
         {(daily?.objectives || []).map(objective => {
           const playable = objective.state === "AVAILABLE" && Boolean(objective.selectionId && objective.playHref);
+          const game = getGameModuleById(objective.gameType);
           return <article className={`daily-game-${objective.state.toLowerCase()}`} key={objective.gameType}>
+            {game ? <GameArt className="daily-game-art" art={game.art} fallback={game.image} sizes="(max-width: 600px) 100vw, 440px" /> : null}
             <span className={`daily-status ${objective.state.toLowerCase()}`}>{STATUS_LABEL[objective.state]}</span>
             <h2>{objective.title}</h2>
             <p>{objective.state === "WON" ? "Vitória registrada para hoje." : objective.state === "LOST" ? "Sua tentativa de hoje foi encerrada." : objective.state === "UNAVAILABLE" ? "Conteúdo indisponível. Tente novamente mais tarde." : "Uma tentativa única selecionada para você."}</p>

@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { BrandLogo } from "./BrandLogo";
 
 const supported = new Set(["/rankings", "/perfil"]);
 
@@ -10,8 +11,7 @@ export function ParticipantPageHeader() {
   return (
     <header className="participant-section-header participant-section-header-global">
       <a href="/" aria-label="Ir para o início">
-        <span aria-hidden="true">✦</span>
-        <strong>CONTE OS FEITOS</strong>
+        <BrandLogo priority />
       </a>
     </header>
   );

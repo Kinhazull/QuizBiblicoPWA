@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { roundErrorMessage } from "../../round-errors";
+import { BrandLogo } from "../../BrandLogo";
 
 const blankQuestion = () => ({ reference: "", prompt: "", choices: ["", "", "", ""], correctIndex: 0, commentary: "", bankQuestionId: "" });
 
@@ -75,7 +76,7 @@ export default function RoundsAdmin() {
   }
 
   return <main className="admin-shell">
-    <header className="admin-head"><div className="brand"><span className="brand-dot">✦</span> CONTE OS FEITOS</div><a href="/admin">Acessos</a></header>
+    <header className="admin-head"><div className="brand"><BrandLogo surface="light" /></div><a href="/admin">Acessos</a></header>
     <section className="admin-title"><p className="eyebrow">NOVA RODADA</p><h1>Prepare a próxima <em>jornada</em></h1><p>Ela permanecerá bloqueada até a data e o horário definidos.</p></section>
     <form className="round-form" onSubmit={submit}>
       <section className="admin-panel round-basics">

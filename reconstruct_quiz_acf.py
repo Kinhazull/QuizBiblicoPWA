@@ -1,3 +1,9 @@
+"""HISTORICAL / NOT FOR RELEASE USE.
+
+Depends on a blocked full-text biblical source removed from the active v2 tree.
+Do not run this script as part of the current editorial flow.
+"""
+
 import csv, json, re, unicodedata, collections, random
 from pathlib import Path
 

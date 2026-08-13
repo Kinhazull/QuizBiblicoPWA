@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "updatedAt": "2026-08-13",
+  "origin": "Produzido especificamente para Conte os Feitos",
+  "method": "Criação assistida por IA com seleção, edição e curadoria humana",
+  "ownerConfirmation": true,
+  "runtimeIntegrated": false,
+  "fallback": "Campo icon em emoji do catálogo funcional",
+  "items": [
+    { "logicalId": "avatar-ark", "path": "public/collectibles/v1/avatars/avatar-ark.png", "classification": "ADOPT_NOW", "match": "EXACT" },
+    { "logicalId": "avatar-crown", "path": "public/collectibles/v1/avatars/avatar-crown.png", "classification": "ADOPT_NOW", "match": "EXACT" },
+    { "logicalId": "avatar-dove", "path": "public/collectibles/v1/avatars/avatar-dove.png", "classification": "ADOPT_NOW", "match": "EXACT" },
+    { "logicalId": "avatar-fish", "path": "public/collectibles/v1/avatars/avatar-fish.png", "classification": "ADOPT_NOW", "match": "EXACT" },
+    { "logicalId": "avatar-lamp", "path": "public/collectibles/v1/avatars/avatar-lamp.png", "classification": "ADOPT_NOW", "match": "EXACT" },
+    { "logicalId": "avatar-lion", "path": "public/collectibles/v1/avatars/avatar-lion.png", "classification": "ADOPT_NOW", "match": "EXACT" },
+    { "logicalId": "avatar-olive", "path": "public/collectibles/v1/avatars/avatar-olive.png", "classification": "ADOPT_NOW", "match": "EXACT" },
+    { "logicalId": "avatar-scroll", "path": "public/collectibles/v1/avatars/avatar-scroll.png", "classification": "ADOPT_NOW", "match": "EXACT" },
+    { "logicalId": "frame-bronze", "path": "public/collectibles/v1/frames/frame-bronze.png", "classification": "ADOPT_NOW", "match": "EXACT" },
+    { "logicalId": "frame-celestial", "path": "public/collectibles/v1/frames/frame-celestial.png", "classification": "ADOPT_NOW", "match": "EXACT" },
+    { "logicalId": "frame-gold", "path": "public/collectibles/v1/frames/frame-gold.png", "classification": "ADOPT_NOW", "match": "EXACT" },
+    { "logicalId": "frame-light", "path": "public/collectibles/v1/frames/frame-light.png", "classification": "ADOPT_NOW", "match": "EXACT" },
+    { "logicalId": "frame-olive", "path": "public/collectibles/v1/frames/frame-olive.png", "classification": "ADOPT_NOW", "match": "EXACT" },
+    { "logicalId": "frame-silver", "path": "public/collectibles/v1/frames/frame-silver.png", "classification": "ADOPT_NOW", "match": "EXACT" },
+    { "logicalId": null, "candidateLogicalId": "frame-covenant", "path": "public/collectibles/v1/frames/frame-aliance.png", "classification": "EXTRA_RESERVED", "match": "OWNER_CONFIRMATION_REQUIRED" },
+    { "logicalId": null, "candidateLogicalId": "frame-royal", "path": "public/collectibles/v1/frames/frame-real.png", "classification": "EXTRA_RESERVED", "match": "OWNER_CONFIRMATION_REQUIRED" },
+    { "logicalId": null, "path": "public/collectibles/v1/avatars/avatar-shield.png", "classification": "EXTRA_RESERVED", "match": "NO_FUNCTIONAL_ID" },
+    { "logicalId": null, "path": "public/collectibles/v1/avatars/avatar-star.png", "classification": "EXTRA_RESERVED", "match": "NO_FUNCTIONAL_ID" },
+    { "logicalId": null, "path": "public/collectibles/v1/frames/frame-diamond.png", "classification": "EXTRA_RESERVED", "match": "NO_FUNCTIONAL_ID" },
+    { "logicalId": null, "path": "public/collectibles/v1/frames/frame-platinum.png", "classification": "EXTRA_RESERVED", "match": "NO_FUNCTIONAL_ID" }
+  ]
+}

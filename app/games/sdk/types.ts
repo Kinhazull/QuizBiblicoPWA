@@ -17,6 +17,7 @@ export type GameModuleContract = {
   primaryButton: "Jogar" | "Ver detalhes";
   route: string;
   image: string;
+  art: string;
 };
 
 export type GameLayoutProps = {

@@ -15,8 +15,11 @@
       "kind": "content",
       "path": "content/official-base-content-v1.json",
       "origin": "Conte os Feitos; pacote editorial versionado",
-      "license": "Conteúdo interno; revisão bíblica humana ainda necessária",
+      "license": "Conteúdo original da plataforma; revisão bíblica humana ainda necessária",
       "status": "APPROVED_INTERNAL",
+      "provenance": "ORIGINAL_PLATFORM_EDITORIAL_CONTENT",
+      "aiAssisted": true,
+      "humanCurated": true,
       "use": "380 conteúdos CMS para seis jogos",
       "evidence": "tests/unit/official-base-content.test.mjs"
     },
@@ -24,9 +27,12 @@
       "id": "quiz-universal-legacy-source",
       "kind": "content",
       "path": "Quiz.csv",
-      "origin": "Acervo histórico do Quiz migrado para o CMS",
-      "license": null,
-      "status": "PENDING_HUMAN_REVIEW",
+      "origin": "Criado especificamente para o Conte os Feitos pelo proprietário com assistência de IA",
+      "license": "Conteúdo original da plataforma declarado pelo proprietário",
+      "status": "APPROVED_INTERNAL",
+      "provenance": "ORIGINAL_PLATFORM_EDITORIAL_CONTENT",
+      "aiAssisted": true,
+      "humanCurated": true,
       "use": "Fonte histórica das perguntas universais do Quiz",
       "evidence": "docs/PRODUCT/REPOSITORY_ARTIFACT_INVENTORY.md"
     },
@@ -36,8 +42,9 @@
       "path": "bible-acf.json",
       "origin": "Declarada no nome como Almeida Corrigida Fiel; origem documental não anexada",
       "license": null,
-      "status": "PENDING_HUMAN_REVIEW",
-      "use": "Ferramentas históricas e gerador editorial; fora do bundle/runtime",
+      "status": "BLOCKED_FOR_REDISTRIBUTION",
+      "removedFromActiveTree": true,
+      "use": "Removido da árvore ativa; referência histórica apenas no Git",
       "evidence": "docs/PRODUCT/REPOSITORY_ARTIFACT_INVENTORY.md"
     },
     {
@@ -47,8 +54,38 @@
       "origin": "Declarada internamente como Almeida Atualizada; origem documental não anexada",
       "license": null,
       "status": "PENDING_HUMAN_REVIEW",
-      "use": "Auditoria histórica local; fora do bundle/runtime",
+      "removedFromActiveTree": true,
+      "use": "Removido da árvore ativa; referência histórica apenas no Git",
       "evidence": "docs/PRODUCT/REPOSITORY_ARTIFACT_INVENTORY.md"
+    },
+    {
+      "id": "historical-full-text-derivatives",
+      "kind": "historical-derived-content",
+      "paths": [
+        "quiz_audit.json",
+        "quiz_acf_reestruturado.json",
+        "quiz_acf_homologacao.json",
+        "quiz_acf_obpc_final.json"
+      ],
+      "origin": "Derivados históricos de bases bíblicas integrais",
+      "license": null,
+      "status": "REMOVED_FROM_ACTIVE_TREE",
+      "removedFromActiveTree": true,
+      "use": "Removidos da árvore ativa; preservados somente no histórico Git",
+      "evidence": "docs/PRODUCT/REPOSITORY_ARTIFACT_INVENTORY.md"
+    },
+    {
+      "id": "asset-pack-v2",
+      "kind": "visual-asset-pack",
+      "path": "public/",
+      "origin": "Produzido especificamente para Conte os Feitos",
+      "license": "Uso interno confirmado pelo proprietário",
+      "status": "APPROVED_INTERNAL",
+      "provenance": "AI_ASSISTED_HUMAN_CURATED",
+      "aiAssisted": true,
+      "humanCurated": true,
+      "use": "Identidade, jogos, recompensas, colecionáveis, Eventos, sistema, onboarding e Store; adoção gradual pendente",
+      "evidence": "docs/PRODUCT/ASSET_PACK_V2_MANIFEST.json"
     },
     {
       "id": "platform-app-icons",
@@ -60,11 +97,11 @@
         "public/apple-touch-icon.png",
         "public/favicon.svg"
       ],
-      "origin": "Identidade interna Conte os Feitos v001",
-      "license": "Uso interno aprovado pelo proprietário do projeto",
-      "status": "APPROVED_INTERNAL",
-      "use": "PWA, metadata, instalação e favicon",
-      "evidence": "assets/branding/approved/v001/README.md"
+      "origin": "Ícones internos atuais; vínculo visual com a identidade v001 não comprovado",
+      "license": "Uso interno do projeto; export oficial v001 ainda necessário",
+      "status": "REPLACE_BEFORE_RELEASE",
+      "use": "PWA, metadata, instalação e favicon; identidade visual divergente da v001 aprovada",
+      "evidence": "docs/PRODUCT/ASSET_ADOPTION_AUDIT.md"
     },
     {
       "id": "brand-reference-v001",
@@ -87,7 +124,7 @@
       "license": "Renderização depende da fonte emoji do sistema",
       "status": "REPLACE_BEFORE_RELEASE",
       "use": "Arte provisória dos 16 avatares e molduras",
-      "evidence": "docs/COLLECTIONS_AND_ACHIEVEMENTS.md"
+      "evidence": "docs/PRODUCT/COLLECTIBLES_ART_DIRECTION.md"
     },
     {
       "id": "memory-image-assets",
