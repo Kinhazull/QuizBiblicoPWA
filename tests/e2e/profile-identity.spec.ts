@@ -47,6 +47,7 @@ test("Perfil 2.0 apresenta identidade e os sete jogos sem expor conquista oculta
     await expect(page.getByText("Avatar Leão · Moldura Ouro")).toBeVisible();
     await expect(page.getByText("Mais jogado:").locator("..") ).toContainText("Quiz Bíblico");
     await expect(page.locator(".platform-profile-game-grid article")).toHaveCount(7);
+    await expect(page.locator(".platform-profile-progress-card .reward-art img")).toHaveCount(2);
     await expect(page.getByRole("heading", { name: "7º lugar no ranking geral" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Ver ranking completo" })).toHaveAttribute("href", "/rankings");
     await expect(page.getByText("Feito secreto revelado")).toBeVisible();

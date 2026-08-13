@@ -47,6 +47,8 @@ test("Daily mostra vitória, derrota, claim 3/7 e nunca oferece Continuar ou rep
   await page.goto("/desafios-diarios");
   await expect(page.getByRole("heading", { name: /Desafios Diários/i })).toBeVisible();
   await expect(page.getByText("3 de 7 vitórias")).toBeVisible();
+  await expect(page.locator(".daily-challenge-hero-art img")).toBeVisible();
+  await expect(page.locator(".daily-reward-art img")).toHaveCount(2);
   await expect(page.getByText("Vitória registrada para hoje.").first()).toBeVisible();
   await expect(page.getByText("Sua tentativa de hoje foi encerrada.")).toBeVisible();
   await expect(page.getByRole("button", { name: "Resgatar" })).toBeVisible();

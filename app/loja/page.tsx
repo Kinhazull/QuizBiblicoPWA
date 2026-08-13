@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import styles from "./shop.module.css";
+import { RewardArt } from "../RewardArt";
 
 type ShopItem = {
   id: string;
@@ -101,7 +102,7 @@ export default function ShopPage() {
   return <main className={styles.page}>
     <header className={styles.header}>
       <div><p>Economia da plataforma</p><h1>Loja</h1><span>Use suas moedas para ampliar sua coleção.</span></div>
-      <strong aria-label={`${data?.balance || 0} moedas`}>🪙 {(data?.balance || 0).toLocaleString("pt-BR")}</strong>
+      <strong aria-label={`${data?.balance || 0} moedas`}><RewardArt type="coin" /> {(data?.balance || 0).toLocaleString("pt-BR")}</strong>
     </header>
     {error && <p className={styles.error} role="alert">{error}</p>}
     {success && <p className={styles.success} role="status" aria-live="polite">{success}</p>}
@@ -117,7 +118,7 @@ export default function ShopPage() {
           <b className={styles.icon} aria-hidden="true">{item.icon}</b>
           <h3>{item.name}</h3>
           <p>{item.description}</p>
-          <div><strong>🪙 {item.price}</strong>
+          <div><strong><RewardArt type="coin" /> {item.price}</strong>
             <button type="button" disabled={item.equipped || Boolean(busyId)} onClick={() => item.owned ? equip(item) : buy(item)}>
               {item.equipped ? "Equipado" : busyId === item.id ? "Aguarde..." : item.owned ? "Equipar" : "Comprar"}
             </button>

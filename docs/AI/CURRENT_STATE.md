@@ -90,3 +90,6 @@ As artes oficiais dos sete jogos estão adotadas no catálogo/Free Play, Home, D
 - estado remoto de migrations requer verificação operacional antes de qualquer promoção.
 - documentos públicos atuais são drafts técnicos; a aprovação jurídica histórica cobre apenas o piloto v1, não a v2/Google Play;
 - Google Play permanece bloqueado por domínio, package ID, assinatura/DAL/AAB, target SDK vigente, Data Safety/classificação e Android físico.
+## Asset Pack v2 — Wave 3
+
+Recompensas e progressão visual usam o registro compartilhado `RewardArt`, com derivados leves para moeda, XP, nível, conquistas, Daily e os três baús. Valores, barras, estados, economia e contratos de API permanecem funcionais e inalterados.

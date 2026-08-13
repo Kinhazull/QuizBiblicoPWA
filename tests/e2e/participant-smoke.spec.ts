@@ -255,6 +255,9 @@ test("authenticated participant receives platform chrome and four-item navigatio
   await expect(page.locator(".notifications-action")).toBeVisible();
   await expect(page.locator(".settings-action")).toHaveCount(0);
   await expect(page.locator(".platform-play-art img")).toHaveCount(gameCatalog.length);
+  await expect(page.locator(".platform-player-card .reward-art img")).toHaveCount(2);
+  await expect(page.locator(".platform-daily-summary .reward-art img")).toHaveCount(1);
+  await expect(page.locator(".platform-daily-chest .reward-art img")).toHaveCount(1);
   await expect(page.locator("body")).not.toHaveCSS("overflow-x", "scroll");
   const accessibility = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
   expect(accessibility.violations).toEqual([]);
@@ -412,6 +415,20 @@ test("catalog and Game SDK keep both platform games playable on mobile", async (
   expect(resultClearance!.navigationVisible).toBe(false);
   expect(resultClearance!.resultBottom).toBeLessThanOrEqual(resultClearance!.viewportHeight + 0.5);
   expect(resultClearance!.pageWidth).toBe(resultClearance!.viewportWidth);
+});
+
+test("official reward art remains stable at release desktop and mobile viewports", async ({ page }) => {
+  await mockPublicApi(page, true);
+  for (const viewport of [{ width: 1366, height: 768 }, { width: 360, height: 800 }]) {
+    await page.setViewportSize(viewport);
+    await page.goto("/");
+    await expect(page.locator(".platform-player-card .reward-art img")).toHaveCount(2);
+    await expect(page.locator(".platform-daily-summary .reward-art img")).toHaveCount(1);
+    await expect(page.locator(".platform-daily-chest .reward-art img")).toHaveCount(1);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(
+      await page.evaluate(() => document.documentElement.clientWidth),
+    );
+  }
 });
 
 test("all modular game surfaces expose progress, instructions and no mobile overflow", async ({ page }) => {

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { EquippedAvatar, type EquipmentView } from "../EquippedAvatar";
 import { gameModules } from "../games/sdk/gameModules";
 import { GameArt } from "../GameArt";
+import { RewardArt } from "../RewardArt";
 
 type ProgressResponse = {
   progress: {
@@ -170,20 +171,20 @@ export function PlatformProfileOverview({ displayName }: { displayName: string }
     <header className="platform-profile-identity">
       <EquippedAvatar displayName={displayName} equipment={equipment} size="large" />
       <div className="platform-profile-identity-copy"><p>IDENTIDADE DO JOGADOR</p><h2 id="platform-profile-title">{displayName}</h2><span>{equippedItems.length ? equippedItems.map(item => item.name).join(" · ") : "Seu perfil, do seu jeito."}</span></div>
-      <div className="platform-profile-identity-level"><strong>Nível {progress.level}</strong><span>🔥 {global.currentDailyStreak} dia{global.currentDailyStreak === 1 ? "" : "s"} de sequência</span></div>
+      <div className="platform-profile-identity-level"><strong><RewardArt type="level" /> Nível {progress.level}</strong><span>🔥 {global.currentDailyStreak} dia{global.currentDailyStreak === 1 ? "" : "s"} de sequência</span></div>
     </header>
 
     <section className="platform-profile-progress-card" aria-labelledby="profile-progress-title">
-      <div className="platform-profile-level-mark" aria-hidden="true">{progress.level}</div>
+      <div className="platform-profile-level-mark"><RewardArt type="level" /><span>{progress.level}</span></div>
       <div className="platform-profile-xp"><span><strong id="profile-progress-title">{formatNumber(progress.levelProgress.currentXp)} XP neste nível</strong><small>{formatNumber(remainingXp)} XP para o próximo</small></span><div className="platform-profile-progress-track" role="progressbar" aria-label="Progresso para o próximo nível" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress.levelProgress.percent}><i style={{ width: `${progress.levelProgress.percent}%` }} /></div><small>{formatNumber(progress.totalXp)} XP conquistados no total</small></div>
-      <div className="platform-profile-balance"><span aria-hidden="true">●</span><strong>{formatNumber(progress.coins)}</strong><small>moedas</small></div>
+      <div className="platform-profile-balance"><RewardArt type="coin" /><strong>{formatNumber(progress.coins)}</strong><small>moedas</small></div>
     </section>
 
     <section aria-labelledby="profile-journey-title">
       <div className="platform-profile-section-heading"><div><p>SEU PROGRESSO</p><h3 id="profile-journey-title">Um retrato da sua evolução</h3></div>{mostPlayed ? <span>Mais jogado: <strong>{mostPlayed.name}</strong></span> : null}</div>
       <div className="platform-profile-summary" aria-label="Resumo do progresso">
         <article><small>Partidas concluídas</small><strong>{formatNumber(global.sessionsCompleted)}</strong><span>em todos os modos</span></article>
-        <article><small>XP total</small><strong>{formatNumber(progress.totalXp)}</strong><span>acumulados</span></article>
+        <article><small><RewardArt type="xp" /> XP total</small><strong>{formatNumber(progress.totalXp)}</strong><span>acumulados</span></article>
         <article><small>Conquistas</small><strong>{formatNumber(collections.summary.unlockedAchievements)}/{formatNumber(collections.summary.achievements)}</strong><span>desbloqueadas</span></article>
         <article><small>Colecionáveis</small><strong>{formatNumber(collections.summary.ownedCollectibles)}/{formatNumber(collections.summary.collectibles)}</strong><span>adquiridos</span></article>
         <article><small>Dias ativos</small><strong>{formatNumber(global.distinctOfficialPlayDaysUtc || global.activeDays)}</strong><span>na plataforma</span></article>
@@ -210,7 +211,7 @@ export function PlatformProfileOverview({ displayName }: { displayName: string }
     <section className="platform-profile-rewards" aria-labelledby="profile-rewards-title">
       <div className="platform-profile-section-heading"><div><p>FEITOS E COLEÇÕES</p><h3 id="profile-rewards-title">O que já faz parte da sua história</h3></div><a href="/recompensas">Ver todas as recompensas</a></div>
       <div className="platform-profile-reward-grid">
-        <article className="platform-profile-achievements"><header><strong>Conquistas em destaque</strong><span>{collections.summary.unlockedAchievements}/{collections.summary.achievements}</span></header>{recentAchievements.length ? <ul>{recentAchievements.map(item => <li key={item.code}><span aria-hidden="true">{item.icon || "✦"}</span><div><strong>{item.name}</strong><small>Conquistada em <time dateTime={new Date(item.unlockedAt as number).toISOString()}>{new Date(item.unlockedAt as number).toLocaleDateString("pt-BR")}</time></small></div></li>)}</ul> : <p className="platform-profile-empty">Suas conquistas aparecerão aqui conforme você avança.</p>}</article>
+        <article className="platform-profile-achievements"><header><strong>Conquistas em destaque</strong><span>{collections.summary.unlockedAchievements}/{collections.summary.achievements}</span></header>{recentAchievements.length ? <ul>{recentAchievements.map(item => <li key={item.code}><RewardArt type="achievement" /><div><strong>{item.name}</strong><small>Conquistada em <time dateTime={new Date(item.unlockedAt as number).toISOString()}>{new Date(item.unlockedAt as number).toLocaleDateString("pt-BR")}</time></small></div></li>)}</ul> : <p className="platform-profile-empty">Suas conquistas aparecerão aqui conforme você avança.</p>}</article>
         <article className="platform-profile-collections"><header><strong>Suas coleções</strong><span>{collections.summary.ownedCollectibles}/{collections.summary.collectibles}</span></header>{collections.collections.map(collection => <div key={collection.id}><span aria-hidden="true">{collection.coverIcon}</span><div><strong>{collection.name}</strong><progress max={collection.progress.total} value={collection.progress.acquired} aria-label={`${collection.name}: ${collection.progress.acquired} de ${collection.progress.total}`} /><small>{collection.progress.acquired} de {collection.progress.total} itens</small></div></div>)}</article>
       </div>
     </section>

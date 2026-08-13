@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import type { DailyChallengeData, DailyObjectiveData } from "../PlatformHome";
 import { GameArt } from "../GameArt";
 import { getGameModuleById } from "../games/sdk/gameModules";
+import { RewardArt } from "../RewardArt";
 
 const STATUS_LABEL = {
   AVAILABLE: "Disponível",
@@ -96,6 +97,7 @@ export default function DailyChallengesPage() {
   return <main className="daily-challenges-page">
     <section className="daily-challenges-shell">
       <header className="platform-page-heading">
+        <RewardArt type="daily-challenge" variant="card" className="daily-challenge-hero-art" sizes="112px" eager />
         <p>Objetivos do dia</p>
         <h1>Desafios <em>Diários</em></h1>
         <span>Vença jogos diferentes hoje e desbloqueie recompensas.</span>
@@ -120,7 +122,7 @@ export default function DailyChallengesPage() {
 
       <section className="daily-reward-grid" aria-label="Recompensas dos desafios diários">
         {(daily?.rewards || []).map(milestone => <article className={milestone.state.toLowerCase()} key={milestone.target} aria-live={milestone.state === "READY" ? "polite" : undefined}>
-          <span aria-hidden="true">{milestone.target === 7 ? "🏆" : "🎁"}</span>
+          <RewardArt type={milestone.target === 7 ? "chest-special" : "chest-standard"} variant="card" className="daily-reward-art" sizes="92px" />
           <div><strong>{milestone.target} vitórias</strong><small>{milestone.reward.label}</small><em>{milestone.state === "CLAIMED" ? "Resgatada" : milestone.state === "READY" ? "Pronta para resgatar" : `${Math.min(daily?.wins || 0, milestone.target)}/${milestone.target}`}</em></div>
           {milestone.state === "READY"
             ? <button type="button" disabled={claiming !== null} onClick={() => claim(milestone.target)}>{claiming === milestone.target ? "Resgatando..." : "Resgatar"}</button>
@@ -128,7 +130,7 @@ export default function DailyChallengesPage() {
         </article>)}
       </section>
 
-      {celebration ? <aside className="daily-celebration" role="status"><strong>✨ Meta alcançada</strong><span>{celebration}</span>{rewardLinks ? <nav aria-label="Próximos passos"><a href="/recompensas">Ver recompensas</a><a href="/perfil">Ver perfil</a></nav> : null}</aside> : null}
+      {celebration ? <aside className="daily-celebration" role="status"><RewardArt type="achievement" /><strong>Meta alcançada</strong><span>{celebration}</span>{rewardLinks ? <nav aria-label="Próximos passos"><a href="/recompensas">Ver recompensas</a><a href="/perfil">Ver perfil</a></nav> : null}</aside> : null}
       {error ? <p className="daily-challenges-error" role="alert">{error}</p> : null}
       {!daily ? <p className="daily-challenges-loading" role="status">Carregando desafios...</p> : null}
       <section className="daily-challenges-grid" aria-label="Jogos disponíveis hoje">

@@ -9,8 +9,8 @@ const manifest = JSON.parse(readFileSync(resolve(root, "docs/PRODUCT/ASSET_PACK_
 const collectibles = JSON.parse(readFileSync(resolve(root, "docs/PRODUCT/COLLECTIBLES_ASSET_PROVENANCE.json"), "utf8"));
 
 test("asset pack manifest matches the repository bytes", () => {
-  assert.equal(manifest.assets.length, 89);
-  assert.equal(new Set(manifest.assets.map(item => item.path)).size, 89);
+  assert.equal(manifest.assets.length, 99);
+  assert.equal(new Set(manifest.assets.map(item => item.path)).size, 99);
   for (const item of manifest.assets) {
     const path = resolve(root, item.path);
     assert.equal(existsSync(path), true, `${item.path} must exist`);
@@ -24,7 +24,7 @@ test("every public asset has one supported adoption classification", () => {
   const supported = new Set(["ADOPT_NOW", "FALLBACK", "EXTRA_RESERVED", "STORE_ONLY", "RETIRE_CANDIDATE"]);
   for (const item of manifest.assets) assert.equal(supported.has(item.classification), true, `${item.path} classification`);
   const counts = Object.groupBy(manifest.assets, item => item.classification);
-  assert.equal(counts.ADOPT_NOW.length, 63);
+  assert.equal(counts.ADOPT_NOW.length, 73);
   assert.equal(counts.FALLBACK.length, 3);
   assert.equal(counts.EXTRA_RESERVED.length, 10);
   assert.equal(counts.STORE_ONLY.length, 9);

@@ -170,3 +170,10 @@ O proprietário declarou que as novas artes foram produzidas especificamente par
 6. concluir testes visuais/mobile/acessibilidade em cada Wave.
 
 Nenhum desses pontos exige alteração funcional nesta auditoria.
+## Wave 3 — recompensas e progressão visual
+
+- Os oito masters de `public/rewards/` permanecem como fonte oficial e não são servidos diretamente em contadores.
+- `RewardArt` e seu registro central resolvem moeda, XP, nível, conquista, desafio diário e os três baús, preservando fallback textual/emoji.
+- Derivados compactos de 96×96 atendem contadores; derivados de card de 320×320 atendem Daily, Cofre e Conquistas.
+- Uso funcional confirmado: baú padrão no marco 3/7, especial no marco 7/7 e diário no Cofre da Home. Nenhuma nova mecânica foi criada.
+- Ícones funcionais de navegação, administração, Ranking e Analytics permanecem vetoriais/textuais e densos.

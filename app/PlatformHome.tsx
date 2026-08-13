@@ -4,6 +4,7 @@ import { selectHomeEngagementAction } from "./platform-engagement";
 import { BrandLogo } from "./BrandLogo";
 import { GameArt } from "./GameArt";
 import { gameModules } from "./games/sdk/gameModules";
+import { RewardArt } from "./RewardArt";
 
 type PlatformAchievement = {
   code: string;
@@ -139,14 +140,14 @@ export function PlatformHome({
           <h1 id="platform-greeting">Fala, {firstName(displayName)}! <span aria-hidden="true">👋</span></h1>
           <p>Que bom ter você por aqui!</p>
           <div className="platform-level-line">
-            <span>Nível {platformProgress.level}</span>
+            <span><RewardArt type="level" /> Nível {platformProgress.level}</span>
             <div className="platform-progress"><i style={{ width: `${platformProgress.levelProgress.percent}%` }} /></div>
             <small>{platformProgress.levelProgress.currentXp.toLocaleString("pt-BR")} / {platformProgress.levelProgress.targetXp.toLocaleString("pt-BR")} XP</small>
           </div>
           <a className="platform-ranking-link" href="/rankings">Ver Ranking <span aria-hidden="true">→</span></a>
         </div>
         <div className="platform-currencies" aria-label="Saldo da plataforma">
-          <span><b aria-hidden="true">🪙</b><strong>{platformProgress.coins.toLocaleString("pt-BR")}</strong><small>Moedas</small></span>
+          <span><RewardArt type="coin" /><strong>{platformProgress.coins.toLocaleString("pt-BR")}</strong><small>Moedas</small></span>
         </div>
         <div className="platform-daily-login" role="status">
           <span aria-hidden="true">🔥</span>
@@ -164,7 +165,7 @@ export function PlatformHome({
 
       <section className="platform-daily-summary" aria-labelledby="daily-summary-title">
         <header>
-          <div><p>Desafios diários</p><h2 id="daily-summary-title">{dailyWins} de 7 vitórias</h2></div>
+          <div className="platform-daily-title"><RewardArt type="daily-challenge" /><div><p>Desafios diários</p><h2 id="daily-summary-title">{dailyWins} de 7 vitórias</h2></div></div>
           <a href="/desafios-diarios">{nextReward?.state === "READY" ? "Resgatar recompensa" : "Ver desafios"} <span aria-hidden="true">→</span></a>
         </header>
         <div className="platform-progress" role="progressbar" aria-label="Vitórias nos desafios diários" aria-valuemin={0} aria-valuemax={7} aria-valuenow={dailyWins}>
@@ -193,7 +194,7 @@ export function PlatformHome({
       </section> : null}
 
       <section className="platform-daily-chest" id="recompensas" aria-labelledby="chest-title">
-        <div className="platform-chest-art" aria-hidden="true">🎁</div>
+        <RewardArt type="chest-daily" variant="card" className="platform-chest-art" sizes="150px" />
         <div><p>Cofre diário</p><h2 id="chest-title">{daily?.chest.opened ? "Recompensa coletada" : daily?.chest.unlocked ? "Seu cofre está disponível" : "Conclua a missão do dia"}</h2>
           <span>{dailyError || (daily?.chest.opened ? `Você recebeu ${daily.chest.reward?.label}.` : daily?.chest.unlocked ? "Abra uma vez para receber sua recompensa." : "O cofre será liberado após concluir a missão diária.")}</span></div>
         <strong>{daily?.chest.reward?.label || daily?.chest.preview.label || "Recompensa surpresa"}</strong>
@@ -205,8 +206,8 @@ export function PlatformHome({
       <section className="platform-section platform-achievements" aria-labelledby="achievements-title">
         <header><h2 id="achievements-title">Conquistas recentes</h2><a href="/perfil">Ver no perfil <span aria-hidden="true">›</span></a></header>
         {achievements.length > 0
-          ? <div className="platform-achievement-grid">{achievements.map(item => <article key={item.code}><b aria-hidden="true">{item.icon || "⭐"}</b><div><strong>{item.name}</strong><small>{item.scopeType === "game" ? "Conquista de jogo" : "Conquista da plataforma"}</small></div></article>)}</div>
-          : <div className="platform-empty-achievements"><span aria-hidden="true">✦</span><div><strong>Suas conquistas aparecerão aqui</strong><small>Jogue e complete desafios para desbloquear conquistas.</small></div></div>}
+          ? <div className="platform-achievement-grid">{achievements.map(item => <article key={item.code}><RewardArt type="achievement" /><div><strong>{item.name}</strong><small>{item.scopeType === "game" ? "Conquista de jogo" : "Conquista da plataforma"}</small></div></article>)}</div>
+          : <div className="platform-empty-achievements"><RewardArt type="achievement" /><div><strong>Suas conquistas aparecerão aqui</strong><small>Jogue e complete desafios para desbloquear conquistas.</small></div></div>}
       </section>
     </div>
   </main>;
