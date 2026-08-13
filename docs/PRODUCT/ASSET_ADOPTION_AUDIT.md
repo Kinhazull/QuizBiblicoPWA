@@ -174,6 +174,10 @@ Nenhum desses pontos exige alteração funcional nesta auditoria.
 
 - Os oito masters de `public/rewards/` permanecem como fonte oficial e não são servidos diretamente em contadores.
 - `RewardArt` e seu registro central resolvem moeda, XP, nível, conquista, desafio diário e os três baús, preservando fallback textual/emoji.
+
+### Wave 4 — Colecionáveis concluída
+
+Os 8 avatares e 8 molduras funcionais são resolvidos por ID histórico no registro `CollectibleArt`, usando derivados determinísticos de 96×96 e 320×320. `EquippedAvatar` compõe avatar e moldura em camadas na Home, Perfil e Ranking. Loja, Inventário e Coleções usam a mesma resolução local; APIs e o campo `icon` não mudaram. `frame-aliance` e `frame-real` são fontes visuais dos IDs funcionais `frame-covenant` e `frame-royal`. `avatar-shield`, `avatar-star`, `frame-diamond` e `frame-platinum` permanecem `EXTRA_RESERVED` e não foram ativados.
 - Derivados compactos de 96×96 atendem contadores; derivados de card de 320×320 atendem Daily, Cofre e Conquistas.
 - Uso funcional confirmado: baú padrão no marco 3/7, especial no marco 7/7 e diário no Cofre da Home. Nenhuma nova mecânica foi criada.
 - Ícones funcionais de navegação, administração, Ranking e Analytics permanecem vetoriais/textuais e densos.

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import styles from "./shop.module.css";
 import { RewardArt } from "../RewardArt";
+import { CollectibleArt } from "../CollectibleArt";
 
 type ShopItem = {
   id: string;
@@ -115,7 +116,7 @@ export default function ShopPage() {
       <div className={styles.grid}>
         {data.items.filter(item => item.category === category.id).map(item => <article className={`${styles.card} ${item.equipped ? styles.equipped : ""}`} key={item.id}>
           <span className={styles.category}>{item.equipped ? "Equipado" : item.owned ? "Adquirido" : category.singular}</span>
-          <b className={styles.icon} aria-hidden="true">{item.icon}</b>
+          <CollectibleArt id={item.id} fallback={item.icon} className={styles.icon} />
           <h3>{item.name}</h3>
           <p>{item.description}</p>
           <div><strong><RewardArt type="coin" /> {item.price}</strong>

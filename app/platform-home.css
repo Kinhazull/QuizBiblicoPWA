@@ -41,6 +41,8 @@
 .platform-shop-button:focus-visible { outline: 3px solid #6cc08a; outline-offset: 3px; }
 .platform-continue-card>header a,.platform-achievements>header a { display: inline-flex; min-height: 44px; align-items: center; }
 .equipped-avatar { display: grid; place-items: center; flex: 0 0 auto; border: 3px solid #2d8df2; border-radius: 50%; background: linear-gradient(145deg,#267de2,#0d4a9b); color: #fff; box-shadow: 0 10px 25px #020a1899; font-weight: 800; }
+.equipped-avatar{position:relative;isolation:isolate}.equipped-avatar-base{display:grid;width:76%;height:76%;place-items:center;z-index:1}.equipped-avatar-base>.collectible-art{width:100%;height:100%}.equipped-avatar-frame{position:absolute!important;inset:-8%;z-index:2;width:116%!important;height:116%!important;pointer-events:none}.equipped-avatar-frame>img{object-fit:contain}
+.equipped-avatar-frame.collectible-art-fallback{inset:auto -2px -2px auto;width:28%!important;height:28%!important;border-radius:999px;background:#07172a;font-size:.75em}
 .equipped-avatar-medium { width: 68px; height: 68px; font-size: 29px; }
 .equipped-avatar-large { width: 90px; height: 90px; font-size: 42px; }
 .equipped-avatar[data-frame="frame-bronze"] { border-color: #bf7a3b; box-shadow: 0 0 0 4px #71401e,0 10px 25px #020a1899; }

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import styles from "../loja/shop.module.css";
+import { CollectibleArt } from "../CollectibleArt";
 
 type InventoryItem = {
   id: string;
@@ -94,7 +95,7 @@ export default function InventoryPage() {
         <div className={styles.grid}>
           {items.map(item => <article className={`${styles.card} ${item.equipped ? styles.equipped : ""}`} key={item.id}>
             <span className={styles.category}>{item.equipped ? "Equipado" : category.id === "avatar" ? "Avatar" : "Moldura"}</span>
-            <b className={styles.icon} aria-hidden="true">{item.icon}</b>
+            <CollectibleArt id={item.id} fallback={item.icon} className={styles.icon} />
             <h3>{item.name}</h3>
             <p>{item.description}</p>
             <button type="button" disabled={item.equipped || Boolean(busyId)} onClick={() => equip(item)}>

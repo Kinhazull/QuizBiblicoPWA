@@ -53,7 +53,8 @@ test("official publishable pack contains no recovery or fixture identities", () 
   assert.equal(official.contents.length, 380);
 });
 
-test("provisional collectible art and post-release memory images remain explicit", () => {
-  assert.equal(manifest.entries.find(item => item.id === "collectible-emoji-art")?.status, "REPLACE_BEFORE_RELEASE");
+test("collectible art adoption and post-release memory images remain explicit", () => {
+  assert.equal(manifest.entries.find(item => item.id === "collectible-emoji-art")?.status, "APPROVED_INTERNAL");
+  assert.match(manifest.entries.find(item => item.id === "collectible-emoji-art")?.use || "", /Fallback/);
   assert.equal(manifest.entries.find(item => item.id === "memory-image-assets")?.status, "POST_RELEASE_ONLY");
 });

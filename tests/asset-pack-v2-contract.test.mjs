@@ -18,6 +18,18 @@ test("asset pack manifest matches the repository bytes", () => {
     assert.equal(bytes.length, item.bytes, `${item.path} byte size`);
     assert.equal(createHash("sha256").update(bytes).digest("hex"), item.sha256, `${item.path} sha256`);
   }
+  assert.equal(manifest.runtimeDerivatives.length, 32);
+  assert.equal(manifest.runtimeDerivativeDefaults.approval, "ADOPTED_WAVE_4");
+  assert.equal(manifest.runtimeDerivativeDefaults.classification, "ADOPT_NOW");
+  assert.equal(new Set(manifest.runtimeDerivatives.map(item => item.path)).size, 32);
+  for (const item of manifest.runtimeDerivatives) {
+    const path = resolve(root, item.path);
+    assert.equal(existsSync(path), true, `${item.path} must exist`);
+    const bytes = readFileSync(path);
+    assert.equal(bytes.length, item.bytes, `${item.path} byte size`);
+    assert.equal(createHash("sha256").update(bytes).digest("hex"), item.sha256, `${item.path} sha256`);
+    assert.deepEqual([item.width, item.height], item.variant === "compact" ? [96, 96] : [320, 320]);
+  }
 });
 
 test("every public asset has one supported adoption classification", () => {
@@ -32,12 +44,13 @@ test("every public asset has one supported adoption classification", () => {
 });
 
 test("collectible provenance preserves exact functional IDs and reserves extras", () => {
-  assert.equal(collectibles.runtimeIntegrated, false);
+  assert.equal(collectibles.runtimeIntegrated, true);
   assert.equal(collectibles.items.length, 20);
   assert.equal(collectibles.items.filter(item => item.match === "EXACT").length, 14);
-  assert.equal(collectibles.items.filter(item => item.classification === "EXTRA_RESERVED").length, 6);
+  assert.equal(collectibles.items.filter(item => item.match === "VISUAL_ALIAS").length, 2);
+  assert.equal(collectibles.items.filter(item => item.classification === "EXTRA_RESERVED").length, 4);
   assert.deepEqual(
-    collectibles.items.filter(item => item.candidateLogicalId).map(item => item.candidateLogicalId).sort(),
-    ["frame-covenant", "frame-royal"],
+    collectibles.items.filter(item => item.visualAlias).map(item => [item.logicalId, item.visualAlias]).sort(),
+    [["frame-covenant", "frame-aliance"], ["frame-royal", "frame-real"]],
   );
 });

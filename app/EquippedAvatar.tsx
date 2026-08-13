@@ -1,3 +1,7 @@
+"use client";
+
+import { CollectibleArt, collectibleArtRegistry } from "./CollectibleArt";
+
 export type EquippedItem = {
   id: string;
   category: "frame" | "avatar";
@@ -22,16 +26,19 @@ export function EquippedAvatar({
 }) {
   const avatar = equipment?.items.find(item => item.category === "avatar" && item.equipped);
   const frame = equipment?.items.find(item => item.category === "frame" && item.equipped);
+  const avatarId = equipment?.equipped.avatar || avatar?.id;
+  const frameId = equipment?.equipped.frame || frame?.id;
   const fallback = displayName.trim().slice(0, 1).toUpperCase() || "?";
 
   return <div
     className={`equipped-avatar equipped-avatar-${size}`}
-    data-frame={frame?.id || "none"}
+    data-frame={frameId || "none"}
     role="img"
     aria-label={avatar || frame
       ? `${avatar?.name || "Avatar padrão"}${frame ? ` com ${frame.name}` : ""}`
       : `Avatar de ${displayName}`}
   >
-    <span aria-hidden="true">{avatar?.icon || fallback}</span>
+    <span className="equipped-avatar-base" aria-hidden="true">{avatarId ? <CollectibleArt id={avatarId} fallback={avatar?.icon || fallback} variant="compact" /> : fallback}</span>
+    {frameId && (collectibleArtRegistry[frameId] || frame?.icon) ? <CollectibleArt id={frameId} fallback={frame?.icon} variant="compact" className="equipped-avatar-frame" /> : null}
   </div>;
 }

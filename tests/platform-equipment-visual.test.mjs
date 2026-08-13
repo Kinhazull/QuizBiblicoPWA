@@ -14,14 +14,16 @@ test("Home and Profile render the same equipped avatar component", () => {
   assert.match(page, /platform-equipment-changed/);
 });
 
-test("equipped avatar supports the three official frame styles", () => {
+test("equipped avatar composes official avatar and frame layers", () => {
   const component = read("app/EquippedAvatar.tsx");
   const css = read("app/platform-home.css");
   assert.match(component, /data-frame/);
   assert.match(component, /role="img"/);
-  for (const frame of ["frame-bronze", "frame-silver", "frame-gold"]) {
-    assert.ok(css.includes(`[data-frame="${frame}"]`), `estilo ausente: ${frame}`);
-  }
+  assert.match(component, /equipped-avatar-base/);
+  assert.match(component, /equipped-avatar-frame/);
+  assert.match(component, /collectibleArtRegistry\[frameId\]/);
+  assert.match(css, /z-index:1/);
+  assert.match(css, /z-index:2/);
 });
 
 test("Shop and Inventory update equipped state immediately", () => {

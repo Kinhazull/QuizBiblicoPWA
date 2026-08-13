@@ -84,7 +84,7 @@
       "provenance": "AI_ASSISTED_HUMAN_CURATED",
       "aiAssisted": true,
       "humanCurated": true,
-      "use": "Identidade, jogos, recompensas, colecionáveis, Eventos, sistema, onboarding e Store; adoção gradual pendente",
+      "use": "Identidade, jogos, recompensas e os 16 colecionáveis funcionais adotados nas Waves 1–4; Eventos, sistema, onboarding e Store permanecem para ondas posteriores",
       "evidence": "docs/PRODUCT/ASSET_PACK_V2_MANIFEST.json"
     },
     {
@@ -122,9 +122,9 @@
       "path": "shared/platform-economy.ts",
       "origin": "Representações Unicode/emoji, sem arquivo externo incorporado",
       "license": "Renderização depende da fonte emoji do sistema",
-      "status": "REPLACE_BEFORE_RELEASE",
-      "use": "Arte provisória dos 16 avatares e molduras",
-      "evidence": "docs/PRODUCT/COLLECTIBLES_ART_DIRECTION.md"
+      "status": "APPROVED_INTERNAL",
+      "use": "Fallback de compatibilidade dos 16 avatares e molduras; o runtime principal usa o Asset Pack v2",
+      "evidence": "docs/PRODUCT/COLLECTIBLES_ASSET_PROVENANCE.json"
     },
     {
       "id": "memory-image-assets",

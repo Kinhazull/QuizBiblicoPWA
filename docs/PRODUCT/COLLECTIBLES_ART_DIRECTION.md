@@ -45,12 +45,12 @@ Sem item equipado, `EquippedAvatar` apresenta a inicial do nome sobre o avatar p
 
 ## Onde os placeholders aparecem
 
-1. Loja: card de cada um dos 14 itens `origin=SHOP`, atualmente em caixa de 105 px (88 px no mobile), emoji a 62 px.
+1. Loja: card de cada um dos 14 itens `origin=SHOP`, com derivados oficiais `standard` e emoji histórico como fallback.
 2. Inventário: cards dos itens possuídos, reutilizando o mesmo estilo da Loja.
-3. Coleções/Recompensas: grade dos 16 itens, emoji a 29 px; capa das duas coleções também é emoji.
+3. Coleções/Recompensas: grade dos 16 itens com derivados oficiais `compact`; bloqueados continuam semanticamente identificados em texto.
 4. Home e Perfil: `EquippedAvatar`, 68×68 ou 90×90; Home reduz para aproximadamente 50–58 px nos menores viewports.
 5. Ranking: `EquippedAvatar` forçado para 48×48 px, com 46 px disponíveis na grade móvel.
-6. Respostas das APIs citadas: o campo `icon` ainda carrega o emoji e é consumido pelo cliente.
+6. Respostas das APIs citadas: o campo `icon` continua carregando o emoji por compatibilidade; o cliente resolve a arte por ID funcional no registro local.
 
 ## Especificação técnica dos avatares
 
@@ -130,6 +130,8 @@ Cada asset futuro deve possuir registro antes de receber status de aprovação:
 Estados mínimos: `DRAFT`, `PENDING_HUMAN_REVIEW`, `APPROVED_INTERNAL`, `LICENSE_DOCUMENTED`, `REJECTED`. A proveniência e o estado observado estão em `COLLECTIBLES_ASSET_PROVENANCE.json`; integração no runtime não equivale a aprovação automática de aliases.
 
 ## Critérios para substituir os emojis
+
+Status em 2026-08-13: critérios atendidos para os 16 IDs funcionais. Os emojis foram preservados como fallback, sem alteração de IDs, ownership, grants, preços, raridades ou APIs. Os aliases `frame-aliance` e `frame-real` foram adotados apenas como fontes visuais de `frame-covenant` e `frame-royal`.
 
 - os 16 IDs têm arquivo e registro de proveniência completos;
 - aprovação humana visual e de licença registrada;

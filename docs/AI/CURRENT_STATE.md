@@ -82,7 +82,7 @@ As artes oficiais dos sete jogos estão adotadas no catálogo/Free Play, Home, D
 - licenças bíblicas, tratamento jurídico de adolescentes/acesso infantil incidental e Data Safety aguardam revisão humana/jurídica;
 - textos ACF/Almeida completos e quatro derivados foram removidos da árvore ativa da v2; não havia consumidor runtime. O histórico Git não foi reescrito e eventual purge permanece decisão jurídica;
 - as 984 perguntas e os 380 conteúdos oficiais têm proveniência interna declarada pelo proprietário (`AI_ASSISTED`, com curadoria humana); a lacuna CSV→CMS é de rastreabilidade, não de autoria externa;
-- os 16 colecionáveis seguem funcionais com emoji; o pack possui 14 correspondências nominais exatas e dois possíveis aliases que exigem confirmação antes da integração;
+- os 16 colecionáveis funcionais usam derivados oficiais do Asset Pack v2; os IDs históricos permanecem intactos, `frame-aliance → frame-covenant` e `frame-real → frame-royal` são aliases exclusivamente visuais, e emojis permanecem apenas como fallback;
 - Asset Registry ainda depende de URLs externas e precisa ser conciliado com CSP futura;
 - APIs, dados e rotas diretas históricas permanecem por compatibilidade, mas Jornada, Medalhas e CMS antigo não fazem parte da navegação moderna;
 - matriz técnica de retenção por domínio está definida, mas prazos jurídicos, implementação, orçamento comercial e canal externo de alertas ainda precisam de decisão humana; a chave de backup `v1` já está provisionada e custodiada;

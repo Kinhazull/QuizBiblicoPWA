@@ -45,6 +45,8 @@ test("Perfil 2.0 apresenta identidade e os sete jogos sem expor conquista oculta
     await page.goto("/perfil");
     await expect(page.getByRole("heading", { name: "Ana", exact: true })).toBeVisible();
     await expect(page.getByText("Avatar Leão · Moldura Ouro")).toBeVisible();
+    await expect(page.locator(".equipped-avatar-base .collectible-art img")).toHaveCount(1);
+    await expect(page.locator(".equipped-avatar-frame img")).toHaveCount(1);
     await expect(page.getByText("Mais jogado:").locator("..") ).toContainText("Quiz Bíblico");
     await expect(page.locator(".platform-profile-game-grid article")).toHaveCount(7);
     await expect(page.locator(".platform-profile-progress-card .reward-art img")).toHaveCount(2);
