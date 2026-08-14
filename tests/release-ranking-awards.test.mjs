@@ -52,6 +52,7 @@ test("push valida e empacota, mas promoção de Pages e Worker é manual e vincu
   assert.match(workflow, /test ! -e out\/_worker\.js/);
   assert.match(workflow, /cp \.pages-functions\/index\.js verified-release\/out\/_worker\.js/);
   assert.match(workflow, /cd verified-release && sha256sum out\/_worker\.js > pages-functions\.sha256/);
+  assert.match(workflow, /verify:pages-release-artifact -- verified-release\/out/);
   assert.match(workflow, /source-sha\.txt/);
   assert.match(workflow, /retention-days: 14/);
   assert.match(promotion, /workflow_dispatch:/);
@@ -62,6 +63,8 @@ test("push valida e empacota, mas promoção de Pages e Worker é manual e vincu
   assert.match(promotion, /git merge-base --is-ancestor/);
   assert.match(promotion, /source-sha\.txt/);
   assert.match(promotion, /test -s verified-release\/out\/_worker\.js/);
+  assert.match(promotion, /verify:pages-release-artifact -- verified-release\/out/);
+  assert.match(promotion, /deployment_url\/configurar-mfa\//);
   assert.match(promotion, /cd verified-release && sha256sum -c pages-functions\.sha256/);
   assert.doesNotMatch(promotion, /build:pages-functions/);
   assert.match(promotion, /worker:awards:types:check && pnpm run worker:awards:check/);

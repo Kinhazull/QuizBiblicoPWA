@@ -32,7 +32,7 @@ Waves 1–5 estão `DONE`: Brand/PWA, sete jogos, recompensas, colecionáveis e 
 - 26.5 Analytics 2.0: concluída;
 - 26.6 Automação Administrativa: concluída;
 - 27.1 Segurança e Contas: concluída;
-- 27.1.1 MFA Administrativo: implementação local concluída; `MFA_ENCRYPTION_KEY` está `PRODUCTION_PRESENT_DEPLOY_REQUIRED` no Pages, sem valor exposto. A migration 0039 foi aplicada em produção, mas o gate final de compare ainda está bloqueado por classificar a alteração esperada de `sessions` como inesperada; MFA produtivo continua não operacional.
+- 27.1.1 MFA Administrativo: implementação concluída; `MFA_ENCRYPTION_KEY` está presente e cifrado no Pages, sem valor exposto. A migration 0039 e o compare estrutural remoto estão verificados; MFA ainda não foi validado por enrollment/smoke funcional produtivo.
 - 27.2 Operação e Recuperação: **DONE**; chave de backup provisionada/custodiada e restore remoto comprovado em D1 isolado com dataset sintético.
 - 27.3 Retirada do Legado: concluída localmente; navegação moderna desacoplada de Jornada/Medalhas e de entradas administrativas históricas, sem remoção de dados/APIs.
 - 27.3.1 Sustentabilidade Operacional e Custo Zero: concluída localmente; política e orçamento versionado criados, classificados como `ZERO-COST PLAUSIBLE, MEASUREMENT REQUIRED`.
@@ -43,8 +43,8 @@ Waves 1–5 estão `DONE`: Brand/PWA, sete jogos, recompensas, colecionáveis e 
 - 27.7.1 Fechamento dos blockers internos: concluída localmente; 27.7.2 é a próxima etapa operacional.
 - 27.7.2B.1 Backup-only: modo operacional local implementado no reconciliador, com job de migration inacessível em `backup_only`; o backup produtivo ainda não foi executado e a 0039 continua pendente conforme a verificação remota 27.7.2A.
 - 27.7.2B Backup pré-migration: `DONE / PRE_MIGRATION_BACKUP_VERIFIED` no run `31742051309`; artifact cifrado retido por 7 dias e job de migration `SKIPPED` naquele run.
-- 27.7.2C.1 Secret MFA: `DONE / PRODUCTION_PRESENT_DEPLOY_REQUIRED`; existência verificada como secret cifrado no ambiente production de `quizbiblicopwa`, sem deployment criado. O próximo deployment controlado será necessário para o código consumir o binding.
-- 27.7.2C.2 Migration 0039: aplicada exclusivamente pelo run `31748776445`; ledger e `verify-final` chegaram a 40/0039, porém o workflow falhou no `compare` com `Pre-existing schema object changed unexpectedly: table sessions`. A correção local 27.7.2C.3 agora associa a autorização à migration efetivamente aplicada e exige a transição SQL exata de `sessions`; revalidação remota ainda não foi executada.
+- 27.7.2C.1 Secret MFA: `DONE / PRODUCTION_PRESENT`; existência verificada somente como secret cifrado no ambiente production de `quizbiblicopwa`, sem leitura do valor. A listagem de deployments agora registra produção no SHA `11c2377`, posterior ao provisionamento; enrollment/smoke MFA continuam pendentes.
+- 27.7.2C.2–C.4 Migration 0039: `0039_PRODUCTION_VERIFIED`; aplicada exclusivamente pelo run `31748776445`, com ledger 40/0039, `verify-final`, `quick_check`, FKs e compare estrutural remoto aprovados. O compare corrigido classificou a produção como `EXPECTED_0039_ONLY`, sem drift, remoção ou regressão de linhas.
 - ajuste pós-27.6: controlador pessoa física e `suporteconteosfeitos@gmail.com` definidos; CPF/endereço residencial não serão publicados e eventual endereço físico segue sujeito à revisão jurídica.
 - ajuste pós-27.6: público-alvo formal da v2 definido como adolescentes e adultos; crianças ficaram fora do público-alvo. Tratamento jurídico de adolescentes/acesso incidental infantil permanece pendente e contas supervisionadas são pós-release.
 - ajuste pós-27.6: v2 sem exclusão automática por inatividade; matriz técnica preliminar de retenção definida e possível processamento internacional reconhecido. Prazos/mecanismos jurídicos e qualquer automação permanecem pendentes.

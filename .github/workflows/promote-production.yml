@@ -70,6 +70,7 @@ jobs:
           test -s verified-release/out/_routes.json
           test -s verified-release/out/_worker.js
           (cd verified-release && sha256sum -c pages-functions.sha256)
+          pnpm run verify:pages-release-artifact -- verified-release/out
       - name: Validate Worker before any production deploy
         run: pnpm run worker:awards:types:check && pnpm run worker:awards:check
       - name: Require Git auto-deploy to be disabled
@@ -105,6 +106,8 @@ jobs:
             sleep 5
           done
           test "$status" = "401"
+          curl --fail --silent --show-error "$deployment_url/configurar-mfa/" \
+            | grep -Fq "CONFIGURAR AUTENTICADOR"
       - name: Reconfirm migrations and deploy matching Worker SHA
         run: |
           pnpm run db:reconcile-migrations:verify-final

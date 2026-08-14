@@ -106,6 +106,18 @@ A inspeção read-only posterior confirmou `user_mfa`, `mfa_recovery_codes`, `mf
 
 A correção local 27.7.2C.3 tornou o compare consciente da transição exata da migration 0039: `sessions` somente é aceito quando muda da definição integral da baseline 0038 para a mesma definição acrescida exclusivamente de `mfa_verified INTEGER NOT NULL DEFAULT 0`. Objetos criados também precisam pertencer ao manifesto das migrations aplicadas. A correção foi validada localmente com SQLite, mas ainda não foi reexecutada contra produção.
 
+## Revalidação read-only pós-migration 0039 — 13/08/2026
+
+Estado: `0039_PRODUCTION_VERIFIED / EXPECTED_0039_ONLY`.
+
+O snapshot `d1-before.json` foi recuperado do artifact privado `d1-production-backup-31748776445`, sem abrir ou descriptografar o dump SQL. Sua proveniência corresponde ao run controlado da 0039, ledger 39 e última migration `0038_platform_rankings_indexes.sql`.
+
+Contra a produção atual, o `verify-final` confirmou ledger 40/0039 e o compare corrigido aceitou somente a alteração estrutural exata de `sessions`. O relatório registrou 11 objetos criados, 1 modificação esperada, 0 modificações inesperadas, 0 remoções, 0 regressões de linhas e preservação das 67 tabelas preexistentes. `quick_check` retornou `ok` e `foreign_key_check` não retornou inconsistências.
+
+As três tabelas MFA, os índices esperados e `sessions.mfa_verified INTEGER NOT NULL DEFAULT 0` foram confirmados; as três tabelas MFA permanecem vazias. O secret `MFA_ENCRYPTION_KEY` permanece listado somente como `Value Encrypted`. A listagem read-only do Pages registrou deployment de produção no SHA `11c2377`, posterior ao provisionamento; isso não substitui o enrollment/smoke funcional MFA, que permanece pendente e fora desta etapa.
+
+Nenhuma migration, escrita D1, restauração, alteração de secret ou deployment foi executado durante a revalidação.
+
 ## Metas operacionais iniciais
 
 São targets, não SLA:
