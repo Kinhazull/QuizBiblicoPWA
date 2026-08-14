@@ -106,8 +106,7 @@ jobs:
             sleep 5
           done
           test "$status" = "401"
-          curl --fail --silent --show-error "$deployment_url/configurar-mfa/" \
-            | grep -Fq "CONFIGURAR AUTENTICADOR"
+          pnpm run verify:pages-critical-routes -- "$deployment_url"
       - name: Reconfirm migrations and deploy matching Worker SHA
         run: |
           pnpm run db:reconcile-migrations:verify-final

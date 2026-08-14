@@ -15,6 +15,7 @@
     "build": "next build",
     "build:pages-functions": "node scripts/prepare-pages-functions.mjs && wrangler pages functions build functions --outdir .pages-functions --project-directory . --build-output-directory out --output-routes-path out/_routes.json",
     "verify:pages-release-artifact": "node scripts/verify-pages-release-artifact.mjs",
+    "verify:pages-critical-routes": "node scripts/verify-pages-critical-routes.mjs",
     "pwa:release:prepare": "node scripts/prepare-pwa-release-artifact.mjs",
     "typecheck": "tsc --noEmit --incremental false",
     "start": "next start",

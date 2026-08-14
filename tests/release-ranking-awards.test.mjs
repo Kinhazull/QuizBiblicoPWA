@@ -64,7 +64,8 @@ test("push valida e empacota, mas promoção de Pages e Worker é manual e vincu
   assert.match(promotion, /source-sha\.txt/);
   assert.match(promotion, /test -s verified-release\/out\/_worker\.js/);
   assert.match(promotion, /verify:pages-release-artifact -- verified-release\/out/);
-  assert.match(promotion, /deployment_url\/configurar-mfa\//);
+  assert.match(promotion, /verify:pages-critical-routes -- \"\$deployment_url\"/);
+  assert.doesNotMatch(promotion, /CONFIGURAR AUTENTICADOR/);
   assert.match(promotion, /cd verified-release && sha256sum -c pages-functions\.sha256/);
   assert.doesNotMatch(promotion, /build:pages-functions/);
   assert.match(promotion, /worker:awards:types:check && pnpm run worker:awards:check/);
