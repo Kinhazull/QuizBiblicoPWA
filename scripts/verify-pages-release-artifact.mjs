@@ -1,7 +1,11 @@
 import { stat } from "node:fs/promises";
 import { resolve } from "node:path";
 
-const root = resolve(process.argv[2] || "out");
+const cliArgs = process.argv.slice(2);
+const separatorIndex = cliArgs.indexOf("--");
+const positionalArgs = separatorIndex >= 0 ? cliArgs.slice(separatorIndex + 1) : cliArgs;
+if (positionalArgs.length > 1) throw new Error("pages_release_artifact_invalid_arguments");
+const root = resolve(positionalArgs[0] || "out");
 const requiredFiles = [
   "index.html",
   "configurar-mfa/index.html",
