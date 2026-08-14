@@ -4,7 +4,7 @@ import { readFile } from "node:fs/promises";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("fonte corrente fecha 27.7.1 sem inventar estado remoto", async () => {
+test("fonte corrente registra somente o estado remoto comprovado na 27.7.2", async () => {
   const [state, roadmap, snapshot, issues, deprecations] = await Promise.all([
     read("docs/AI/CURRENT_STATE.md"),
     read("docs/PRODUCT/ROADMAP.md"),
@@ -14,14 +14,20 @@ test("fonte corrente fecha 27.7.1 sem inventar estado remoto", async () => {
   ]);
   assert.match(state, /Status:\*\* CURRENT/);
   assert.match(state, /0039_administrative_mfa\.sql/);
-  assert.match(state, /requer verificação operacional/i);
+  assert.match(state, /ledger remoto verificado: 40 migrations/i);
+  assert.match(state, /WORKER_CURRENT_VERIFIED/);
   assert.match(state, /27\.7\.1 Fechamento dos blockers internos: concluída localmente/);
   assert.doesNotMatch(state, /27\.7 não foi iniciada/);
   assert.match(roadmap, /25\.5 \| Ranking Universal \| DONE/);
   assert.match(roadmap, /27\.7\.0 \| Release Readiness Final \| DONE/);
-  assert.match(roadmap, /27\.7\.2 \| Preparação de Produção \| NEXT/);
-  assert.match(snapshot, /0039: `LOCAL_VERIFIED`/);
-  assert.match(snapshot, /REMOTE_UNKNOWN \/ TO_VERIFY_IN_27_7_2/);
+  assert.match(roadmap, /27\.7\.2 \| Preparação de Produção \| DONE/);
+  assert.match(roadmap, /27\.7\.3 \| RC Final \| DONE/);
+  assert.match(roadmap, /27\.7\.4 \| Validação Manual do Usuário \| NEXT/);
+  assert.match(snapshot, /0039: `0039_PRODUCTION_VERIFIED`/);
+  assert.match(snapshot, /PAGES_RUNTIME_SMOKE_VERIFIED/);
+  assert.match(snapshot, /WORKER_CURRENT_VERIFIED/);
+  assert.match(snapshot, /RC_BASELINE_READY_FOR_MANUAL_VALIDATION/);
+  assert.doesNotMatch(snapshot, /REMOTE_UNKNOWN \/ TO_VERIFY_IN_27_7_2/);
   assert.doesNotMatch(snapshot, /Analytics 2\.0 não faz parte|ainda não foi iniciado/);
   assert.doesNotMatch(issues, /runtime ainda usa a identidade anterior/);
   assert.doesNotMatch(issues, /integrar 16 arquivos/);

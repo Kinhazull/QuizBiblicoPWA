@@ -54,9 +54,9 @@ Concluídas: piloto, fundação modular, Core Platform, plataforma universal e c
 | Pós-27.6 | Isolamento de textos bíblicos completos | DONE localmente; árvore ativa limpa, purge histórico sob decisão jurídica |
 | 27.7.0 | Release Readiness Final | DONE |
 | 27.7.1 | Fechamento dos blockers internos | DONE localmente |
-| 27.7.2 | Preparação de Produção | NEXT |
-| 27.7.3 | RC Final | PLANNED |
-| 27.7.4 | Validação Manual do Usuário | PLANNED |
+| 27.7.2 | Preparação de Produção | DONE |
+| 27.7.3 | RC Final | DONE |
+| 27.7.4 | Validação Manual do Usuário | NEXT |
 | 27.7.5 | Correções e Revalidação | PLANNED |
 | 27.7.6 | Go/No-Go Formal | PLANNED |
 | 27.7.7 | Release v2.0.0 | PLANNED |

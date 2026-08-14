@@ -1,20 +1,36 @@
 # Snapshot de release e Go/No-Go
 
 **Status:** CURRENT  
-**Data:** 13/08/2026
+**Data:** 14/08/2026
 **Baseline:** `2.0.0-rc.1`
+
+## Identidade formal da RC
+
+- estado: `FEATURE_FREEZE`;
+- `REPOSITORY_RC_SHA`: commit que contém este snapshot, resolvido por `git rev-parse HEAD`; o relatório operacional da 27.7.3 registra o SHA literal e os checks anexados a ele;
+- `RUNTIME_VERIFIED_SHA`: `7921a0576dacba02720a3fcac871b6afe4412ed0`;
+- Pages deployment: `8be3bbd5-95a7-4251-8ef3-dd4e6d079bef`;
+- Worker: versão 61, deployment `1c6ed2c6-0371-4972-a19c-df2e7ea4a2d2`;
+- D1: `33fc35a0-46cf-4756-b6be-89b07371256c`, ledger 40/`0039_administrative_mfa.sql`;
+- gates locais da RC: `test:all` 285/285, Playwright 100 aprovados/4 ignorados/0 falhas, PWA production-like 10/10, typecheck, lint, build 66/66 páginas, Pages Functions e Worker dry-run aprovados;
+- gates do repositório: Quality e PWA Release devem estar `SUCCESS` no `REPOSITORY_RC_SHA`; os run IDs ficam associados ao SHA no GitHub Actions e no relatório da sprint;
+- promoção runtime adicional: não necessária enquanto o commit da RC contiver somente documentação e contratos sem efeito no artifact/runtime.
+
+### FEATURE_FREEZE
+
+Até o Go/No-Go são permitidos apenas blocker/regressão, segurança, acessibilidade crítica, incompatibilidade de release e documentação necessária. Feature nova, redesign, melhoria cosmética opcional, mudança de economia, conteúdo oportunista, novo jogo e refatoração sem necessidade ficam proibidos.
 
 ## Release Truth
 
 - branch observada: `main`;
-- HEAD observado antes das alterações locais 27.7.0/27.7.1: `11fd739b7824854890662d075f2e9c0311590b68`;
-- alterações 27.7.0/27.7.1 permanecem locais e não commitadas;
+- HEAD/`origin/main` operacional verificado: `7921a0576dacba02720a3fcac871b6afe4412ed0`;
 - migration local mais recente: `0039_administrative_mfa.sql`;
-- 0039: `LOCAL_VERIFIED`; ledger/schema atual de produção: `REMOTE_UNKNOWN / TO_VERIFY_IN_27_7_2`;
-- MFA: implementação local pronta; `MFA_ENCRYPTION_KEY` em produção: `REMOTE_UNKNOWN / TO_VERIFY_IN_27_7_2`;
-- não houve deploy, migration, secret, tag ou release durante 27.7.0/27.7.1.
+- 0039: `0039_PRODUCTION_VERIFIED`; ledger remoto 40, zero pendências;
+- MFA: `MFA_PRODUCTION_OPERATIONAL_VERIFIED`; enrollment pela UI, TOTP, sessão `mfa_verified`, novo login, replay rejection e recovery generation comprovados sem exposição de credenciais;
+- Pages: `PAGES_RELEASE_TRUTH_VERIFIED` e `PAGES_RUNTIME_SMOKE_VERIFIED`; Quality `31760852798` → artifact `9204548500` → promoção oficial `31764192229` → deployment `8be3bbd5-95a7-4251-8ef3-dd4e6d079bef` no SHA `7921a0576dacba02720a3fcac871b6afe4412ed0` → smoke das quatro rotas aprovado. O registro Git `1e78facd-f710-4ea8-b2ce-3e97bb739661` foi comprovado como `skipped`, sem artifact ou alteração de produção;
+- Worker: `WORKER_CURRENT_VERIFIED`, versão 61 (`bb9269ae-2065-4611-ad71-940c12403a11`), deployment `1c6ed2c6-0371-4972-a19c-df2e7ea4a2d2`, D1 esperado e cron `* * * * *`; execução recorrente sem heartbeat permanece desconhecida.
 
-Ausência de evidência remota atual não é tratada como falha nem sucesso. A 27.7.2 verificará o estado sem revelar secrets e aplicará somente o fluxo necessário.
+As afirmações remotas acima possuem evidência operacional da 27.7.2; não implicam aprovação jurídica ou release pública.
 
 ## Entregas concluídas
 
@@ -24,11 +40,11 @@ Ausência de evidência remota atual não é tratada como falha nem sucesso. A 2
 - Core Platform, economia, coleções, Perfil 2.0 e Ranking Universal;
 - PWA production-like, Quality gates e promoção manual vinculada ao SHA/artifact;
 - Asset Pack v2 Waves 1–5 integradas; Wave 6 `POST_RELEASE`; Wave 7 `DONE` como auditoria/preparação de Store;
-- 27.7.0 `DONE`; 27.7.1 `DONE localmente`; 27.7.2 `NEXT`.
+- 27.7.0, 27.7.1, 27.7.2 e 27.7.3 `DONE`; 27.7.4 — Validação Manual do Usuário é `NEXT`.
 
 ## Conteúdo e proveniência
 
-- Quiz: `PROVENANCE_RESOLVED`, com autoria interna, assistência de IA e curadoria humana; `Quiz.csv` preservado; 984 itens permanecem evidência operacional anterior a reconfirmar na 27.7.2;
+- Quiz: `PROVENANCE_RESOLVED`, com autoria interna, assistência de IA e curadoria humana; `Quiz.csv` preservado; 984 itens publicados foram reconfirmados remotamente na 27.7.2D.4;
 - pacote oficial: 380 IDs únicos — Wordle 120, Timeline 40, Memória 40, Associação 60, Quem Sou Eu 60 e Três Pistas 60 — validado por schemas/contratos;
 - revisão editorial humana final: `HUMAN_APPROVAL_REQUIRED`, sem impedir preparação técnica ou RC privada;
 - textos bíblicos completos/derivados sem licença comprovada continuam fora da árvore ativa;
@@ -52,7 +68,7 @@ Ausência de evidência remota atual não é tratada como falha nem sucesso. A 2
 
 ## Operação e recuperação
 
-- `D1_BACKUP_ENCRYPTION_KEY`: `HISTORICAL_REMOTE_EVIDENCE` de provisionamento v1 e custódia externa; verificar estado atual na 27.7.2 sem revelar valor;
+- backup pré-0039: `REMOTE_VERIFIED`, run `31742051309`, artifact privado `9197534287`, SHA-256 cifrado `65571640b719e9e99fc4838d89b12f4b77296331adab8dd671ac04c8d24c2d2a`, plaintext removido; `D1_BACKUP_ENCRYPTION_KEY` v1 possui evidência de custódia externa;
 - restore remoto isolado com dataset sintético: comprovado; D1 descartável excluído; produção não restaurada;
 - heartbeat persistido, monitor externo e alertas proativos: riscos aceitos/`POST_RELEASE`, não blockers internos;
 - backup, reconciliador, verify-promotable/final, compare e rollback seguem gates obrigatórios.
@@ -65,14 +81,28 @@ Ausência de evidência remota atual não é tratada como falha nem sucesso. A 2
 
 ## Checklist operacional da 27.7.2
 
-1. consolidar SHA candidato e executar Quality/PWA gates;
-2. verificar `MFA_ENCRYPTION_KEY` e `D1_BACKUP_ENCRYPTION_KEY` sem expor valores;
-3. produzir backup cifrado/checksum;
-4. verificar ledger; aplicar 0039 somente se pendente; executar verify-final/compare;
-5. confirmar contagens/elegibilidade 984/380;
-6. promover exatamente o artifact validado e executar smoke operacional;
-7. registrar evidências e rollback sem dados pessoais/secrets.
+1. SHA/Quality/browser-smoke: concluído;
+2. secrets por metadata, backup cifrado e restore isolado: concluídos;
+3. migration 0039, `verify-final` e compare: concluídos;
+4. contagens 984/380 e Outbox: confirmadas;
+5. rotas críticas, Pages Release Truth e Worker/Cron: confirmados;
+6. enrollment/TOTP MFA controlado: concluído; novo login e replay rejection aprovados; consumo manual de recovery code não foi forçado.
 
 ## Decisão atual
 
-**Repositório internamente pronto para 27.7.2.** Ainda não existe autorização de release pública. Jurídico/editorial impedem `PUBLIC_RELEASE_GO`; Google Play permanece separado; produção depende da 27.7.2.
+**`RC_BASELINE_READY_FOR_MANUAL_VALIDATION`: 27.7.3 concluída sem blocker técnico restante para iniciar a validação manual controlada da 27.7.4.** Ainda não existe autorização de release pública. Jurídico/editorial impedem `PUBLIC_RELEASE_GO`; Google Play permanece separado.
+
+## Classificação dos riscos residuais
+
+| Item | Classificação |
+|---|---|
+| heartbeat persistido, monitor externo e alertas proativos | `RISK_ACCEPTED / POST_RELEASE` |
+| warning Actions Node.js 20 → 24 | `POST_RELEASE` antes da remoção do runtime antigo |
+| consumo produtivo de recovery code | `MANUAL_CHECK`; geração e single-use automatizado comprovados |
+| recuperação extrema do owner | `MANUAL_CHECK`; procedimento operacional externo |
+| masters Store em `public/` | `RISK_ACCEPTED / POST_RELEASE` |
+| advisories transitivos aceitos | `RISK_ACCEPTED`, com exceções restritas e revisão periódica |
+| APIs históricas mantidas | `RISK_ACCEPTED / POST_RELEASE`, retirada somente com telemetria e rollback |
+| Web Vitals públicos | `MANUAL_CHECK` antes do Go público; não bloqueia RC privada |
+
+Revisão editorial/bíblica e jurídica não bloqueiam RC privada/controlada, mas são `HUMAN_APPROVAL_REQUIRED` antes de `PUBLIC_RELEASE_GO`. Google Play é `BLOCKED_EXTERNAL / FUTURE_PUBLICATION_PREPARATION` e não integra o caminho crítico da RC web.

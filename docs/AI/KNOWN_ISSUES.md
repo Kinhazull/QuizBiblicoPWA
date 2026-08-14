@@ -13,11 +13,9 @@
 | KI-015 | LGPD/documentos v2 | Release blocker jurídico | Controlador, contato, público-alvo, ausência de exclusão por inatividade e matriz técnica de retenção estão resolvidos; ainda aprovar identidade/endereço se exigidos, bases e prazos legais, adolescentes/acesso infantil incidental, mecanismo internacional, Termos e Privacidade v2. |
 | KI-016 | Google Play | Release blocker externo/humano | Decidir domínio/package ID, assinatura, DAL, target SDK vigente, Data Safety, classificação e validar Android físico antes de gerar AAB. |
 | KI-005 | Legado preservado | Médio | Jornada/Medalhas e Analytics antigo redirecionam para superfícies modernas; APIs/dados históricos e perfil público legado permanecem até prova de não uso ou decisão de produto. |
-| KI-006 | CI/release | Médio | Validar em execução real o novo gate manual por SHA/artefato e manter auto-deploy Git desativado. |
 | KI-007 | Custo e retenção | Médio | Matriz preliminar existe e não representa economia realizada; preencher quotas/consumo e obter aprovação jurídica/técnica por tabela antes de qualquer automação. |
-| KI-008 | Alertas e heartbeat | Médio | Health/logs detectam falhas, mas não há heartbeat persistido do Cron nem canal externo proativo; decidir mecanismo de custo zero antes da abertura. |
+| KI-008 | Alertas e heartbeat | Risco aceito / pós-release | Health/logs e sinais indiretos existem, mas não há heartbeat persistido do Cron, monitor externo ou alerta proativo. Não bloqueia RC controlada; reavaliar solução de custo zero após observação real. |
 | KI-009 | Advisory transitivo temporário | Baixo | Revisar periodicamente `GHSA-mh99-v99m-4gvg`; manter exceção exclusiva até existir correção upstream compatível. |
-| KI-010 | MFA administrativo | Alto | Implementação e migration 0039 estão `LOCAL_VERIFIED`; secret e ledger produtivos são `REMOTE_UNKNOWN / TO_VERIFY_IN_27_7_2`, sem presumir ausência ou aplicação. |
 | KI-011 | Recuperação do owner | Médio | Recovery codes existem; perda simultânea de senha, TOTP e códigos do owner depende de procedimento operacional externo controlado. |
 | KI-012 | Advisories transitivos de `image-size` | Baixo | `vinext` fixa `image-size@2.0.2`; a correção anunciada `2.0.3` ainda não foi publicada. Exceções restritas a `GHSA-w3rx-r6r6-pgpr` e `GHSA-5p2g-fcmc-qvqq`, somente para assets locais controlados no build, devem ser removidas assim que o upstream corrigir a cadeia. |
 
@@ -29,3 +27,5 @@
 - KI-013: `D1_BACKUP_ENCRYPTION_KEY` v1 provisionada no Environment `production` e custodiada externamente.
 - KI-014: os 16 colecionáveis usam `CollectibleArt`; aliases `frame-covenant`→`frame-aliance` e `frame-royal`→`frame-real` estão aprovados e testados.
 - KI-017: Brand v2/PWA integrada na Wave 1 e validada por contrato; Android físico permanece KI-001.
+- KI-006: promoção manual por SHA/artifact, auto-deploy desativado, Release Truth e smoke produtivo foram comprovados pelos runs `31760852798` e `31764192229`;
+- KI-010: migration 0039, secret MFA e fluxo funcional completo foram comprovados remotamente; recovery extremo do owner permanece separado em KI-011.

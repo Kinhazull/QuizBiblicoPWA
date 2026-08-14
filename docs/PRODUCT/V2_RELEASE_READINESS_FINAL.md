@@ -2,8 +2,8 @@
 
 **Auditoria:** Sprint 27.7.0 — 13/08/2026  
 **Decisão 27.7.0:** `READY_FOR_27_7_1`  
-**Fechamento 27.7.1:** blockers internos documentais encerrados; `27.7.2 NEXT`.  
-**Escopo:** evidência local do repositório. Nenhum estado remoto foi consultado ou inferido.
+**Fechamento 27.7.3:** RC final `DONE`; `27.7.4 NEXT` para validação manual.
+**Escopo inicial:** auditoria local. As evidências operacionais da 27.7.2 abaixo atualizam explicitamente os estados remotos comprovados.
 
 Este é o registro central da sequência 27.7. Documentos históricos continuam úteis, mas afirmações remotas ou anteriores às Waves de arte não substituem esta baseline.
 
@@ -15,8 +15,8 @@ Este é o registro central da sequência 27.7. Documentos históricos continuam 
 - 159 commits alcançáveis pelo HEAD inicial;
 - 40 migrations sequenciais, terminando em `0039_administrative_mfa.sql`;
 - árvore inicialmente limpa. Esta auditoria adiciona este documento; as alterações documentais/contratuais da Wave 7 também aparecem no diff final da sessão;
-- última evidência registrada de build: 63 páginas; não reexecutado nesta auditoria;
-- evidência focada e `test:quick` foram reexecutados ao final. Suítes pesadas permanecem evidência dos gates anteriores e devem ser repetidas na RC final.
+- evidência final da RC: build 66/66 páginas, `test:all` 285/285, Playwright 100 aprovados/4 ignorados, PWA 10/10, typecheck, lint, Pages Functions e Worker dry-run aprovados;
+- a validação humana orientada pela checklist da 27.7.4 permanece intencionalmente fora desta sprint.
 
 ## Matriz de readiness
 
@@ -24,19 +24,19 @@ Este é o registro central da sequência 27.7. Documentos históricos continuam 
 |---|---|---|
 | A. Arquitetura | READY | — |
 | B. Runtime | READY | — |
-| C. Banco / D1 | READY_WITH_MANUAL_CHECK | Estado remoto não foi consultado; confirmar schema/ledger antes da promoção. |
-| D. Migrations | READY_WITH_MANUAL_CHECK | Contratos locais chegam à 0039; promoção remota da 0039 não está comprovada localmente. |
+| C. Banco / D1 | READY | Ledger/schema verificados remotamente com 40 migrations e zero pendências. |
+| D. Migrations | READY | 0039 promovida e validada por `verify-final`/compare estrutural. |
 | E. Autenticação | READY | — |
-| F. MFA | READY_WITH_MANUAL_CHECK | Implementação `LOCAL_VERIFIED`; secret e migration produtivos são `REMOTE_UNKNOWN / TO_VERIFY_IN_27_7_2`. |
+| F. MFA | READY | Enrollment pela UI, TOTP, sessão verificada, novo login, replay rejection e geração protegida de recovery codes foram comprovados em produção. |
 | G. RBAC / owner | READY_WITH_MANUAL_CHECK | Constraint/fluxo existem; confirmar owner único e matrícula MFA em produção. |
 | H. Sessões | READY | — |
 | I. Recuperação de conta | READY_WITH_MANUAL_CHECK | Contratos existem; smoke produtivo seguro ainda é operacional. |
 | J. Segurança HTTP/CSP | READY | — |
 | K. Dependências/advisories | READY_WITH_MANUAL_CHECK | Exceção limitada para `brace-expansion`; `image-size@2.0.2` segue transitivo de tooling até correção upstream. |
 | L. Backup/restore | READY | Chave de backup e restore remoto isolado estão documentados como concluídos. |
-| M. Cron/Worker | READY_WITH_MANUAL_CHECK | Sem heartbeat persistido; logs e sinais indiretos exigem conferência operacional. |
+| M. Cron/Worker | READY_WITH_MANUAL_CHECK | Worker versão 61 e cron `* * * * *` comprovados; saúde recorrente continua desconhecida sem heartbeat. |
 | N. Outbox/consumers | READY | — |
-| O. Operational Health | READY_WITH_MANUAL_CHECK | Endpoint existe; conferir produção após promoção. |
+| O. Operational Health | READY | Consultado em produção com sessão administrativa MFA legítima; sistema estruturalmente saudável. |
 | P. CMS | READY | — |
 | Q. Biblioteca Universal | READY | — |
 | R. Gerador Universal | READY | — |
@@ -61,13 +61,13 @@ Este é o registro central da sequência 27.7. Documentos históricos continuam 
 | AK. Reward Art | READY | — |
 | AL. Collectible Art | READY | 16 IDs funcionais resolvidos; aliases `frame-covenant`/`frame-royal` estão formalizados. |
 | AM. Sistema/Eventos/Progressão Art | READY | — |
-| AN. Conteúdo | READY_WITH_MANUAL_CHECK | 380 itens passam contratos; 984 perguntas são evidência declarada/remota anterior, não recontadas nesta auditoria. Revisão bíblica humana amostral segue aberta. |
+| AN. Conteúdo | READY_WITH_MANUAL_CHECK | 984 perguntas e 380 itens oficiais foram reconfirmados remotamente; revisão bíblica humana amostral segue aberta para release pública. |
 | AO. Licenças/proveniência | BLOCKED_EXTERNAL | Proveniência interna está registrada; purge histórico e revisão de citações/licenças exigem decisão jurídica humana. |
 | AP. Jurídico/LGPD | BLOCKED_EXTERNAL | Documentos são tecnicamente coerentes, mas Termos/Privacidade, bases/prazos e transferências precisam de aprovação jurídica humana. |
 | AQ. Google Play/TWA | BLOCKED_EXTERNAL | Domínio, package ID, assinatura, DAL, AAB, Play Console e Android físico ainda não existem/foram validados. Não bloqueia a RC web. |
-| AR. CI | READY_WITH_MANUAL_CHECK | Workflows e gates existem; executar Quality/PWA gates sobre o SHA candidato. |
-| AS. Release Truth | READY | Fontes correntes reconciliadas na 27.7.1; estados remotos permanecem explicitamente desconhecidos até 27.7.2. |
-| AT. Rollback | READY_WITH_MANUAL_CHECK | Backup/reconciliador/runbooks existem; confirmar artifact/backup do SHA candidato. |
+| AR. CI | READY | Quality `31760852798` e browser-smoke aprovados no SHA `7921a05`. |
+| AS. Release Truth | READY | Quality `31760852798`, artifact `9204548500`, promoção `31764192229`, deployment Pages `8be3bbd5` e smoke estão encadeados e comprovados; `1e78facd` foi somente registro Git skipped. |
+| AT. Rollback | READY | Backup pré-0039, reconciliador, compare, checksum e runbooks possuem evidência; restore isolado histórico foi aprovado. |
 | AU. Zero-cost readiness | READY_WITH_MANUAL_CHECK | Política existe; cotas continuam revisão manual e não há telemetria paga. |
 | AV. Observabilidade | READY_WITH_MANUAL_CHECK | Health/logs existem; heartbeat, monitor externo e alertas proativos são melhorias futuras. |
 | AW. Documentação | READY | Contradições factuais correntes reconciliadas; documentos históricos permanecem históricos. |
@@ -81,16 +81,14 @@ Este é o registro central da sequência 27.7. Documentos históricos continuam 
 
 Nenhum blocker interno conhecido após a 27.7.1. Revisão editorial e jurídica são aprovações humanas; MFA/0039 e contagens produtivas são verificações operacionais da 27.7.2.
 
-### Blockers operacionais — Sprint 27.7.2
+### Fechamento operacional — Sprint 27.7.2
 
-1. Consolidar e commitar o diff aprovado; executar Quality e PWA Release gates para o SHA exato.
-2. Confirmar no ambiente `production`, sem revelar valores, `MFA_ENCRYPTION_KEY` e `D1_BACKUP_ENCRYPTION_KEY` como secrets independentes.
-3. Obter backup cifrado/checksum antes de qualquer migration.
-4. Executar `verify-promotable`; promover somente a migration pendente; executar `verify-final` e `compare`.
-5. Confirmar ledger remoto até 0039, 984 perguntas e 380 conteúdos publicados/projetados/elegíveis, sem alterar conteúdo.
-6. Promover exatamente o artifact validado para o SHA; validar provenance e rollback.
-7. Executar smoke autenticado dos sete jogos nos modos FREE_PLAY/DAILY e um EVENT, MFA/owner, CMS, Health, Worker, Outbox e consumidores.
-8. Registrar resultados sem secrets, dados pessoais ou dumps em artifacts públicos.
+1. Worker, backup, migration 0039, ledger, conteúdo e gates do SHA candidato estão comprovados.
+2. Release Truth do Pages concluída: `1e78facd` era registro Git bloqueado, auto-deploy segue desabilitado e o artifact validado foi promovido oficialmente em `8be3bbd5`.
+3. Smoke MFA administrativo controlado concluído sem ampliar permissões ou expor secrets; owner extremo continua fora do teste por decisão de segurança.
+4. Completar os smokes humanos finais de RC (jogos/modos, Android físico e jurídico/editorial) antes do Go público.
+
+Conclusão: não resta blocker técnico de preparação produtiva. A baseline está `TECHNICALLY_READY_FOR_RC` privada/controlada.
 
 ### Blockers humanos
 
@@ -125,12 +123,12 @@ Nenhum blocker interno conhecido após a 27.7.1. Revisão editorial e jurídica 
 
 ## Revalidações específicas
 
-- `MFA_ENCRYPTION_KEY`: implementação exige 32 bytes em base64url; provisionamento produtivo **não comprovado no repositório**.
-- migration 0039: presente, sequencial e coberta localmente; promoção produtiva **não comprovada nesta auditoria**.
+- `MFA_ENCRYPTION_KEY`: presença cifrada comprovada sem leitura do valor; enrollment funcional, TOTP, novo login e replay rejection aprovados em produção.
+- migration 0039: promovida e verificada remotamente; ledger 40, zero pendências.
 - `D1_BACKUP_ENCRYPTION_KEY`: documentada como provisionada/custodiada no Environment `production`; não foi consultada.
 - restore remoto: documentado como aprovado em D1 isolado e descartável em 12/08/2026.
 - Cron/alertas: riscos operacionais futuros, não blockers internos da RC.
-- conteúdos: pacote versionado contém 380 IDs únicos; `Quiz.csv` tem 1001 linhas, enquanto a disponibilidade de 984 itens universais permanece evidência operacional anterior a reconfirmar remotamente.
+- conteúdos: pacote versionado contém 380 IDs únicos e a produção confirmou 380 oficiais publicados; o Quiz possui 984 itens publicados reconfirmados remotamente.
 - textos bíblicos completos: fontes removidas permanecem ausentes da árvore ativa; scripts históricos não têm consumidor runtime de release.
 - Asset Pack: Waves 1–5 integradas, Wave 6 `POST_RELEASE`, Wave 7 auditada. Não há divergência conhecida entre hashes do manifesto e arquivos.
 - Store: nenhum dos nove assets está pronto para upload sem etapa humana.
@@ -185,11 +183,11 @@ Nenhum blocker interno conhecido após a 27.7.1. Revisão editorial e jurídica 
 - `docs/AI/CURRENT_STATE.md` ainda afirma que 27.7 não começou;
 - `docs/PRODUCT/RELEASE_SNAPSHOT.md` diz que Analytics não foi iniciado e mantém arte final como blocker, embora essas entregas já existam;
 - `docs/PRODUCT/COLLECTIBLES_ART_DIRECTION.md` e trechos do snapshot ainda descrevem placeholders anteriores à Wave 4;
-- documentos operacionais concordam sobre backup/restore, mas MFA/0039 continuam sem evidência produtiva atual;
+- documentos operacionais agora registram evidência produtiva de backup/restore, 0039 e smoke MFA controlado;
 - documentos históricos sobre fallback do Quiz são preservados como história e não representam o runtime atual.
 
 Essas inconsistências são registradas, não corrigidas nesta auditoria.
 
 ## Critério de saída
 
-`READY_FOR_27_7_1`: a auditoria encontrou uma baseline tecnicamente madura e uma lista finita de blockers. Não há impedimento para iniciar a sprint de fechamento interno, mas a aplicação ainda não está autorizada como RC pública nem Google Play Ready.
+`READY_FOR_27_7_3`: a preparação produtiva está concluída e não há blocker técnico para iniciar a RC final privada/controlada. A aplicação ainda não está autorizada para release pública nem está Google Play Ready.

@@ -8,11 +8,8 @@
 - avaliar `splash-brand.png` somente quando existir uma splash nativa/Store real, sem criar atraso artificial;
 
 - executar `docs/ANDROID_PHYSICAL_CHECKLIST.md`, medir Web Vitals no domínio candidato e só depois avaliar Google Play;
-- verificar na 27.7.2 a configuração atual da chave de backup; restore remoto isolado já foi comprovado com dataset sintético;
 - concluir revisão jurídica/licenças, tratamento de adolescentes/acesso infantil incidental e Data Safety;
 - reconciliar Asset Registry, hospedagem de assets e CSP;
-- validar o workflow manual de promoção e o mesmo artefato em produção;
-- definir canal operacional de alerta e responsável por resposta;
 - preencher o orçamento operacional versionado com quotas e consumo reais dos painéis;
 - aprovar juridicamente os prazos da matriz preliminar e só então desenhar limpeza por domínio/tabela;
 - medir por 30 dias o Cron de um minuto antes de decidir entre 1, 2 ou 5 minutos;
@@ -40,6 +37,11 @@
 
 ## Pós-release
 
+- avaliar heartbeat persistido, monitor externo e canal proativo de alerta com solução compatível com custo zero;
+- atualizar Actions pinadas antes da remoção do runtime Node.js 20 pelos runners;
+- executar, quando houver janela operacional segura, consumo single-use de recovery code e exercício extremo de recuperação do owner;
+- retirar APIs históricas somente após telemetria, inventário de consumidores e rollback comprovado;
+- mover/otimizar masters Store atualmente em `public/` após confirmar os consumidores e URLs necessárias;
 - biblioteca bíblica e traduções somente com licença confirmada;
 - fonte lexical PT-BR licenciada/aprovada;
 - Wordle 2.0 com dicionário de tentativas separado das soluções;

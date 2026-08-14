@@ -1,6 +1,6 @@
 ﻿# Segurança de contas
 
-**Status:** CURRENT — Sprint 27.1.1
+**Status:** CURRENT — Sprint 27.7.2D.4
 
 ## Credenciais
 
@@ -47,6 +47,13 @@
 - Apenas owner com MFA completo pode revogar MFA de admin da mesma organização; a operação revoga sessões e é auditada. Admin não reseta admin/owner e owner não reseta owner.
 - A perda de senha, TOTP e recovery codes do próprio owner exige recuperação operacional externa controlada. Não existe bypass nem papel superior.
 
+### Evidência operacional produtiva
+
+- O smoke controlado de 14/08/2026 comprovou enrollment pela UI, confirmação TOTP, sessão `mfa_verified`, acesso administrativo, logout e novo login com challenge MFA.
+- Uma tentativa única de reutilizar o TOTP anteriormente aceito foi rejeitada; o metadado anti-replay permaneceu persistido.
+- Oito recovery codes foram gerados e permanecem protegidos/não utilizados. O consumo manual não foi forçado para preservar a recuperação da conta controlada.
+- Nenhum segredo TOTP, QR, recovery code, conteúdo cifrado, IV ou hash foi registrado na documentação ou nos logs operacionais da tarefa.
+
 ## CSP e headers
 
 - Permanecem `nosniff`, `DENY`, `strict-origin-when-cross-origin`, Permissions Policy restritiva e CSP com `frame-ancestors`, `base-uri`, `form-action` e `object-src` bloqueados.
@@ -55,7 +62,7 @@
 
 ## Riscos restantes
 
-- `MFA_ENCRYPTION_KEY` precisa ser provisionada no ambiente antes da ativação da migration/código.
+- A rotação futura de `MFA_ENCRYPTION_KEY` exige procedimento operacional explícito; a chave produtiva atual permanece provisionada e cifrada.
 - Não existe canal de entrega remoto de recuperação; os códigos precisam ser guardados pelo usuário.
 - A CSP ainda contém `unsafe-inline`.
 - A exceção exclusiva `GHSA-mh99-v99m-4gvg` permanece transitiva em tooling de desenvolvimento até correção upstream compatível.

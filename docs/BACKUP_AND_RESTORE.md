@@ -19,7 +19,7 @@ Os workflows de reconciliação de migrations e limpeza do piloto executam:
 5. SHA-256 do arquivo cifrado;
 6. upload privado e temporário do `.enc`, checksum e snapshot.
 
-O workflow manual `reconcile-production-d1.yml` possui duas operações explícitas. `reconcile` preserva o fluxo completo acima e, após o artifact, revalida e aplica somente migrations oficiais pendentes, executando `verify-final` e `compare`. `backup_only` encerra com sucesso imediatamente após exportação, criptografia, verificação do checksum, remoção do plaintext, upload do artifact e resumo seguro; o job mutável é separado e condicionado estruturalmente a `operation == 'reconcile'`. Valores ausentes ou inválidos falham antes do export. Esta separação foi adicionada após o safety finding da 27.7.2B; ela não constitui evidência de que um backup produtivo já tenha sido executado.
+O workflow manual `reconcile-production-d1.yml` possui duas operações explícitas. `reconcile` preserva o fluxo completo acima e, após o artifact, revalida e aplica somente migrations oficiais pendentes, executando `verify-final` e `compare`. `backup_only` encerra com sucesso imediatamente após exportação, criptografia, verificação do checksum, remoção do plaintext, upload do artifact e resumo seguro; o job mutável é separado e condicionado estruturalmente a `operation == 'reconcile'`. Valores ausentes ou inválidos falham antes do export. A separação técnica isoladamente não prova execução; a evidência produtiva concreta está registrada na seção “Backup produtivo pré-migration 0039”.
 
 A chave é o secret independente `D1_BACKUP_ENCRYPTION_KEY`. Ela não pode ser o token Cloudflare, não entra no banco, no Git, no artifact ou nos logs. O proprietário deve mantê-la em gerenciador de segredos com cópia de recuperação offline controlada. Perder essa chave torna os backups cifrados inutilizáveis.
 
@@ -114,7 +114,7 @@ O snapshot `d1-before.json` foi recuperado do artifact privado `d1-production-ba
 
 Contra a produção atual, o `verify-final` confirmou ledger 40/0039 e o compare corrigido aceitou somente a alteração estrutural exata de `sessions`. O relatório registrou 11 objetos criados, 1 modificação esperada, 0 modificações inesperadas, 0 remoções, 0 regressões de linhas e preservação das 67 tabelas preexistentes. `quick_check` retornou `ok` e `foreign_key_check` não retornou inconsistências.
 
-As três tabelas MFA, os índices esperados e `sessions.mfa_verified INTEGER NOT NULL DEFAULT 0` foram confirmados; as três tabelas MFA permanecem vazias. O secret `MFA_ENCRYPTION_KEY` permanece listado somente como `Value Encrypted`. A listagem read-only do Pages registrou deployment de produção no SHA `11c2377`, posterior ao provisionamento; isso não substitui o enrollment/smoke funcional MFA, que permanece pendente e fora desta etapa.
+As três tabelas MFA, os índices esperados e `sessions.mfa_verified INTEGER NOT NULL DEFAULT 0` foram confirmados; naquele momento as três tabelas MFA permaneciam vazias. O secret `MFA_ENCRYPTION_KEY` permaneceu listado somente como `Value Encrypted`. O enrollment/smoke funcional foi executado posteriormente na 27.7.2D.4 e está registrado nos documentos correntes de release.
 
 Nenhuma migration, escrita D1, restauração, alteração de secret ou deployment foi executado durante a revalidação.
 
