@@ -11,6 +11,7 @@ type ImportResponse = {
   byGame: Record<string, GameReport>;
   report: { migrated: number; alreadyMigrated: number; updatesRequired?: number; reconciled?: number };
   error?: string;
+  supportId?: string;
 };
 
 const gameLabels: Record<string, string> = {
@@ -39,10 +40,14 @@ export function OfficialBaseContentImport() {
         body: JSON.stringify({ commit, confirmation: commit ? confirmation : undefined }),
       });
       const payload = await response.json() as ImportResponse;
-      if (!response.ok) throw new Error(payload.error ?? "import_failed");
+      if (!response.ok) {
+        const reference = [payload.error ?? "import_failed", payload.supportId].filter(Boolean).join(" · ");
+        throw new Error(reference);
+      }
       setData(payload);
-    } catch {
-      setError("Não foi possível executar a operação. Nenhum conteúdo deve ser importado sem um relatório válido.");
+    } catch (failure) {
+      const reference = failure instanceof Error ? failure.message : "import_failed";
+      setError(`Não foi possível executar a operação (${reference}). Nenhum conteúdo foi importado.`);
     } finally {
       setLoading(false);
     }
