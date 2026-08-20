@@ -109,8 +109,8 @@ test("Home exibe Evento somente quando existe agendamento ativo", async ({ page 
   visible = true;
   await page.reload();
   await expect(page.getByRole("heading", { name: "Semana da Fé" })).toBeVisible();
-  await expect(page.getByRole("link", { name: /Participar do evento/ })).toHaveAttribute("href", "/eventos/detalhes?id=event-e2e");
-  await expect(page.locator(".platform-event-card")).toHaveCount(0);
+  await expect(page.getByRole("link", { name: /Ver evento/ })).toHaveAttribute("href", "/eventos/detalhes?id=event-e2e");
+  await expect(page.locator(".platform-event-card")).toHaveCount(1);
 });
 
 test("participante conclui Evento uma vez e recebe resultado fixo", async ({ page }) => {
@@ -126,7 +126,7 @@ test("participante conclui Evento uma vez e recebe resultado fixo", async ({ pag
   await expect(page).toHaveURL(/wordle-biblico\/?\?event=selection-event&eventId=event-e2e/);
   await expect(page.getByText(/Dica: O Salvador/)).toBeVisible();
   await expect(page.locator(".participant-bottom-nav")).toHaveCount(0);
-  for (const letter of "JESUS") await page.getByRole("button", { name: `Letra ${letter}` }).click();
+  for (const letter of "JESUS") await page.getByRole("button", { name: `Letra ${letter}`, exact: true }).click();
   await page.getByRole("button", { name: "Enter" }).click();
   await expect(page.getByRole("heading", { name: "Você venceu!" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Jogar novamente" })).toHaveCount(0);

@@ -471,7 +471,7 @@ for (const scenario of [
       });
     });
     await page.goto(`/jogos/wordle-biblico?${scenario.mode}=${selectionId}`);
-    await expect(page.getByText(/Digite uma palavra bíblica/i)).toBeVisible();
+    await expect(page.locator('.wordle-board[aria-label="Tabuleiro do Wordle Bíblico"]')).toBeVisible();
 
     await page.getByRole("button", { name: /Voltar para a tela anterior/i }).click();
     await expect(page.getByRole("heading", { name: scenario.title })).toBeVisible();
@@ -499,8 +499,10 @@ test("browser Back cannot bypass the active-game confirmation", async ({ page })
       body: JSON.stringify({ ok: true, outcome: "lost", duplicate: false }),
     });
   });
+  await page.goto("/jogos");
   await page.goto(`/jogos/wordle-biblico?freePlay=${selectionId}`);
-  await expect(page.getByText(/Digite uma palavra bíblica/i)).toBeVisible();
+  await expect(page.locator('.wordle-board[aria-label="Tabuleiro do Wordle Bíblico"]')).toBeVisible();
+  await expect.poll(() => page.evaluate(() => history.state?.platformGameExitGuard)).toBe(true);
   await page.goBack();
   await expect(page.getByRole("heading", { name: /Sair da partida/i })).toBeVisible();
   expect(abandonments).toBe(0);
