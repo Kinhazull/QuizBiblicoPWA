@@ -54,6 +54,36 @@ const increment = (target: Record<string, number>, key: string | null | undefine
 };
 
 const IMPORT_EXISTING_CONTENT_PAGE_SIZE = 200;
+const IMPORT_EXISTING_ID_BATCH_SIZE = 80;
+
+const IMPORT_CONTENT_COLUMNS = `id,organization_id,game_type,status,category,difficulty,
+  biblical_reference,tags_json,payload_json,author_id,reviewer_id,created_at,updated_at,version`;
+
+async function listExistingCandidates(
+  env: AppEnv,
+  candidates: readonly UniversalImportCandidate[],
+) {
+  const rows: Record<string, unknown>[] = [];
+  const idsByOrganization = new Map<string, string[]>();
+  for (const candidate of candidates) {
+    idsByOrganization.set(candidate.organizationId, [
+      ...(idsByOrganization.get(candidate.organizationId) ?? []),
+      candidate.model.id,
+    ]);
+  }
+  for (const [organizationId, ids] of idsByOrganization) {
+    for (let offset = 0; offset < ids.length; offset += IMPORT_EXISTING_ID_BATCH_SIZE) {
+      const chunk = ids.slice(offset, offset + IMPORT_EXISTING_ID_BATCH_SIZE);
+      const placeholders = chunk.map((_, index) => `?${index + 2}`).join(",");
+      const result = await env.DB.prepare(`SELECT ${IMPORT_CONTENT_COLUMNS} FROM content_items
+        WHERE organization_id=?1 AND id IN (${placeholders})`)
+        .bind(organizationId, ...chunk)
+        .all<Record<string, unknown>>();
+      rows.push(...(result.results ?? []));
+    }
+  }
+  return rows;
+}
 
 async function listExistingContentForImport(
   env: AppEnv,
@@ -67,9 +97,8 @@ async function listExistingContentForImport(
   const offsetIndex = gameTypes.length + 3;
   for (const organizationId of organizationIds) {
     for (let offset = 0; ; offset += IMPORT_EXISTING_CONTENT_PAGE_SIZE) {
-      const page = await env.DB.prepare(`SELECT id,organization_id,game_type,status,category,difficulty,
-        biblical_reference,tags_json,payload_json,author_id,reviewer_id,created_at,updated_at,version
-        FROM content_items WHERE organization_id=?1 AND game_type IN (${gameTypePlaceholders})
+      const page = await env.DB.prepare(`SELECT ${IMPORT_CONTENT_COLUMNS} FROM content_items
+        WHERE organization_id=?1 AND game_type IN (${gameTypePlaceholders})
         ORDER BY id LIMIT ?${limitIndex} OFFSET ?${offsetIndex}`)
         .bind(organizationId, ...gameTypes, IMPORT_EXISTING_CONTENT_PAGE_SIZE, offset)
         .all<Record<string, unknown>>();
@@ -106,12 +135,16 @@ export async function planUniversalContentImport(
   env: AppEnv,
   candidates: readonly UniversalImportCandidate[],
 ) {
-  const organizationIds = [...new Set(candidates.map(candidate => candidate.organizationId))];
-  const gameTypes = [...new Set(candidates.map(candidate => candidate.model.gameType))];
-  const existingRows = await listExistingContentForImport(env, organizationIds, gameTypes);
-  const existingById = new Map(existingRows.map(row => [String(row.id), row]));
+  const existingCandidates = await listExistingCandidates(env, candidates);
+  const existingById = new Map(existingCandidates.map(row => [String(row.id), row]));
+  const missingCandidates = candidates.filter(candidate => !existingById.has(candidate.model.id));
+  const organizationIds = [...new Set(missingCandidates.map(candidate => candidate.organizationId))];
+  const gameTypes = [...new Set(missingCandidates.map(candidate => candidate.model.gameType))];
+  const duplicateRows = missingCandidates.length
+    ? await listExistingContentForImport(env, organizationIds, gameTypes)
+    : [];
   const duplicateKeys = new Map<string, string>();
-  for (const row of existingRows) {
+  for (const row of duplicateRows) {
     const gameType = String(row.game_type);
     const metadata = {
       id: String(row.id), gameType, category: String(row.category),
@@ -134,7 +167,7 @@ export async function planUniversalContentImport(
       status: ContentStatus.PUBLISHED,
     }, model.content.payload);
     const duplicateKey = createContentDuplicateKey(model.gameType, model, model.content.payload);
-    const matchingDuplicate = duplicateKey
+    const matchingDuplicate = duplicateKey && !existingById.has(model.id)
       ? duplicateKeys.get(`${candidate.organizationId}:${duplicateKey.key}`) ?? null
       : null;
     const duplicateOf = matchingDuplicate === model.id ? null : matchingDuplicate;
