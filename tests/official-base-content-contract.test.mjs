@@ -14,7 +14,9 @@ test("official base import remains an authenticated administrative operation wit
 test("universal import paginates existing content for D1-sized catalogs", async () => {
   const importer = await read("functions/_lib/universal-content-importer.ts");
   assert.match(importer, /IMPORT_EXISTING_CONTENT_PAGE_SIZE\s*=\s*200/);
-  assert.match(importer, /ORDER BY id LIMIT \?2 OFFSET \?3/);
+  assert.match(importer, /game_type IN \(\$\{gameTypePlaceholders\}\)/);
+  assert.match(importer, /ORDER BY id LIMIT \?\$\{limitIndex\} OFFSET \?\$\{offsetIndex\}/);
+  assert.match(importer, /const gameTypes = \[\.\.\.new Set\(candidates\.map\(candidate => candidate\.model\.gameType\)\)\]/);
   assert.doesNotMatch(importer, /SELECT \* FROM content_items WHERE organization_id IN/);
 });
 

@@ -55,14 +55,23 @@ const increment = (target: Record<string, number>, key: string | null | undefine
 
 const IMPORT_EXISTING_CONTENT_PAGE_SIZE = 200;
 
-async function listExistingContentForImport(env: AppEnv, organizationIds: readonly string[]) {
+async function listExistingContentForImport(
+  env: AppEnv,
+  organizationIds: readonly string[],
+  gameTypes: readonly string[],
+) {
   const rows: Record<string, unknown>[] = [];
+  if (!organizationIds.length || !gameTypes.length) return rows;
+  const gameTypePlaceholders = gameTypes.map((_, index) => `?${index + 2}`).join(",");
+  const limitIndex = gameTypes.length + 2;
+  const offsetIndex = gameTypes.length + 3;
   for (const organizationId of organizationIds) {
     for (let offset = 0; ; offset += IMPORT_EXISTING_CONTENT_PAGE_SIZE) {
       const page = await env.DB.prepare(`SELECT id,organization_id,game_type,status,category,difficulty,
         biblical_reference,tags_json,payload_json,author_id,reviewer_id,created_at,updated_at,version
-        FROM content_items WHERE organization_id=?1 ORDER BY id LIMIT ?2 OFFSET ?3`)
-        .bind(organizationId, IMPORT_EXISTING_CONTENT_PAGE_SIZE, offset)
+        FROM content_items WHERE organization_id=?1 AND game_type IN (${gameTypePlaceholders})
+        ORDER BY id LIMIT ?${limitIndex} OFFSET ?${offsetIndex}`)
+        .bind(organizationId, ...gameTypes, IMPORT_EXISTING_CONTENT_PAGE_SIZE, offset)
         .all<Record<string, unknown>>();
       const results = page.results ?? [];
       rows.push(...results);
@@ -98,7 +107,8 @@ export async function planUniversalContentImport(
   candidates: readonly UniversalImportCandidate[],
 ) {
   const organizationIds = [...new Set(candidates.map(candidate => candidate.organizationId))];
-  const existingRows = await listExistingContentForImport(env, organizationIds);
+  const gameTypes = [...new Set(candidates.map(candidate => candidate.model.gameType))];
+  const existingRows = await listExistingContentForImport(env, organizationIds, gameTypes);
   const existingById = new Map(existingRows.map(row => [String(row.id), row]));
   const duplicateKeys = new Map<string, string>();
   for (const row of existingRows) {
