@@ -9,6 +9,9 @@ test("official base import remains an authenticated administrative operation wit
   assert.match(route, /requirePermission\(request, env, "content\.manage"\)/);
   assert.match(route, /IMPORTAR_CONTEUDO_BASE_OFICIAL/);
   assert.match(route, /body\.commit === true/);
+  assert.match(route, /response\.message\.replace/);
+  assert.match(route, /slice\(0, 300\)/);
+  assert.match(route, /official_base_import_failed/);
 });
 
 test("universal import paginates existing content for D1-sized catalogs", async () => {

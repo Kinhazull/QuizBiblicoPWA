@@ -25,7 +25,11 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
   } catch (response) {
     if (response instanceof Response) return response;
     const supportId = crypto.randomUUID();
-    console.error("official_base_import_failed", { supportId });
+    const errorName = response instanceof Error ? response.name : "UnknownError";
+    const errorMessage = response instanceof Error
+      ? response.message.replace(/[\r\n]+/g, " ").slice(0, 300)
+      : "non_error_failure";
+    console.error("official_base_import_failed", { supportId, errorName, errorMessage });
     return json({ error: "unexpected_error", supportId }, 500);
   }
 };
