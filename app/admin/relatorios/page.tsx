@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { BrandIcon } from "../../navigation";
 
 export default function Reports() {
   const [rounds, setRounds] = useState<any[]>([]);
@@ -56,15 +57,15 @@ export default function Reports() {
   }
 
   return <main className="admin-shell">
-    <section className="admin-title"><p className="eyebrow">RELATÓRIOS E SEGURANÇA</p><h1>Exportar <em>dados</em></h1><p>Baixe relatórios para análise ou gere uma cópia completa de segurança.</p></section>
+    <section className="admin-title"><p className="eyebrow">RELATÓRIOS E SEGURANÇA</p><h1>Exportar <em>dados</em></h1><p>Use Analytics para indicadores universais. As exportações de resultados abaixo preservam o histórico do antigo Quiz.</p><a className="analytics-context-link" href="/admin/analytics">Abrir Analytics da plataforma</a></section>
     {message && <p className="auth-message report-message">{message}</p>}
     <section className="report-grid">
-      <article className="admin-panel"><b>👥</b><h2>Membros</h2><p>Nome, usuário, apelido, situação e datas de acesso.</p><button onClick={() => download("members")}>BAIXAR MEMBROS</button></article>
-      <article className="admin-panel"><b>🏆</b><h2>Ranking geral</h2><p>Pontuação acumulada, média e rodadas concluídas.</p><button onClick={() => download("ranking")}>BAIXAR RANKING</button></article>
-      <article className="admin-panel"><b>📝</b><h2>Resultados</h2><p>Tentativas, pontos, acertos, tempo e sequência.</p><select value={roundId} onChange={event => setRoundId(event.target.value)}><option value="">Todas as rodadas</option>{rounds.map(round => <option key={round.id} value={round.id}>{round.title}</option>)}</select><button onClick={() => download("results")}>BAIXAR RESULTADOS</button></article>
-      <article className="admin-panel"><b>🛡️</b><h2>Histórico administrativo</h2><p>Últimas cinco mil ações registradas para auditoria.</p><button onClick={() => download("audit")}>BAIXAR HISTÓRICO</button></article>
-      <article className="admin-panel"><b>🔄</b><h2>Continuidade das partidas</h2><p>Tentativas concluídas, em andamento, abandonadas e retomadas, com quantidade de respostas já salvas.</p><button onClick={() => download("continuity")}>BAIXAR CONTINUIDADE</button></article>
-      <article className="admin-panel backup-card"><b>💾</b><h2>Backup completo</h2><p>Cópia confidencial dos membros, rodadas, perguntas, resultados, medalhas e configurações. Sessões ativas não são incluídas.</p><button onClick={() => setBackupOpen(true)}>GERAR BACKUP</button></article>
+      <article className="admin-panel"><BrandIcon name="users" /><h2>Membros</h2><p>Nome, usuário, apelido, situação e datas de acesso.</p><button onClick={() => download("members")}>Baixar membros</button></article>
+      <article className="admin-panel"><BrandIcon name="trophy" /><h2>Ranking histórico do Quiz</h2><p>Pontuação acumulada, média e rodadas concluídas no sistema anterior.</p><button onClick={() => download("ranking")}>Baixar ranking histórico</button></article>
+      <article className="admin-panel"><BrandIcon name="file" /><h2>Resultados históricos do Quiz</h2><p>Tentativas, pontos, acertos, tempo e sequência das rodadas antigas.</p><label>Rodada histórica<select value={roundId} onChange={event => setRoundId(event.target.value)}><option value="">Todas as rodadas</option>{rounds.map(round => <option key={round.id} value={round.id}>{round.title}</option>)}</select></label><button onClick={() => download("results")}>Baixar resultados históricos</button></article>
+      <article className="admin-panel"><BrandIcon name="shield" /><h2>Histórico administrativo</h2><p>Últimas cinco mil ações registradas para auditoria.</p><button onClick={() => download("audit")}>Baixar histórico</button></article>
+      <article className="admin-panel"><BrandIcon name="history" /><h2>Continuidade histórica do Quiz</h2><p>Tentativas concluídas, em andamento, abandonadas e retomadas no fluxo antigo.</p><button onClick={() => download("continuity")}>Baixar continuidade histórica</button></article>
+      <article className="admin-panel backup-card"><BrandIcon name="backup" /><h2>Backup completo</h2><p>Cópia confidencial dos dados operacionais. Sessões ativas não são incluídas.</p><button onClick={() => setBackupOpen(true)}>Gerar backup</button></article>
     </section>
     {backupOpen && <div className="modal-layer"><form className="admin-panel removal-modal backup-modal" onSubmit={backup}>
       <h2>Gerar backup completo?</h2>

@@ -78,6 +78,7 @@ export default function AdminHub() {
   const [reloadKey, setReloadKey] = useState(0);
   const [severityFilter, setSeverityFilter] = useState("");
   const [domainFilter, setDomainFilter] = useState("");
+  const [showAllRecommendations, setShowAllRecommendations] = useState(false);
 
   const loadDashboard = useCallback((signal: AbortSignal) => {
     setIsLoading(true);
@@ -113,6 +114,8 @@ export default function AdminHub() {
   ] : [], [data]);
   const recommendations = useMemo(() => (data?.recommendations || []).filter(item =>
     (!severityFilter || item.severity === severityFilter) && (!domainFilter || item.domain === domainFilter)), [data, severityFilter, domainFilter]);
+  const visibleRecommendations = showAllRecommendations ? recommendations : recommendations.slice(0, 6);
+  const domainLabel: Record<RecommendationDomain, string> = { EVENTS: "Eventos", CONTENT: "Conteúdo", PLANNING: "Planejamento", OPERATIONS: "Operação" };
 
   return <main className="admin-shell admin-hub">
     <section className="admin-title" aria-labelledby="admin-hub-title">
@@ -128,7 +131,7 @@ export default function AdminHub() {
       {error && <div className="dashboard-state error" role="alert"><p>{error}</p><button type="button" onClick={() => setReloadKey(key => key + 1)} disabled={isLoading}>{isLoading ? "Carregando…" : "Tentar novamente"}</button></div>}
       {data && data.recommendations.length === 0 && <div className="attention-empty" role="status"><BrandIcon name="health" /><div><strong>Nenhuma ação recomendada neste momento</strong><span>Os sinais confiáveis disponíveis não exigem decisão administrativa.</span></div></div>}
       {data && data.recommendations.length > 0 && recommendations.length === 0 && <p className="dashboard-state" role="status">Nenhuma recomendação corresponde aos filtros.</p>}
-      {recommendations.length > 0 && <div className="attention-list">{recommendations.map(item => <article className={`attention-item ${item.severity.toLowerCase()}`} key={item.id}><BrandIcon name={attentionIcon(item.severity)} /><div className="attention-copy"><div className="attention-heading"><strong>{item.title}</strong><span className="recommendation-domain">{item.domain}</span></div><p><b>Por que:</b> {item.reason}</p><small><b>Próxima ação:</b> {item.suggestedAction}</small></div><a href={item.href}>Abrir contexto</a></article>)}</div>}
+      {recommendations.length > 0 && <><div className="attention-list">{visibleRecommendations.map(item => <article className={`attention-item ${item.severity.toLowerCase()}`} key={item.id}><BrandIcon name={attentionIcon(item.severity)} /><div className="attention-copy"><div className="attention-heading"><strong>{item.title}</strong><span className="recommendation-domain">{domainLabel[item.domain]}</span></div><p><b>Por que:</b> {item.reason}</p><small><b>Próxima ação:</b> {item.suggestedAction}</small></div><a href={item.href}>Abrir contexto</a></article>)}</div>{recommendations.length > 6 && <button className="recommendation-toggle" type="button" onClick={() => setShowAllRecommendations(value => !value)}>{showAllRecommendations ? "Mostrar somente prioridades" : `Ver todas (${recommendations.length})`}</button>}</>}
     </section>
 
     <section className="hub-summary" aria-label="Indicadores essenciais" aria-busy={isLoading}>

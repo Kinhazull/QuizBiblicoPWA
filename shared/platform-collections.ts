@@ -58,7 +58,7 @@ export const COLLECTIONS: readonly CollectionDefinition[] = Object.freeze([
   }),
   Object.freeze({
     id: "journey-frames",
-    name: "Molduras da Jornada",
+    name: "Molduras da Plataforma",
     description: "Molduras permanentes para personalizar sua identidade na plataforma.",
     coverIcon: "✨",
     itemIds: Object.freeze(COLLECTIBLE_CATALOG.filter(item => item.collectionId === "journey-frames").map(item => item.id)),

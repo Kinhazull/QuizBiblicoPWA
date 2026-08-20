@@ -5,6 +5,7 @@ import { createGameSessionId, GameInstruction, GameLayout, recordPlatformGameCom
 import { gameContentRequestFromLocation, loadGameContent, validateGameContentAction } from "../loader";
 import type { LoadedGameContent } from "../loader";
 import { GameType } from "../../../shared/content";
+import { presentContentTitle } from "../contentPresentation";
 import type { WhoAmIAction, WhoAmIChallengeHistory } from "./engine";
 
 type PublishedChallenge = { id: string; hints: string[] };
@@ -148,15 +149,15 @@ export function WhoAmIGame() {
       maxAttempts={challengeCount || 1} progressLabel="Desafios"
       gameType={GameType.WHO_AM_I} mode={loadedContent?.mode} onRestart={restart}>
       <section className="who-am-i-game" aria-label="Quem Sou Eu?" aria-busy={loading || validating}>
-        {loading && <p className="who-am-i-message" role="status">Carregando Quem Sou Eu...</p>}
-        {loadError && <p className="who-am-i-message" role="alert">Nenhum conjunto Quem Sou Eu publicado está disponível agora.</p>}
+        {loading && <p className="who-am-i-message" role="status">Preparando as fichas dos personagens…</p>}
+        {loadError && <p className="who-am-i-message" role="alert">Estamos preparando novos personagens. Tente novamente em instantes.</p>}
         {content && challenge && !loading && !loadError && (
           <>
             <header className="who-am-i-heading">
-              <span>{content.title}</span>
-              <h2>Desafio {challengeIndex + 1} de {challengeCount}</h2>
-              {content.biblicalReference && <small>{content.biblicalReference}</small>}
-              <p className="who-am-i-score">Pontuação máxima desta identidade: <strong>{Math.max(100, (challenge.hints.length - hintsVisible + 1) * 100)}</strong></p>
+              <div className="who-am-i-portrait" aria-hidden="true"><span>?</span></div>
+              <div><span>{presentContentTitle(content.title, "Rodada de identidades")}</span>
+                <h2>Identidade {challengeIndex + 1} de {challengeCount}</h2>
+                <p className="who-am-i-score">Pontuação máxima desta identidade: <strong>{Math.max(100, (challenge.hints.length - hintsVisible + 1) * 100)}</strong></p></div>
             </header>
             <ol className="who-am-i-hints" aria-label="Pistas reveladas">
               {challenge.hints.slice(0, hintsVisible).map((hint, index) => (

@@ -5,6 +5,7 @@ import { createGameSessionId, GameInstruction, GameLayout, recordPlatformGameCom
 import { gameContentRequestFromLocation, loadGameContent, validateGameContentAction } from "../loader";
 import type { LoadedGameContent } from "../loader";
 import { GameType } from "../../../shared/content";
+import { presentContentTitle } from "../contentPresentation";
 import {
   scoreForCluesUsed,
   THREE_CLUES_MAX,
@@ -170,14 +171,13 @@ export function ThreeCluesGame() {
       onRestart={restart}
     >
       <section className="three-clues-game" aria-label="Jogo das 3 Pistas" aria-busy={loading || validating}>
-        {loading && <p className="three-clues-message" role="status">Carregando Três Pistas...</p>}
-        {loadError && <p className="three-clues-message" role="alert">Nenhum conjunto Três Pistas publicado está disponível agora.</p>}
+        {loading && <p className="three-clues-message" role="status">Selecionando os desafios e preparando as pistas…</p>}
+        {loadError && <p className="three-clues-message" role="alert">Estamos preparando novos desafios de Três Pistas. Tente novamente em instantes.</p>}
         {content && challenge && !loading && !loadError && (
           <>
             <header className="three-clues-score">
-              <span>{content.title}</span>
+              <span>{presentContentTitle(content.title, "Rodada de pistas")}</span>
               <strong>Desafio {challengeIndex + 1} de {challengeCount}</strong>
-              {content.biblicalReference && <small>{content.biblicalReference}</small>}
               <em>Vale até {scoreForCluesUsed(revealedClues)} pontos</em>
             </header>
             <ol className="three-clues-list" aria-label="Pistas reveladas">

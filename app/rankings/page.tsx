@@ -75,7 +75,7 @@ export default function Rankings() {
   const selectedGame = data?.games.find(game => game.id === gameId);
 
   return <main className={styles.page}>
-    <header className={styles.hero}><a className={styles.back} href="/">← Voltar</a><p>CLASSIFICAÇÃO DA PLATAFORMA</p><h1>Ranking <em>Universal</em></h1><span>Veja sua evolução entre os participantes da sua organização.</span></header>
+    <header className={styles.hero}><p>CLASSIFICAÇÃO DA PLATAFORMA</p><h1>Ranking <em>Universal</em></h1><span>Veja sua evolução entre os participantes da sua organização.</span></header>
     <nav className={styles.tabs} aria-label="Categorias do ranking">
       {([['overall', 'Geral'], ['weekly', 'Semanal'], ['game', 'Por jogo']] as const).map(([key, label]) => <button key={key} type="button" className={scope === key ? styles.active : ""} aria-pressed={scope === key} onClick={() => setScope(key)}>{label}</button>)}
     </nav>

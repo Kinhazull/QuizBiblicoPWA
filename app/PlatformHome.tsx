@@ -1,11 +1,11 @@
 import { PLATFORM_HOME_PREVIEW } from "./platform-home-config";
 import { EquippedAvatar, type EquipmentView } from "./EquippedAvatar";
-import { selectHomeEngagementAction } from "./platform-engagement";
 import { BrandLogo } from "./BrandLogo";
 import { GameArt } from "./GameArt";
 import { gameModules } from "./games/sdk/gameModules";
 import { RewardArt } from "./RewardArt";
 import { eventIllustration, PlatformIllustration } from "./PlatformIllustration";
+import { BrandIcon } from "./navigation";
 
 type PlatformAchievement = {
   code: string;
@@ -122,7 +122,6 @@ export function PlatformHome({
   const nextReward = dailyObjectives?.rewards?.find(item => item.state === "READY")
     || dailyObjectives?.rewards?.find(item => item.state === "LOCKED");
   const featuredEvent = events.find(item => item.status === "ACTIVE") || events.find(item => item.status === "SCHEDULED");
-  const engagement = selectHomeEngagementAction(dailyObjectives, daily, events);
 
   return <main className="platform-home">
     <div className="platform-ambient platform-ambient-one" aria-hidden="true" />
@@ -131,8 +130,8 @@ export function PlatformHome({
       <header className="platform-brand-row">
         <div className="platform-brand"><BrandLogo priority /></div>
         <nav className="platform-collection-actions" aria-label="Coleção">
-          <a className="platform-shop-button" href="/inventario"><span aria-hidden="true">🎒</span> Inventário</a>
-          <a className="platform-shop-button" href="/loja"><span aria-hidden="true">🛍️</span> Loja</a>
+          <a className="platform-shop-button" href="/inventario"><BrandIcon name="package" /> Inventário</a>
+          <a className="platform-shop-button" href="/loja"><BrandIcon name="coins" /> Loja</a>
         </nav>
       </header>
 
@@ -160,11 +159,6 @@ export function PlatformHome({
         </div>
       </section>
 
-      <section className={`platform-engagement-focus ${engagement.kind.toLowerCase()}`} aria-labelledby="engagement-focus-title">
-        <div><p>{engagement.eyebrow}</p><h2 id="engagement-focus-title">{engagement.title}</h2><span>{engagement.description}</span></div>
-        <a href={engagement.href}>{engagement.label} <span aria-hidden="true">→</span></a>
-      </section>
-
       <section className="platform-daily-summary" aria-labelledby="daily-summary-title">
         <header>
           <div className="platform-daily-title"><RewardArt type="daily-challenge" /><div><p>Desafios diários</p><h2 id="daily-summary-title">{dailyWins} de 7 vitórias</h2></div></div>
@@ -189,7 +183,7 @@ export function PlatformHome({
         <a href="/jogos">Ver jogos <span aria-hidden="true">→</span></a>
       </section>
 
-      {featuredEvent && engagement.eventId !== featuredEvent.id ? <section className="platform-event-card" aria-labelledby="featured-event-title">
+      {featuredEvent ? <section className="platform-event-card" aria-labelledby="featured-event-title">
         <PlatformIllustration id={eventIllustration(featuredEvent.status)} customUrl={featuredEvent.coverUrl} className="platform-event-art" eager />
         <div><p>{featuredEvent.status === "ACTIVE" ? "Evento ativo" : "Próximo evento"}</p>
           <h2 id="featured-event-title">{featuredEvent.title}</h2><span>{featuredEvent.description}</span></div>

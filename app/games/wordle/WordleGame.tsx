@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import {
   evaluateGuess,
+  isSupportedWordLength,
   isValidGuess,
   normalizeWord,
-  WORDLE_LENGTH,
+  WORDLE_MIN_LENGTH,
   WORDLE_MAX_ATTEMPTS,
   type LetterState,
 } from "./engine";
@@ -41,17 +42,19 @@ function strongerState(current: LetterState | undefined, next: LetterState) {
 
 export function WordleGame() {
   const sessionId = useRef(createGameSessionId());
-  const currentGuessRef = useRef("");
+  const currentGuessRef = useRef<string[]>([]);
   const submittingRef = useRef(false);
   const [guesses, setGuesses] = useState<string[]>([]);
-  const [currentGuess, setCurrentGuess] = useState("");
+  const [currentGuess, setCurrentGuess] = useState<string[]>([]);
+  const [selectedCell, setSelectedCell] = useState(0);
   const [status, setStatus] = useState<GamePlayStatus>("playing");
-  const [message, setMessage] = useState("Digite uma palavra bíblica de cinco letras.");
+  const [message, setMessage] = useState("Preparando o desafio de palavras…");
   const [content, setContent] = useState<WordleContent | null>(null);
   const [loadedContent, setLoadedContent] = useState<LoadedGameContent<WordleContent> | null>(null);
   const [guessEvaluations, setGuessEvaluations] = useState<ReturnType<typeof evaluateGuess>[]>([]);
   const [contentState, setContentState] = useState<"loading" | "ready" | "error">("loading");
   const answer = content?.word ?? "";
+  const wordLength = content?.wordLength ?? WORDLE_MIN_LENGTH;
 
   useEffect(() => {
     const controller = new AbortController();
@@ -62,9 +65,12 @@ export function WordleGame() {
       .then(loaded => {
         const word = loaded.payload.word ? normalizeWord(loaded.payload.word) : undefined;
         const wordLength = word?.length ?? loaded.payload.wordLength;
-        if (wordLength !== WORDLE_LENGTH) {
+        if (!wordLength || !isSupportedWordLength(wordLength)) {
           throw new Error("wordle_content_invalid");
         }
+        currentGuessRef.current = Array.from({ length: wordLength }, () => "");
+        setCurrentGuess([...currentGuessRef.current]);
+        setSelectedCell(0);
         setLoadedContent(loaded);
         setContent({
           ...loaded.payload,
@@ -73,12 +79,13 @@ export function WordleGame() {
           word,
           wordLength,
         });
+        setMessage(`Digite uma palavra de ${wordLength} letras. Você pode escolher qualquer posição.`);
         setContentState("ready");
       })
       .catch(error => {
         if (error instanceof DOMException && error.name === "AbortError") return;
         setContentState("error");
-        setMessage("Nenhum Wordle publicado está disponível no momento.");
+        setMessage("Estamos preparando novas palavras. Tente novamente em instantes.");
       });
     return () => controller.abort();
   }, []);
@@ -94,23 +101,35 @@ export function WordleGame() {
   }, [guessEvaluations]);
 
   function addLetter(letter: string) {
-    if (contentState !== "ready" || status !== "playing" || currentGuessRef.current.length >= WORDLE_LENGTH) return;
-    currentGuessRef.current = `${currentGuessRef.current}${letter}`;
-    setCurrentGuess(currentGuessRef.current);
+    if (contentState !== "ready" || status !== "playing") return;
+    const cells = [...currentGuessRef.current];
+    cells[selectedCell] = normalizeWord(letter).slice(0, 1);
+    currentGuessRef.current = cells;
+    setCurrentGuess(cells);
+    const nextEmpty = cells.findIndex((value, index) => index > selectedCell && !value);
+    const anyEmpty = cells.findIndex(value => !value);
+    setSelectedCell(nextEmpty >= 0 ? nextEmpty : anyEmpty >= 0 ? anyEmpty : selectedCell);
     setMessage("Complete a palavra e confirme.");
   }
 
   function removeLetter() {
     if (contentState !== "ready" || status !== "playing") return;
-    currentGuessRef.current = currentGuessRef.current.slice(0, -1);
-    setCurrentGuess(currentGuessRef.current);
+    const cells = [...currentGuessRef.current];
+    if (cells[selectedCell]) {
+      cells[selectedCell] = "";
+    } else if (selectedCell > 0) {
+      cells[selectedCell - 1] = "";
+      setSelectedCell(selectedCell - 1);
+    }
+    currentGuessRef.current = cells;
+    setCurrentGuess(cells);
   }
 
   async function submitGuess() {
     if (!content || !loadedContent || contentState !== "ready" || status !== "playing") return;
-    const submittedGuess = currentGuessRef.current;
-    if (!isValidGuess(submittedGuess)) {
-      setMessage(`A palavra precisa ter ${WORDLE_LENGTH} letras.`);
+    const submittedGuess = currentGuessRef.current.join("");
+    if (!isValidGuess(submittedGuess, wordLength) || currentGuessRef.current.some(letter => !letter)) {
+      setMessage(`Preencha todas as ${wordLength} letras antes de confirmar.`);
       return;
     }
 
@@ -136,8 +155,9 @@ export function WordleGame() {
     const nextGuesses = [...guesses, normalized];
     setGuesses(nextGuesses);
     setGuessEvaluations(current => [...current, evaluation.evaluation]);
-    currentGuessRef.current = "";
-    setCurrentGuess("");
+    currentGuessRef.current = Array.from({ length: wordLength }, () => "");
+    setCurrentGuess([...currentGuessRef.current]);
+    setSelectedCell(0);
 
     if (evaluation.correct) {
       setMessage("Palavra correta! Registrando resultado…");
@@ -153,8 +173,8 @@ export function WordleGame() {
       }).catch(() => {
         setGuesses(guesses);
         setGuessEvaluations(current => current.slice(0, -1));
-        currentGuessRef.current = normalized;
-        setCurrentGuess(normalized);
+        currentGuessRef.current = [...normalized];
+        setCurrentGuess([...normalized]);
         setMessage("Não foi possível registrar o resultado. Confirme a palavra novamente.");
       });
     } else if (nextGuesses.length === WORDLE_MAX_ATTEMPTS) {
@@ -171,8 +191,8 @@ export function WordleGame() {
       }).catch(() => {
         setGuesses(guesses);
         setGuessEvaluations(current => current.slice(0, -1));
-        currentGuessRef.current = normalized;
-        setCurrentGuess(normalized);
+        currentGuessRef.current = [...normalized];
+        setCurrentGuess([...normalized]);
         setMessage("Não foi possível registrar o resultado. Confirme a palavra novamente.");
       });
     } else {
@@ -184,12 +204,13 @@ export function WordleGame() {
   function restart() {
     sessionId.current = createGameSessionId();
     submittingRef.current = false;
-    currentGuessRef.current = "";
+    currentGuessRef.current = Array.from({ length: wordLength }, () => "");
     setGuesses([]);
     setGuessEvaluations([]);
-    setCurrentGuess("");
+    setCurrentGuess([...currentGuessRef.current]);
+    setSelectedCell(0);
     setStatus("playing");
-    setMessage("Digite uma palavra bíblica de cinco letras.");
+    setMessage(`Digite uma palavra de ${wordLength} letras. Você pode escolher qualquer posição.`);
   }
 
   useEffect(() => {
@@ -197,6 +218,8 @@ export function WordleGame() {
       if (event.ctrlKey || event.metaKey || event.altKey) return;
       if (event.key === "Enter") void submitGuess();
       else if (event.key === "Backspace") removeLetter();
+      else if (event.key === "ArrowLeft") setSelectedCell(current => Math.max(0, current - 1));
+      else if (event.key === "ArrowRight") setSelectedCell(current => Math.min(wordLength - 1, current + 1));
       else if (/^[a-zA-Z]$/.test(event.key)) addLetter(event.key.toUpperCase());
     }
     window.addEventListener("keydown", onKeyDown);
@@ -205,10 +228,10 @@ export function WordleGame() {
 
   const rows = Array.from({ length: WORDLE_MAX_ATTEMPTS }, (_, rowIndex) => {
     const submitted = guesses[rowIndex];
-    const draft = rowIndex === guesses.length && status === "playing" ? currentGuess : "";
+    const draft = rowIndex === guesses.length && status === "playing" ? currentGuess : [];
     const letters = submitted && guessEvaluations[rowIndex]
       ? guessEvaluations[rowIndex]
-      : Array.from({ length: WORDLE_LENGTH }, (_, index) => ({ letter: draft[index] || "", state: undefined }));
+      : Array.from({ length: wordLength }, (_, index) => ({ letter: draft[index] || "", state: undefined }));
     return { submitted: Boolean(submitted), letters };
   });
 
@@ -226,20 +249,28 @@ export function WordleGame() {
       onRestart={restart}
     >
       <section className="wordle-game" aria-label="Wordle Bíblico">
-      {contentState === "loading" && <p className="wordle-message" role="status">Carregando desafio publicado...</p>}
+      {contentState === "loading" && <p className="wordle-message" role="status">Selecionando uma palavra publicada…</p>}
       {contentState === "error" && <p className="wordle-message lost" role="alert">{message}</p>}
       {contentState === "ready" && content?.hint && <p className="wordle-message">Dica: {content.hint}</p>}
       {contentState === "ready" && <GameInstruction>
         Verde: posição correta. Amarelo: existe em outra posição. Cinza: não pertence à palavra.
       </GameInstruction>}
-      <div className="wordle-board" aria-label="Tabuleiro do Wordle Bíblico">
+      <div className="wordle-board" aria-label="Tabuleiro do Wordle Bíblico" style={{ "--word-length": wordLength } as CSSProperties}>
         {rows.map((row, rowIndex) => (
           <div className="wordle-row" key={rowIndex} aria-label={`Tentativa ${rowIndex + 1}`}>
-            {row.letters.map((item, letterIndex) => (
-              <span className={`wordle-cell ${row.submitted ? item.state : ""} ${item.letter ? "filled" : ""}`} key={letterIndex} role="img" aria-label={row.submitted ? `${item.letter}: ${item.state === "correct" ? "correta" : item.state === "present" ? "presente" : "ausente"}` : item.letter || "vazia"}>
-                {item.letter}<small aria-hidden="true">{row.submitted ? item.state === "correct" ? "✓" : item.state === "present" ? "•" : "×" : ""}</small>
+            {row.letters.map((item, letterIndex) => row.submitted
+              ? <span className={`wordle-cell ${item.state} ${item.letter ? "filled" : ""}`} key={letterIndex} role="img" aria-label={`${item.letter}: ${item.state === "correct" ? "correta" : item.state === "present" ? "presente" : "ausente"}`}>
+                {item.letter}<small aria-hidden="true">{item.state === "correct" ? "✓" : item.state === "present" ? "•" : "×"}</small>
               </span>
-            ))}
+              : <button
+                className={`wordle-cell editable ${rowIndex === guesses.length && selectedCell === letterIndex ? "selected" : ""} ${item.letter ? "filled" : ""}`}
+                disabled={rowIndex !== guesses.length || status !== "playing"}
+                key={letterIndex}
+                type="button"
+                onClick={() => setSelectedCell(letterIndex)}
+                aria-label={`Posição ${letterIndex + 1}${item.letter ? `, letra ${item.letter}` : ", vazia"}${selectedCell === letterIndex ? ", selecionada" : ""}`}
+              >{item.letter}</button>
+            )}
           </div>
         ))}
       </div>

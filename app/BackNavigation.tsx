@@ -9,17 +9,18 @@ import {
 } from "./GameNavigationContext";
 
 function explicitDestination(pathname: string) {
-  if (pathname === "/jogos" || pathname === "/desafios-diarios") return "/";
-  if (pathname === "/eventos") return "/";
-  if (pathname.startsWith("/eventos/")) return "/eventos";
+  const normalizedPath = pathname.replace(/\/+$/, "") || "/";
+  if (normalizedPath === "/jogos" || normalizedPath === "/desafios-diarios") return "/";
+  if (normalizedPath === "/eventos") return "/";
+  if (normalizedPath.startsWith("/eventos/")) return "/eventos";
   if (
-    pathname === "/perfil"
-    || pathname === "/recompensas"
-    || pathname === "/inventario"
-    || pathname === "/loja"
+    normalizedPath === "/perfil"
+    || normalizedPath === "/recompensas"
+    || normalizedPath === "/inventario"
+    || normalizedPath === "/loja"
   ) return "/";
-  if (pathname.startsWith("/admin/")) return "/admin";
-  if (pathname.startsWith("/jogos/") || pathname === "/jogar") return "/jogos";
+  if (normalizedPath.startsWith("/admin/")) return "/admin";
+  if (normalizedPath.startsWith("/jogos/") || normalizedPath === "/jogar") return "/jogos";
   return "/";
 }
 

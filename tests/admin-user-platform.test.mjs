@@ -7,8 +7,9 @@ const read = path => readFileSync(new URL(`../${path}`, import.meta.url), "utf8"
 test("members loads platform details only after explicit selection", () => {
   const page = read("app/admin/membros/page.tsx");
   const panel = read("app/admin/membros/PlatformUserDetails.tsx");
-  assert.match(page, /Ver dados da plataforma/);
-  assert.match(page, /setPlatformUser\(u\)/);
+  assert.match(page, /Ver dados/);
+  assert.match(page, /setPlatformUser\(user\)/);
+  assert.match(page, /aria-label={`Ver dados da plataforma de \$\{user\.displayName\}`}/);
   assert.doesNotMatch(page, /\/platform`,\s*\{\s*cache:/);
   assert.match(panel, /fetch\(`\/api\/admin\/users\/\$\{encodeURIComponent\(userId\)\}\/platform`/);
   assert.match(panel, /cache: "no-store"/);

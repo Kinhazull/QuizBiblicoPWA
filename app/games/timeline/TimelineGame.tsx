@@ -15,6 +15,7 @@ import {
   type LoadedGameContent,
 } from "../loader";
 import { GameType } from "../../../shared/content";
+import { presentContentTitle } from "../contentPresentation";
 import {
   moveTimelineEvent,
   shuffleTimelineEvents,
@@ -154,17 +155,17 @@ export function TimelineGame() {
       onRestart={restart}
     >
       <section className="timeline-game" aria-label="Linha do Tempo Bíblica" aria-busy={loading}>
-        {loading && <p className="timeline-message" role="status">Carregando Linha do Tempo...</p>}
+        {loading && <p className="timeline-message" role="status">Montando a sequência de acontecimentos…</p>}
         {loadError && (
           <p className="timeline-message lost" role="alert">
-            Nenhuma Linha do Tempo publicada está disponível agora.
+            Estamos preparando novas sequências. Tente novamente em instantes.
           </p>
         )}
         {round && !loading && !loadError && (
           <>
             <header className="timeline-round-heading">
               <span>Tema da sequência</span>
-              <h2>{round.title}</h2>
+              <h2>{presentContentTitle(round.title, "Sequência bíblica")}</h2>
               {round.biblicalReference && <p>{round.biblicalReference}</p>}
             </header>
 

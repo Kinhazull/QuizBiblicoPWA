@@ -99,5 +99,11 @@ export async function recordPlatformGameCompletion(input: PlatformGameCompletion
     ),
   });
   if (!response.ok) throw new Error("game_completion_not_recorded");
-  return response.json();
+  const result = await response.json();
+  if (typeof window !== "undefined") {
+    const summary = { gameId: input.gameId, score: Number(result.score) || 0, processing: String(result.processing || "pending"), recordedAt: Date.now() };
+    sessionStorage.setItem("platform:last-game-result", JSON.stringify(summary));
+    window.dispatchEvent(new CustomEvent("platform-game-result-recorded", { detail: summary }));
+  }
+  return result;
 }

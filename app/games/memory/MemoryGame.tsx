@@ -164,8 +164,8 @@ export function MemoryGame() {
       status={status} currentAttempt={matchedCardIds.length / 2} maxAttempts={pairCount || 1}
       progressLabel="Pares encontrados" gameType={GameType.MEMORY} mode={loadedContent?.mode} onRestart={restart}>
       <section className="memory-game" aria-label="Memória Bíblica" aria-busy={loading}>
-        {loading && <p className="memory-message" role="status">Carregando Jogo da Memória...</p>}
-        {loadError && <p className="memory-message" role="alert">Nenhum Jogo da Memória publicado está disponível agora.</p>}
+        {loading && <p className="memory-message" role="status">Embaralhando as cartas…</p>}
+        {loadError && <p className="memory-message" role="alert">Estamos preparando novos conjuntos de Memória. Tente novamente em instantes.</p>}
         {content && !loading && !loadError && (
           <>
             <header className="memory-heading">

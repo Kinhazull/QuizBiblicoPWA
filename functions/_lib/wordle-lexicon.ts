@@ -1,6 +1,7 @@
 import { GameType } from "../../shared/content";
 import { normalizeWord } from "../../app/games/wordle/engine";
 import type { AppEnv } from "./auth";
+import { isBundledWordleGuess } from "../../shared/wordle-accepted-guesses";
 
 export async function isPublishedWordleGuess(
   env: AppEnv,
@@ -9,6 +10,7 @@ export async function isPublishedWordleGuess(
 ) {
   const guess = normalizeWord(value);
   if (!guess) return false;
+  if (isBundledWordleGuess(guess)) return true;
   const row = await env.DB.prepare(`SELECT 1 AS found
     FROM content_items
     WHERE organization_id=?1 AND game_type=?2 AND status='PUBLISHED'

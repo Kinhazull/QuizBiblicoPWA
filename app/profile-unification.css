@@ -1,0 +1,17 @@
+/* Participant account surfaces share the dark platform identity used by Home and Games. */
+body:has(.profile-shell){background:radial-gradient(circle at 10% 0,#194d82 0,transparent 34%),#06182a!important;color:#f7fbff}
+.profile-shell{color:#f7fbff}
+.profile-heading h1{color:#fff!important}
+.profile-heading>p:last-child,.profile-section p{color:#b8c8d8}
+.profile-section{border-color:#315170;background:#0b2037;color:#f7fbff;box-shadow:0 16px 42px #020b1442}
+.profile-form label{color:#c3d0dd}
+.profile-form input,.profile-form textarea{border-color:#45627d;background:#071a2d;color:#fff}
+.profile-form input[readonly]{background:#102a43;color:#b9c8d7}
+.profile-actions a,.profile-actions button,.profile-admin-link,.profile-section .secondary{border-color:#45698b;background:#133453;color:#fff}
+.profile-actions a:hover,.profile-actions button:hover,.profile-section .secondary:hover{background:#1b4b78}
+.recovery-codes{background:#071a2d}.recovery-codes code{background:#153653;color:#fff}
+.privacy-list>div{border-color:#315170!important}
+.profile-section-nav{position:sticky;z-index:25;top:68px;display:flex;gap:8px;margin:0 0 20px;overflow-x:auto;border:1px solid #315170;border-radius:15px;padding:7px;background:#071a2def;backdrop-filter:blur(12px)}
+.profile-section-nav a{display:inline-flex;min-height:44px;align-items:center;justify-content:center;white-space:nowrap;border-radius:10px;padding:8px 13px;color:#d7e5f2;font-size:12px;font-weight:850;text-decoration:none}
+.profile-section-nav a:hover,.profile-section-nav a:focus-visible{background:#1f68c6;color:#fff}
+.profile-shell [id]{scroll-margin-top:132px}

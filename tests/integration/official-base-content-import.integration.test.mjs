@@ -102,3 +102,29 @@ test("the same official package is isolated and independently idempotent per org
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM content_items WHERE organization_id='org-1'").get().total, 380);
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM content_items WHERE organization_id='org-2'").get().total, 380);
 });
+
+test("official package reconciliation versions drifted runtime content without losing history", async t => {
+  const ctx = setup(t);
+  await importOfficialBaseContent(ctx.env, "org-1", "admin", true);
+  const target = buildOfficialBaseCandidates("org-1", "admin")[0];
+  ctx.raw.prepare("UPDATE content_items SET payload_json=? WHERE id=?")
+    .run(JSON.stringify({ word: "ERROU", hint: "Versão antiga" }), target.model.id);
+
+  const dryRun = await importOfficialBaseContent(ctx.env, "org-1", "admin", false);
+  assert.equal(dryRun.report.updatesRequired, 1);
+  assert.equal(dryRun.report.reconciled, 0);
+  assert.equal(ctx.raw.prepare("SELECT version FROM content_items WHERE id=?").get(target.model.id).version, 1);
+
+  const applied = await importOfficialBaseContent(ctx.env, "org-1", "admin", true);
+  assert.equal(applied.report.updatesRequired, 1);
+  assert.equal(applied.report.reconciled, 1);
+  const item = ctx.raw.prepare("SELECT version,payload_json FROM content_items WHERE id=?").get(target.model.id);
+  assert.equal(item.version, 2);
+  assert.equal(item.payload_json, JSON.stringify(target.model.content.payload));
+  assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM content_versions WHERE content_id=?").get(target.model.id).total, 2);
+  assert.equal(ctx.raw.prepare("SELECT content_version FROM universal_content_library WHERE content_id=?").get(target.model.id).content_version, 2);
+
+  const replay = await importOfficialBaseContent(ctx.env, "org-1", "admin", true);
+  assert.equal(replay.report.updatesRequired, 0);
+  assert.equal(replay.report.reconciled, 0);
+});

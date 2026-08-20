@@ -1,0 +1,21 @@
+.legal-page>article>a:first-child{display:none}
+.legal-page a,.ranking-page a{min-height:44px;display:inline-flex;align-items:center}
+@media(max-width:520px){.global-back{min-width:44px;min-height:44px;font-size:11px}.legal-page{padding-inline:14px}}
+
+/* Final mobile-accessibility floor for participant and administrative text actions. */
+.platform-ranking-link,.event-calendar-link,.analytics-context-link,.content-indicator a,
+.admin-page a:not(.admin-brand-link),.admin-page button,.admin-page input,.admin-page select,
+.recovery-page a,.recovery-page button{min-height:44px}
+.platform-ranking-link,.event-calendar-link,.analytics-context-link{display:inline-flex;align-items:center}
+.admin-page input[type="checkbox"],.admin-page input[type="radio"]{width:22px;height:22px;min-height:22px}
+.admin-page label:has(>input),.admin-page label:has(>select){font-size:max(12px,1rem)}
+.admin-page button,.admin-page a{margin-block:2px}
+.recommendation-toggle{display:flex;min-height:44px;align-items:center;justify-content:center;margin:14px auto 0;border:1px solid #7047eb;border-radius:11px;padding:8px 16px;background:transparent;color:#4b278e;font-weight:850;cursor:pointer}
+@media(max-width:520px){
+  .admin-page button,.admin-page a{min-height:44px}
+  .admin-page input:not([type="checkbox"]):not([type="radio"]),.admin-page select{min-height:44px;font-size:16px}
+}
+.auth-switch{display:flex;min-height:44px;align-items:center;justify-content:center;margin-top:12px}
+.member-tools label{display:grid;gap:6px;color:#61576e;font-size:11px;font-weight:800}
+.member-tools input,.member-tools select{min-height:44px;font-size:16px}
+.member-management article>button,.temporary-password button{min-height:44px}

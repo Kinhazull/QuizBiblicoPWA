@@ -85,6 +85,76 @@ export async function importOfficialBaseContent(
     changeSummary: "Importado do Acervo Oficial v1",
     auditAction: "content.official_base_imported",
   });
+  const prefix = `official-base-v1-${safeId(organizationId)}-`;
+  const persisted = await env.DB.prepare(`SELECT id,version,payload_json,category,difficulty,biblical_reference,tags_json,status
+    FROM content_items WHERE organization_id=?1 AND id LIKE ?2`)
+    .bind(organizationId, `${prefix}%`).all<{
+      id: string; version: number; payload_json: string; category: string; difficulty: string;
+      biblical_reference: string; tags_json: string; status: string;
+    }>();
+  const persistedById = new Map((persisted.results || []).map(row => [row.id, row]));
+  const changed = candidates.filter(candidate => {
+    const row = persistedById.get(candidate.model.id);
+    if (!row) return false;
+    const model = candidate.model;
+    return row.payload_json !== JSON.stringify(model.content.payload)
+      || row.category !== model.category
+      || row.difficulty !== model.difficulty
+      || row.biblical_reference !== model.biblicalReference
+      || row.tags_json !== JSON.stringify(model.tags)
+      || row.status !== ContentStatus.PUBLISHED;
+  });
+  const updatesRequired = changed.length;
+  let reconciled = 0;
+
+  if (commit && changed.length) {
+    const now = Date.now();
+    for (let offset = 0; offset < changed.length; offset += 20) {
+      const chunk = changed.slice(offset, offset + 20);
+      const statements = chunk.flatMap(candidate => {
+        const current = persistedById.get(candidate.model.id)!;
+        const model = candidate.model;
+        const version = Number(current.version) + 1;
+        const payloadJson = JSON.stringify(model.content.payload);
+        const payload = model.content.payload as Record<string, unknown>;
+        const theme = typeof payload.theme === "string" ? payload.theme : model.category;
+        const book = typeof payload.book === "string" ? payload.book : null;
+        const metadataJson = JSON.stringify({
+          id: model.id, gameType: model.gameType, category: model.category, tags: model.tags,
+          difficulty: model.difficulty, biblicalReference: model.biblicalReference,
+          status: ContentStatus.PUBLISHED, authorId: model.authorId, reviewerId: actorId,
+          createdAt: model.createdAt, updatedAt: now, version,
+          internalNotes: "Conteúdo reconciliado com o Acervo Oficial v1 versionado.",
+        });
+        return [
+          env.DB.prepare(`UPDATE content_items SET category=?1,difficulty=?2,biblical_reference=?3,
+            tags_json=?4,payload_json=?5,version=?6,reviewer_id=?7,updated_at=?8,
+            status='PUBLISHED',editorial_status='PUBLISHED',internal_notes=?9
+            WHERE id=?10 AND organization_id=?11 AND version=?12`)
+            .bind(model.category, model.difficulty, model.biblicalReference, JSON.stringify(model.tags),
+              payloadJson, version, actorId, now, "Reconciliado com o Acervo Oficial v1.",
+              model.id, organizationId, current.version),
+          env.DB.prepare(`INSERT INTO content_versions(
+            id,content_id,organization_id,version,metadata_json,payload_json,changed_by,change_summary,created_at
+          ) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9)`)
+            .bind(`official-base-v1-reconcile:${model.id}:v${version}`, model.id, organizationId,
+              version, metadataJson, payloadJson, actorId, "Reconciliado com o pacote oficial versionado", now),
+          env.DB.prepare(`UPDATE universal_content_library SET content_version=?1,difficulty=?2,
+            themes_json=?3,books_json=?4,tags_json=?5,updated_at=?6
+            WHERE organization_id=?7 AND content_id=?8`)
+            .bind(version, model.difficulty, JSON.stringify([theme]), JSON.stringify(book ? [book] : []),
+              JSON.stringify(model.tags), now, organizationId, model.id),
+          env.DB.prepare(`INSERT INTO audit_logs(
+            id,organization_id,actor_user_id,action,entity_type,entity_id,details_json,created_at
+          ) VALUES(?1,?2,?3,'content.official_base_reconciled','content_item',?4,?5,?6)`)
+            .bind(crypto.randomUUID(), organizationId, actorId, model.id,
+              JSON.stringify({ fromVersion: current.version, toVersion: version, externalId: candidate.externalId }), now),
+        ];
+      });
+      await env.DB.batch(statements);
+      reconciled += chunk.length;
+    }
+  }
   const byGame: Record<string, {
     found: number; valid: number; invalid: number; duplicates: number;
     publishable: number; drafts: number; discarded: number;
@@ -114,5 +184,5 @@ export async function importOfficialBaseContent(
       });
     }
   }
-  return { ...result, byGame };
+  return { ...result, report: { ...result.report, updatesRequired, reconciled }, byGame };
 }

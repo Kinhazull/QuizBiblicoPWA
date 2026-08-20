@@ -180,8 +180,8 @@ export function PlatformProfileOverview({ displayName }: { displayName: string }
       <div className="platform-profile-balance"><RewardArt type="coin" /><strong>{formatNumber(progress.coins)}</strong><small>moedas</small></div>
     </section>
 
-    <section aria-labelledby="profile-journey-title">
-      <div className="platform-profile-section-heading"><div><p>SEU PROGRESSO</p><h3 id="profile-journey-title">Um retrato da sua evolução</h3></div>{mostPlayed ? <span>Mais jogado: <strong>{mostPlayed.name}</strong></span> : null}</div>
+    <section aria-labelledby="profile-progress-summary-title">
+      <div className="platform-profile-section-heading"><div><p>SEU PROGRESSO</p><h3 id="profile-progress-summary-title">Um retrato da sua evolução</h3></div>{mostPlayed ? <span>Mais jogado: <strong>{mostPlayed.name}</strong></span> : null}</div>
       <div className="platform-profile-summary" aria-label="Resumo do progresso">
         <article><small>Partidas concluídas</small><strong>{formatNumber(global.sessionsCompleted)}</strong><span>em todos os modos</span></article>
         <article><small><RewardArt type="xp" /> XP total</small><strong>{formatNumber(progress.totalXp)}</strong><span>acumulados</span></article>

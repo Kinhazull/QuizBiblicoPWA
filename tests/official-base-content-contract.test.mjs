@@ -16,4 +16,6 @@ test("the Central de Conteúdo exposes dry-run before application", async () => 
   assert.match(ui, /Executar dry-run/);
   assert.match(ui, /Aplicar importação/);
   assert.match(ui, /confirmation !== "IMPORTAR_CONTEUDO_BASE_OFICIAL"/);
+  assert.match(ui, /updatesRequired/);
+  assert.match(ui, /reconciliados/);
 });

@@ -460,6 +460,7 @@ export default function UniversalContentEditor() {
     const currentValidation = validateContent(draft.gameType, draft.metadata, draft.payload);
     setValidation(currentValidation);
     if (!currentValidation.valid) {
+      setManualValidation(true);
       setSaveState("error");
       setSaveMessage("Corrija os campos indicados antes de salvar.");
       return;
@@ -499,6 +500,7 @@ export default function UniversalContentEditor() {
       if (!response.ok || !data.content) {
         if (Array.isArray(data.fields)) {
           setValidation({ valid: false, errors: data.fields, warnings: [], normalizedValue: null });
+          setManualValidation(true);
         }
         throw new Error(data.error || "save_failed");
       }
@@ -536,6 +538,7 @@ export default function UniversalContentEditor() {
     }, draft.payload);
     setValidation(currentValidation);
     if (target === ContentStatus.PUBLISHED && !currentValidation.valid) {
+      setManualValidation(true);
       setSaveState("error");
       setSaveMessage("Corrija os campos indicados antes de publicar.");
       return;
@@ -550,7 +553,7 @@ export default function UniversalContentEditor() {
           : target === ContentStatus.ARCHIVED ? "archive"
             : draft.metadata.status === ContentStatus.ARCHIVED ? "restore" : "request-changes";
       const comment = action === "request-changes"
-        ? window.prompt("Informe o ajuste editorial solicitado (obrigatÃ³rio):")
+        ? window.prompt("Informe o ajuste editorial solicitado (obrigatório):")
         : undefined;
       if (action === "request-changes" && !comment?.trim()) return;
       const response = await fetch(
@@ -577,6 +580,7 @@ export default function UniversalContentEditor() {
       if (!response.ok || !data.content) {
         if (Array.isArray(data.fields)) {
           setValidation({ valid: false, errors: data.fields, warnings: [], normalizedValue: null });
+          setManualValidation(true);
         }
         throw new Error(data.error || "transition_failed");
       }
@@ -671,7 +675,7 @@ export default function UniversalContentEditor() {
             Template ativo: {schema.templates.find(item => item.id === draft.templateId)?.label}
           </em>}
         </header>
-        <MetadataEditor draft={draft} errors={validation.errors} onChange={setChangedDraft} />
+        <MetadataEditor draft={draft} errors={manualValidation ? validation.errors : []} onChange={setChangedDraft} />
         <fieldset className="editor-payload">
           <legend>Conteúdo específico</legend>
           {schema.fields.length === 0
@@ -681,7 +685,7 @@ export default function UniversalContentEditor() {
                 key={field.key}
                 field={field}
                 value={draft.payload[field.key]}
-                errors={validation.errors}
+                errors={manualValidation ? validation.errors : []}
                 onChange={value => setChangedDraft({
                   ...draft,
                   payload: { ...draft.payload, [field.key]: value },
@@ -693,7 +697,9 @@ export default function UniversalContentEditor() {
       </section>
 
       <div className="editor-side">
-        <ValidationSummary result={validation} manual={manualValidation} />
+        {manualValidation
+          ? <ValidationSummary result={validation} manual />
+          : <section className="editor-validation pending" aria-live="polite"><h2>Validação</h2><strong>Preencha o conteúdo no seu ritmo.</strong><small>As pendências serão exibidas quando você validar, salvar ou publicar.</small></section>}
         <ContentPreview
           draft={draft}
           templateLabel={schema.templates.find(item => item.id === draft.templateId)?.label ?? ""}
@@ -720,7 +726,7 @@ export default function UniversalContentEditor() {
           disabled={dirty || saveState === "saving" || !validation.valid}
           onClick={() => transitionStatus(ContentStatus.IN_REVIEW)}
         >
-          Enviar para revisao
+          Enviar para revisão
         </button>
       )}
       {draft.metadata.status === ContentStatus.IN_REVIEW && contentId && <>

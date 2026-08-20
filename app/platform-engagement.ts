@@ -24,7 +24,7 @@ export function selectHomeEngagementAction(
   const available = daily?.objectives?.filter(objective => objective.state === "AVAILABLE") || [];
   if (daily && daily.played > 0 && available.length > 0) return {
     kind: "DAILY_PROGRESS", eyebrow: "Continue de onde parou", title: `${daily.wins}/7 vitórias hoje`,
-    description: `${available.length} desafio${available.length === 1 ? "" : "s"} ainda ${available.length === 1 ? "disponível" : "disponíveis"}.`, label: "Continuar Daily", href: "/desafios-diarios",
+    description: `${available.length} desafio${available.length === 1 ? "" : "s"} ainda ${available.length === 1 ? "disponível" : "disponíveis"}.`, label: "Ver desafios", href: "/desafios-diarios",
   };
   if (retention?.chest.unlocked && !retention.chest.opened) return {
     kind: "CHEST", eyebrow: "Cofre disponível", title: "Sua recompensa diária está pronta",

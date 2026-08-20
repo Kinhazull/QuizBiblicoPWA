@@ -40,7 +40,7 @@ const entry = (
 /** Structured runtime representation of docs/PRODUCT/CORE_PLATFORM_ACHIEVEMENTS_CATALOG.md. */
 export const CORE_PLATFORM_ACHIEVEMENTS = Object.freeze([
   entry("first_steps", "Primeiros Passos", "Conclua sua primeira partida oficial.", "first_steps", "bronze", "visible", "officialGamesCompleted", 1, 50, 10),
-  entry("level_5", "Bem-vindo à Jornada", "Alcance o nível 5 na plataforma.", "progression", "silver", "visible", "level", 5, 150, 30),
+  entry("level_5", "Primeiros feitos", "Alcance o nível 5 na plataforma.", "progression", "silver", "visible", "level", 5, 150, 30),
   entry("word_apprentice", "Aprendiz da Palavra", "Responda 100 perguntas em partidas oficiais.", "knowledge", "bronze", "visible", "questionsAnswered", 100, 50, 10),
   entry("word_scholar", "Estudioso", "Responda 1.000 perguntas em partidas oficiais.", "knowledge", "silver", "visible", "questionsAnswered", 1_000, 150, 30),
   entry("word_master", "Mestre das Escrituras", "Responda 10.000 perguntas em partidas oficiais.", "knowledge", "gold", "visible", "questionsAnswered", 10_000, 300, 60),

@@ -2,6 +2,11 @@ import { hashPassword, json, normalizeUsername, secureEqual, sha256 } from "../.
 import type { AppEnv } from "../../_lib/auth";
 import { strongEnough } from "../../_lib/abuse";
 
+export const onRequestGet = async ({ env }: { env: AppEnv }) => {
+  const existing = await env.DB.prepare("SELECT 1 AS initialized FROM organizations LIMIT 1").first();
+  return json({ initialized: Boolean(existing) }, 200, { "cache-control": "no-store" });
+};
+
 export const onRequestPost = async ({ request, env }: { request: Request; env: AppEnv }) => {
   const provided=request.headers.get("x-bootstrap-secret")||"";if(!env.BOOTSTRAP_SECRET||!await secureEqual(provided,env.BOOTSTRAP_SECRET))return json({error:"forbidden"},403);
   const existing = await env.DB.prepare("SELECT id FROM organizations LIMIT 1").first();

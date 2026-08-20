@@ -119,9 +119,10 @@ export default function ShopPage() {
           <CollectibleArt id={item.id} fallback={item.icon} className={styles.icon} />
           <h3>{item.name}</h3>
           <p>{item.description}</p>
+          {!item.owned && data.balance < item.price && <small className={styles.balanceHint}>Faltam {(item.price - data.balance).toLocaleString("pt-BR")} moedas. Jogue e conclua desafios para aumentar seu saldo.</small>}
           <div><strong><RewardArt type="coin" /> {item.price}</strong>
-            <button type="button" disabled={item.equipped || Boolean(busyId)} onClick={() => item.owned ? equip(item) : buy(item)}>
-              {item.equipped ? "Equipado" : busyId === item.id ? "Aguarde..." : item.owned ? "Equipar" : "Comprar"}
+            <button type="button" disabled={item.equipped || Boolean(busyId) || (!item.owned && data.balance < item.price)} onClick={() => item.owned ? equip(item) : buy(item)}>
+              {item.equipped ? "Equipado" : busyId === item.id ? "Aguarde..." : item.owned ? "Equipar" : data.balance < item.price ? `Faltam ${item.price - data.balance} moedas` : "Comprar"}
             </button>
           </div>
         </article>)}

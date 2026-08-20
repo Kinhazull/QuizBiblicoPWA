@@ -5,6 +5,7 @@ import { createGameSessionId, GameInstruction, GameLayout, recordPlatformGameCom
 import { gameContentRequestFromLocation, loadGameContent, validateGameContentAction } from "../loader";
 import type { LoadedGameContent } from "../loader";
 import { GameType } from "../../../shared/content";
+import { presentContentTitle } from "../contentPresentation";
 import { THEME_ASSOCIATION_MAX_ERRORS, type ThemeAssociationAttempt } from "./engine";
 
 type AssociationItem = { id: string; label: string; category?: string | null };
@@ -149,9 +150,7 @@ export function ThemeAssociationGame() {
   }
 
   const pairCount = content?.pairCount ?? 0;
-  const roundTitle = content?.title && !/^Associações bíblicas\s+\d+$/i.test(content.title)
-    ? content.title
-    : "Rodada de associações";
+  const roundTitle = presentContentTitle(content?.title, "Rodada de associações");
   return (
     <GameLayout eyebrow="Conecte os conhecimentos" title="Associação de" highlightedTitle="Temas"
       description="Combine cada item bíblico com sua associação correta."
@@ -159,8 +158,8 @@ export function ThemeAssociationGame() {
       maxAttempts={pairCount || 1} progressLabel="Pares encontrados"
       gameType={GameType.ASSOCIATION} mode={loadedContent?.mode} onRestart={restart}>
       <section className="theme-association-game" aria-label="Associação de Temas" aria-busy={loading}>
-        {loading && <p className="theme-association-message" role="status">Carregando Associação de Temas...</p>}
-        {loadError && <p className="theme-association-message" role="alert">Nenhuma Associação publicada está disponível agora.</p>}
+        {loading && <p className="theme-association-message" role="status">Embaralhando referências e relações…</p>}
+        {loadError && <p className="theme-association-message" role="alert">Estamos preparando novas associações. Tente novamente em instantes.</p>}
         {content && !loading && !loadError && (
           <>
             <header className="theme-association-heading">

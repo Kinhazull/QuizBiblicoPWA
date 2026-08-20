@@ -197,7 +197,7 @@ export async function generatedSelectionSafePayload(
       id: content.id,
       version: content.version,
       hint: wordle.hint,
-      wordLength: [...wordle.word].length,
+      wordLength: normalizeWord(wordle.word).length,
       biblicalReference: content.metadata.biblicalReference ?? null,
     };
   }

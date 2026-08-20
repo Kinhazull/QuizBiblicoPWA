@@ -7,7 +7,7 @@ export const BADGES:Badge[]=[
  ...series('journey','Caminho da Palavra','roundsPlayed',[1,3,5,8,12,18,25,35,50,75],'📖','rodadas concluídas'),
  ...series('knowledge','Conhecedor','totalCorrect',[10,30,60,100,160,250,400,650,1000,1500],'🧠','acertos acumulados'),
  ...series('score','Luz em Pontos','bestScore',[4000,6000,7500,8500,9500,10500,11500,12500,13500,14500],'✨','pontos em uma tentativa'),
- ...series('streak','Firme na Jornada','bestStreak',[2,3,4,5,6,7,8,9,10,11],'🔥','acertos consecutivos'),
+ ...series('streak','Sequência firme','bestStreak',[2,3,4,5,6,7,8,9,10,11],'🔥','acertos consecutivos'),
  ...series('presence','Presença Fiel','attempts',[3,8,15,25,40,60,90,130,180,250],'🙌','tentativas oficiais'),
  ...series('perfect','Excelência','perfectRounds',[1,2,3,5,8,12,18,25,35,50],'🌟','rodadas com 10 acertos'),
  ...series('agility','Resposta Ágil','fastCorrect',[5,15,30,50,80,120,180,260,360,500],'⚡','acertos em até 7 segundos'),

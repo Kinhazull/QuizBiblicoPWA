@@ -29,7 +29,9 @@ test("game catalog starts free play directly and the legacy setup route redirect
   assert.match(catalog, /gameCatalog\.map/);
   assert.doesNotMatch(catalog, /games-home-link|href="\/"/);
   assert.doesNotMatch(catalog, /router\.back|history\.back/);
-  assert.match(backNavigation, /pathname === "\/jogos"/);
+  assert.match(backNavigation, /normalizedPath === "\/jogos"/);
+  assert.match(backNavigation, /pathname\.replace\(\/\\\/\+\$\//);
+  assert.doesNotMatch(backNavigation, /pathname\.startsWith\("\/jogos\/"\)/);
   assert.match(backNavigation, /location\.assign\(destination\)/);
   assert.doesNotMatch(catalog, /Gerar Partida|Modo Livre/);
   assert.match(legacyRoute, /redirect\("\/jogos"\)/);
@@ -81,7 +83,11 @@ test("participant surfaces use the platform chrome and Wordle validates its voca
   assert.doesNotMatch(profile, /profile-stats/);
   assert.doesNotMatch(notifications, /admin-shell/);
   assert.match(wordle, /invalid_wordle_word/);
+  assert.match(wordle, /setSelectedCell/);
+  assert.match(wordle, /--word-length/);
+  assert.match(wordle, /wordLength/);
   assert.match(lexicon, /status='PUBLISHED'/);
+  assert.match(lexicon, /isBundledWordleGuess/);
 });
 
 test("player Quiz paths cannot invoke the administrative legacy importer", async () => {

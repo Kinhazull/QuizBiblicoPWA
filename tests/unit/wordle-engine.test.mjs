@@ -6,6 +6,7 @@ import {
   isWinningGuess,
   normalizeWord,
   WORDLE_MAX_ATTEMPTS,
+  isSupportedWordLength,
 } from "../../app/games/wordle/engine.ts";
 
 test("Wordle uses six attempts without embedding a fixed answer", () => {
@@ -16,6 +17,17 @@ test("normalizes accents, spaces and letter case", () => {
   assert.equal(normalizeWord("  jesús! "), "JESUS");
   assert.equal(isValidGuess("Jesus"), true);
   assert.equal(isValidGuess("fé"), false);
+});
+
+test("supports Wordle answers from five to seven normalized letters", () => {
+  assert.equal(isSupportedWordLength(4), false);
+  assert.equal(isSupportedWordLength(5), true);
+  assert.equal(isSupportedWordLength(6), true);
+  assert.equal(isSupportedWordLength(7), true);
+  assert.equal(isSupportedWordLength(8), false);
+  assert.equal(isValidGuess("JOSUÉ", 5), true);
+  assert.equal(isValidGuess("DANIEL", 6), true);
+  assert.equal(isValidGuess("CALVÁRIO", 7), false);
 });
 
 test("marks correct, present and absent letters", () => {

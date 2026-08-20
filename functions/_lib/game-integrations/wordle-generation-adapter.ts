@@ -6,6 +6,7 @@ import {
 } from "../../../shared/content";
 import type { AppEnv } from "../auth";
 import { findGeneratedSelectionById } from "../universal-game-generator";
+import { normalizeWord } from "../../../app/games/wordle/engine";
 
 const safeJson = <T>(value: unknown, fallback: T): T => {
   try {
@@ -54,7 +55,7 @@ export async function resolveWordlePilotSelection(
       id: item.contentId,
       version: item.contentVersion,
       hint: wordle.hint,
-      wordLength: [...wordle.word].length,
+      wordLength: normalizeWord(wordle.word).length,
       biblicalReference: typeof metadata.biblicalReference === "string"
         ? metadata.biblicalReference
         : null,

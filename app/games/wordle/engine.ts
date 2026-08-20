@@ -1,5 +1,7 @@
 export const WORDLE_MAX_ATTEMPTS = 6;
-export const WORDLE_LENGTH = 5;
+export const WORDLE_MIN_LENGTH = 5;
+export const WORDLE_MAX_LENGTH = 7;
+export const WORDLE_LENGTH = WORDLE_MIN_LENGTH;
 
 export type LetterState = "correct" | "present" | "absent";
 
@@ -18,6 +20,10 @@ export function normalizeWord(value: string) {
 
 export function isValidGuess(value: string, length = WORDLE_LENGTH) {
   return normalizeWord(value).length === length;
+}
+
+export function isSupportedWordLength(length: number) {
+  return Number.isInteger(length) && length >= WORDLE_MIN_LENGTH && length <= WORDLE_MAX_LENGTH;
 }
 
 export function evaluateGuess(guessValue: string, answerValue: string): EvaluatedLetter[] {

@@ -9,7 +9,7 @@ type GameReport = {
 type ImportResponse = {
   dryRun: boolean;
   byGame: Record<string, GameReport>;
-  report: { migrated: number; alreadyMigrated: number };
+  report: { migrated: number; alreadyMigrated: number; updatesRequired?: number; reconciled?: number };
   error?: string;
 };
 
@@ -73,7 +73,9 @@ export function OfficialBaseContentImport() {
     {error && <div className="cms-state error" role="alert">{error}</div>}
     {data && <>
       <p className="content-indicator" role="status">
-        {data.dryRun ? "Dry-run concluído sem escrita." : `Importação concluída: ${data.report.migrated} novos; ${data.report.alreadyMigrated} já existentes.`}
+        {data.dryRun
+          ? `Dry-run concluído sem escrita. ${data.report.updatesRequired ?? 0} conteúdo(s) precisam ser reconciliados com o pacote oficial atual.`
+          : `Importação concluída: ${data.report.migrated} novos; ${data.report.reconciled ?? 0} reconciliados; ${data.report.alreadyMigrated} já existentes.`}
       </p>
       <div style={{ maxWidth: "100%", overflowX: "auto" }}>
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
