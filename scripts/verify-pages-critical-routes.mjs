@@ -27,17 +27,30 @@ export function validateCriticalPageResponse({ path, segment, status, contentTyp
   }
 }
 
-export async function verifyCriticalPagesRoutes(baseUrl, fetchImpl = fetch) {
+export async function verifyCriticalPagesRoutes(
+  baseUrl,
+  fetchImpl = fetch,
+  { attempts = 1, delayMs = 0 } = {},
+) {
   const normalizedBase = baseUrl.replace(/\/$/, "");
   for (const route of CRITICAL_PAGES_ROUTES) {
-    const response = await fetchImpl(`${normalizedBase}${route.path}`, { redirect: "follow" });
-    const body = await response.text();
-    validateCriticalPageResponse({
-      ...route,
-      status: response.status,
-      contentType: response.headers.get("content-type") ?? "",
-      body,
-    });
+    for (let attempt = 1; ; attempt += 1) {
+      try {
+        const response = await fetchImpl(`${normalizedBase}${route.path}`, { redirect: "follow" });
+        const body = await response.text();
+        validateCriticalPageResponse({
+          ...route,
+          status: response.status,
+          contentType: response.headers.get("content-type") ?? "",
+          body,
+        });
+        break;
+      } catch (error) {
+        if (attempt >= attempts) throw error;
+        console.warn(`Critical Pages route not ready: ${route.path} (attempt ${attempt}/${attempts})`);
+        await new Promise(resolveDelay => setTimeout(resolveDelay, delayMs));
+      }
+    }
     console.log(`Critical Pages route verified: ${route.path}`);
   }
 }
@@ -51,7 +64,7 @@ function cliBaseUrl(argv) {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
-  await verifyCriticalPagesRoutes(cliBaseUrl(process.argv.slice(2)));
+  await verifyCriticalPagesRoutes(cliBaseUrl(process.argv.slice(2)), fetch, { attempts: 12, delayMs: 5_000 });
 }
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";

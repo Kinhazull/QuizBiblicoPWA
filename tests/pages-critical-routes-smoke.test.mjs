@@ -24,6 +24,16 @@ test("critical Pages smoke accepts real structural markers without client-only c
   assert.doesNotMatch(appHtml("configurar-mfa"), /CONFIGURAR AUTENTICADOR/);
 });
 
+test("critical Pages smoke waits for bounded static route propagation", async () => {
+  let homeAttempts = 0;
+  await verifyCriticalPagesRoutes("https://deployment.example", async (url) => {
+    const route = CRITICAL_PAGES_ROUTES.find(({ path }) => path === new URL(url).pathname);
+    if (route.path === "/" && ++homeAttempts < 3) return response("not ready", { status: 404 });
+    return response(appHtml(route.segment));
+  }, { attempts: 3, delayMs: 0 });
+  assert.equal(homeAttempts, 3);
+});
+
 test("critical Pages smoke rejects HTTP 404", () => {
   assert.throws(() => validateCriticalPageResponse({ path: "/configurar-mfa/", segment: "configurar-mfa", status: 404, contentType: "text/html", body: appHtml("configurar-mfa") }), /pages_route_smoke_http/);
 });
