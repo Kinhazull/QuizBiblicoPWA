@@ -86,9 +86,10 @@ export async function importOfficialBaseContent(
     auditAction: "content.official_base_imported",
   });
   const prefix = `official-base-v1-${safeId(organizationId)}-`;
+  const prefixUpperBound = `${prefix}\uffff`;
   const persisted = await env.DB.prepare(`SELECT id,version,payload_json,category,difficulty,biblical_reference,tags_json,status
-    FROM content_items WHERE organization_id=?1 AND id LIKE ?2`)
-    .bind(organizationId, `${prefix}%`).all<{
+    FROM content_items WHERE organization_id=?1 AND id>=?2 AND id<?3`)
+    .bind(organizationId, prefix, prefixUpperBound).all<{
       id: string; version: number; payload_json: string; category: string; difficulty: string;
       biblical_reference: string; tags_json: string; status: string;
     }>();

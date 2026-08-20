@@ -26,6 +26,14 @@ test("universal import paginates existing content for D1-sized catalogs", async 
   assert.doesNotMatch(importer, /SELECT \* FROM content_items WHERE organization_id IN/);
 });
 
+test("official base reconciliation avoids D1 LIKE pattern limits", async () => {
+  const importer = await read("functions/_lib/official-base-content-importer.ts");
+  assert.match(importer, /const prefixUpperBound = `\$\{prefix\}\\uffff`/);
+  assert.match(importer, /id>=\?2 AND id<\?3/);
+  assert.match(importer, /\.bind\(organizationId, prefix, prefixUpperBound\)/);
+  assert.doesNotMatch(importer, /id LIKE \?2/);
+});
+
 test("the Central de Conteúdo exposes dry-run before application", async () => {
   const ui = await read("app/admin/conteudo/OfficialBaseContentImport.tsx");
   assert.match(ui, /Executar dry-run/);
