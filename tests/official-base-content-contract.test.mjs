@@ -11,6 +11,13 @@ test("official base import remains an authenticated administrative operation wit
   assert.match(route, /body\.commit === true/);
 });
 
+test("universal import paginates existing content for D1-sized catalogs", async () => {
+  const importer = await read("functions/_lib/universal-content-importer.ts");
+  assert.match(importer, /IMPORT_EXISTING_CONTENT_PAGE_SIZE\s*=\s*200/);
+  assert.match(importer, /ORDER BY id LIMIT \?2 OFFSET \?3/);
+  assert.doesNotMatch(importer, /SELECT \* FROM content_items WHERE organization_id IN/);
+});
+
 test("the Central de Conteúdo exposes dry-run before application", async () => {
   const ui = await read("app/admin/conteudo/OfficialBaseContentImport.tsx");
   assert.match(ui, /Executar dry-run/);

@@ -53,6 +53,25 @@ const increment = (target: Record<string, number>, key: string | null | undefine
   target[normalized] = (target[normalized] ?? 0) + 1;
 };
 
+const IMPORT_EXISTING_CONTENT_PAGE_SIZE = 200;
+
+async function listExistingContentForImport(env: AppEnv, organizationIds: readonly string[]) {
+  const rows: Record<string, unknown>[] = [];
+  for (const organizationId of organizationIds) {
+    for (let offset = 0; ; offset += IMPORT_EXISTING_CONTENT_PAGE_SIZE) {
+      const page = await env.DB.prepare(`SELECT id,organization_id,game_type,status,category,difficulty,
+        biblical_reference,tags_json,payload_json,author_id,reviewer_id,created_at,updated_at,version
+        FROM content_items WHERE organization_id=?1 ORDER BY id LIMIT ?2 OFFSET ?3`)
+        .bind(organizationId, IMPORT_EXISTING_CONTENT_PAGE_SIZE, offset)
+        .all<Record<string, unknown>>();
+      const results = page.results ?? [];
+      rows.push(...results);
+      if (results.length < IMPORT_EXISTING_CONTENT_PAGE_SIZE) break;
+    }
+  }
+  return rows;
+}
+
 function metadataSnapshot(entry: UniversalImportEntry) {
   const model = entry.model;
   return JSON.stringify({
@@ -79,14 +98,10 @@ export async function planUniversalContentImport(
   candidates: readonly UniversalImportCandidate[],
 ) {
   const organizationIds = [...new Set(candidates.map(candidate => candidate.organizationId))];
-  const existingRows = organizationIds.length
-    ? await env.DB.prepare(`SELECT * FROM content_items WHERE organization_id IN (
-        ${organizationIds.map((_, index) => `?${index + 1}`).join(",")}
-      )`).bind(...organizationIds).all<Record<string, unknown>>()
-    : { results: [] as Record<string, unknown>[] };
-  const existingById = new Map(existingRows.results.map(row => [String(row.id), row]));
+  const existingRows = await listExistingContentForImport(env, organizationIds);
+  const existingById = new Map(existingRows.map(row => [String(row.id), row]));
   const duplicateKeys = new Map<string, string>();
-  for (const row of existingRows.results) {
+  for (const row of existingRows) {
     const gameType = String(row.game_type);
     const metadata = {
       id: String(row.id), gameType, category: String(row.category),
