@@ -10,9 +10,9 @@
 .three-clues-list li.hidden { border-style: dashed; opacity: .55; }
 .three-clues-list li.hidden > span { background: #152538; color: #708399; }
 .three-clues-list li.hidden p { color: #8193a7; }
-.three-clues-reveal { width: 100%; min-height: 46px; border: 1px solid #4d91d85c; border-radius: 11px; background: #102d49; color: #cfe6ff; font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; }
+.three-clues-reveal { width: 100%; min-height: 46px; margin-top:2px;border: 1px solid #4d91d8; border-radius: 11px; background: #123b61; color: #e4f2ff; font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; }
 .three-clues-reveal:disabled { cursor: default; opacity: .55; }
-.three-clues-answer { margin-top: 16px; }
+.three-clues-answer { margin-top:14px;border:1px solid #4f86b94a;border-radius:14px;padding:12px;background:#0a1c2ee6; }
 .three-clues-answer label { display: block; margin-bottom: 7px; color: #94a8bb; font-size: 11px; font-weight: 700; }
 .three-clues-answer > div { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 8px; }
 .three-clues-answer input { width: 100%; min-height: 50px; border: 1px solid #7393b14a; border-radius: 11px; padding: 10px 13px; background: #091a2c; color: #fff; font: inherit; font-size: 16px; }

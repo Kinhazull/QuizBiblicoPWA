@@ -30,6 +30,7 @@ import {
   claimDailyChallengeReward,
   getDailyChallengeState,
 } from "../../functions/_lib/platform-daily-challenge.ts";
+import { getDailyRetentionState, openDailyChest } from "../../functions/_lib/platform-daily-retention.ts";
 
 const DAY_ONE = Date.UTC(2026, 6, 29, 12);
 const DAY_TWO = Date.UTC(2026, 6, 30, 12);
@@ -492,6 +493,26 @@ test("Daily 2.0 counts only wins, exposes no resume and grants 3/7 once under co
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM platform_coin_ledger WHERE source_type='daily_challenge_3' AND applied_at IS NOT NULL").get().total, 1);
   assert.equal(ctx.raw.prepare("SELECT total_xp FROM user_platform_progress WHERE user_id='user-1'").get().total_xp, 30);
   assert.equal(ctx.raw.prepare("SELECT coins FROM user_platform_progress WHERE user_id='user-1'").get().coins, 5);
+});
+
+test("the daily chest unlocks after the first Daily victory without consuming milestone rewards", async t => {
+  const ctx = fixture(t);
+  await publishDailyCatalog(ctx);
+  const identity = { organizationId: "org-1", userId: "user-1" };
+  const initial = await getDailyChallengeState(ctx.env, identity, DAY_ONE);
+  const detail = await getDailyObjective(ctx.env, identity, initial.objectives[0].gameType, DAY_ONE);
+
+  assert.equal((await getDailyRetentionState(ctx.env, identity.userId, identity.organizationId, DAY_ONE)).chest.unlocked, false);
+  await finishForDailyState(ctx, detail, true, "chest-first-win");
+
+  const unlocked = await getDailyRetentionState(ctx.env, identity.userId, identity.organizationId, DAY_ONE + 2000);
+  assert.equal(unlocked.chest.unlocked, true);
+  assert.equal((await getDailyChallengeState(ctx.env, identity, DAY_ONE + 2000)).rewards[0].state, "LOCKED");
+
+  const opened = await openDailyChest(ctx.env, identity.userId, identity.organizationId, DAY_ONE + 3000);
+  assert.equal(opened.chest.opened, true);
+  assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM platform_xp_ledger WHERE source_type='daily_challenge_3'").get().total, 0);
+  assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM platform_coin_ledger WHERE source_type='daily_challenge_3'").get().total, 0);
 });
 
 test("Daily 2.0 resets by organization day and rejects a locked 7/7 reward", async t => {

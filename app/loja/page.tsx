@@ -116,7 +116,7 @@ export default function ShopPage() {
       <div className={styles.grid}>
         {data.items.filter(item => item.category === category.id).map(item => <article className={`${styles.card} ${item.equipped ? styles.equipped : ""}`} key={item.id}>
           <span className={styles.category}>{item.equipped ? "Equipado" : item.owned ? "Adquirido" : category.singular}</span>
-          <CollectibleArt id={item.id} fallback={item.icon} className={styles.icon} />
+          <div className={styles.artStage}><CollectibleArt id={item.id} fallback={item.icon} className={styles.art} /></div>
           <h3>{item.name}</h3>
           <p>{item.description}</p>
           {!item.owned && data.balance < item.price && <small className={styles.balanceHint}>Faltam {(item.price - data.balance).toLocaleString("pt-BR")} moedas. Jogue e conclua desafios para aumentar seu saldo.</small>}

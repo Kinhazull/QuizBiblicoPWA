@@ -14,7 +14,8 @@
 .wordle-cell.present,.wordle-key.present,.wordle-legend .present { border-color: #d59a00; background: #d59a00; }
 .wordle-cell.absent,.wordle-key.absent,.wordle-legend .absent { border-color: #9aabba; background: var(--wordle-absent); color:#f3f7fa; box-shadow:inset 0 0 0 2px #26384a; }
 .wordle-key.absent { opacity:1;text-decoration:line-through;text-decoration-thickness:2px; }
-.wordle-message { min-height: 24px; margin: 18px 0 14px; color: #c3cfdb; text-align: center; font-size: 14px; }
+.wordle-message { position:relative;z-index:1;min-height:24px;margin:14px auto 18px;padding:9px 12px;border:1px solid #78a6d42f;border-radius:10px;background:#0b1d31e8;color:#d9e5f0;text-align:center;font-size:13px;line-height:1.45; }
+.wordle-message + .wordle-board { margin-top: 4px; }
 .wordle-message.won { color: #6ee7a3; font-weight: 700; }
 .wordle-message.lost { color: #ffc166; font-weight: 700; }
 .wordle-keyboard { display: grid; gap: 7px; width: min(100%, 520px); margin: 0 auto; }

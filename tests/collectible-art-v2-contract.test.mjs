@@ -39,11 +39,12 @@ test("visual adoption preserves Daily and Achievement collectible grants", () =>
   for (const id of [...functionalAvatars, ...functionalFrames]) assert.match(economy, new RegExp(`id: "${id}"`));
 });
 
-test("runtime assets use explicit sizes, lazy loading and decorative alt text", () => {
+test("runtime assets use explicit sizes, priority-aware loading and decorative alt text", () => {
   const source = read("app/CollectibleArt.tsx");
   assert.match(source, /width=\{size\}/);
   assert.match(source, /height=\{size\}/);
-  assert.match(source, /loading="lazy"/);
+  assert.match(source, /loading=\{priority \? "eager" : "lazy"\}/);
+  assert.match(source, /priority=\{priority\}/);
   assert.match(source, /alt=""/);
   assert.match(source, /onError=\{\(\) => setFailed\(true\)\}/);
 });

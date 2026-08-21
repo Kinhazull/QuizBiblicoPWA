@@ -2,6 +2,7 @@ import type { AppEnv } from "./auth";
 import { getCurrentDailyMission, listCurrentMissionSnapshots } from "./platform-missions";
 import { getUserProgress, grantPlatformRetentionReward } from "./platform-progress";
 import { DAILY_CHEST_ECONOMY, DAILY_LOGIN_ECONOMY } from "../../shared/platform-economy";
+import { hasDailyChallengeVictory } from "./platform-daily-challenge";
 
 const DEFAULT_TIME_ZONE = "America/Sao_Paulo";
 
@@ -129,7 +130,7 @@ export async function getDailyRetentionAdminSnapshot(
   if (!user) throw new Error("retention_user_unavailable");
   const timeZone = String(user.timezone || DEFAULT_TIME_ZONE);
   const dayKey = dateKey(now, timeZone);
-  const [days, missions, currentChest, latestChest] = await Promise.all([
+  const [days, missions, currentChest, latestChest, dailyVictory] = await Promise.all([
     loginDays(env, userId, organizationId),
     listCurrentMissionSnapshots(env, userId, organizationId, now),
     storedReward(env, userId, organizationId, "daily_chest", dayKey),
@@ -143,13 +144,14 @@ export async function getDailyRetentionAdminSnapshot(
       WHERE user_id=?1 AND organization_id=?2 AND source_type='daily_chest' AND applied_at IS NOT NULL
       GROUP BY source_id
       ORDER BY claimedAt DESC LIMIT 1`).bind(userId, organizationId).all<any>(),
+    hasDailyChallengeVictory(env, { userId, organizationId }, now),
   ]);
   const latest = latestChest.results[0] || null;
   const latestReward = latest?.sourceId
     ? await storedReward(env, userId, organizationId, "daily_chest", String(latest.sourceId))
     : null;
   const currentStreak = currentStoredStreak(dayKey, days);
-  const missionUnlocksChest = missions.daily?.state === "completed" || missions.daily?.state === "claimed";
+  const missionUnlocksChest = dailyVictory || missions.daily?.state === "completed" || missions.daily?.state === "claimed";
   const opened = Boolean(currentChest);
   return {
     missions,
@@ -178,14 +180,15 @@ export async function getDailyRetentionState(
 ) {
   const { timeZone } = await context(env, userId, organizationId);
   const dayKey = dateKey(now, timeZone);
-  const [days, mission, loginReward, chestReward] = await Promise.all([
+  const [days, mission, loginReward, chestReward, dailyVictory] = await Promise.all([
     loginDays(env, userId, organizationId),
     getCurrentDailyMission(env, userId, organizationId, now),
     storedReward(env, userId, organizationId, "daily_login", dayKey),
     storedReward(env, userId, organizationId, "daily_chest", dayKey),
+    hasDailyChallengeVictory(env, { userId, organizationId }, now),
   ]);
   const streak = calculateDailyStreak(dayKey, days);
-  const chestUnlocked = mission?.state === "completed" || mission?.state === "claimed";
+  const chestUnlocked = dailyVictory || mission?.state === "completed" || mission?.state === "claimed";
   return {
     dayKey,
     streak,

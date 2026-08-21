@@ -92,22 +92,147 @@ body:has(.auth-screen) {
 }
 
 .profile-shell { color: #f7f5f0 !important; }
+.profile-shell {
+  width: min(1120px, calc(100% - 32px));
+  padding-top: 76px;
+}
+.profile-heading {
+  display: grid;
+  gap: 5px;
+  margin-bottom: 22px;
+}
+.profile-heading .eyebrow {
+  margin: 0;
+  color: #68cf91;
+}
 .profile-heading h1,
 .profile-section h2,
 .profile-section h3,
 .platform-profile-section-heading h3 { color: #fff !important; }
+.profile-heading h1 {
+  margin: 0;
+  font-size: clamp(38px, 6vw, 58px);
+  letter-spacing: -2.2px;
+}
 .profile-heading > p:last-child,
 .profile-section p,
 .platform-profile-section-heading > span { color: #b8c8d8 !important; }
+.profile-heading > p:last-child { margin: 0; }
 .profile-section {
+  width: 100%;
   border-color: #315170 !important;
+  border-radius: 20px;
+  padding: 22px;
   background: #0b2037 !important;
   color: #f7fbff !important;
   box-shadow: 0 16px 42px #020b1442 !important;
 }
+.profile-section-nav {
+  top: 14px;
+  margin-bottom: 24px;
+  border-color: #315170;
+  background: #0b2037f2;
+  box-shadow: 0 12px 32px #020b1438;
+}
+.profile-section-nav a:hover,
+.profile-section-nav a:focus-visible {
+  background: #216ac6;
+}
+.profile-form {
+  max-width: none;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.profile-form > h2,
+.profile-form > p,
+.profile-form > label:has(textarea),
+.profile-form > .check-row,
+.profile-form > button,
+.profile-form > .recovery-codes {
+  grid-column: 1 / -1;
+}
+.profile-form label {
+  color: #c4d2df !important;
+  font-size: 12px;
+}
+.profile-form input,
+.profile-form textarea,
+.privacy-request input {
+  min-height: 48px;
+  border: 1px solid #45698b !important;
+  background: #071a2d !important;
+  color: #f7fbff !important;
+}
+.profile-form textarea { min-height: 116px; }
+.profile-form input:focus,
+.profile-form textarea:focus,
+.privacy-request input:focus {
+  outline: 3px solid #489cff42;
+  border-color: #489cff !important;
+}
+.profile-form input[readonly] {
+  background: #102a43 !important;
+  color: #aebed0 !important;
+}
+.profile-shell .profile-section .primary {
+  min-height: 50px;
+  border-radius: 13px;
+  background: linear-gradient(180deg, #3287e7, #216ac6);
+  color: #fff;
+  box-shadow: 0 10px 25px #1268c33d;
+}
+.profile-shell .profile-section .secondary,
+.profile-actions a,
+.profile-actions button {
+  border-color: #45698b;
+  background: #133453;
+  color: #f2f7fc;
+}
+.profile-section .logout-control { margin: 0; }
+.profile-section .logout-button {
+  position: static;
+  width: auto;
+  min-height: 44px;
+  border: 1px solid #9e4d5d;
+  background: #3a1f2a;
+  color: #ffdce3;
+  box-shadow: none;
+}
+.profile-section .logout-button:hover { background: #4c2633; }
+.profile-account-grid h3 { margin-top: 8px; }
+.profile-shell .privacy-list > div {
+  border-color: #315170 !important;
+}
+.profile-shell .privacy-list small,
+.profile-shell .empty { color: #9eb1c5; }
+.profile-shell .privacy-list span { min-width: 0; }
+.profile-shell .privacy-list small {
+  overflow-wrap: anywhere;
+  line-height: 1.45;
+}
+.profile-shell .privacy-list button {
+  flex: 0 0 auto;
+  border: 1px solid #45698b;
+  background: #133453;
+  color: #f2f7fc;
+}
+.privacy-request {
+  border-color: #315170;
+}
+.profile-shell .danger-button {
+  min-height: 44px;
+  border: 1px solid #9e4d5d;
+  background: #3a1f2a;
+  color: #ffdce3;
+}
 .profile-loading { color: #dce9f5; }
 
 @media (max-width: 700px) {
+  .profile-shell {
+    width: min(100% - 20px, 1120px);
+    padding-top: 62px;
+  }
+  .profile-heading { padding-inline: 4px; }
   .profile-section-nav {
     position: static;
     display: grid;
@@ -119,6 +244,288 @@ body:has(.auth-screen) {
     padding-inline: 8px;
     white-space: normal;
     text-align: center;
+  }
+  .profile-form { grid-template-columns: 1fr; }
+  .profile-form > h2,
+  .profile-form > p,
+  .profile-form > label:has(textarea),
+  .profile-form > .check-row,
+  .profile-form > button,
+  .profile-form > .recovery-codes { grid-column: auto; }
+  .profile-section { padding: 17px; }
+  .account-privacy-card > header { gap: 12px; }
+  .account-privacy-card .logout-control,
+  .account-privacy-card .logout-button { width: 100%; }
+  .account-privacy-card .logout-button { justify-content: center; }
+  .profile-actions { display: grid; grid-template-columns: 1fr 1fr; }
+  .profile-actions :is(a, button) { justify-content: center; text-align: center; }
+  .privacy-list > div {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .privacy-list > div > button { width: 100%; }
+  .privacy-request { gap: 16px; }
+}
+
+@media (max-width: 390px) {
+  .profile-actions { grid-template-columns: 1fr; }
+  .platform-profile-summary { grid-template-columns: 1fr; }
+  .platform-profile-summary article:last-child { grid-column: auto; }
+}
+
+/* One bottom-navigation contract for every participant surface. The explicit
+   centering overrides the old edge-to-edge mobile Quiz rule. */
+.participant-bottom-nav.platform-bottom-nav {
+  right: auto !important;
+  left: 50% !important;
+  bottom: max(10px, env(safe-area-inset-bottom)) !important;
+  width: min(600px, calc(100vw - 24px)) !important;
+  max-width: calc(100vw - 24px) !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  transform: translateX(-50%) !important;
+  overflow: hidden;
+  border: 1px solid #315170 !important;
+  border-radius: 19px !important;
+  padding: 5px !important;
+  background: #09192cf5 !important;
+  box-shadow: 0 15px 42px #020b1475, 0 0 0 1px #489cff0f !important;
+  backdrop-filter: blur(16px);
+}
+.participant-bottom-nav.platform-bottom-nav a {
+  min-height: 54px;
+  gap: 4px;
+  border-radius: 14px;
+  color: #b8c8d8;
+}
+.participant-bottom-nav.platform-bottom-nav a:hover {
+  background: #12304e;
+  color: #fff;
+}
+.participant-bottom-nav.platform-bottom-nav a.active {
+  background: linear-gradient(180deg, #3287e7, #216ac6) !important;
+  color: #fff !important;
+  box-shadow: 0 7px 18px #1268c34d;
+}
+.participant-bottom-nav.platform-bottom-nav a:focus-visible {
+  outline: 3px solid #68cf91;
+  outline-offset: -2px;
+}
+.participant-bottom-nav.platform-bottom-nav a svg {
+  width: 20px;
+  height: 20px;
+}
+.participant-bottom-nav.platform-bottom-nav a span {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 430px) {
+  .participant-bottom-nav.platform-bottom-nav {
+    right: auto !important;
+    left: 50% !important;
+    bottom: max(8px, env(safe-area-inset-bottom)) !important;
+    width: calc(100vw - 16px) !important;
+    max-width: calc(100vw - 16px) !important;
+    transform: translateX(-50%) !important;
+    border: 1px solid #315170 !important;
+    border-radius: 18px !important;
+    padding: 5px !important;
+  }
+  .participant-bottom-nav.platform-bottom-nav a { min-height: 52px; }
+}
+
+/* Compact mobile Home: information remains complete, but the hierarchy no
+   longer spends an entire viewport on account chrome and preview cards. */
+@media (max-width: 560px) {
+  .platform-home {
+    padding-top: max(68px, calc(env(safe-area-inset-top) + 60px));
+  }
+  .platform-brand-row {
+    align-items: center;
+    flex-direction: row;
+    gap: 10px;
+  }
+  .platform-brand > .brand-logo { width: 150px; }
+  .platform-collection-actions {
+    width: auto;
+    flex: 0 0 auto;
+    gap: 7px;
+    margin-left: auto;
+  }
+  .platform-collection-actions .platform-shop-button {
+    display: grid;
+    width: 44px !important;
+    min-width: 44px;
+    min-height: 44px;
+    flex: 0 0 44px;
+    place-items: center;
+    padding: 0 !important;
+  }
+  .platform-collection-actions .platform-shop-button > span { display: none; }
+  .platform-player-card {
+    grid-template-columns: 56px minmax(0, 1fr) auto;
+    gap: 10px;
+    padding: 14px;
+  }
+  .platform-player-card .equipped-avatar {
+    width: 54px;
+    height: 54px;
+  }
+  .platform-player-copy h1 { font-size: 20px; }
+  .platform-player-copy > p { display: none; }
+  .platform-level-line {
+    grid-template-columns: auto minmax(36px, 1fr) auto;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .platform-level-line > span {
+    grid-column: auto;
+    gap: 3px;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+  .platform-level-line > span .reward-art {
+    width: 20px;
+    height: 20px;
+  }
+  .platform-level-line > small {
+    grid-column: auto;
+    font-size: 9px;
+    text-align: right;
+  }
+  .platform-ranking-link {
+    min-height: 36px;
+    margin-top: 3px;
+    font-size: 10px;
+  }
+  .platform-currencies {
+    grid-column: 3;
+    grid-row: 1;
+    align-self: center;
+  }
+  .platform-currencies > span {
+    min-width: 60px;
+    grid-template-columns: auto 1fr;
+    gap: 0 5px;
+    padding: 8px;
+  }
+  .platform-currencies .reward-art {
+    width: 28px;
+    height: 28px;
+  }
+  .platform-currencies strong { font-size: 17px; }
+  .platform-currencies small { grid-column: 1 / -1; font-size: 9px; text-align: center; }
+  .platform-daily-login {
+    padding: 9px 11px;
+    gap: 8px;
+  }
+  .platform-daily-login > span { font-size: 20px; }
+  .platform-daily-login strong { font-size: 12px; }
+  .platform-daily-login small { font-size: 10px; }
+  .platform-play-hub > div.platform-play-art {
+    position: relative;
+    display: flex;
+    width: 82px;
+    height: 64px;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    padding: 5px;
+  }
+  .platform-play-art .game-artwork {
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    margin-left: -10px;
+    border: 2px solid #0d2e50;
+    border-radius: 12px;
+    background: #123b63;
+  }
+  .platform-play-art .game-artwork:first-child { margin-left: 0; }
+  .platform-daily-chest {
+    grid-template-columns: 68px minmax(0, 1fr);
+    gap: 10px;
+    padding: 14px;
+  }
+  .platform-chest-art {
+    width: 68px !important;
+    height: 68px !important;
+    min-height: 68px;
+    align-self: center;
+  }
+  .platform-chest-art > img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  .platform-daily-chest > strong { padding: 10px; font-size: 12px; }
+  .platform-daily-chest button { min-height: 44px; }
+  .platform-achievement-grid { gap: 8px; }
+  .platform-achievement-grid article {
+    min-height: 62px;
+    gap: 9px;
+    padding: 10px;
+  }
+  .platform-achievement-grid .reward-art { width: 34px; height: 34px; }
+}
+
+@media (max-width: 360px) {
+  .platform-brand > .brand-logo { width: 132px; }
+  .platform-player-card { grid-template-columns: 50px minmax(0, 1fr) auto; gap: 8px; }
+  .platform-player-card .equipped-avatar { width: 48px; height: 48px; }
+}
+
+/* Shared return action: fixed to the safe viewport edge on every participant
+   page, including the catalog that previously shifted it toward the center. */
+.global-back,
+body:has(.games-catalog-page) .global-back {
+  top: max(14px, env(safe-area-inset-top)) !important;
+  right: auto !important;
+  left: max(14px, env(safe-area-inset-left)) !important;
+  min-width: 72px;
+  min-height: 44px;
+  justify-content: center;
+  border: 1px solid #45698b !important;
+  border-radius: 12px;
+  padding: 9px 12px !important;
+  background: #0b2037ed !important;
+  color: #e7f1fa !important;
+  box-shadow: 0 8px 24px #020b145c !important;
+  font-size: 11px;
+  backdrop-filter: blur(14px);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: border-color .15s, background .15s, box-shadow .15s, transform .1s;
+}
+.global-back:hover,
+body:has(.games-catalog-page) .global-back:hover {
+  border-color: #5c8fbe !important;
+  background: #123453 !important;
+  color: #fff !important;
+}
+.global-back:active,
+body:has(.games-catalog-page) .global-back:active {
+  border-color: #489cff !important;
+  background: #1c5fa8 !important;
+  color: #fff !important;
+  transform: scale(.97);
+}
+.global-back:focus-visible,
+body:has(.games-catalog-page) .global-back:focus-visible {
+  outline: 3px solid #68cf91;
+  outline-offset: 3px;
+}
+
+@media (max-width: 430px) {
+  .global-back,
+  body:has(.games-catalog-page) .global-back {
+    top: max(12px, env(safe-area-inset-top)) !important;
+    left: max(12px, env(safe-area-inset-left)) !important;
+    min-width: 70px;
+    padding: 8px 10px !important;
   }
 }
 
@@ -191,4 +598,223 @@ body:has(.auth-screen) {
 @media (max-width: 420px) {
   .reward-art { min-width: 28px; min-height: 28px; }
   .platform-profile-game-icon { width: 48px; height: 48px; }
+}
+
+/* Compact mobile game discovery: the catalog and daily objective list share a
+   two-column rhythm and always contain the complete game artwork. */
+@media (max-width: 600px) {
+  .games-catalog-page,
+  .daily-challenges-page {
+    padding-inline: 10px;
+  }
+  .games-catalog-shell,
+  .daily-challenges-shell {
+    width: 100%;
+  }
+  .games-catalog-header {
+    margin-bottom: 14px;
+    padding-inline: 2px;
+  }
+  .games-catalog-header h1 {
+    max-width: 290px;
+    font-size: clamp(30px, 9vw, 38px);
+  }
+  .games-catalog-header > p:last-child {
+    max-width: 310px;
+    font-size: 13px;
+    line-height: 1.45;
+  }
+  .games-catalog-grid,
+  .daily-challenges-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .games-catalog-card {
+    min-height: 0;
+    border-radius: 15px;
+  }
+  .games-catalog-art,
+  .games-catalog-art > .game-artwork {
+    width: 100%;
+    height: 116px;
+    min-height: 116px;
+  }
+  .games-catalog-art > .game-artwork > img {
+    width: 96%;
+    height: 96%;
+    padding: 4px;
+    object-fit: contain;
+  }
+  .games-catalog-copy {
+    padding: 12px;
+  }
+  .games-status {
+    padding: 4px 7px;
+    font-size: 8px;
+  }
+  .games-catalog-copy h2 {
+    min-height: 38px;
+    margin: 9px 0 4px;
+    font-size: 16px;
+    line-height: 1.18;
+  }
+  .games-catalog-copy p {
+    display: -webkit-box;
+    min-height: 51px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    color: #b8c8d7;
+    font-size: 11px;
+    line-height: 1.5;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+  .games-card-action {
+    min-height: 44px;
+    padding: 0 8px;
+    font-size: 11px;
+  }
+
+  .daily-challenges-page {
+    padding-top: max(74px, calc(env(safe-area-inset-top) + 62px));
+  }
+  .platform-page-heading {
+    margin-bottom: 14px;
+  }
+  .daily-challenge-hero-art {
+    width: 72px !important;
+    height: 72px !important;
+    margin-bottom: 4px;
+  }
+  .platform-page-heading h1 {
+    margin-block: 4px;
+    font-size: clamp(30px, 9vw, 38px);
+  }
+  .platform-page-heading > span {
+    display: block;
+    font-size: 13px;
+    line-height: 1.4;
+  }
+  .daily-challenges-progress {
+    margin-bottom: 10px;
+    padding: 13px;
+  }
+  .daily-challenges-progress strong { font-size: 16px; }
+  .daily-seven-markers { margin-top: 10px; }
+  .daily-seven-markers > span { min-height: 48px; }
+  .daily-reward-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .daily-reward-grid article {
+    grid-template-columns: 46px minmax(0, 1fr);
+    align-content: center;
+    gap: 7px;
+    min-height: 126px;
+    padding: 10px;
+  }
+  .daily-reward-art {
+    width: 46px !important;
+    height: 46px !important;
+  }
+  .daily-reward-grid strong { font-size: 13px; }
+  .daily-reward-grid small { font-size: 10px; }
+  .daily-reward-grid article > button,
+  .daily-reward-grid .daily-reward-state {
+    grid-column: 1 / -1;
+    min-height: 36px;
+    width: 100%;
+    padding: 0 7px;
+    text-align: center;
+  }
+  .daily-challenges-grid article {
+    min-height: 0;
+    border-radius: 15px;
+    padding: 12px;
+  }
+  .daily-game-art {
+    width: calc(100% + 24px);
+    height: 108px;
+    margin: -12px -12px 10px;
+  }
+  .daily-game-art > img {
+    width: 96%;
+    height: 96%;
+    padding: 4px;
+    object-fit: contain;
+  }
+  .daily-status {
+    padding: 4px 7px;
+    font-size: 8px;
+  }
+  .daily-challenges-grid h2 {
+    min-height: 38px;
+    margin: 8px 0 4px;
+    font-size: 16px;
+    line-height: 1.18;
+  }
+  .daily-challenges-grid p {
+    display: -webkit-box;
+    min-height: 51px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    font-size: 11px;
+    line-height: 1.5;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+  .daily-challenges-grid button {
+    min-height: 44px;
+    padding-inline: 6px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 330px) {
+  .games-catalog-grid,
+  .daily-challenges-grid,
+  .daily-reward-grid {
+    grid-template-columns: 1fr;
+  }
+  .games-catalog-art,
+  .games-catalog-art > .game-artwork,
+  .daily-game-art {
+    height: 132px;
+  }
+}
+
+.daily-celebration {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 8px;
+  margin: 2px 0 12px;
+  overflow: hidden;
+}
+.daily-celebration > .reward-art,
+.daily-celebration-art {
+  width: 54px !important;
+  height: 54px !important;
+  margin: 0 auto;
+  object-fit: contain;
+}
+.daily-celebration > strong,
+.daily-celebration > span { display: block; }
+.daily-celebration nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+.daily-celebration nav a {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #f4b4008c;
+  border-radius: 10px;
+  padding: 8px 12px;
+  color: #ffe28a;
+  text-decoration: none;
 }

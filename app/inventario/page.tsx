@@ -95,7 +95,7 @@ export default function InventoryPage() {
         <div className={styles.grid}>
           {items.map(item => <article className={`${styles.card} ${item.equipped ? styles.equipped : ""}`} key={item.id}>
             <span className={styles.category}>{item.equipped ? "Equipado" : category.id === "avatar" ? "Avatar" : "Moldura"}</span>
-            <CollectibleArt id={item.id} fallback={item.icon} className={styles.icon} />
+            <div className={styles.artStage}><CollectibleArt id={item.id} fallback={item.icon} className={styles.art} /></div>
             <h3>{item.name}</h3>
             <p>{item.description}</p>
             <button type="button" disabled={item.equipped || Boolean(busyId)} onClick={() => equip(item)}>

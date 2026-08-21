@@ -113,7 +113,7 @@ export default function Home() {
       const response = await fetch("/api/platform/daily/chest", { method: "POST", cache: "no-store" });
       const data = await response.json();
       if (!response.ok) {
-        setDailyError(data.error === "daily_chest_locked" ? "Conclua a missão diária para liberar o cofre." : "Não foi possível abrir o cofre.");
+        setDailyError(data.error === "daily_chest_locked" ? "Vença ao menos um desafio diário para liberar o cofre." : "Não foi possível abrir o cofre.");
         return;
       }
       setDaily(data.daily);

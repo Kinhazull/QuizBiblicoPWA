@@ -83,6 +83,15 @@ async function participationResults(env: AppEnv, identity: Identity, dayKey: str
   return new Map((rows.results || []).map(row => [String(row.selectionId), row]));
 }
 
+/** Read-only compatibility bridge used by the daily chest. One successful
+ * platform Daily challenge is sufficient; the 3/7 milestone rewards remain
+ * independent and are still claimed through their own ledgers. */
+export async function hasDailyChallengeVictory(env: AppEnv, identity: Identity, now = Date.now()) {
+  const { dayKey } = await organizationDay(env, identity.organizationId, now);
+  const results = await participationResults(env, identity, dayKey);
+  return [...results.values()].some(result => outcome(result) === "WON");
+}
+
 async function claimedReward(env: AppEnv, identity: Identity, dayKey: string, target: 3 | 7) {
   const sourceType = `daily_challenge_${target}`;
   const row = await env.DB.prepare(`SELECT 1 claimed FROM platform_xp_ledger

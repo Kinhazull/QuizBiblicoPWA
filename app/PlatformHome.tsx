@@ -99,7 +99,7 @@ function recentAchievements(data: PlatformAchievementData | null) {
   return (data?.achievements || [])
     .filter(item => item.unlocked && item.unlockedAt)
     .sort((left, right) => Number(right.unlockedAt) - Number(left.unlockedAt))
-    .slice(0, 4);
+    .slice(0, 3);
 }
 
 export function PlatformHome({
@@ -130,8 +130,8 @@ export function PlatformHome({
       <header className="platform-brand-row">
         <div className="platform-brand"><BrandLogo priority /></div>
         <nav className="platform-collection-actions" aria-label="Coleção">
-          <a className="platform-shop-button" href="/inventario"><BrandIcon name="package" /> Inventário</a>
-          <a className="platform-shop-button" href="/loja"><BrandIcon name="coins" /> Loja</a>
+          <a className="platform-shop-button" href="/inventario" aria-label="Abrir Inventário" title="Inventário"><BrandIcon name="package" /> <span>Inventário</span></a>
+          <a className="platform-shop-button" href="/loja" aria-label="Abrir Loja" title="Loja"><BrandIcon name="coins" /> <span>Loja</span></a>
         </nav>
       </header>
 
@@ -178,7 +178,7 @@ export function PlatformHome({
       </section>
 
       <section className="platform-play-hub" aria-labelledby="play-hub-title">
-        <div className="platform-play-art" aria-hidden="true">{gameModules.map(game => <GameArt key={game.id} art={game.art} fallback={game.image} sizes="48px" />)}</div>
+        <div className="platform-play-art" aria-hidden="true">{gameModules.slice(0, 3).map(game => <GameArt key={game.id} art={game.art} fallback={game.image} sizes="48px" />)}</div>
         <div><p>Jogar</p><h2 id="play-hub-title">Escolha seu próximo desafio</h2><span>Todos os jogos da plataforma em um só lugar.</span></div>
         <a href="/jogos">Ver jogos <span aria-hidden="true">→</span></a>
       </section>
@@ -192,8 +192,8 @@ export function PlatformHome({
 
       <section className="platform-daily-chest" id="recompensas" aria-labelledby="chest-title">
         <RewardArt type="chest-daily" variant="card" className="platform-chest-art" sizes="150px" />
-        <div><p>Cofre diário</p><h2 id="chest-title">{daily?.chest.opened ? "Recompensa coletada" : daily?.chest.unlocked ? "Seu cofre está disponível" : "Conclua a missão do dia"}</h2>
-          <span>{dailyError || (daily?.chest.opened ? `Você recebeu ${daily.chest.reward?.label}.` : daily?.chest.unlocked ? "Abra uma vez para receber sua recompensa." : "O cofre será liberado após concluir a missão diária.")}</span></div>
+        <div><p>Cofre diário</p><h2 id="chest-title">{daily?.chest.opened ? "Recompensa coletada" : daily?.chest.unlocked ? "Seu cofre está disponível" : "Vença um desafio diário"}</h2>
+          <span>{dailyError || (daily?.chest.opened ? `Você recebeu ${daily.chest.reward?.label}.` : daily?.chest.unlocked ? "Abra uma vez para receber sua recompensa." : "O cofre será liberado após sua primeira vitória diária.")}</span></div>
         <strong>{daily?.chest.reward?.label || daily?.chest.preview.label || "Recompensa surpresa"}</strong>
         <button type="button" onClick={onOpenChest} disabled={dailyBusy || !daily?.chest.unlocked || daily.chest.opened}>
           {dailyBusy ? "Aguarde..." : daily?.chest.opened ? "Aberto hoje" : daily?.chest.unlocked ? "Abrir cofre" : "Bloqueado"}
