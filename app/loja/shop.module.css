@@ -20,3 +20,4 @@
   .card>div:not(.artStage){margin-top:4px}
   .card button{min-height:46px}
 }
+.storeLink{justify-content:center;border:1px solid #f4b40088;border-radius:11px;background:#2b230b;color:#f4c542!important;font-weight:800!important;text-decoration:none;box-shadow:0 8px 20px #01081633}

@@ -18,6 +18,7 @@
 .wordle-message + .wordle-board { margin-top: 4px; }
 .wordle-message.won { color: #6ee7a3; font-weight: 700; }
 .wordle-message.lost { color: #ffc166; font-weight: 700; }
+.wordle-game > .game-sdk-instruction { position:relative;z-index:1;margin-bottom:20px; }
 .wordle-keyboard { display: grid; gap: 7px; width: min(100%, 520px); margin: 0 auto; }
 .wordle-keyboard-row { display: flex; justify-content: center; gap: 5px; }
 .wordle-key { display: grid; min-width: 0; height: 48px; flex: 1; place-items: center; border: 0; border-radius: 8px; padding: 0; background: #17314c; color: #fff; font: inherit; font-size: clamp(12px,3.5vw,15px); font-weight: 800; cursor: pointer; }

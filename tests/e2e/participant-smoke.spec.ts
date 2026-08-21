@@ -255,7 +255,8 @@ test("authenticated participant receives platform chrome and four-item navigatio
   await expect(page.locator(".notifications-action")).toBeVisible();
   await expect(page.locator(".settings-action")).toHaveCount(0);
   await expect(page.locator(".platform-play-art img")).toHaveCount(3);
-  await expect(page.locator(".platform-player-card .reward-art img")).toHaveCount(2);
+  await expect(page.locator(".platform-player-card .reward-art img")).toHaveCount(1);
+  await expect(page.locator(".platform-header-balance .reward-art img")).toHaveCount(1);
   await expect(page.locator(".platform-daily-summary .reward-art img")).toHaveCount(1);
   await expect(page.locator(".platform-daily-chest .reward-art img")).toHaveCount(1);
   await expect(page.locator("body")).not.toHaveCSS("overflow-x", "scroll");
@@ -422,7 +423,8 @@ test("official reward art remains stable at release desktop and mobile viewports
   for (const viewport of [{ width: 1366, height: 768 }, { width: 360, height: 800 }]) {
     await page.setViewportSize(viewport);
     await page.goto("/");
-    await expect(page.locator(".platform-player-card .reward-art img")).toHaveCount(2);
+    await expect(page.locator(".platform-player-card .reward-art img")).toHaveCount(1);
+    await expect(page.locator(".platform-header-balance .reward-art img")).toHaveCount(1);
     await expect(page.locator(".platform-daily-summary .reward-art img")).toHaveCount(1);
     await expect(page.locator(".platform-daily-chest .reward-art img")).toHaveCount(1);
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(

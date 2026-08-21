@@ -130,6 +130,9 @@ export function PlatformHome({
       <header className="platform-brand-row">
         <div className="platform-brand"><BrandLogo priority /></div>
         <nav className="platform-collection-actions" aria-label="Coleção">
+          <span className="platform-header-balance" aria-label={`${platformProgress.coins.toLocaleString("pt-BR")} moedas`}>
+            <RewardArt type="coin" /><strong>{platformProgress.coins.toLocaleString("pt-BR")}</strong><small>moedas</small>
+          </span>
           <a className="platform-shop-button" href="/inventario" aria-label="Abrir Inventário" title="Inventário"><BrandIcon name="package" /> <span>Inventário</span></a>
           <a className="platform-shop-button" href="/loja" aria-label="Abrir Loja" title="Loja"><BrandIcon name="coins" /> <span>Loja</span></a>
         </nav>
@@ -146,9 +149,6 @@ export function PlatformHome({
             <small>{platformProgress.levelProgress.currentXp.toLocaleString("pt-BR")} / {platformProgress.levelProgress.targetXp.toLocaleString("pt-BR")} XP</small>
           </div>
           <a className="platform-ranking-link" href="/rankings">Ver Ranking <span aria-hidden="true">→</span></a>
-        </div>
-        <div className="platform-currencies" aria-label="Saldo da plataforma">
-          <span><RewardArt type="coin" /><strong>{platformProgress.coins.toLocaleString("pt-BR")}</strong><small>Moedas</small></span>
         </div>
         <div className="platform-daily-login" role="status">
           <span aria-hidden="true">🔥</span>

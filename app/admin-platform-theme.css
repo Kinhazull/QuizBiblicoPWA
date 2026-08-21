@@ -193,3 +193,27 @@ body:has(.admin-shell) {
   }
   .admin-shell .admin-title h1 { font-size: clamp(30px, 9vw, 38px) !important; }
 }
+
+/* A few historical modules intentionally keep light cards. Their foreground
+   colors must not inherit the dark-panel contract above. */
+.admin-shell :where(.hub-summary a, .content-metrics article,
+  .content-game-summary article, .library-health-list li,
+  .universal-content-card, .archive-card) { color:#17324b !important; }
+.admin-shell :where(.hub-summary a, .content-metrics article,
+  .content-game-summary article, .library-health-list li,
+  .universal-content-card, .archive-card) :where(h2, h3, h4, strong, b, dd) { color:#102a43 !important; }
+.admin-shell :where(.hub-summary a, .content-metrics article,
+  .content-game-summary article, .library-health-list li,
+  .universal-content-card, .archive-card) :where(p, small, span, dt) { color:#526b80 !important; }
+.admin-shell .library-health-list .library-health-severity.critical { color:#9d1837 !important; }
+.admin-shell .library-health-list .library-health-severity.attention { color:#7a5700 !important; }
+.admin-shell .library-health-list .library-health-severity.info { color:#175d9d !important; }
+.admin-shell :where(.library-health-list, .universal-content-card) .content-game { color:#9dcbfa !important; }
+.admin-shell .universal-content-card .content-status.published { color:#8ce7ae !important; }
+.admin-shell .universal-content-card .content-tags span { color:#5e4779 !important; }
+.admin-shell .health-status.healthy :where(strong, small, button) { color:#145a38 !important; }
+.admin-shell .attention-section h2,
+.admin-shell .overview-card h2,
+.admin-shell .admin-shortcuts h2,
+.admin-shell .recent-card h2,
+.admin-shell .recent-card li span { color:#f5f9fd !important; }

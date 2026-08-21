@@ -199,6 +199,12 @@ body:has(.auth-screen) {
   box-shadow: none;
 }
 .profile-section .logout-button:hover { background: #4c2633; }
+.mfa-profile-section { display:flex;align-items:center;justify-content:space-between;gap:18px; }
+.mfa-profile-section > div { min-width:0; }
+.mfa-profile-section h2 { margin-bottom:5px; }
+.mfa-profile-section p { margin:0; }
+.mfa-profile-section .secondary { position:static!important;display:inline-flex!important;min-height:44px;flex:0 0 auto;align-items:center;justify-content:center;margin:0!important;transform:none!important; }
+.account-privacy-card > header .logout-control { flex:0 0 auto; }
 .profile-account-grid h3 { margin-top: 8px; }
 .profile-shell .privacy-list > div {
   border-color: #315170 !important;
@@ -257,6 +263,8 @@ body:has(.auth-screen) {
   .account-privacy-card .logout-control,
   .account-privacy-card .logout-button { width: 100%; }
   .account-privacy-card .logout-button { justify-content: center; }
+  .mfa-profile-section { align-items:stretch;flex-direction:column; }
+  .mfa-profile-section .secondary { width:100%;box-sizing:border-box; }
   .profile-actions { display: grid; grid-template-columns: 1fr 1fr; }
   .profile-actions :is(a, button) { justify-content: center; text-align: center; }
   .privacy-list > div {
@@ -337,6 +345,12 @@ body:has(.auth-screen) {
   .participant-bottom-nav.platform-bottom-nav a { min-height: 52px; }
 }
 
+@media (max-width: 340px) {
+  .platform-brand > .brand-logo { width: 118px; }
+  .platform-collection-actions { gap: 5px; }
+  .platform-header-balance { min-width: 52px; padding-inline: 5px; }
+}
+
 /* Compact mobile Home: information remains complete, but the hierarchy no
    longer spends an entire viewport on account chrome and preview cards. */
 @media (max-width: 560px) {
@@ -366,7 +380,7 @@ body:has(.auth-screen) {
   }
   .platform-collection-actions .platform-shop-button > span { display: none; }
   .platform-player-card {
-    grid-template-columns: 56px minmax(0, 1fr) auto;
+    grid-template-columns: 56px minmax(0, 1fr);
     gap: 10px;
     padding: 14px;
   }
@@ -401,23 +415,6 @@ body:has(.auth-screen) {
     margin-top: 3px;
     font-size: 10px;
   }
-  .platform-currencies {
-    grid-column: 3;
-    grid-row: 1;
-    align-self: center;
-  }
-  .platform-currencies > span {
-    min-width: 60px;
-    grid-template-columns: auto 1fr;
-    gap: 0 5px;
-    padding: 8px;
-  }
-  .platform-currencies .reward-art {
-    width: 28px;
-    height: 28px;
-  }
-  .platform-currencies strong { font-size: 17px; }
-  .platform-currencies small { grid-column: 1 / -1; font-size: 9px; text-align: center; }
   .platform-daily-login {
     padding: 9px 11px;
     gap: 8px;
