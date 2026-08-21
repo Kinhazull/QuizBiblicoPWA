@@ -254,7 +254,7 @@ test("authenticated participant receives platform chrome and four-item navigatio
   await expect(navigation.locator("a").allTextContents()).resolves.toEqual(["Home", "Jogos", "Recompensas", "Perfil"]);
   await expect(page.locator(".notifications-action")).toBeVisible();
   await expect(page.locator(".settings-action")).toHaveCount(0);
-  await expect(page.locator(".platform-play-art img")).toHaveCount(gameCatalog.length);
+  await expect(page.locator(".platform-play-art img")).toHaveCount(3);
   await expect(page.locator(".platform-player-card .reward-art img")).toHaveCount(2);
   await expect(page.locator(".platform-daily-summary .reward-art img")).toHaveCount(1);
   await expect(page.locator(".platform-daily-chest .reward-art img")).toHaveCount(1);

@@ -147,6 +147,35 @@ body:has(.admin-shell) {
   color: #ffb8c1 !important;
 }
 .admin-shell .attention-item:not(.critical):not(.warning) { background: #102b47 !important; }
+.admin-shell .attention-item :where(strong, b) { color: #f5f9fd !important; }
+.admin-shell .attention-item :where(p, small) { color: #c5d7e8 !important; }
+.admin-shell .attention-item > a {
+  border: 1px solid #477da9 !important;
+  background: #0b2037 !important;
+  color: #dceafa !important;
+}
+.admin-shell .library-health-summary {
+  background: #102b47 !important;
+  color: #c5d7e8 !important;
+}
+.admin-shell .library-health-summary strong { color: #f5f9fd !important; }
+.admin-shell .admin-shortcuts nav a {
+  border: 1px solid #47769d45;
+  background: #102b47 !important;
+  color: #edf6ff !important;
+}
+.admin-shell .admin-shortcuts nav a :where(strong, b) { color: #edf6ff !important; }
+.admin-shell .admin-shortcuts nav a small { color: #b9cad9 !important; }
+.admin-shell .library-health-empty {
+  background: #102b47 !important;
+  color: #dceafa !important;
+}
+.admin-shell .library-health-empty :where(strong, p) { color: #dceafa !important; }
+.admin-shell .field-note {
+  border-left-color: #68cf91 !important;
+  background: #102b47 !important;
+  color: #dceafa !important;
+}
 .admin-shell .metric-skeleton {
   background: linear-gradient(100deg, #0b2037, #173a58, #0b2037) !important;
   background-size: 200% !important;
