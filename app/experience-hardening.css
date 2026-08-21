@@ -6,6 +6,91 @@ body:has(.auth-screen) {
   color: #f7f5f0;
 }
 
+/* Authentication keeps its focused card, but uses the same visual language as
+   the current platform instead of the original purple and lime Quiz theme. */
+.auth-screen {
+  background:
+    radial-gradient(circle at 12% -10%, #225d9d 0, transparent 34%),
+    radial-gradient(circle at 100% 100%, #0d3158 0, transparent 30%),
+    #07172a !important;
+}
+.auth-screen .ambient { border-color: #4a83bb2b; }
+.auth-card {
+  border-color: #315170 !important;
+  background: #0b2037f2 !important;
+  box-shadow: 0 24px 70px #020b1470 !important;
+}
+.auth-card .brand > .brand-logo { width: min(220px, 68vw); }
+.auth-card .eyebrow { color: #68cf91; }
+.auth-card h1 { color: #fff; }
+.auth-card h1 em { color: #489cff; }
+.auth-card .intro,
+.auth-card label,
+.auth-card .remember,
+.auth-card .legal-consent { color: #b8c8d8; }
+.auth-card input {
+  min-height: 50px;
+  border-color: #3a5c7d;
+  background: #102a46;
+  color: #f7fbff;
+}
+.auth-card input::placeholder { color: #8298ad; opacity: 1; }
+.auth-card input:focus {
+  border-color: #489cff;
+  box-shadow: 0 0 0 3px #489cff26;
+}
+.auth-card .primary {
+  min-height: 52px;
+  border-radius: 13px;
+  background: linear-gradient(180deg, #3287e7, #216ac6);
+  color: #fff;
+  box-shadow: 0 12px 28px #1268c34d;
+}
+.auth-card .primary:hover:not(:disabled) {
+  background: linear-gradient(180deg, #489cff, #2878d4);
+}
+.auth-card .primary:focus-visible,
+.auth-card .auth-switch:focus-visible,
+.auth-card .legal-links a:focus-visible {
+  outline: 3px solid #68cf91;
+  outline-offset: 3px;
+}
+.auth-card .auth-switch,
+.auth-card .auth-recovery-link { color: #74adf0; }
+.auth-card .legal-links a { color: #9eb1c5; }
+.auth-card .auth-message {
+  border: 1px solid #3a5c7d;
+  background: #102a46;
+  color: #e4eef7;
+}
+.auth-card .password-visibility-toggle {
+  background: #193b5d;
+  color: #dceafb;
+}
+.auth-card :is(.remember, .legal-consent) input[type="checkbox"] {
+  accent-color: #3287e7;
+}
+
+@media (max-width: 520px) {
+  .auth-screen {
+    align-items: start;
+    padding: max(18px, env(safe-area-inset-top)) 14px max(24px, env(safe-area-inset-bottom));
+    overflow-y: auto;
+  }
+  .auth-card {
+    width: 100%;
+    padding: 22px 18px;
+    border-radius: 20px;
+  }
+  .auth-card .brand { margin-bottom: 22px; }
+  .auth-card .eyebrow {
+    margin-bottom: 10px;
+    font-size: 10px;
+    letter-spacing: 1.7px;
+  }
+  .auth-card .intro { margin: 12px auto 18px; }
+}
+
 .profile-shell { color: #f7f5f0 !important; }
 .profile-heading h1,
 .profile-section h2,

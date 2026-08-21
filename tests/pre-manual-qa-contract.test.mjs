@@ -49,6 +49,21 @@ test("above-the-fold equipped identity eagerly loads its compact art", async () 
   assert.match(art, /priority={priority}/);
 });
 
+test("login and identity confirmation use the current platform visual contract", async () => {
+  const [page, hardening] = await Promise.all([
+    read("app/page.tsx"),
+    read("app/experience-hardening.css"),
+  ]);
+
+  assert.match(page, /className="shell auth-screen"/);
+  assert.match(page, /VERIFICAÇÃO EM DUAS ETAPAS/);
+  assert.match(hardening, /\.auth-screen\s*\{[^}]*#07172a/s);
+  assert.match(hardening, /\.auth-card\s*\{[^}]*#0b2037f2/s);
+  assert.match(hardening, /\.auth-card h1 em\s*\{[^}]*#489cff/s);
+  assert.match(hardening, /\.auth-card \.primary\s*\{[^}]*#3287e7/s);
+  assert.match(hardening, /@media \(max-width: 520px\)[\s\S]*\.auth-card/s);
+});
+
 test("administrative member filters and actions have explicit accessible names", async () => {
   const members = await read("app/admin/membros/page.tsx");
   assert.match(members, /aria-label="Pesquisar membros por nome ou usuário"/);
