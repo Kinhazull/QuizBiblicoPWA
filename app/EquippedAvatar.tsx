@@ -38,7 +38,7 @@ export function EquippedAvatar({
       ? `${avatar?.name || "Avatar padrão"}${frame ? ` com ${frame.name}` : ""}`
       : `Avatar de ${displayName}`}
   >
-    <span className="equipped-avatar-base" aria-hidden="true">{avatarId ? <CollectibleArt id={avatarId} fallback={avatar?.icon || fallback} variant="compact" /> : fallback}</span>
-    {frameId && (collectibleArtRegistry[frameId] || frame?.icon) ? <CollectibleArt id={frameId} fallback={frame?.icon} variant="compact" className="equipped-avatar-frame" /> : null}
+    <span className="equipped-avatar-base" aria-hidden="true">{avatarId ? <CollectibleArt id={avatarId} fallback={avatar?.icon || fallback} variant="compact" priority /> : fallback}</span>
+    {frameId && (collectibleArtRegistry[frameId] || frame?.icon) ? <CollectibleArt id={frameId} fallback={frame?.icon} variant="compact" className="equipped-avatar-frame" priority /> : null}
   </div>;
 }

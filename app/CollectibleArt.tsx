@@ -49,11 +49,13 @@ export function CollectibleArt({
   fallback,
   variant = "standard",
   className = "",
+  priority = false,
 }: {
   id: string;
   fallback?: string;
   variant?: "compact" | "standard";
   className?: string;
+  priority?: boolean;
 }) {
   const [failed, setFailed] = useState(false);
   const entry = collectibleArtRegistry[id];
@@ -62,6 +64,6 @@ export function CollectibleArt({
   }
   const size = variant === "compact" ? 96 : 320;
   return <span className={`collectible-art collectible-art-${entry.type} collectible-art-${variant} ${className}`} aria-hidden="true">
-    <Image src={entry[variant]} alt="" width={size} height={size} sizes={variant === "compact" ? "48px" : "160px"} loading="lazy" unoptimized onError={() => setFailed(true)} />
+    <Image src={entry[variant]} alt="" width={size} height={size} sizes={variant === "compact" ? "48px" : "160px"} loading={priority ? "eager" : "lazy"} priority={priority} unoptimized onError={() => setFailed(true)} />
   </span>;
 }

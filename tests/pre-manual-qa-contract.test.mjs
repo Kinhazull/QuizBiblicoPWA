@@ -14,12 +14,39 @@ test("asset pack uses a shared visual sizing and contrast contract", async () =>
   assert.match(contract, /equipped-avatar-frame/);
 });
 
+test("mobile experience hardening is the final visual consistency layer", async () => {
+  const [layout, styles, recovery, analytics, rewards] = await Promise.all([
+    read("app/layout.tsx"),
+    read("app/experience-hardening.css"),
+    read("app/recuperar-conta/page.tsx"),
+    read("app/admin/analytics/page.tsx"),
+    read("app/recompensas/collections.module.css"),
+  ]);
+  assert.match(layout, /experience-hardening\.css/);
+  assert.ok(layout.indexOf("experience-hardening.css") > layout.indexOf("brand-system.css"));
+  assert.match(styles, /grid-template-columns:\s*repeat\(2, minmax\(0, 1fr\)\)/);
+  assert.match(styles, /min-height:\s*44px/);
+  assert.match(styles, /body:has\(\.profile-shell\)/);
+  assert.doesNotMatch(recovery, /Voltar ao login/);
+  assert.match(analytics, /Dados em preparação:/);
+  assert.doesNotMatch(analytics, /Conclusão integral do Evento ainda não possui projeção própria confiável/);
+  assert.match(rewards, /width:28px;height:28px/);
+  assert.match(rewards, /width:48px;height:48px/);
+});
+
 test("profile, MFA and account recovery expose distinct current states", async () => {
   const [profile, mfa] = await Promise.all([read("app/perfil/page.tsx"), read("app/configurar-mfa/page.tsx")]);
   assert.match(profile, /mfaStatus === "active"/);
   assert.match(profile, /Códigos de recuperação da conta/);
   assert.match(profile, /diferentes dos códigos de recuperação do MFA/);
   assert.match(mfa, /O MFA está ativo/);
+});
+
+test("above-the-fold equipped identity eagerly loads its compact art", async () => {
+  const [avatar, art] = await Promise.all([read("app/EquippedAvatar.tsx"), read("app/CollectibleArt.tsx")]);
+  assert.match(avatar, /variant="compact" priority/);
+  assert.match(art, /loading={priority \? "eager" : "lazy"}/);
+  assert.match(art, /priority={priority}/);
 });
 
 test("administrative member filters and actions have explicit accessible names", async () => {

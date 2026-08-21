@@ -40,6 +40,5 @@ export default function Recover() {
       {msg && <p className="auth-message">{msg}</p>}
       <button className="primary" disabled={busy}>{busy ? "AGUARDE..." : "REDEFINIR SENHA"}</button>
     </form>
-    <a className="auth-switch" href="/">Voltar ao login</a>
   </section></main>;
 }
