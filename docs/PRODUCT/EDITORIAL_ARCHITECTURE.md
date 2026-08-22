@@ -78,3 +78,5 @@ A validação comum não conhece regras específicas de jogo. Cada schema manté
 ## Evolução
 
 Novos jogos devem, na mesma alteração, registrar seu `GameType`, schema específico e contrato editorial. Uma eventual decisão futura de fechar categorias ou temas exige versionamento explícito do contrato, análise do acervo e estratégia de migração; não pode ser aplicada implicitamente pela validação.
+
+Para produção em escala da v2, metas, distribuição, identidade dos jogos, controle de duplicidade e gates de lote são definidos em `docs/PRODUCT/CONTENT_SCALE_UP_V2_EDITORIAL_MATRIX.md`. A matriz complementa esta arquitetura sem modificar seus contratos executáveis.

@@ -21,6 +21,7 @@
 | KI-018 | Revalidação da rodada mobile | Release gate | Correções de Home, Perfil, Loja, Inventário, catálogo, Daily, jogos e Administração estão na `main`; repetir smoke visual/funcional em 320–390 px no artifact promovido antes do Go/No-Go. |
 | KI-019 | Conteúdo Wordle v2 em produção | Verificação operacional | O pacote de 153 conteúdos está aprovado e versionado. Confirmar por dry-run/aplicação administrativa idempotente e contagem CMS/Biblioteca que a publicação real ocorreu; não inferir pelo Git. |
 | KI-020 | Registro de resultado em rede móvel | Revalidação | Retry limitado e conclusão idempotente foram implementados após falha intermitente observada. Validar no runtime promovido e confirmar ausência de duplicação de XP, moedas ou estatísticas. |
+| KI-021 | Revisão e publicação do Content Scale-Up v2 | Planejamento editorial | Wordle possui 323 soluções aprovadas, 877 candidatos pendentes e projeção de 1.200. Os outros cinco jogos possuem 3.040 candidatos conjuntos que projetam o fechamento das metas locais. Revisão humana, correções, dry-run, importação, publicação e reconciliação permanecem abertas; nenhuma contagem remota foi inferida. |
 
 ## Encerrados
 

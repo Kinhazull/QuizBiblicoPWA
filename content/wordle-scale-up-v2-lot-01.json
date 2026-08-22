@@ -1,0 +1,857 @@
+{
+  "version": 1,
+  "source": "Conte os Feitos — Content Scale-Up v2 — Wordle lote 01",
+  "reviewStatus": "APPROVED_BY_PROJECT_OWNER",
+  "contents": [
+    {
+      "externalId": "wordle-scale-v2-l01-001-ajuda",
+      "gameType": "wordle-biblico",
+      "category": "Conceitos",
+      "difficulty": "EASY",
+      "biblicalReference": "Salmos 121:2",
+      "tags": [
+        "Antigo Testamento",
+        "Content Scale-Up v2",
+        "Lote 01",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "AJUDA",
+        "hint": "Socorro que o salmista afirma vir do Criador dos céus e da terra."
+      }
+    },
+    {
+      "externalId": "wordle-scale-v2-l01-002-aroma",
+      "gameType": "wordle-biblico",
+      "category": "Conceitos",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Gênesis 8:21",
+      "tags": [
+        "Antigo Testamento",
+        "Content Scale-Up v2",
+        "Lote 01",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "AROMA",
+        "hint": "Característica da oferta apresentada por Noé depois de sair da arca."
+      }
+    },
+    {
+      "externalId": "wordle-scale-v2-l01-003-barco",
+      "gameType": "wordle-biblico",
+      "category": "Objetos",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Marcos 4:36",
+      "tags": [
+        "Novo Testamento",
+        "Content Scale-Up v2",
+        "Lote 01",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "BARCO",
+        "hint": "Embarcação na qual Jesus estava durante uma forte tempestade."
+      }
+    },
+    {
+      "externalId": "wordle-scale-v2-l01-004-barro",
+      "gameType": "wordle-biblico",
+      "category": "Objetos",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Jeremias 18:6",
+      "tags": [
+        "Antigo Testamento",
+        "Content Scale-Up v2",
+        "Lote 01",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "BARRO",
+        "hint": "Material moldado pelo oleiro na mensagem dirigida à casa de Israel."
+      }
+    },
+    {
+      "externalId": "wordle-scale-v2-l01-005-bispo",
+      "gameType": "wordle-biblico",
+      "category": "Igreja",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "1 Timóteo 3:2",
+      "tags": [
+        "Novo Testamento",
+        "Content Scale-Up v2",
+        "Lote 01",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "BISPO",
+        "hint": "Responsável da comunidade cuja conduta é descrita em uma carta pastoral."
+      }
+    },
+    {
+      "externalId": "wordle-scale-v2-l01-006-cabra",
+      "gameType": "wordle-biblico",
+      "category": "Animais",
+      "difficulty": "HARD",
+      "biblicalReference": "Levítico 4:28",
+      "tags": [
+        "Antigo Testamento",
+        "Content Scale-Up v2",
+        "Lote 01",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "CABRA",
+        "hint": "Animal fêmea aceito em uma oferta relacionada a pecado involuntário."
+      }
+    },
+    {
+      "externalId": "wordle-scale-v2-l01-007-canto",
+      "gameType": "wordle-biblico",
+      "category": "Conceitos",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Êxodo 15:1",
+      "tags": [
+        "Antigo Testamento",
+        "Content Scale-Up v2",
+        "Lote 01",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "CANTO",
+        "hint": "Expressão de celebração entoada após a travessia do mar."
+      }
+    },
+    {
+      "externalId": "wordle-scale-v2-l01-008-casas",
+      "gameType": "wordle-biblico",
+      "category": "Lugares",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Atos 2:46",
+      "tags": [
+        "Novo Testamento",
+        "Content Scale-Up v2",
+        "Lote 01",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "CASAS",
+        "hint": "Locais onde os primeiros discípulos repartiam o alimento com alegria."
+      }
+    },
+    {
+      "externalId": "wordle-scale-v2-l01-009-chaga",
+      "gameType": "wordle-biblico",
+      "category": "Conceitos",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Isaías 53:5",
+      "tags": [
+        "Antigo Testamento",
+        "Content Scale-Up v2",
+        "Lote 01",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "CHAGA",
+        "hint": "Ferimento associado profeticamente à cura e ao sofrimento do Servo."
+      }
+    },
+    {
+      "externalId": "wordle-scale-v2-l01-010-chama",
+      "gameType": "wordle-biblico",
+      "category": "Natureza",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Êxodo 3:2",
+      "tags": [
+        "Antigo Testamento",
+        "Content Scale-Up v2",
+        "Lote 01",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "CHAMA",
+        "hint": "Manifestação visível no arbusto que ardia sem ser consumido."
+      }
+    },
+    {
+      "externalId": "wordle-scale-v2-l01-011-chave",
+      "gameType": "wordle-biblico",
+      "category": "Objetos",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Mateus 16:19",
+      "tags": [
+        "Novo Testamento",
+        "Content Scale-Up v2",
+        "Lote 01",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "CHAVE",
+        "hint": "Símbolo de autoridade prometido no ensino sobre o Reino dos céus."
+      }
+    },
+    {
+      "externalId": "wordle-scale-v2-l01-012-culpa",
+      "gameType": "wordle-biblico",
+      "category": "Conceitos",
+      "difficulty": "HARD",
+      "biblicalReference": "Levítico 5:5",
+      "tags": [
+        "Antigo Testamento",
+        "Content Scale-Up v2",
+        "Lote 01",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "CULPA",
+        "hint": "Responsabilidade que deveria ser reconhecida e confessada após uma transgressão."
+      }
+    },
+    {
+      "externalId": "wordle-scale-v2-l01-013-danca",
+      "gameType": "wordle-biblico",
+      "category": "Conceitos",
+      "difficulty": "EASY",
+      "biblicalReference": "2 Samuel 6:14",
+      "tags": [
+        "Antigo Testamento",
+        "Content Scale-Up v2",
+        "Lote 01",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "DANCA",
+        "hint": "Expressão corporal de alegria de Davi diante da arca do Senhor."
+      }
+    },
+    {
+      "externalId": "wordle-scale-v2-l01-014-dores",
+      "gameType": "wordle-biblico",
+      "category": "Conceitos",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Mateus 24:8",
+      "tags": [
+        "Novo Testamento",
+        "Content Scale-Up v2",
+        "Lote 01",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "DORES",
+        "hint": "Imagem usada por Jesus para descrever o começo de acontecimentos difíceis."
+      }
+    },
+    {
+      "externalId": "wordle-scale-v2-l01-015-fonte",
+      "gameType": "wordle-biblico",
+      "category": "Natureza",
+      "difficulty": "EASY",
+      "biblicalReference": "João 4:14",
+      "tags": [
+        "Novo Testamento",
+        "Content Scale-Up v2",
+        "Lote 01",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "FONTE",
+        "hint": "Imagem de água interior que conduz à vida eterna."
+      }
+    },
+    {
+      "externalId": "wordle-scale-v2-l01-016-forca",
+      "gameType": "wordle-biblico",
+      "category": "Conceitos",
+      "difficulty": "EASY",
+      "biblicalReference": "Efésios 6:10",
+      "tags": [
+        "Novo Testamento",
+        "Content Scale-Up v2",
+        "Lote 01",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "FORCA",
+        "hint": "Capacidade que os cristãos devem buscar no Senhor e em seu poder."
+      }
+    },
+    {
+      "externalId": "wordle-scale-v2-l01-017-forno",
+      "gameType": "wordle-biblico",
+      "category": "Objetos",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Daniel 3:6",
+      "tags": [
+        "Antigo Testamento",
+        "Content Scale-Up v2",
+        "Lote 01",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "FORNO",
+        "hint": "Lugar de fogo preparado como punição para quem não adorasse a imagem."
+      }
+    },
+    {
+      "externalId": "wordle-scale-v2-l01-018-hinos",
+      "gameType": "wordle-biblico",
+      "category": "Conceitos",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Atos 16:25",
+      "tags": [
+        "Novo Testamento",
+        "Content Scale-Up v2",
+        "Lote 01",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "HINOS",
+        "hint": "Louvores entoados por Paulo e Silas enquanto estavam presos."
+      }
+    },
+    {
+      "externalId": "wordle-scale-v2-l01-019-idolo",
+      "gameType": "wordle-biblico",
+      "category": "Conceitos",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "1 Coríntios 8:4",
+      "tags": [
+        "Novo Testamento",
+        "Content Scale-Up v2",
+        "Lote 01",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "IDOLO",
+        "hint": "Representação sem realidade divina discutida por Paulo ao tratar de alimentos."
+      }
+    },
+    {
+      "externalId": "wordle-scale-v2-l01-020-jesse",
+      "gameType": "wordle-biblico",
+      "category": "Personagens",
+      "difficulty": "HARD",
+      "biblicalReference": "Isaías 11:1",
+      "tags": [
+        "Antigo Testamento",
+        "Content Scale-Up v2",
+        "Lote 01",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "JESSE",
+        "hint": "Pai ligado à raiz da qual surgiria um descendente cheio do Espírito."
+      }
+    },
+    {
+      "externalId": "wordle-scale-v2-l01-021-jovem",
+      "gameType": "wordle-biblico",
+      "category": "Pessoas",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "1 Timóteo 4:12",
+      "tags": [
+        "Novo Testamento",
+        "Content Scale-Up v2",
+        "Lote 01",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "JOVEM",
+        "hint": "Condição de idade que não deveria impedir Timóteo de ser exemplo."
+      }
+    },
+    {
+      "externalId": "wordle-scale-v2-l01-022-leite",
+      "gameType": "wordle-biblico",
+      "category": "Alimentos",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "1 Pedro 2:2",
+      "tags": [
+        "Novo Testamento",
+        "Content Scale-Up v2",
+        "Lote 01",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "LEITE",
+        "hint": "Alimento usado como imagem do desejo pela nutrição espiritual."
+      }
+    },
+    {
+      "externalId": "wordle-scale-v2-l01-023-leoes",
+      "gameType": "wordle-biblico",
+      "category": "Animais",
+      "difficulty": "EASY",
+      "biblicalReference": "Daniel 6:22",
+      "tags": [
+        "Antigo Testamento",
+        "Content Scale-Up v2",
+        "Lote 01",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "LEOES",
+        "hint": "Animais cujas bocas foram fechadas quando Daniel esteve na cova."
+      }
+    },
+    {
+      "externalId": "wordle-scale-v2-l01-024-luzes",
+      "gameType": "wordle-biblico",
+      "category": "Natureza",
+      "difficulty": "HARD",
+      "biblicalReference": "Gênesis 1:14",
+      "tags": [
+        "Antigo Testamento",
+        "Content Scale-Up v2",
+        "Lote 01",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "LUZES",
+        "hint": "Corpos do firmamento destinados a marcar tempos, dias e anos."
+      }
+    },
+    {
+      "externalId": "wordle-scale-v2-l01-025-magos",
+      "gameType": "wordle-biblico",
+      "category": "Pessoas",
+      "difficulty": "EASY",
+      "biblicalReference": "Mateus 2:1",
+      "tags": [
+        "Novo Testamento",
+        "Content Scale-Up v2",
+        "Lote 01",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "MAGOS",
+        "hint": "Visitantes do Oriente que chegaram a Jerusalém após o nascimento de Jesus."
+      }
+    },
+    {
+      "externalId": "wordle-scale-v2-l01-026-males",
+      "gameType": "wordle-biblico",
+      "category": "Conceitos",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Salmos 34:19",
+      "tags": [
+        "Antigo Testamento",
+        "Content Scale-Up v2",
+        "Lote 01",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "MALES",
+        "hint": "Aflições numerosas das quais o Senhor livra o justo."
+      }
+    },
+    {
+      "externalId": "wordle-scale-v2-l01-027-manha",
+      "gameType": "wordle-biblico",
+      "category": "Conceitos",
+      "difficulty": "EASY",
+      "biblicalReference": "Salmos 5:3",
+      "tags": [
+        "Antigo Testamento",
+        "Content Scale-Up v2",
+        "Lote 01",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "MANHA",
+        "hint": "Período do dia em que o salmista apresenta sua oração e espera."
+      }
+    },
+    {
+      "externalId": "wordle-scale-v2-l01-028-massa",
+      "gameType": "wordle-biblico",
+      "category": "Alimentos",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "1 Coríntios 5:6",
+      "tags": [
+        "Novo Testamento",
+        "Content Scale-Up v2",
+        "Lote 01",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "MASSA",
+        "hint": "Mistura usada por Paulo para explicar o efeito de um pouco de fermento."
+      }
+    },
+    {
+      "externalId": "wordle-scale-v2-l01-029-navio",
+      "gameType": "wordle-biblico",
+      "category": "Objetos",
+      "difficulty": "EASY",
+      "biblicalReference": "Atos 27:41",
+      "tags": [
+        "Novo Testamento",
+        "Content Scale-Up v2",
+        "Lote 01",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "NAVIO",
+        "hint": "Embarcação que encalhou durante a viagem de Paulo para Roma."
+      }
+    },
+    {
+      "externalId": "wordle-scale-v2-l01-030-orfao",
+      "gameType": "wordle-biblico",
+      "category": "Pessoas",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Tiago 1:27",
+      "tags": [
+        "Novo Testamento",
+        "Content Scale-Up v2",
+        "Lote 01",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "ORFAO",
+        "hint": "Pessoa vulnerável cujo cuidado integra a religião considerada pura."
+      }
+    },
+    {
+      "externalId": "wordle-scale-v2-l01-031-prumo",
+      "gameType": "wordle-biblico",
+      "category": "Objetos",
+      "difficulty": "HARD",
+      "biblicalReference": "Amós 7:8",
+      "tags": [
+        "Antigo Testamento",
+        "Content Scale-Up v2",
+        "Lote 01",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "PRUMO",
+        "hint": "Instrumento de medição mostrado ao profeta numa visão de julgamento."
+      }
+    },
+    {
+      "externalId": "wordle-scale-v2-l01-032-raios",
+      "gameType": "wordle-biblico",
+      "category": "Natureza",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Salmos 18:14",
+      "tags": [
+        "Antigo Testamento",
+        "Content Scale-Up v2",
+        "Lote 01",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "RAIOS",
+        "hint": "Sinais lançados dos céus na descrição poética do livramento divino."
+      }
+    },
+    {
+      "externalId": "wordle-scale-v2-l01-033-sacos",
+      "gameType": "wordle-biblico",
+      "category": "Objetos",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Gênesis 42:25",
+      "tags": [
+        "Antigo Testamento",
+        "Content Scale-Up v2",
+        "Lote 01",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "SACOS",
+        "hint": "Recipientes dos irmãos de José que receberam cereal e dinheiro devolvido."
+      }
+    },
+    {
+      "externalId": "wordle-scale-v2-l01-034-seara",
+      "gameType": "wordle-biblico",
+      "category": "Natureza",
+      "difficulty": "EASY",
+      "biblicalReference": "Mateus 9:37",
+      "tags": [
+        "Novo Testamento",
+        "Content Scale-Up v2",
+        "Lote 01",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "SEARA",
+        "hint": "Campo pronto usado por Jesus para falar de uma obra grande com poucos trabalhadores."
+      }
+    },
+    {
+      "externalId": "wordle-scale-v2-l01-035-selos",
+      "gameType": "wordle-biblico",
+      "category": "Objetos",
+      "difficulty": "HARD",
+      "biblicalReference": "Apocalipse 5:1",
+      "tags": [
+        "Novo Testamento",
+        "Content Scale-Up v2",
+        "Lote 01",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "SELOS",
+        "hint": "Marcas que mantinham fechado o livro visto à direita daquele que estava no trono."
+      }
+    },
+    {
+      "externalId": "wordle-scale-v2-l01-036-tabor",
+      "gameType": "wordle-biblico",
+      "category": "Lugares",
+      "difficulty": "HARD",
+      "biblicalReference": "Juízes 4:6",
+      "tags": [
+        "Antigo Testamento",
+        "Content Scale-Up v2",
+        "Lote 01",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "TABOR",
+        "hint": "Monte para o qual Baraque foi convocado com homens de duas tribos."
+      }
+    },
+    {
+      "externalId": "wordle-scale-v2-l01-037-vigia",
+      "gameType": "wordle-biblico",
+      "category": "Títulos",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Ezequiel 3:17",
+      "tags": [
+        "Antigo Testamento",
+        "Content Scale-Up v2",
+        "Lote 01",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "VIGIA",
+        "hint": "Função atribuída ao profeta para advertir o povo ao ouvir a palavra divina."
+      }
+    },
+    {
+      "externalId": "wordle-scale-v2-l01-038-viuva",
+      "gameType": "wordle-biblico",
+      "category": "Pessoas",
+      "difficulty": "EASY",
+      "biblicalReference": "Lucas 21:2",
+      "tags": [
+        "Novo Testamento",
+        "Content Scale-Up v2",
+        "Lote 01",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "VIUVA",
+        "hint": "Mulher pobre que colocou duas pequenas moedas na oferta."
+      }
+    },
+    {
+      "externalId": "wordle-scale-v2-l01-039-votos",
+      "gameType": "wordle-biblico",
+      "category": "Conceitos",
+      "difficulty": "HARD",
+      "biblicalReference": "Atos 21:23",
+      "tags": [
+        "Novo Testamento",
+        "Content Scale-Up v2",
+        "Lote 01",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "VOTOS",
+        "hint": "Compromissos religiosos assumidos por homens que Paulo foi orientado a acompanhar."
+      }
+    },
+    {
+      "externalId": "wordle-scale-v2-l01-040-zimri",
+      "gameType": "wordle-biblico",
+      "category": "Personagens",
+      "difficulty": "HARD",
+      "biblicalReference": "1 Reis 16:10",
+      "tags": [
+        "Antigo Testamento",
+        "Content Scale-Up v2",
+        "Lote 01",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "ZIMRI",
+        "hint": "Oficial que conspirou contra Elá e ocupou brevemente o trono de Israel."
+      }
+    },
+    {
+      "externalId": "wordle-scale-v2-l01-041-seita",
+      "gameType": "wordle-biblico",
+      "category": "Conceitos",
+      "difficulty": "HARD",
+      "biblicalReference": "Atos 24:5",
+      "tags": [
+        "Novo Testamento",
+        "Content Scale-Up v2",
+        "Lote 01",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "SEITA",
+        "hint": "Termo acusatório empregado contra os seguidores do Nazareno."
+      }
+    },
+    {
+      "externalId": "wordle-scale-v2-l01-042-cegos",
+      "gameType": "wordle-biblico",
+      "category": "Pessoas",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Mateus 11:5",
+      "tags": [
+        "Novo Testamento",
+        "Content Scale-Up v2",
+        "Lote 01",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "CEGOS",
+        "hint": "Pessoas que recuperavam uma capacidade mencionada entre os sinais do ministério de Jesus."
+      }
+    },
+    {
+      "externalId": "wordle-scale-v2-l01-043-mudos",
+      "gameType": "wordle-biblico",
+      "category": "Pessoas",
+      "difficulty": "HARD",
+      "biblicalReference": "Mateus 15:31",
+      "tags": [
+        "Novo Testamento",
+        "Content Scale-Up v2",
+        "Lote 01",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "MUDOS",
+        "hint": "Pessoas que passaram a falar e levaram a multidão a glorificar a Deus."
+      }
+    },
+    {
+      "externalId": "wordle-scale-v2-l01-044-surdo",
+      "gameType": "wordle-biblico",
+      "category": "Pessoas",
+      "difficulty": "HARD",
+      "biblicalReference": "Marcos 7:32",
+      "tags": [
+        "Novo Testamento",
+        "Content Scale-Up v2",
+        "Lote 01",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "SURDO",
+        "hint": "Homem com dificuldade de ouvir levado a Jesus na região da Decápolis."
+      }
+    },
+    {
+      "externalId": "wordle-scale-v2-l01-045-coxos",
+      "gameType": "wordle-biblico",
+      "category": "Pessoas",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Mateus 11:5",
+      "tags": [
+        "Novo Testamento",
+        "Content Scale-Up v2",
+        "Lote 01",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "COXOS",
+        "hint": "Pessoas que voltavam a andar entre as obras anunciadas por Jesus."
+      }
+    },
+    {
+      "externalId": "wordle-scale-v2-l01-046-pesca",
+      "gameType": "wordle-biblico",
+      "category": "Eventos",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Lucas 5:4",
+      "tags": [
+        "Novo Testamento",
+        "Content Scale-Up v2",
+        "Lote 01",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "PESCA",
+        "hint": "Atividade que resultou numa quantidade extraordinária após uma ordem de Jesus."
+      }
+    },
+    {
+      "externalId": "wordle-scale-v2-l01-047-malco",
+      "gameType": "wordle-biblico",
+      "category": "Personagens",
+      "difficulty": "HARD",
+      "biblicalReference": "João 18:10",
+      "tags": [
+        "Novo Testamento",
+        "Content Scale-Up v2",
+        "Lote 01",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "MALCO",
+        "hint": "Servo do sumo sacerdote ferido durante a prisão de Jesus."
+      }
+    },
+    {
+      "externalId": "wordle-scale-v2-l01-048-turba",
+      "gameType": "wordle-biblico",
+      "category": "Pessoas",
+      "difficulty": "HARD",
+      "biblicalReference": "Lucas 5:1",
+      "tags": [
+        "Novo Testamento",
+        "Content Scale-Up v2",
+        "Lote 01",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "TURBA",
+        "hint": "Grande grupo que se apertava ao redor de Jesus para ouvir a palavra de Deus."
+      }
+    },
+    {
+      "externalId": "wordle-scale-v2-l01-049-verbo",
+      "gameType": "wordle-biblico",
+      "category": "Títulos",
+      "difficulty": "HARD",
+      "biblicalReference": "João 1:1",
+      "tags": [
+        "Novo Testamento",
+        "Content Scale-Up v2",
+        "Lote 01",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "VERBO",
+        "hint": "Título apresentado no início de um Evangelho como existente desde o princípio."
+      }
+    },
+    {
+      "externalId": "wordle-scale-v2-l01-050-veste",
+      "gameType": "wordle-biblico",
+      "category": "Objetos",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Apocalipse 7:9",
+      "tags": [
+        "Novo Testamento",
+        "Content Scale-Up v2",
+        "Lote 01",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "VESTE",
+        "hint": "Peça branca usada pela grande multidão diante do trono."
+      }
+    }
+  ]
+}

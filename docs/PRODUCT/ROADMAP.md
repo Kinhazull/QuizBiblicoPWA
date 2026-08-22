@@ -58,6 +58,11 @@ Concluídas: piloto, fundação modular, Core Platform, plataforma universal e c
 | 27.7.3 | RC Final | DONE |
 | 27.7.4 | Validação Manual do Usuário | IN PROGRESS — primeira auditoria executada |
 | 27.7.5 | Correções e Revalidação | IN PROGRESS — correções implementadas na `main`; promoção/reteste pendentes |
+| 27.7.5B.1 | Matriz Editorial v2 | DONE localmente — metas e gates congelados; nenhum conteúdo importado |
+| 27.7.5B.2 | Inventário e lacunas | DONE localmente — fontes versionadas aferidas, sem consulta ou escrita remota |
+| 27.7.5B.3 | Escala Wordle | CONTENT PRODUCED — lote 01 aprovado; 877 candidatos restantes aguardam revisão humana |
+| 27.7.5B.4–B.6 | Content Scale-Up v2 — demais jogos | CONTENT PRODUCED — 3.040 candidatos aguardam revisão conjunta |
+| 27.7.5B.7–B.8 | Content Scale-Up v2 — fechamento | PLANNED — revisão, correções, dry-run, importação, reconciliação e freeze |
 | 27.7.6 | Go/No-Go Formal | PLANNED |
 | 27.7.7 | Release v2.0.0 | PLANNED |
 
@@ -93,8 +98,9 @@ Progressão e Economia administrativas não terão painéis duplicados: Analytic
 - executar dry-run administrativo da expansão Wordle v2;
 - importar/publicar idempotentemente os 153 itens somente após relatório sem bloqueios;
 - confirmar contagens no CMS, Biblioteca e Catálogo Elegível;
-- realizar amostragem humana dos seis jogos não-Quiz e registrar correções editoriais sem alterar as 984 perguntas já revisadas;
-- manter expansão contínua fora do freeze, exceto correções editoriais necessárias à release.
+- executar a sequência 27.7.5B.3–B.8 conforme a Matriz Editorial v2 e o inventário concluído: produção em lotes, revisão, importação e reconciliação;
+- atingir as metas mínimas aprovadas: Quiz 984 preservado, Wordle 1.200 soluções, Linha do Tempo 800, Memória 300 pares, Associação 800, Quem Sou Eu 800 e Três Pistas 800;
+- realizar amostragem humana dos seis jogos não-Quiz e registrar correções editoriais sem alterar as 984 perguntas já revisadas.
 
 ### 4. Gates humanos e externos
 
