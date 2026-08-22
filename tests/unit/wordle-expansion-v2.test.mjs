@@ -31,7 +31,7 @@ const metadata = entry => ({
 
 test("Wordle expansion v2 has stable identities and the approved length distribution", () => {
   assert.equal(expansion.version, 2);
-  assert.equal(expansion.reviewStatus, "PENDING_HUMAN_BIBLICAL_REVIEW");
+  assert.equal(expansion.reviewStatus, "APPROVED_BY_PROJECT_OWNER");
   assert.equal(expansion.contents.length, 153);
   assert.equal(new Set(expansion.contents.map(entry => entry.externalId)).size, 153);
   assert.deepEqual(Object.fromEntries([5, 6, 7].map(length => [

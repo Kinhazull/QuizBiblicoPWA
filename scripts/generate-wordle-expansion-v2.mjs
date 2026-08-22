@@ -194,7 +194,7 @@ mkdirSync(resolve(root, "content"), { recursive: true });
 writeFileSync(output, `${JSON.stringify({
   version: 2,
   source: "Conte os Feitos — Expansão Wordle",
-  reviewStatus: "PENDING_HUMAN_BIBLICAL_REVIEW",
+  reviewStatus: "APPROVED_BY_PROJECT_OWNER",
   contents: rows,
 }, null, 2)}\n`);
 
