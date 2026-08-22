@@ -12,6 +12,24 @@ test("universal import derives apply intent from the submitted button", () => {
 });
 
 test("universal import never applies without the exact administrative confirmation", () => {
-  assert.match(source, /confirmation !== "IMPORTAR_CONTEUDO_UNIVERSAL"/);
-  assert.match(source, /confirmation_required/);
+  assert.match(source, /const CONFIRMATION = "IMPORTAR_CONTEUDO_UNIVERSAL"/);
+  assert.match(source, /confirmation !== CONFIRMATION/);
+  assert.match(source, /disabled={!dryRunReady \|\| confirmation !== CONFIRMATION/);
+});
+
+test("universal import explains its safe three-step workflow", () => {
+  assert.match(source, /1\. Prepare/);
+  assert.match(source, /2\. Valide/);
+  assert.match(source, /3\. Importe/);
+  assert.match(source, /type="file"/);
+  assert.match(source, /Carregar modelo/);
+  assert.match(source, /O dry-run é seguro: nenhuma alteração é feita no CMS/);
+});
+
+test("universal import documents the accepted JSON and CSV contracts", () => {
+  assert.match(source, /externalId,gameType,status,category,difficulty,biblicalReference,tags,payload/);
+  assert.match(source, /metadata/);
+  assert.match(source, /payload/);
+  assert.match(source, /DRAFT/);
+  assert.match(source, /PUBLISHED/);
 });
