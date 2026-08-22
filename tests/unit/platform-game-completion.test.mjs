@@ -87,6 +87,23 @@ test("Wordle victory is normalized to a deterministic GAME_FINISHED v2", () => {
   assert.equal(first.payload.score, 500);
 });
 
+test("Wordle completion accepts the supported six and seven letter answers", () => {
+  for (const [answer, sessionId] of [["DEBORA", "session-wordle-six"], ["CALVARI", "session-wordle-seven"]]) {
+    const event = adaptPlatformGameCompletion({
+      gameId: "wordle-biblico",
+      sessionId,
+      contentId: "wordle-variable",
+      contentVersion: 1,
+      guesses: [answer],
+    }, {
+      ...context,
+      wordleContent: { id: "wordle-variable", version: 1, answer },
+    });
+    assert.equal(event.payload.correctAnswers, 1);
+    assert.equal(event.payload.score, 600);
+  }
+});
+
 test("Wordle loss requires all six valid attempts", () => {
   const loss = adaptPlatformGameCompletion({
     gameId: "wordle-biblico",

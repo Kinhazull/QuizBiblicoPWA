@@ -1,5 +1,6 @@
 import {
   isValidGuess,
+  isSupportedWordLength,
   isWinningGuess,
   normalizeWord,
   WORDLE_MAX_ATTEMPTS,
@@ -138,8 +139,12 @@ function wordleResult(input: WordleCompletion, content: CompletionContext["wordl
   if (!Array.isArray(input.guesses) || input.guesses.length < 1 || input.guesses.length > WORDLE_MAX_ATTEMPTS) {
     throw new Error("invalid_wordle_guesses");
   }
+  const answerLength = normalizeWord(content.answer).length;
+  if (!isSupportedWordLength(answerLength) || !isValidGuess(content.answer, answerLength)) {
+    throw new Error("invalid_wordle_content");
+  }
   const guesses = input.guesses.map(value => {
-    if (typeof value !== "string" || !isValidGuess(value)) throw new Error("invalid_wordle_guess");
+    if (typeof value !== "string" || !isValidGuess(value, answerLength)) throw new Error("invalid_wordle_guess");
     return normalizeWord(value);
   });
   const winningIndex = guesses.findIndex(guess => isWinningGuess(guess, content.answer));

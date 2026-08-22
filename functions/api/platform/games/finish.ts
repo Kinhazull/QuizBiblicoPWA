@@ -13,7 +13,7 @@ import {
   type WordleContentPayload,
 } from "../../../../shared/content";
 import { findPublishedUniversalContent } from "../../../_lib/universal-content-store";
-import { isValidGuess } from "../../../../app/games/wordle/engine";
+import { isSupportedWordLength, isValidGuess, normalizeWord } from "../../../../app/games/wordle/engine";
 import type { TimelineRound } from "../../../../app/games/timeline/engine";
 import { timelineRoundFromContent } from "../../../_lib/game-integrations/timeline-content";
 import { memorySetFromContent } from "../../../_lib/game-integrations/memory-content";
@@ -99,7 +99,9 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
     const wordleAnswer = wordleContent
       ? String((wordleContent.payload as WordleContentPayload).word)
       : "";
-    if (body.gameId === "wordle-biblico" && !isValidGuess(wordleAnswer)) {
+    const wordleLength = normalizeWord(wordleAnswer).length;
+    if (body.gameId === "wordle-biblico"
+      && (!isSupportedWordLength(wordleLength) || !isValidGuess(wordleAnswer, wordleLength))) {
       throw new Error("invalid_wordle_content");
     }
     const timelineContent = body.gameId === "linha-do-tempo-biblica"

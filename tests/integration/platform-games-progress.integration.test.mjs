@@ -180,6 +180,36 @@ test("3 Pistas CMS completion reaches Progress, Statistics, Achievements and Mis
   });
 });
 
+test("Wordle endpoint records first-try victories with six and seven letters", async t => {
+  const { ctx, token } = await setup(t);
+  const cases = [
+    { id: "wordle-six", word: "DEBORA", sessionId: "session-wordle-six" },
+    { id: "wordle-seven", word: "CALVARI", sessionId: "session-wordle-seven" },
+  ];
+  for (const item of cases) {
+    ctx.raw.prepare(`INSERT INTO content_items(
+      id,organization_id,game_type,status,category,difficulty,biblical_reference,tags_json,
+      payload_json,version,author_id,created_at,updated_at
+    ) VALUES(?,'org-1','wordle-biblico','PUBLISHED','Personagens','EASY',
+      'Juízes 4:4','[]',?,1,'player',?,?)`)
+      .run(item.id, JSON.stringify({ word: item.word, hint: "Conteúdo variável" }), NOW, NOW);
+    const response = await withFrozenTime(NOW, () => finishPlatformGame({
+      request: request(token, {
+        gameId: "wordle-biblico",
+        sessionId: item.sessionId,
+        contentId: item.id,
+        contentVersion: 1,
+        guesses: [item.word],
+      }),
+      env: ctx.env,
+    }));
+    const data = await responseJson(response);
+    assert.equal(response.status, 200, JSON.stringify(data));
+    assert.equal(data.outcome, "won");
+    assert.equal(data.score, 600);
+  }
+});
+
 test("a completed Free Play result remains idempotent when the first response is lost", async t => {
   const { ctx, token } = await setup(t);
   const metadata = {
