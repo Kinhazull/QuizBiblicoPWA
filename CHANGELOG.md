@@ -2,7 +2,19 @@
 
 As mudanças relevantes do Conte os Feitos serão registradas neste arquivo. O formato segue Keep a Changelog de maneira simplificada e o versionamento formal passa a seguir SemVer.
 
-## Unreleased — Fase 5
+## Unreleased — v2.0.0-rc.1
+
+### Estabilização pré-publicação — agosto de 2026
+
+- auditoria manual mobile das trilhas participante e administrativa;
+- unificação visual de login/MFA, Home, Perfil, Loja, Inventário, Recompensas, catálogos, jogos e Administração;
+- cards mobile compactos, navegação inferior centralizada, botão Voltar padronizado e contrato de dimensionamento de assets;
+- correções de alinhamento/instruções no Wordle, Associação, Quem Sou Eu e Três Pistas;
+- Cofre Diário liberado após a primeira vitória, sem confundir a recompensa com as metas de 3 e 7 vitórias;
+- conclusão de partidas resiliente a falhas transitórias, com retry limitado e reentrada idempotente sem duplicar progressão;
+- Wordle com seleção de posição, palavras de 5–7 letras, normalização de acentos e léxico PT-BR aberto/revisado;
+- pacote adicional de 153 conteúdos Wordle aprovado pelo proprietário;
+- importação universal em lote guiada por upload/modelos, dry-run, relatório e confirmação explícita.
 
 ### Release Candidate público/mobile
 

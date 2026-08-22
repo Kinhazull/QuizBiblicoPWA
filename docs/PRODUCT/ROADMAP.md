@@ -56,8 +56,8 @@ Concluídas: piloto, fundação modular, Core Platform, plataforma universal e c
 | 27.7.1 | Fechamento dos blockers internos | DONE localmente |
 | 27.7.2 | Preparação de Produção | DONE |
 | 27.7.3 | RC Final | DONE |
-| 27.7.4 | Validação Manual do Usuário | NEXT |
-| 27.7.5 | Correções e Revalidação | PLANNED |
+| 27.7.4 | Validação Manual do Usuário | IN PROGRESS — primeira auditoria executada |
+| 27.7.5 | Correções e Revalidação | IN PROGRESS — correções implementadas na `main`; promoção/reteste pendentes |
 | 27.7.6 | Go/No-Go Formal | PLANNED |
 | 27.7.7 | Release v2.0.0 | PLANNED |
 
@@ -71,14 +71,54 @@ Progressão e Economia administrativas não terão painéis duplicados: Analytic
 - executar segurança, desempenho, acessibilidade e Go/No-Go sobre um SHA imutável;
 - promover produção apenas pelo workflow manual usando o artefato validado.
 
-## Fase 9 — Evolução dos Jogos e Base de Conhecimento
+## Caminho restante até a v2.0.0
+
+### 1. Fechar a baseline técnica candidata
+
+- obter Quality/browser-smoke verdes no SHA candidato final;
+- promover exatamente o artifact validado pelo workflow manual;
+- confirmar que não existe migration pendente e não executar reconciliação quando não houver mudança de schema;
+- registrar SHA, Quality Run ID, artifact, deployment Pages e Worker efetivamente promovidos.
+
+### 2. Revalidar as correções em produção controlada
+
+- repetir a trilha participante em 320, 360 e 390 px: login/MFA, Home, Jogos, Daily, sete jogos, Perfil, Loja, Inventário, Recompensas e Notificações;
+- repetir a trilha administrativa: Central, Conteúdo, importação em lote, Acervo, Eventos, Planejamento, Analytics, Diagnóstico, permissões e navegação mobile;
+- testar resultado de partida com rede lenta/interrompida e confirmar retry sem recompensa duplicada;
+- confirmar Wordle com 5, 6 e 7 letras, seleção posicional, acentos normalizados e rejeição de palavras inexistentes;
+- confirmar Cofre liberado após ao menos uma vitória diária e metas de 3/7 independentes.
+
+### 3. Consolidar conteúdo
+
+- executar dry-run administrativo da expansão Wordle v2;
+- importar/publicar idempotentemente os 153 itens somente após relatório sem bloqueios;
+- confirmar contagens no CMS, Biblioteca e Catálogo Elegível;
+- realizar amostragem humana dos seis jogos não-Quiz e registrar correções editoriais sem alterar as 984 perguntas já revisadas;
+- manter expansão contínua fora do freeze, exceto correções editoriais necessárias à release.
+
+### 4. Gates humanos e externos
+
+- concluir Android físico, instalação PWA, teclado, background/foreground, offline/update e Web Vitals públicos;
+- aprovar Termos, Privacidade, público adolescente/acesso incidental, retenção, transferências e Data Safety;
+- confirmar licença/proveniência de assets e citações usadas publicamente;
+- decidir domínio/package ID/assinatura/DAL/AAB apenas para a trilha Google Play, separada do lançamento web.
+
+### 5. Go/No-Go e publicação
+
+- congelar um SHA imutável e executar gates finais completos;
+- fechar todos os `BLOCKER` e `MAJOR`, aceitando riscos menores explicitamente;
+- registrar decisão `GO`, atualizar versão de `2.0.0-rc.1` para `2.0.0`, changelog e release notes;
+- promover o artifact final, executar smoke pós-deploy e somente então criar tag/release `v2.0.0`;
+- manter plano de rollback, backup e responsáveis disponíveis durante a janela.
+
+## Fase 9 — Evolução pós-v2 e Base de Conhecimento
 
 Direção futura, sem implementação nesta baseline:
 
 - biblioteca de referência bíblica;
 - múltiplas traduções somente após validação de licença;
-- fonte lexical PT-BR licenciada/aprovada, incluindo possível Aurélio ou alternativa;
-- Wordle Bíblico 2.0 separando respostas bíblicas de palavras válidas para tentativa;
+- manutenção do léxico PT-BR aberto já adotado e revisão de novas fontes somente com licença compatível;
+- expansão editorial contínua do Wordle, mantendo separadas respostas CMS e palavras aceitas para tentativa;
 - evolução dos sete jogos e novos jogos posteriormente;
 - expansão editorial e arte final autoral/licenciada.
 - Bíblia completa, ACF/traduções modernas e léxico PT-BR somente com licença documental; Aurélio apenas se o licenciamento permitir, caso contrário usar alternativa aberta/aprovada.

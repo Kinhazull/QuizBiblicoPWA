@@ -2,7 +2,8 @@
 
 **Auditoria:** Sprint 27.7.0 — 13/08/2026  
 **Decisão 27.7.0:** `READY_FOR_27_7_1`  
-**Fechamento 27.7.3:** RC final `DONE`; `27.7.4 NEXT` para validação manual.
+**Fechamento 27.7.3 (registro histórico):** RC final `DONE`; naquele momento, `27.7.4` era a próxima etapa.
+**Situação posterior em 22/08/2026:** a primeira auditoria 27.7.4 foi executada e a estabilização 27.7.5 foi implementada na `main`; o estado corrente e os gates ainda pendentes estão em `docs/AI/CURRENT_STATE.md`, `docs/PRODUCT/ROADMAP.md` e `docs/PRODUCT/RELEASE_SNAPSHOT.md`.
 **Escopo inicial:** auditoria local. As evidências operacionais da 27.7.2 abaixo atualizam explicitamente os estados remotos comprovados.
 
 Este é o registro central da sequência 27.7. Documentos históricos continuam úteis, mas afirmações remotas ou anteriores às Waves de arte não substituem esta baseline.

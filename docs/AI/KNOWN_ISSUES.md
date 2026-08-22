@@ -18,6 +18,9 @@
 | KI-009 | Advisory transitivo temporário | Baixo | Revisar periodicamente `GHSA-mh99-v99m-4gvg`; manter exceção exclusiva até existir correção upstream compatível. |
 | KI-011 | Recuperação do owner | Médio | Recovery codes existem; perda simultânea de senha, TOTP e códigos do owner depende de procedimento operacional externo controlado. |
 | KI-012 | Advisories transitivos de `image-size` | Baixo | `vinext` fixa `image-size@2.0.2`; a correção anunciada `2.0.3` ainda não foi publicada. Exceções restritas a `GHSA-w3rx-r6r6-pgpr` e `GHSA-5p2g-fcmc-qvqq`, somente para assets locais controlados no build, devem ser removidas assim que o upstream corrigir a cadeia. |
+| KI-018 | Revalidação da rodada mobile | Release gate | Correções de Home, Perfil, Loja, Inventário, catálogo, Daily, jogos e Administração estão na `main`; repetir smoke visual/funcional em 320–390 px no artifact promovido antes do Go/No-Go. |
+| KI-019 | Conteúdo Wordle v2 em produção | Verificação operacional | O pacote de 153 conteúdos está aprovado e versionado. Confirmar por dry-run/aplicação administrativa idempotente e contagem CMS/Biblioteca que a publicação real ocorreu; não inferir pelo Git. |
+| KI-020 | Registro de resultado em rede móvel | Revalidação | Retry limitado e conclusão idempotente foram implementados após falha intermitente observada. Validar no runtime promovido e confirmar ausência de duplicação de XP, moedas ou estatísticas. |
 
 ## Encerrados
 
@@ -29,3 +32,5 @@
 - KI-017: Brand v2/PWA integrada na Wave 1 e validada por contrato; Android físico permanece KI-001.
 - KI-006: promoção manual por SHA/artifact, auto-deploy desativado, Release Truth e smoke produtivo foram comprovados pelos runs `31760852798` e `31764192229`;
 - KI-010: migration 0039, secret MFA e fluxo funcional completo foram comprovados remotamente; recovery extremo do owner permanece separado em KI-011.
+- Wordle limitado a cinco letras/dicionário estreito: encerrado no código; aceita 5–7 letras, normaliza acentos e usa léxico PT-BR revisado mais respostas publicadas do CMS.
+- importação universal sem orientação: encerrado no código; a Central de Conteúdo agora conduz upload/modelo, dry-run, relatório e confirmação.

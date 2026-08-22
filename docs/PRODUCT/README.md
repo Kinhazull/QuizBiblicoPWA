@@ -14,18 +14,21 @@ Documentos antigos são evidência histórica. Quando divergirem do estado corre
 
 ## Estado atual
 
-- Fases 1–4 concluídas.
-- Fase 5 em andamento.
+- Fases 1–7 e preparação técnica da Fase 8 concluídas.
+- Validação manual e estabilização pré-v2 (`27.7.4–27.7.5`) em andamento.
 - Sete jogos integrados ao CMS e à infraestrutura universal.
 - Modos `FREE_PLAY`, `DAILY` e `EVENT` disponíveis.
+- Wordle 2.0, importação universal guiada e rodada de consolidação mobile estão implementados na `main` e aguardam revalidação final no artifact promovido.
 - `v1.0.0` preservada como tag histórica do piloto do Quiz.
-- Primeira release formal da plataforma prevista como `v2.0.0`, ainda sem tag.
+- Primeira release formal da plataforma prevista como `v2.0.0`, ainda sem tag ou autorização pública.
 
 ## Documentos principais
 
 | Documento | Finalidade |
 | --- | --- |
-| `ROADMAP.md` | sequência oficial da Fase 5 e histórico das fases |
+| `ROADMAP.md` | sequência oficial até a v2.0.0 e histórico das fases |
+| `RELEASE_SNAPSHOT.md` | baseline, Release Truth e decisão corrente de release |
+| `V2_RC_MANUAL_VALIDATION_CHECKLIST.md` | revalidação participante/administrativa antes do Go/No-Go |
 | `PRE_PHASE_5_COMPREHENSIVE_AUDIT.md` | auditoria consolidada anterior à Fase 5 |
 | `PHASE_5_LEGACY_AUDIT_BACKLOG.md` | inventário técnico do legado |
 | `DEPRECATIONS.md` | registro operacional das estruturas em retirada |

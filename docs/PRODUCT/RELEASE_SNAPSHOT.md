@@ -1,14 +1,15 @@
 # Snapshot de release e Go/No-Go
 
 **Status:** CURRENT  
-**Data:** 14/08/2026
+**Data:** 22/08/2026
 **Baseline:** `2.0.0-rc.1`
 
 ## Identidade formal da RC
 
-- estado: `FEATURE_FREEZE`;
+- estado: `RC_STABILIZATION / FEATURE_FREEZE`;
 - `REPOSITORY_RC_SHA`: commit que contém este snapshot, resolvido por `git rev-parse HEAD`; o relatório operacional da 27.7.3 registra o SHA literal e os checks anexados a ele;
-- `RUNTIME_VERIFIED_SHA`: `7921a0576dacba02720a3fcac871b6afe4412ed0`;
+- `REPOSITORY_CURRENT_SHA`: `09950e31e322940120a6efe4e4b12b07de77d293`;
+- `RUNTIME_VERIFIED_SHA`: `7921a0576dacba02720a3fcac871b6afe4412ed0` (último encadeamento formal registrado; não representa automaticamente os commits posteriores);
 - Pages deployment: `8be3bbd5-95a7-4251-8ef3-dd4e6d079bef`;
 - Worker: versão 61, deployment `1c6ed2c6-0371-4972-a19c-df2e7ea4a2d2`;
 - D1: `33fc35a0-46cf-4756-b6be-89b07371256c`, ledger 40/`0039_administrative_mfa.sql`;
@@ -18,7 +19,7 @@
 
 ### FEATURE_FREEZE
 
-Até o Go/No-Go são permitidos apenas blocker/regressão, segurança, acessibilidade crítica, incompatibilidade de release e documentação necessária. Feature nova, redesign, melhoria cosmética opcional, mudança de economia, conteúdo oportunista, novo jogo e refatoração sem necessidade ficam proibidos.
+Até o Go/No-Go são permitidos apenas blocker/regressão, segurança, acessibilidade crítica, incompatibilidade de release e documentação necessária. A rodada de UX/mobile e Wordle foi aceita como estabilização pré-publicação e está encerrada no código; novas features, redesign opcional, mudança de economia, conteúdo oportunista, novo jogo e refatoração sem necessidade voltam a ficar proibidos.
 
 ## Release Truth
 
@@ -40,12 +41,14 @@ As afirmações remotas acima possuem evidência operacional da 27.7.2; não imp
 - Core Platform, economia, coleções, Perfil 2.0 e Ranking Universal;
 - PWA production-like, Quality gates e promoção manual vinculada ao SHA/artifact;
 - Asset Pack v2 Waves 1–5 integradas; Wave 6 `POST_RELEASE`; Wave 7 `DONE` como auditoria/preparação de Store;
-- 27.7.0, 27.7.1, 27.7.2 e 27.7.3 `DONE`; 27.7.4 — Validação Manual do Usuário é `NEXT`.
+- 27.7.0, 27.7.1, 27.7.2 e 27.7.3 `DONE`; 27.7.4 e 27.7.5 estão em execução conjunta: auditoria inicial concluída, correções na `main` e revalidação do artifact promovido pendente.
+- Wordle 2.0 e importação universal guiada fazem parte da baseline candidata atual.
 
 ## Conteúdo e proveniência
 
 - Quiz: `PROVENANCE_RESOLVED`, com autoria interna, assistência de IA e curadoria humana; `Quiz.csv` preservado; 984 itens publicados foram reconfirmados remotamente na 27.7.2D.4;
 - pacote oficial: 380 IDs únicos — Wordle 120, Timeline 40, Memória 40, Associação 60, Quem Sou Eu 60 e Três Pistas 60 — validado por schemas/contratos;
+- expansão Wordle v2: 153 IDs adicionais aprovados (50×5 letras, 50×6 e 53×7), total potencial de 273 Wordles após importação; a contagem remota final precisa ser registrada após aplicação idempotente;
 - revisão editorial humana final: `HUMAN_APPROVAL_REQUIRED`, sem impedir preparação técnica ou RC privada;
 - textos bíblicos completos/derivados sem licença comprovada continuam fora da árvore ativa;
 - scripts que referenciam fontes removidas são `HISTORICAL / NOT_FOR_RELEASE_USE`;
@@ -90,7 +93,7 @@ As afirmações remotas acima possuem evidência operacional da 27.7.2; não imp
 
 ## Decisão atual
 
-**`RC_BASELINE_READY_FOR_MANUAL_VALIDATION`: 27.7.3 concluída sem blocker técnico restante para iniciar a validação manual controlada da 27.7.4.** Ainda não existe autorização de release pública. Jurídico/editorial impedem `PUBLIC_RELEASE_GO`; Google Play permanece separado.
+**`RC_STABILIZATION_IN_PROGRESS`: a primeira validação manual encontrou problemas reais, as correções estão na `main` e o próximo gate é promover/revalidar o SHA candidato.** Ainda não existe autorização de release pública. Jurídico/editorial impedem `PUBLIC_RELEASE_GO`; Google Play permanece separado.
 
 ## Classificação dos riscos residuais
 

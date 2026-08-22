@@ -8,6 +8,9 @@
 - avaliar `splash-brand.png` somente quando existir uma splash nativa/Store real, sem criar atraso artificial;
 
 - executar `docs/ANDROID_PHYSICAL_CHECKLIST.md`, medir Web Vitals no domínio candidato e só depois avaliar Google Play;
+- promover o SHA final da estabilização e repetir a auditoria participante/administrativa no artifact realmente publicado;
+- confirmar por teste de rede móvel que o retry de conclusão não duplica XP, moedas, estatísticas, missões ou conquistas;
+- executar dry-run/importação idempotente dos 153 Wordles aprovados e registrar contagens CMS/Biblioteca/Catálogo Elegível;
 - concluir revisão jurídica/licenças, tratamento de adolescentes/acesso infantil incidental e Data Safety;
 - reconciliar Asset Registry, hospedagem de assets e CSP;
 - preencher o orçamento operacional versionado com quotas e consumo reais dos painéis;
@@ -43,6 +46,6 @@
 - retirar APIs históricas somente após telemetria, inventário de consumidores e rollback comprovado;
 - mover/otimizar masters Store atualmente em `public/` após confirmar os consumidores e URLs necessárias;
 - biblioteca bíblica e traduções somente com licença confirmada;
-- fonte lexical PT-BR licenciada/aprovada;
-- Wordle 2.0 com dicionário de tentativas separado das soluções;
+- manter e atualizar o léxico PT-BR aberto/aprovado com proveniência; qualquer fonte adicional exige licença compatível;
+- expandir soluções Wordle futuras pelo CMS sem misturá-las ao dicionário de tentativas;
 - evolução dos jogos atuais, novos jogos e possível pacote nativo/Google Play.

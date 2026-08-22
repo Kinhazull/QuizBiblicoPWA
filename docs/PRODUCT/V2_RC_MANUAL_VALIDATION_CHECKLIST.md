@@ -1,7 +1,9 @@
 # Checklist manual da RC v2.0.0-rc.1
 
-**Uso:** Sprint 27.7.4 — Validação Manual do Usuário
+**Uso:** Sprints 27.7.4–27.7.5 — Validação Manual e Revalidação
 **Resultado por item:** `PASS`, `FAIL`, `OBSERVAÇÃO` ou `NÃO TESTADO`
+
+**Estado em 22/08/2026:** primeira auditoria executada e correções implementadas na `main`. Este checklist deve ser repetido no SHA/artifact promovido; a execução anterior não substitui a revalidação final.
 
 Registre cada problema em “Problemas encontrados” com a tela, ação realizada, resultado esperado e resultado observado. Não inclua senhas, códigos MFA, recovery codes ou outros dados sensíveis.
 
@@ -37,11 +39,15 @@ Para cada jogo, iniciar uma partida livre, concluir ou abandonar e voltar ao cat
 
 Confirmar em cada um instruções claras, feedback de acerto/erro, resultado final, retorno correto e ausência do menu inferior durante a partida.
 
+- [ ] No Wordle, validar respostas de 5, 6 e 7 letras, seleção manual de posição, normalização de acento e rejeição de palavra inexistente.
+- [ ] Simular perda transitória de rede na conclusão e confirmar recuperação sem duplicação de recompensa.
+
 ## E. Desafios Diários
 
 - [ ] Abrir a lista diária e iniciar um jogo ainda não realizado.
 - [ ] Concluir ou abandonar e confirmar que não existe nova tentativa/“Continuar”.
 - [ ] Recarregar a página e confirmar que o resultado permanece fixo.
+- [ ] Confirmar Cofre liberado após ao menos uma vitória e metas de 3/7 contabilizadas separadamente.
 
 ## F. Loja
 
@@ -106,6 +112,7 @@ Confirmar em cada um instruções claras, feedback de acerto/erro, resultado fin
 - [ ] Abrir Central Administrativa após MFA.
 - [ ] Abrir Acervo, Planejamento, Analytics e Diagnóstico.
 - [ ] Confirmar que operações restritas permanecem protegidas e que Health não escreve dados.
+- [ ] Na importação universal, carregar modelo/arquivo, executar dry-run, ler o relatório e confirmar que a aplicação exige a frase exata.
 
 ## Q. Impressão visual e artes
 
