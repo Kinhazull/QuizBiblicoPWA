@@ -392,7 +392,7 @@ export async function startEventSelection(env: AppEnv, identity: Identity, event
   return { participationId: String(participation.id), status: "STARTED" };
 }
 
-export async function eventSelectionContext(env: AppEnv, identity: Identity, eventId: string, selectionId: string, gameType: string, now = Date.now()) {
+export async function eventSelectionContext(env: AppEnv, identity: Identity, eventId: string, selectionId: string, gameType: string, now = Date.now(), allowFinished = false) {
   const event = await env.DB.prepare("SELECT * FROM platform_events WHERE id=?1 AND organization_id=?2")
     .bind(eventId, identity.organizationId).first<any>();
   if (!event || effectiveStatus(event, now) !== EventStatus.ACTIVE || now >= Number(event.ends_at)) throw new Error("event_not_active");
@@ -400,7 +400,9 @@ export async function eventSelectionContext(env: AppEnv, identity: Identity, eve
   if (!selection || selection.mode !== GameMode.EVENT || selection.gameType !== gameType) throw new Error("invalid_event_selection");
   const participation = await env.DB.prepare(`SELECT * FROM platform_event_participations WHERE event_id=?1 AND selection_id=?2
     AND organization_id=?3 AND user_id=?4 AND game_type=?5`).bind(eventId, selectionId, identity.organizationId, identity.userId, gameType).first<any>();
-  if (!participation || participation.status !== "STARTED") throw new Error("event_participation_not_started");
+  if (!participation || participation.status !== "STARTED" && !(allowFinished && participation.status === "FINISHED")) {
+    throw new Error("event_participation_not_started");
+  }
   return { event, selection, participation, contents: await generatedSelectionHistoricalContents(env, identity.organizationId, selection) };
 }
 

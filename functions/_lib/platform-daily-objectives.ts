@@ -527,6 +527,7 @@ export async function dailySelectionContext(
   selectionId: string,
   expectedGameType: string,
   now = Date.now(),
+  allowFinished = false,
 ) {
   const selection = await findGeneratedSelectionById(env, identity.organizationId, selectionId);
   if (
@@ -536,7 +537,7 @@ export async function dailySelectionContext(
     || selection.expiresAt === null
     || now >= selection.expiresAt
   ) throw new Error("invalid_daily_selection");
-  return generatedSelectionContext(env, identity, selection, GameGenerationMode.DAILY, now);
+  return generatedSelectionContext(env, identity, selection, GameGenerationMode.DAILY, now, allowFinished);
 }
 
 export async function generatedSelectionContext(
@@ -545,6 +546,7 @@ export async function generatedSelectionContext(
   selection: GeneratedGameSelection,
   expectedMode: typeof GameGenerationMode.DAILY | typeof GameGenerationMode.FREE_PLAY | typeof GameGenerationMode.EVENT,
   now = Date.now(),
+  allowFinished = false,
 ) {
   if (selection.mode !== expectedMode) throw new Error("invalid_generated_selection_mode");
   const participation = expectedMode === GameGenerationMode.EVENT
@@ -552,7 +554,12 @@ export async function generatedSelectionContext(
       WHERE selection_id=?1 AND organization_id=?2 AND user_id=?3 AND game_type=?4`)
       .bind(selection.id, identity.organizationId, identity.userId, selection.gameType).first<Record<string, unknown>>()
     : await ensureGeneratedParticipation(env, identity, selection, now);
-  if (!participation || String(participation.status) !== DailyObjectiveLifecycle.STARTED) {
+  const participationStatus = String(participation?.status ?? "");
+  if (
+    !participation
+    || participationStatus !== DailyObjectiveLifecycle.STARTED
+      && !(allowFinished && participationStatus === DailyObjectiveLifecycle.FINISHED)
+  ) {
     throw new Error("daily_participation_not_started");
   }
   return {

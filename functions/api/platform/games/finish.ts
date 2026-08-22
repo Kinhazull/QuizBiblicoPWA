@@ -51,13 +51,13 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
       ? await dailySelectionContext(env, {
         organizationId: String(user.organizationId),
         userId: String(user.id),
-      }, body.dailySelectionId, body.gameId)
+      }, body.dailySelectionId, body.gameId, Date.now(), true)
       : null;
     const freePlay = body.freePlaySelectionId
       ? await freePlaySelectionContext(env, {
         organizationId: String(user.organizationId),
         userId: String(user.id),
-      }, body.freePlaySelectionId, body.gameId)
+      }, body.freePlaySelectionId, body.gameId, Date.now(), true)
       : null;
     const eventRow = body.eventSelectionId
       ? await env.DB.prepare(`SELECT event_id eventId FROM platform_event_games
@@ -67,7 +67,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
     const eventContext = body.eventSelectionId && eventRow
       ? await eventSelectionContext(env, {
         organizationId: String(user.organizationId), userId: String(user.id),
-      }, eventRow.eventId, body.eventSelectionId, body.gameId)
+      }, eventRow.eventId, body.eventSelectionId, body.gameId, Date.now(), true)
       : null;
     if (body.eventSelectionId && !eventContext) throw new Error("invalid_event_selection");
     const generated = daily ?? freePlay ?? eventContext;
@@ -275,7 +275,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
         revealedCardIds: body.revealedCardIds.map(id => actualIds.get(id) ?? ""),
       };
     }
-    const event = adaptPlatformGameCompletion(completionBody, {
+    const completionContext = {
       userId: user.id,
       organizationId: user.organizationId,
       completedAt: Date.now(),
@@ -309,7 +309,19 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
         version: threeCluesContent.version,
         challenges: threeCluesChallenges,
       } : undefined,
-    });
+    };
+    let event = adaptPlatformGameCompletion(completionBody, completionContext);
+    const existingEvent = await env.DB.prepare(`SELECT occurred_at occurredAt
+      FROM core_platform_events
+      WHERE event_id=?1 AND organization_id=?2 AND user_id=?3`)
+      .bind(event.eventId, String(user.organizationId), String(user.id))
+      .first<{ occurredAt: number }>();
+    if (existingEvent) {
+      event = adaptPlatformGameCompletion(completionBody, {
+        ...completionContext,
+        completedAt: Number(existingEvent.occurredAt),
+      });
+    }
     const result = await publishOfficialCoreEvent(env, event, event.occurredAt);
     if (body.dailySelectionId) {
       await finishDailyParticipation(env, {

@@ -93,6 +93,13 @@ test("Wordle completion updates Progress, Statistics, Achievements and Missions 
   const replay = await withFrozenTime(NOW, () => finishPlatformGame({ request: request(token, body), env: ctx.env }));
   assert.equal(replay.status, 200);
   assert.equal((await responseJson(replay)).duplicate, true);
+
+  const delayedReplay = await withFrozenTime(NOW + 30_000, () => finishPlatformGame({
+    request: request(token, body),
+    env: ctx.env,
+  }));
+  assert.equal(delayedReplay.status, 200);
+  assert.equal((await responseJson(delayedReplay)).duplicate, true);
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM core_platform_events").get().total, 1);
 
   const progress = ctx.raw.prepare(
@@ -170,6 +177,71 @@ test("3 Pistas CMS completion reaches Progress, Statistics, Achievements and Mis
     correctAnswers: 3,
     incorrectAnswers: 0,
     bestScore: 700,
+  });
+});
+
+test("a completed Free Play result remains idempotent when the first response is lost", async t => {
+  const { ctx, token } = await setup(t);
+  const metadata = {
+    id: "wordle-published",
+    gameType: "wordle-biblico",
+    category: "Personagens",
+    tags: [],
+    difficulty: "EASY",
+    biblicalReference: "Mateus 1:21",
+    status: "PUBLISHED",
+    authorId: "player",
+    reviewerId: null,
+    createdAt: NOW,
+    updatedAt: NOW,
+    version: 2,
+    internalNotes: null,
+  };
+  ctx.raw.prepare(`INSERT INTO content_versions(
+    id,content_id,organization_id,version,metadata_json,payload_json,changed_by,created_at
+  ) VALUES('wordle-version-2','wordle-published','org-1',2,?,?,'player',?)`)
+    .run(JSON.stringify(metadata), JSON.stringify({ word: "JESUS", hint: "O Salvador" }), NOW);
+  ctx.raw.prepare(`INSERT INTO generated_game_selections(
+    id,organization_id,requested_by_user_id,game_type,mode,selection_key,algorithm_version,
+    seed_hash,request_fingerprint,status,filters_json,created_at
+  ) VALUES('free-play-wordle','org-1','player','wordle-biblico','FREE_PLAY','free-play-wordle-key',
+    1,'seed','fingerprint','ACTIVE','{}',?)`).run(NOW);
+  ctx.raw.prepare(`INSERT INTO generated_game_selection_items(
+    selection_id,organization_id,content_id,content_version,position,audit_metadata_json,created_at
+  ) VALUES('free-play-wordle','org-1','wordle-published',2,1,'{}',?)`).run(NOW);
+  ctx.raw.prepare(`INSERT INTO generated_game_participations(
+    id,selection_id,organization_id,user_id,game_type,mode,status,started_at,created_at,updated_at
+  ) VALUES('free-play-wordle-participation','free-play-wordle','org-1','player','wordle-biblico',
+    'FREE_PLAY','STARTED',?,?,?)`).run(NOW, NOW, NOW);
+
+  const body = {
+    gameId: "wordle-biblico",
+    sessionId: "free-play-wordle-participation",
+    freePlaySelectionId: "free-play-wordle",
+    contentId: "wordle-published",
+    contentVersion: 2,
+    guesses: ["JESUS"],
+  };
+  const first = await withFrozenTime(NOW, () => finishPlatformGame({
+    request: request(token, body),
+    env: ctx.env,
+  }));
+  assert.equal(first.status, 200);
+
+  const retryAfterLostResponse = await withFrozenTime(NOW + 30_000, () => finishPlatformGame({
+    request: request(token, body),
+    env: ctx.env,
+  }));
+  const retryData = await responseJson(retryAfterLostResponse);
+  assert.equal(retryAfterLostResponse.status, 200);
+  assert.equal(retryData.duplicate, true);
+  assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM core_platform_events").get().total, 1);
+  assert.deepEqual({
+    ...ctx.raw.prepare(`SELECT status,finish_event_id finishEventId
+      FROM generated_game_participations WHERE id='free-play-wordle-participation'`).get(),
+  }, {
+    status: "FINISHED",
+    finishEventId: retryData.eventId,
   });
 });
 

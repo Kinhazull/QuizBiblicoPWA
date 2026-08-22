@@ -72,6 +72,12 @@ export function createGameSessionId() {
   return `session-${Array.from(bytes, byte => byte.toString(16).padStart(2, "0")).join("")}`;
 }
 
+const COMPLETION_RETRY_DELAYS_MS = [0, 300, 900] as const;
+
+function waitForCompletionRetry(delayMs: number) {
+  return new Promise(resolve => setTimeout(resolve, delayMs));
+}
+
 export async function recordPlatformGameCompletion(input: PlatformGameCompletionSubmission) {
   const dailySelectionId = typeof window === "undefined"
     ? null
@@ -82,23 +88,33 @@ export async function recordPlatformGameCompletion(input: PlatformGameCompletion
   const eventSelectionId = typeof window === "undefined"
     ? null
     : new URLSearchParams(window.location.search).get("event");
-  const response = await fetch("/api/platform/games/finish", {
-    method: "POST",
-    credentials: "same-origin",
-    cache: "no-store",
-    keepalive: true,
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(
-      dailySelectionId
-        ? { ...input, dailySelectionId }
-        : freePlaySelectionId
-          ? { ...input, freePlaySelectionId }
-          : eventSelectionId
-            ? { ...input, eventSelectionId }
-          : input,
-    ),
-  });
-  if (!response.ok) throw new Error("game_completion_not_recorded");
+  const body = JSON.stringify(
+    dailySelectionId
+      ? { ...input, dailySelectionId }
+      : freePlaySelectionId
+        ? { ...input, freePlaySelectionId }
+        : eventSelectionId
+          ? { ...input, eventSelectionId }
+        : input,
+  );
+  let response: Response | null = null;
+  for (const delayMs of COMPLETION_RETRY_DELAYS_MS) {
+    if (delayMs) await waitForCompletionRetry(delayMs);
+    try {
+      response = await fetch("/api/platform/games/finish", {
+        method: "POST",
+        credentials: "same-origin",
+        cache: "no-store",
+        keepalive: true,
+        headers: { "content-type": "application/json" },
+        body,
+      });
+      if (response.ok || (response.status < 500 && response.status !== 429)) break;
+    } catch {
+      response = null;
+    }
+  }
+  if (!response?.ok) throw new Error("game_completion_not_recorded");
   const result = await response.json();
   if (typeof window !== "undefined") {
     const summary = { gameId: input.gameId, score: Number(result.score) || 0, processing: String(result.processing || "pending"), recordedAt: Date.now() };

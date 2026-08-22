@@ -206,13 +206,14 @@ export async function freePlaySelectionContext(
   selectionId: string,
   expectedGameType: string,
   now = Date.now(),
+  allowFinished = false,
 ) {
   const selection = assertOwnedFreePlaySelection(
     await findGeneratedSelectionById(env, identity.organizationId, selectionId),
     identity,
   );
   if (selection.gameType !== expectedGameType) throw new Error("invalid_free_play_selection");
-  return generatedSelectionContext(env, identity, selection, GameGenerationMode.FREE_PLAY, now);
+  return generatedSelectionContext(env, identity, selection, GameGenerationMode.FREE_PLAY, now, allowFinished);
 }
 
 export function finishFreePlayParticipation(
