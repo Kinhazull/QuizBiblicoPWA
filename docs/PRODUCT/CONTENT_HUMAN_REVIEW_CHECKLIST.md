@@ -29,6 +29,7 @@ Este checklist orienta a revisão; não representa parecer teológico ou jurídi
 - [ ] Quem Sou Eu: dicas progressivas e sem revelação nominal precoce;
 - [ ] Memória: pares semanticamente exclusivos dentro de cada conjunto;
 - [ ] Wordle: palavra reconhecível, dica clara e referência pertinente, sem dependência da redação de tradução específica.
+- [ ] Expansão Wordle v2: revisar os 153 IDs de `content/wordle-expansion-v2.json` antes de habilitar sua importação/publicação;
 - [ ] conteúdo publicável da RC: registrar amostra final por jogo, dificuldade, categoria, tema e referência.
 
 ## Verificações por item

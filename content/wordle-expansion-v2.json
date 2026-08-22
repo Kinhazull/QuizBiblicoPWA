@@ -1,0 +1,2455 @@
+{
+  "version": 2,
+  "source": "Conte os Feitos — Expansão Wordle",
+  "reviewStatus": "PENDING_HUMAN_BIBLICAL_REVIEW",
+  "contents": [
+    {
+      "externalId": "wordle-v2-001-aarao",
+      "gameType": "wordle-biblico",
+      "category": "Personagens",
+      "difficulty": "EASY",
+      "biblicalReference": "Êxodo 28:1",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "AARAO",
+        "hint": "Irmão de Moisés escolhido para servir como sumo sacerdote."
+      }
+    },
+    {
+      "externalId": "wordle-v2-002-amasa",
+      "gameType": "wordle-biblico",
+      "category": "Personagens",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "2 Samuel 17:25",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "AMASA",
+        "hint": "Comandante ligado à casa de Davi durante uma rebelião."
+      }
+    },
+    {
+      "externalId": "wordle-v2-003-amnon",
+      "gameType": "wordle-biblico",
+      "category": "Personagens",
+      "difficulty": "EASY",
+      "biblicalReference": "2 Samuel 13:1",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "AMNON",
+        "hint": "Filho de Davi envolvido em um episódio doloroso de sua família."
+      }
+    },
+    {
+      "externalId": "wordle-v2-004-aneis",
+      "gameType": "wordle-biblico",
+      "category": "Objetos",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Gênesis 41:42",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "ANEIS",
+        "hint": "Símbolos usados para selar autoridade e decisões reais."
+      }
+    },
+    {
+      "externalId": "wordle-v2-005-annas",
+      "gameType": "wordle-biblico",
+      "category": "Personagens",
+      "difficulty": "HARD",
+      "biblicalReference": "Lucas 3:2",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "ANNAS",
+        "hint": "Líder sacerdotal mencionado junto de Caifás."
+      }
+    },
+    {
+      "externalId": "wordle-v2-006-arado",
+      "gameType": "wordle-biblico",
+      "category": "Objetos",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Lucas 9:62",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "ARADO",
+        "hint": "Instrumento agrícola usado por Jesus em uma figura sobre perseverança."
+      }
+    },
+    {
+      "externalId": "wordle-v2-007-ariel",
+      "gameType": "wordle-biblico",
+      "category": "Lugares",
+      "difficulty": "EASY",
+      "biblicalReference": "Isaías 29:1",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "ARIEL",
+        "hint": "Nome simbólico empregado pelo profeta ao falar de Jerusalém."
+      }
+    },
+    {
+      "externalId": "wordle-v2-008-azael",
+      "gameType": "wordle-biblico",
+      "category": "Personagens",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "2 Reis 8:13",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "AZAEL",
+        "hint": "Homem que se tornou rei da Síria após encontrar um profeta."
+      }
+    },
+    {
+      "externalId": "wordle-v2-009-bodes",
+      "gameType": "wordle-biblico",
+      "category": "Animais",
+      "difficulty": "EASY",
+      "biblicalReference": "Levítico 16:5",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "BODES",
+        "hint": "Animais presentes nos ritos do Dia da Expiação."
+      }
+    },
+    {
+      "externalId": "wordle-v2-010-caleb",
+      "gameType": "wordle-biblico",
+      "category": "Personagens",
+      "difficulty": "HARD",
+      "biblicalReference": "Números 14:24",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "CALEB",
+        "hint": "Espia que demonstrou confiança e recebeu uma herança em Canaã."
+      }
+    },
+    {
+      "externalId": "wordle-v2-011-cesar",
+      "gameType": "wordle-biblico",
+      "category": "Personagens",
+      "difficulty": "EASY",
+      "biblicalReference": "Mateus 22:21",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "CESAR",
+        "hint": "Título imperial citado por Jesus em uma resposta sobre tributos."
+      }
+    },
+    {
+      "externalId": "wordle-v2-012-cinza",
+      "gameType": "wordle-biblico",
+      "category": "Objetos",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Jó 2:8",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "CINZA",
+        "hint": "Elemento associado ao luto e à humilhação nas Escrituras."
+      }
+    },
+    {
+      "externalId": "wordle-v2-013-dagon",
+      "gameType": "wordle-biblico",
+      "category": "Personagens",
+      "difficulty": "EASY",
+      "biblicalReference": "1 Samuel 5:2",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "DAGON",
+        "hint": "Ídolo filisteu cujo templo recebeu a arca capturada."
+      }
+    },
+    {
+      "externalId": "wordle-v2-014-ester",
+      "gameType": "wordle-biblico",
+      "category": "Personagens",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Ester 4:14",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "ESTER",
+        "hint": "Rainha que arriscou a vida para interceder por seu povo."
+      }
+    },
+    {
+      "externalId": "wordle-v2-015-gosen",
+      "gameType": "wordle-biblico",
+      "category": "Lugares",
+      "difficulty": "HARD",
+      "biblicalReference": "Gênesis 47:6",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "GOSEN",
+        "hint": "Região do Egito onde a família de Jacó foi estabelecida."
+      }
+    },
+    {
+      "externalId": "wordle-v2-016-heber",
+      "gameType": "wordle-biblico",
+      "category": "Personagens",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Gênesis 10:21",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "HEBER",
+        "hint": "Descendente de Sem ligado à genealogia dos hebreus."
+      }
+    },
+    {
+      "externalId": "wordle-v2-017-jorao",
+      "gameType": "wordle-biblico",
+      "category": "Personagens",
+      "difficulty": "EASY",
+      "biblicalReference": "2 Reis 3:1",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "JORAO",
+        "hint": "Rei de Israel que buscou auxílio durante uma campanha militar."
+      }
+    },
+    {
+      "externalId": "wordle-v2-018-lamec",
+      "gameType": "wordle-biblico",
+      "category": "Personagens",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Gênesis 5:28",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "LAMEC",
+        "hint": "Pai que deu ao filho um nome relacionado a descanso e consolo."
+      }
+    },
+    {
+      "externalId": "wordle-v2-019-lidia",
+      "gameType": "wordle-biblico",
+      "category": "Personagens",
+      "difficulty": "EASY",
+      "biblicalReference": "Atos 16:14",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "LIDIA",
+        "hint": "Comerciante de púrpura que acolheu a mensagem em Filipos."
+      }
+    },
+    {
+      "externalId": "wordle-v2-020-mical",
+      "gameType": "wordle-biblico",
+      "category": "Personagens",
+      "difficulty": "HARD",
+      "biblicalReference": "1 Samuel 18:27",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "MICAL",
+        "hint": "Filha de Saul que se tornou esposa de Davi."
+      }
+    },
+    {
+      "externalId": "wordle-v2-021-mirra",
+      "gameType": "wordle-biblico",
+      "category": "Objetos",
+      "difficulty": "EASY",
+      "biblicalReference": "Mateus 2:11",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "MIRRA",
+        "hint": "Presente aromático oferecido ao menino Jesus pelos magos."
+      }
+    },
+    {
+      "externalId": "wordle-v2-022-naomi",
+      "gameType": "wordle-biblico",
+      "category": "Personagens",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Rute 1:20",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "NAOMI",
+        "hint": "Sogra de Rute que retornou a Belém após grandes perdas."
+      }
+    },
+    {
+      "externalId": "wordle-v2-023-osias",
+      "gameType": "wordle-biblico",
+      "category": "Personagens",
+      "difficulty": "EASY",
+      "biblicalReference": "2 Crônicas 26:1",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "OSIAS",
+        "hint": "Rei de Judá que prosperou enquanto buscou ao Senhor."
+      }
+    },
+    {
+      "externalId": "wordle-v2-024-raabe",
+      "gameType": "wordle-biblico",
+      "category": "Personagens",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Josué 2:1",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "RAABE",
+        "hint": "Moradora de Jericó que protegeu os espias israelitas."
+      }
+    },
+    {
+      "externalId": "wordle-v2-025-sadoc",
+      "gameType": "wordle-biblico",
+      "category": "Personagens",
+      "difficulty": "HARD",
+      "biblicalReference": "2 Samuel 8:17",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "SADOC",
+        "hint": "Sacerdote fiel durante os reinados de Davi e Salomão."
+      }
+    },
+    {
+      "externalId": "wordle-v2-026-salmo",
+      "gameType": "wordle-biblico",
+      "category": "Livros",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Salmos 1:1",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "SALMO",
+        "hint": "Composição de louvor, oração ou sabedoria do livro poético bíblico."
+      }
+    },
+    {
+      "externalId": "wordle-v2-027-tamar",
+      "gameType": "wordle-biblico",
+      "category": "Personagens",
+      "difficulty": "EASY",
+      "biblicalReference": "Gênesis 38:6",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "TAMAR",
+        "hint": "Mulher presente na história da família de Judá."
+      }
+    },
+    {
+      "externalId": "wordle-v2-028-tocha",
+      "gameType": "wordle-biblico",
+      "category": "Objetos",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Juízes 7:16",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "TOCHA",
+        "hint": "Fonte de luz escondida nos cântaros do pequeno exército de Gideão."
+      }
+    },
+    {
+      "externalId": "wordle-v2-029-uzias",
+      "gameType": "wordle-biblico",
+      "category": "Personagens",
+      "difficulty": "EASY",
+      "biblicalReference": "2 Crônicas 26:3",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "UZIAS",
+        "hint": "Rei de Judá conhecido por força militar e obras de defesa."
+      }
+    },
+    {
+      "externalId": "wordle-v2-030-zacai",
+      "gameType": "wordle-biblico",
+      "category": "Personagens",
+      "difficulty": "HARD",
+      "biblicalReference": "Lucas 19:2",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "ZACAI",
+        "hint": "Cobrador de impostos que subiu em uma árvore para ver Jesus."
+      }
+    },
+    {
+      "externalId": "wordle-v2-031-zebeu",
+      "gameType": "wordle-biblico",
+      "category": "Personagens",
+      "difficulty": "EASY",
+      "biblicalReference": "Mateus 4:21",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "ZEBEU",
+        "hint": "Pai de dois pescadores chamados para seguir Jesus."
+      }
+    },
+    {
+      "externalId": "wordle-v2-032-arcas",
+      "gameType": "wordle-biblico",
+      "category": "Objetos",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "1 Samuel 6:8",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "ARCAS",
+        "hint": "Baús ou cofres; um exemplar sagrado representava a aliança."
+      }
+    },
+    {
+      "externalId": "wordle-v2-033-bilha",
+      "gameType": "wordle-biblico",
+      "category": "Objetos",
+      "difficulty": "EASY",
+      "biblicalReference": "1 Reis 17:12",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "BILHA",
+        "hint": "Recipiente doméstico ligado ao sustento da viúva de Sarepta."
+      }
+    },
+    {
+      "externalId": "wordle-v2-034-botim",
+      "gameType": "wordle-biblico",
+      "category": "Conceitos",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Números 31:11",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "BOTIM",
+        "hint": "Bens recolhidos após uma vitória militar."
+      }
+    },
+    {
+      "externalId": "wordle-v2-035-cesto",
+      "gameType": "wordle-biblico",
+      "category": "Objetos",
+      "difficulty": "HARD",
+      "biblicalReference": "Mateus 14:20",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "CESTO",
+        "hint": "Recipiente usado para recolher o alimento que sobrou de um milagre."
+      }
+    },
+    {
+      "externalId": "wordle-v2-036-couro",
+      "gameType": "wordle-biblico",
+      "category": "Objetos",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Mateus 3:4",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "COURO",
+        "hint": "Material mencionado na vestimenta de João Batista."
+      }
+    },
+    {
+      "externalId": "wordle-v2-037-ervas",
+      "gameType": "wordle-biblico",
+      "category": "Natureza",
+      "difficulty": "EASY",
+      "biblicalReference": "Gênesis 1:12",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "ERVAS",
+        "hint": "Vegetação que surgiu quando a terra produziu plantas."
+      }
+    },
+    {
+      "externalId": "wordle-v2-038-harpa",
+      "gameType": "wordle-biblico",
+      "category": "Objetos",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Salmos 33:2",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "HARPA",
+        "hint": "Instrumento de cordas usado em louvor e celebração."
+      }
+    },
+    {
+      "externalId": "wordle-v2-039-jarro",
+      "gameType": "wordle-biblico",
+      "category": "Objetos",
+      "difficulty": "EASY",
+      "biblicalReference": "Juízes 7:20",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "JARRO",
+        "hint": "Recipiente quebrado pelos homens de Gideão durante o ataque."
+      }
+    },
+    {
+      "externalId": "wordle-v2-040-lepra",
+      "gameType": "wordle-biblico",
+      "category": "Conceitos",
+      "difficulty": "HARD",
+      "biblicalReference": "Levítico 13:2",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "LEPRA",
+        "hint": "Condição examinada pelos sacerdotes segundo a lei cerimonial."
+      }
+    },
+    {
+      "externalId": "wordle-v2-041-oliva",
+      "gameType": "wordle-biblico",
+      "category": "Natureza",
+      "difficulty": "EASY",
+      "biblicalReference": "Romanos 11:17",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "OLIVA",
+        "hint": "Árvore usada por Paulo para explicar pertencimento e enxerto."
+      }
+    },
+    {
+      "externalId": "wordle-v2-042-palha",
+      "gameType": "wordle-biblico",
+      "category": "Natureza",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Mateus 3:12",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "PALHA",
+        "hint": "Parte leve separada do trigo em uma imagem de julgamento."
+      }
+    },
+    {
+      "externalId": "wordle-v2-043-pocos",
+      "gameType": "wordle-biblico",
+      "category": "Lugares",
+      "difficulty": "EASY",
+      "biblicalReference": "Gênesis 26:18",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "POCOS",
+        "hint": "Fontes escavadas e disputadas na história de Isaque."
+      }
+    },
+    {
+      "externalId": "wordle-v2-044-redes",
+      "gameType": "wordle-biblico",
+      "category": "Objetos",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Mateus 4:20",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "REDES",
+        "hint": "Ferramentas abandonadas por pescadores chamados para seguir Jesus."
+      }
+    },
+    {
+      "externalId": "wordle-v2-045-sabao",
+      "gameType": "wordle-biblico",
+      "category": "Objetos",
+      "difficulty": "HARD",
+      "biblicalReference": "Malaquias 3:2",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "SABAO",
+        "hint": "Produto de limpeza usado como figura de purificação."
+      }
+    },
+    {
+      "externalId": "wordle-v2-046-talha",
+      "gameType": "wordle-biblico",
+      "category": "Objetos",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "João 2:6",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "TALHA",
+        "hint": "Grande recipiente de pedra presente no casamento em Caná."
+      }
+    },
+    {
+      "externalId": "wordle-v2-047-varas",
+      "gameType": "wordle-biblico",
+      "category": "Objetos",
+      "difficulty": "EASY",
+      "biblicalReference": "Gênesis 30:37",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "VARAS",
+        "hint": "Ramos utilizados por Jacó durante o cuidado dos rebanhos."
+      }
+    },
+    {
+      "externalId": "wordle-v2-048-vigas",
+      "gameType": "wordle-biblico",
+      "category": "Objetos",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "1 Reis 7:3",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "VIGAS",
+        "hint": "Peças estruturais empregadas em grandes construções."
+      }
+    },
+    {
+      "externalId": "wordle-v2-049-corda",
+      "gameType": "wordle-biblico",
+      "category": "Objetos",
+      "difficulty": "EASY",
+      "biblicalReference": "Josué 2:15",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "CORDA",
+        "hint": "Meio usado para descer os espias pela janela em Jericó."
+      }
+    },
+    {
+      "externalId": "wordle-v2-050-trave",
+      "gameType": "wordle-biblico",
+      "category": "Objetos",
+      "difficulty": "HARD",
+      "biblicalReference": "Mateus 7:3",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "5 letras"
+      ],
+      "payload": {
+        "word": "TRAVE",
+        "hint": "Objeto grande usado por Jesus para ensinar sobre julgamento hipócrita."
+      }
+    },
+    {
+      "externalId": "wordle-v2-051-abelha",
+      "gameType": "wordle-biblico",
+      "category": "Animais",
+      "difficulty": "EASY",
+      "biblicalReference": "Juízes 14:8",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "6 letras"
+      ],
+      "payload": {
+        "word": "ABELHA",
+        "hint": "Inseto encontrado por Sansão dentro da carcaça de um leão."
+      }
+    },
+    {
+      "externalId": "wordle-v2-052-acacia",
+      "gameType": "wordle-biblico",
+      "category": "Natureza",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Êxodo 25:10",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "6 letras"
+      ],
+      "payload": {
+        "word": "ACACIA",
+        "hint": "Madeira prescrita para móveis e utensílios do tabernáculo."
+      }
+    },
+    {
+      "externalId": "wordle-v2-053-agripa",
+      "gameType": "wordle-biblico",
+      "category": "Personagens",
+      "difficulty": "EASY",
+      "biblicalReference": "Atos 26:1",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "6 letras"
+      ],
+      "payload": {
+        "word": "AGRIPA",
+        "hint": "Rei diante de quem Paulo apresentou sua defesa."
+      }
+    },
+    {
+      "externalId": "wordle-v2-054-anaque",
+      "gameType": "wordle-biblico",
+      "category": "Personagens",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Números 13:33",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "6 letras"
+      ],
+      "payload": {
+        "word": "ANAQUE",
+        "hint": "Nome associado a homens de grande estatura vistos em Canaã."
+      }
+    },
+    {
+      "externalId": "wordle-v2-055-azeite",
+      "gameType": "wordle-biblico",
+      "category": "Alimentos",
+      "difficulty": "HARD",
+      "biblicalReference": "1 Reis 17:12",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "6 letras"
+      ],
+      "payload": {
+        "word": "AZEITE",
+        "hint": "Produto que não faltou na casa da viúva durante a fome."
+      }
+    },
+    {
+      "externalId": "wordle-v2-056-bispos",
+      "gameType": "wordle-biblico",
+      "category": "Igreja",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Filipenses 1:1",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "6 letras"
+      ],
+      "payload": {
+        "word": "BISPOS",
+        "hint": "Líderes da comunidade cristã mencionados ao lado dos diáconos."
+      }
+    },
+    {
+      "externalId": "wordle-v2-057-bordao",
+      "gameType": "wordle-biblico",
+      "category": "Objetos",
+      "difficulty": "EASY",
+      "biblicalReference": "Êxodo 4:2",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "6 letras"
+      ],
+      "payload": {
+        "word": "BORDAO",
+        "hint": "Objeto que Moisés segurava quando recebeu um sinal diante da sarça."
+      }
+    },
+    {
+      "externalId": "wordle-v2-058-cadeia",
+      "gameType": "wordle-biblico",
+      "category": "Objetos",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Atos 12:6",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "6 letras"
+      ],
+      "payload": {
+        "word": "CADEIA",
+        "hint": "Instrumento que prendia Pedro antes de sua libertação milagrosa."
+      }
+    },
+    {
+      "externalId": "wordle-v2-059-camelo",
+      "gameType": "wordle-biblico",
+      "category": "Animais",
+      "difficulty": "EASY",
+      "biblicalReference": "Mateus 19:24",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "6 letras"
+      ],
+      "payload": {
+        "word": "CAMELO",
+        "hint": "Animal usado por Jesus em uma comparação sobre riquezas."
+      }
+    },
+    {
+      "externalId": "wordle-v2-060-campos",
+      "gameType": "wordle-biblico",
+      "category": "Lugares",
+      "difficulty": "HARD",
+      "biblicalReference": "João 4:35",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "6 letras"
+      ],
+      "payload": {
+        "word": "CAMPOS",
+        "hint": "Áreas de cultivo usadas como imagem da colheita espiritual."
+      }
+    },
+    {
+      "externalId": "wordle-v2-061-cedron",
+      "gameType": "wordle-biblico",
+      "category": "Lugares",
+      "difficulty": "EASY",
+      "biblicalReference": "João 18:1",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "6 letras"
+      ],
+      "payload": {
+        "word": "CEDRON",
+        "hint": "Ribeiro atravessado por Jesus antes de entrar no jardim."
+      }
+    },
+    {
+      "externalId": "wordle-v2-062-cidade",
+      "gameType": "wordle-biblico",
+      "category": "Lugares",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Hebreus 11:10",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "6 letras"
+      ],
+      "payload": {
+        "word": "CIDADE",
+        "hint": "Lugar permanente aguardado por Abraão, cujo arquiteto é Deus."
+      }
+    },
+    {
+      "externalId": "wordle-v2-063-cinzas",
+      "gameType": "wordle-biblico",
+      "category": "Objetos",
+      "difficulty": "EASY",
+      "biblicalReference": "Ester 4:1",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "6 letras"
+      ],
+      "payload": {
+        "word": "CINZAS",
+        "hint": "Sinal público de lamento usado por Mordecai."
+      }
+    },
+    {
+      "externalId": "wordle-v2-064-cristo",
+      "gameType": "wordle-biblico",
+      "category": "Títulos",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Mateus 16:16",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "6 letras"
+      ],
+      "payload": {
+        "word": "CRISTO",
+        "hint": "Título reconhecido por Pedro ao confessar quem Jesus é."
+      }
+    },
+    {
+      "externalId": "wordle-v2-065-debora",
+      "gameType": "wordle-biblico",
+      "category": "Personagens",
+      "difficulty": "HARD",
+      "biblicalReference": "Juízes 4:4",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "6 letras"
+      ],
+      "payload": {
+        "word": "DEBORA",
+        "hint": "Profetisa e juíza que liderou Israel com Baraque."
+      }
+    },
+    {
+      "externalId": "wordle-v2-066-dracma",
+      "gameType": "wordle-biblico",
+      "category": "Objetos",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Lucas 15:8",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "6 letras"
+      ],
+      "payload": {
+        "word": "DRACMA",
+        "hint": "Moeda perdida e procurada cuidadosamente em uma parábola."
+      }
+    },
+    {
+      "externalId": "wordle-v2-067-eliseu",
+      "gameType": "wordle-biblico",
+      "category": "Personagens",
+      "difficulty": "EASY",
+      "biblicalReference": "2 Reis 2:15",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "6 letras"
+      ],
+      "payload": {
+        "word": "ELISEU",
+        "hint": "Profeta que recebeu o manto e sucedeu Elias."
+      }
+    },
+    {
+      "externalId": "wordle-v2-068-enoque",
+      "gameType": "wordle-biblico",
+      "category": "Personagens",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Gênesis 5:24",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "6 letras"
+      ],
+      "payload": {
+        "word": "ENOQUE",
+        "hint": "Homem que andou com Deus e não foi mais encontrado."
+      }
+    },
+    {
+      "externalId": "wordle-v2-069-escudo",
+      "gameType": "wordle-biblico",
+      "category": "Objetos",
+      "difficulty": "EASY",
+      "biblicalReference": "Efésios 6:16",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "6 letras"
+      ],
+      "payload": {
+        "word": "ESCUDO",
+        "hint": "Parte da armadura usada como figura para a fé."
+      }
+    },
+    {
+      "externalId": "wordle-v2-070-espada",
+      "gameType": "wordle-biblico",
+      "category": "Objetos",
+      "difficulty": "HARD",
+      "biblicalReference": "Efésios 6:17",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "6 letras"
+      ],
+      "payload": {
+        "word": "ESPADA",
+        "hint": "Arma usada por Paulo como imagem da palavra de Deus."
+      }
+    },
+    {
+      "externalId": "wordle-v2-071-espiga",
+      "gameType": "wordle-biblico",
+      "category": "Natureza",
+      "difficulty": "EASY",
+      "biblicalReference": "Gênesis 41:5",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "6 letras"
+      ],
+      "payload": {
+        "word": "ESPIGA",
+        "hint": "Elemento dos sonhos de Faraó interpretados por José."
+      }
+    },
+    {
+      "externalId": "wordle-v2-072-etiope",
+      "gameType": "wordle-biblico",
+      "category": "Personagens",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Atos 8:27",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "6 letras"
+      ],
+      "payload": {
+        "word": "ETIOPE",
+        "hint": "Oficial que lia Isaías e foi orientado por Filipe."
+      }
+    },
+    {
+      "externalId": "wordle-v2-073-gideao",
+      "gameType": "wordle-biblico",
+      "category": "Personagens",
+      "difficulty": "EASY",
+      "biblicalReference": "Juízes 7:7",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "6 letras"
+      ],
+      "payload": {
+        "word": "GIDEAO",
+        "hint": "Juiz que venceu um grande exército com apenas trezentos homens."
+      }
+    },
+    {
+      "externalId": "wordle-v2-074-golias",
+      "gameType": "wordle-biblico",
+      "category": "Personagens",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "1 Samuel 17:4",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "6 letras"
+      ],
+      "payload": {
+        "word": "GOLIAS",
+        "hint": "Guerreiro filisteu derrotado pelo jovem Davi."
+      }
+    },
+    {
+      "externalId": "wordle-v2-075-hebreu",
+      "gameType": "wordle-biblico",
+      "category": "Povos",
+      "difficulty": "HARD",
+      "biblicalReference": "Jonas 1:9",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "6 letras"
+      ],
+      "payload": {
+        "word": "HEBREU",
+        "hint": "Identidade declarada por Jonas aos marinheiros durante a tempestade."
+      }
+    },
+    {
+      "externalId": "wordle-v2-076-igreja",
+      "gameType": "wordle-biblico",
+      "category": "Igreja",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Atos 2:47",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "6 letras"
+      ],
+      "payload": {
+        "word": "IGREJA",
+        "hint": "Comunidade de discípulos formada e fortalecida após Pentecostes."
+      }
+    },
+    {
+      "externalId": "wordle-v2-077-isaque",
+      "gameType": "wordle-biblico",
+      "category": "Personagens",
+      "difficulty": "EASY",
+      "biblicalReference": "Gênesis 21:3",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "6 letras"
+      ],
+      "payload": {
+        "word": "ISAQUE",
+        "hint": "Filho da promessa nascido quando Abraão e Sara eram idosos."
+      }
+    },
+    {
+      "externalId": "wordle-v2-078-isaias",
+      "gameType": "wordle-biblico",
+      "category": "Personagens",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Isaías 6:8",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "6 letras"
+      ],
+      "payload": {
+        "word": "ISAIAS",
+        "hint": "Profeta que respondeu ao chamado após ver o Senhor no templo."
+      }
+    },
+    {
+      "externalId": "wordle-v2-079-israel",
+      "gameType": "wordle-biblico",
+      "category": "Povos",
+      "difficulty": "EASY",
+      "biblicalReference": "Gênesis 32:28",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "6 letras"
+      ],
+      "payload": {
+        "word": "ISRAEL",
+        "hint": "Nome recebido por Jacó e usado para identificar seus descendentes."
+      }
+    },
+    {
+      "externalId": "wordle-v2-080-jerico",
+      "gameType": "wordle-biblico",
+      "category": "Lugares",
+      "difficulty": "HARD",
+      "biblicalReference": "Josué 6:20",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "6 letras"
+      ],
+      "payload": {
+        "word": "JERICO",
+        "hint": "Cidade cujos muros caíram após o povo seguir uma ordem divina."
+      }
+    },
+    {
+      "externalId": "wordle-v2-081-jordao",
+      "gameType": "wordle-biblico",
+      "category": "Lugares",
+      "difficulty": "EASY",
+      "biblicalReference": "Josué 3:17",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "6 letras"
+      ],
+      "payload": {
+        "word": "JORDAO",
+        "hint": "Rio atravessado a seco por Israel na entrada de Canaã."
+      }
+    },
+    {
+      "externalId": "wordle-v2-082-levita",
+      "gameType": "wordle-biblico",
+      "category": "Personagens",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Lucas 10:32",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "6 letras"
+      ],
+      "payload": {
+        "word": "LEVITA",
+        "hint": "Servidor do templo citado na parábola do bom samaritano."
+      }
+    },
+    {
+      "externalId": "wordle-v2-083-miriam",
+      "gameType": "wordle-biblico",
+      "category": "Personagens",
+      "difficulty": "EASY",
+      "biblicalReference": "Êxodo 15:20",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "6 letras"
+      ],
+      "payload": {
+        "word": "MIRIAM",
+        "hint": "Profetisa que celebrou com tamborins após a travessia do mar."
+      }
+    },
+    {
+      "externalId": "wordle-v2-084-moises",
+      "gameType": "wordle-biblico",
+      "category": "Personagens",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Êxodo 3:10",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "6 letras"
+      ],
+      "payload": {
+        "word": "MOISES",
+        "hint": "Líder chamado na sarça para libertar Israel do Egito."
+      }
+    },
+    {
+      "externalId": "wordle-v2-085-ovelha",
+      "gameType": "wordle-biblico",
+      "category": "Animais",
+      "difficulty": "HARD",
+      "biblicalReference": "Lucas 15:4",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "6 letras"
+      ],
+      "payload": {
+        "word": "OVELHA",
+        "hint": "Animal perdido e procurado pelo pastor em uma parábola."
+      }
+    },
+    {
+      "externalId": "wordle-v2-086-pastor",
+      "gameType": "wordle-biblico",
+      "category": "Conceitos",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Salmos 23:1",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "6 letras"
+      ],
+      "payload": {
+        "word": "PASTOR",
+        "hint": "Figura usada para descrever cuidado, direção e proteção."
+      }
+    },
+    {
+      "externalId": "wordle-v2-087-pecado",
+      "gameType": "wordle-biblico",
+      "category": "Conceitos",
+      "difficulty": "EASY",
+      "biblicalReference": "Romanos 3:23",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "6 letras"
+      ],
+      "payload": {
+        "word": "PECADO",
+        "hint": "Condição universal da humanidade tratada no evangelho."
+      }
+    },
+    {
+      "externalId": "wordle-v2-088-perdao",
+      "gameType": "wordle-biblico",
+      "category": "Conceitos",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Mateus 18:21",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "6 letras"
+      ],
+      "payload": {
+        "word": "PERDAO",
+        "hint": "Tema da pergunta de Pedro sobre quantas vezes deveria relevar uma ofensa."
+      }
+    },
+    {
+      "externalId": "wordle-v2-089-raquel",
+      "gameType": "wordle-biblico",
+      "category": "Personagens",
+      "difficulty": "EASY",
+      "biblicalReference": "Gênesis 29:18",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "6 letras"
+      ],
+      "payload": {
+        "word": "RAQUEL",
+        "hint": "Mulher por quem Jacó trabalhou durante muitos anos."
+      }
+    },
+    {
+      "externalId": "wordle-v2-090-rebeca",
+      "gameType": "wordle-biblico",
+      "category": "Personagens",
+      "difficulty": "HARD",
+      "biblicalReference": "Gênesis 24:67",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "6 letras"
+      ],
+      "payload": {
+        "word": "REBECA",
+        "hint": "Mulher que deixou sua família para se casar com Isaque."
+      }
+    },
+    {
+      "externalId": "wordle-v2-091-romano",
+      "gameType": "wordle-biblico",
+      "category": "Povos",
+      "difficulty": "EASY",
+      "biblicalReference": "Atos 22:25",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "6 letras"
+      ],
+      "payload": {
+        "word": "ROMANO",
+        "hint": "Cidadania invocada por Paulo quando seria açoitado."
+      }
+    },
+    {
+      "externalId": "wordle-v2-092-sabado",
+      "gameType": "wordle-biblico",
+      "category": "Conceitos",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Marcos 2:27",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "6 letras"
+      ],
+      "payload": {
+        "word": "SABADO",
+        "hint": "Dia sobre o qual Jesus ensinou que foi feito para o ser humano."
+      }
+    },
+    {
+      "externalId": "wordle-v2-093-samuel",
+      "gameType": "wordle-biblico",
+      "category": "Personagens",
+      "difficulty": "EASY",
+      "biblicalReference": "1 Samuel 3:10",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "6 letras"
+      ],
+      "payload": {
+        "word": "SAMUEL",
+        "hint": "Menino que ouviu seu nome e aprendeu a responder ao chamado divino."
+      }
+    },
+    {
+      "externalId": "wordle-v2-094-templo",
+      "gameType": "wordle-biblico",
+      "category": "Lugares",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "1 Reis 6:1",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "6 letras"
+      ],
+      "payload": {
+        "word": "TEMPLO",
+        "hint": "Edifício construído por Salomão para o culto em Jerusalém."
+      }
+    },
+    {
+      "externalId": "wordle-v2-095-tribos",
+      "gameType": "wordle-biblico",
+      "category": "Povos",
+      "difficulty": "HARD",
+      "biblicalReference": "Gênesis 49:28",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "6 letras"
+      ],
+      "payload": {
+        "word": "TRIBOS",
+        "hint": "Grandes grupos familiares originados dos filhos de Jacó."
+      }
+    },
+    {
+      "externalId": "wordle-v2-096-ungido",
+      "gameType": "wordle-biblico",
+      "category": "Títulos",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "1 Samuel 16:13",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "6 letras"
+      ],
+      "payload": {
+        "word": "UNGIDO",
+        "hint": "Pessoa separada para uma missão mediante óleo e chamado."
+      }
+    },
+    {
+      "externalId": "wordle-v2-097-calice",
+      "gameType": "wordle-biblico",
+      "category": "Objetos",
+      "difficulty": "EASY",
+      "biblicalReference": "Mateus 26:27",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "6 letras"
+      ],
+      "payload": {
+        "word": "CALICE",
+        "hint": "Recipiente compartilhado por Jesus durante a última ceia."
+      }
+    },
+    {
+      "externalId": "wordle-v2-098-manjar",
+      "gameType": "wordle-biblico",
+      "category": "Alimentos",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Daniel 1:8",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "6 letras"
+      ],
+      "payload": {
+        "word": "MANJAR",
+        "hint": "Comida real que Daniel decidiu não usar para se contaminar."
+      }
+    },
+    {
+      "externalId": "wordle-v2-099-tunica",
+      "gameType": "wordle-biblico",
+      "category": "Objetos",
+      "difficulty": "EASY",
+      "biblicalReference": "Gênesis 37:3",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "6 letras"
+      ],
+      "payload": {
+        "word": "TUNICA",
+        "hint": "Roupa especial dada por Jacó a José."
+      }
+    },
+    {
+      "externalId": "wordle-v2-100-absalao",
+      "gameType": "wordle-biblico",
+      "category": "Personagens",
+      "difficulty": "HARD",
+      "biblicalReference": "2 Samuel 15:10",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "7 letras"
+      ],
+      "payload": {
+        "word": "ABSALAO",
+        "hint": "Filho de Davi que promoveu uma rebelião contra o pai."
+      }
+    },
+    {
+      "externalId": "wordle-v2-101-amorreu",
+      "gameType": "wordle-biblico",
+      "category": "Povos",
+      "difficulty": "EASY",
+      "biblicalReference": "Josué 10:5",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "7 letras"
+      ],
+      "payload": {
+        "word": "AMORREU",
+        "hint": "Povo cananeu enfrentado por Israel durante a conquista."
+      }
+    },
+    {
+      "externalId": "wordle-v2-102-ararate",
+      "gameType": "wordle-biblico",
+      "category": "Lugares",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Gênesis 8:4",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "7 letras"
+      ],
+      "payload": {
+        "word": "ARARATE",
+        "hint": "Região montanhosa onde a arca repousou após o dilúvio."
+      }
+    },
+    {
+      "externalId": "wordle-v2-103-baraque",
+      "gameType": "wordle-biblico",
+      "category": "Personagens",
+      "difficulty": "EASY",
+      "biblicalReference": "Juízes 4:6",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "7 letras"
+      ],
+      "payload": {
+        "word": "BARAQUE",
+        "hint": "Comandante convocado por Débora para enfrentar Sísera."
+      }
+    },
+    {
+      "externalId": "wordle-v2-104-barnabe",
+      "gameType": "wordle-biblico",
+      "category": "Personagens",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Atos 11:24",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "7 letras"
+      ],
+      "payload": {
+        "word": "BARNABE",
+        "hint": "Discípulo conhecido por encorajar outros e acompanhar missões."
+      }
+    },
+    {
+      "externalId": "wordle-v2-105-batalha",
+      "gameType": "wordle-biblico",
+      "category": "Conceitos",
+      "difficulty": "HARD",
+      "biblicalReference": "1 Samuel 17:47",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "7 letras"
+      ],
+      "payload": {
+        "word": "BATALHA",
+        "hint": "Confronto no qual Davi declarou que a vitória pertence ao Senhor."
+      }
+    },
+    {
+      "externalId": "wordle-v2-106-bezerra",
+      "gameType": "wordle-biblico",
+      "category": "Animais",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Êxodo 32:4",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "7 letras"
+      ],
+      "payload": {
+        "word": "BEZERRA",
+        "hint": "Forma do ídolo feito durante a permanência de Moisés no monte."
+      }
+    },
+    {
+      "externalId": "wordle-v2-107-carmelo",
+      "gameType": "wordle-biblico",
+      "category": "Lugares",
+      "difficulty": "EASY",
+      "biblicalReference": "1 Reis 18:19",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "7 letras"
+      ],
+      "payload": {
+        "word": "CARMELO",
+        "hint": "Monte onde Elias confrontou os profetas de Baal."
+      }
+    },
+    {
+      "externalId": "wordle-v2-108-damasco",
+      "gameType": "wordle-biblico",
+      "category": "Lugares",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Atos 9:3",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "7 letras"
+      ],
+      "payload": {
+        "word": "DAMASCO",
+        "hint": "Cidade para a qual Saulo viajava quando encontrou uma luz do céu."
+      }
+    },
+    {
+      "externalId": "wordle-v2-109-deserto",
+      "gameType": "wordle-biblico",
+      "category": "Lugares",
+      "difficulty": "EASY",
+      "biblicalReference": "Êxodo 16:1",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "7 letras"
+      ],
+      "payload": {
+        "word": "DESERTO",
+        "hint": "Região atravessada por Israel entre o Egito e a terra prometida."
+      }
+    },
+    {
+      "externalId": "wordle-v2-110-efesios",
+      "gameType": "wordle-biblico",
+      "category": "Livros",
+      "difficulty": "HARD",
+      "biblicalReference": "Efésios 1:1",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "7 letras"
+      ],
+      "payload": {
+        "word": "EFESIOS",
+        "hint": "Destinatários de uma carta sobre unidade, graça e vida cristã."
+      }
+    },
+    {
+      "externalId": "wordle-v2-111-estrela",
+      "gameType": "wordle-biblico",
+      "category": "Natureza",
+      "difficulty": "EASY",
+      "biblicalReference": "Mateus 2:2",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "7 letras"
+      ],
+      "payload": {
+        "word": "ESTRELA",
+        "hint": "Sinal celeste observado pelos magos no nascimento de Jesus."
+      }
+    },
+    {
+      "externalId": "wordle-v2-112-familia",
+      "gameType": "wordle-biblico",
+      "category": "Conceitos",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Gênesis 12:3",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "7 letras"
+      ],
+      "payload": {
+        "word": "FAMILIA",
+        "hint": "Grupo humano incluído na promessa feita a Abraão."
+      }
+    },
+    {
+      "externalId": "wordle-v2-113-gabriel",
+      "gameType": "wordle-biblico",
+      "category": "Personagens",
+      "difficulty": "EASY",
+      "biblicalReference": "Lucas 1:26",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "7 letras"
+      ],
+      "payload": {
+        "word": "GABRIEL",
+        "hint": "Mensageiro celestial enviado a Maria em Nazaré."
+      }
+    },
+    {
+      "externalId": "wordle-v2-114-galileu",
+      "gameType": "wordle-biblico",
+      "category": "Povos",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Atos 1:11",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "7 letras"
+      ],
+      "payload": {
+        "word": "GALILEU",
+        "hint": "Identidade regional atribuída aos discípulos após a ascensão."
+      }
+    },
+    {
+      "externalId": "wordle-v2-115-herodes",
+      "gameType": "wordle-biblico",
+      "category": "Personagens",
+      "difficulty": "HARD",
+      "biblicalReference": "Mateus 2:3",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "7 letras"
+      ],
+      "payload": {
+        "word": "HERODES",
+        "hint": "Rei perturbado ao ouvir sobre o nascimento de outro governante."
+      }
+    },
+    {
+      "externalId": "wordle-v2-116-leproso",
+      "gameType": "wordle-biblico",
+      "category": "Personagens",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Marcos 1:40",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "7 letras"
+      ],
+      "payload": {
+        "word": "LEPROSO",
+        "hint": "Homem que pediu purificação e foi tocado por Jesus."
+      }
+    },
+    {
+      "externalId": "wordle-v2-117-manasse",
+      "gameType": "wordle-biblico",
+      "category": "Personagens",
+      "difficulty": "EASY",
+      "biblicalReference": "Gênesis 41:51",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "7 letras"
+      ],
+      "payload": {
+        "word": "MANASSE",
+        "hint": "Primeiro filho de José nascido no Egito."
+      }
+    },
+    {
+      "externalId": "wordle-v2-118-nazireu",
+      "gameType": "wordle-biblico",
+      "category": "Conceitos",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Números 6:2",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "7 letras"
+      ],
+      "payload": {
+        "word": "NAZIREU",
+        "hint": "Pessoa consagrada por voto especial segundo a Lei."
+      }
+    },
+    {
+      "externalId": "wordle-v2-119-profeta",
+      "gameType": "wordle-biblico",
+      "category": "Títulos",
+      "difficulty": "EASY",
+      "biblicalReference": "Deuteronômio 18:18",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "7 letras"
+      ],
+      "payload": {
+        "word": "PROFETA",
+        "hint": "Mensageiro levantado para transmitir a palavra de Deus ao povo."
+      }
+    },
+    {
+      "externalId": "wordle-v2-120-verdade",
+      "gameType": "wordle-biblico",
+      "category": "Conceitos",
+      "difficulty": "HARD",
+      "biblicalReference": "João 14:6",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "7 letras"
+      ],
+      "payload": {
+        "word": "VERDADE",
+        "hint": "Realidade que Jesus associou a si mesmo junto do caminho e da vida."
+      }
+    },
+    {
+      "externalId": "wordle-v2-121-alianca",
+      "gameType": "wordle-biblico",
+      "category": "Conceitos",
+      "difficulty": "EASY",
+      "biblicalReference": "Gênesis 9:13",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "7 letras"
+      ],
+      "payload": {
+        "word": "ALIANCA",
+        "hint": "Compromisso confirmado por Deus com um sinal após o dilúvio."
+      }
+    },
+    {
+      "externalId": "wordle-v2-122-candeia",
+      "gameType": "wordle-biblico",
+      "category": "Objetos",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Mateus 5:15",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "7 letras"
+      ],
+      "payload": {
+        "word": "CANDEIA",
+        "hint": "Fonte de luz que deve ser colocada em lugar visível."
+      }
+    },
+    {
+      "externalId": "wordle-v2-123-incenso",
+      "gameType": "wordle-biblico",
+      "category": "Objetos",
+      "difficulty": "EASY",
+      "biblicalReference": "Êxodo 30:8",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "7 letras"
+      ],
+      "payload": {
+        "word": "INCENSO",
+        "hint": "Aroma queimado regularmente no altar do tabernáculo."
+      }
+    },
+    {
+      "externalId": "wordle-v2-124-josafat",
+      "gameType": "wordle-biblico",
+      "category": "Personagens",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "2 Crônicas 20:3",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "7 letras"
+      ],
+      "payload": {
+        "word": "JOSAFAT",
+        "hint": "Rei que buscou ao Senhor diante de uma grande ameaça."
+      }
+    },
+    {
+      "externalId": "wordle-v2-125-salomao",
+      "gameType": "wordle-biblico",
+      "category": "Personagens",
+      "difficulty": "HARD",
+      "biblicalReference": "1 Reis 3:12",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "7 letras"
+      ],
+      "payload": {
+        "word": "SALOMAO",
+        "hint": "Rei conhecido por sabedoria e pela construção do templo."
+      }
+    },
+    {
+      "externalId": "wordle-v2-126-timoteo",
+      "gameType": "wordle-biblico",
+      "category": "Personagens",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "2 Timóteo 1:5",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "7 letras"
+      ],
+      "payload": {
+        "word": "TIMOTEO",
+        "hint": "Cooperador jovem cuja fé também marcou sua família."
+      }
+    },
+    {
+      "externalId": "wordle-v2-127-betania",
+      "gameType": "wordle-biblico",
+      "category": "Lugares",
+      "difficulty": "EASY",
+      "biblicalReference": "João 11:1",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "7 letras"
+      ],
+      "payload": {
+        "word": "BETANIA",
+        "hint": "Povoado onde moravam Marta, Maria e Lázaro."
+      }
+    },
+    {
+      "externalId": "wordle-v2-128-fariseu",
+      "gameType": "wordle-biblico",
+      "category": "Personagens",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Lucas 18:10",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "7 letras"
+      ],
+      "payload": {
+        "word": "FARISEU",
+        "hint": "Integrante de um grupo religioso citado em uma parábola sobre oração."
+      }
+    },
+    {
+      "externalId": "wordle-v2-129-lampada",
+      "gameType": "wordle-biblico",
+      "category": "Objetos",
+      "difficulty": "EASY",
+      "biblicalReference": "Salmos 119:105",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "7 letras"
+      ],
+      "payload": {
+        "word": "LAMPADA",
+        "hint": "Fonte de luz usada como imagem da palavra que orienta o caminho."
+      }
+    },
+    {
+      "externalId": "wordle-v2-130-milagre",
+      "gameType": "wordle-biblico",
+      "category": "Conceitos",
+      "difficulty": "HARD",
+      "biblicalReference": "João 2:11",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "7 letras"
+      ],
+      "payload": {
+        "word": "MILAGRE",
+        "hint": "Sinal extraordinário que manifestou a glória de Jesus em Caná."
+      }
+    },
+    {
+      "externalId": "wordle-v2-131-apostol",
+      "gameType": "wordle-biblico",
+      "category": "Títulos",
+      "difficulty": "EASY",
+      "biblicalReference": "Marcos 3:14",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "7 letras"
+      ],
+      "payload": {
+        "word": "APOSTOL",
+        "hint": "Enviado escolhido para acompanhar Jesus e anunciar a mensagem."
+      }
+    },
+    {
+      "externalId": "wordle-v2-132-diluvio",
+      "gameType": "wordle-biblico",
+      "category": "Eventos",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Gênesis 7:17",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "7 letras"
+      ],
+      "payload": {
+        "word": "DILUVIO",
+        "hint": "Grande inundação da qual Noé e sua família foram preservados."
+      }
+    },
+    {
+      "externalId": "wordle-v2-133-escriba",
+      "gameType": "wordle-biblico",
+      "category": "Títulos",
+      "difficulty": "EASY",
+      "biblicalReference": "Esdras 7:6",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "7 letras"
+      ],
+      "payload": {
+        "word": "ESCRIBA",
+        "hint": "Especialista na Lei associado ao ensino e à cópia dos textos."
+      }
+    },
+    {
+      "externalId": "wordle-v2-134-exilado",
+      "gameType": "wordle-biblico",
+      "category": "Pessoas",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Daniel 1:6",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "7 letras"
+      ],
+      "payload": {
+        "word": "EXILADO",
+        "hint": "Pessoa levada para viver longe de sua terra após uma conquista."
+      }
+    },
+    {
+      "externalId": "wordle-v2-135-gomorra",
+      "gameType": "wordle-biblico",
+      "category": "Lugares",
+      "difficulty": "HARD",
+      "biblicalReference": "Gênesis 19:24",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "7 letras"
+      ],
+      "payload": {
+        "word": "GOMORRA",
+        "hint": "Cidade destruída juntamente com Sodoma."
+      }
+    },
+    {
+      "externalId": "wordle-v2-136-humilde",
+      "gameType": "wordle-biblico",
+      "category": "Conceitos",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Mateus 11:29",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "7 letras"
+      ],
+      "payload": {
+        "word": "HUMILDE",
+        "hint": "Qualidade de coração que Jesus atribuiu a si mesmo."
+      }
+    },
+    {
+      "externalId": "wordle-v2-137-magdala",
+      "gameType": "wordle-biblico",
+      "category": "Lugares",
+      "difficulty": "EASY",
+      "biblicalReference": "Mateus 15:39",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "7 letras"
+      ],
+      "payload": {
+        "word": "MAGDALA",
+        "hint": "Região próxima ao mar da Galileia mencionada nos Evangelhos."
+      }
+    },
+    {
+      "externalId": "wordle-v2-138-manjedo",
+      "gameType": "wordle-biblico",
+      "category": "Objetos",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Lucas 2:7",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "7 letras"
+      ],
+      "payload": {
+        "word": "MANJEDO",
+        "hint": "Lugar onde o menino Jesus foi deitado após nascer."
+      }
+    },
+    {
+      "externalId": "wordle-v2-139-muralha",
+      "gameType": "wordle-biblico",
+      "category": "Objetos",
+      "difficulty": "EASY",
+      "biblicalReference": "Josué 6:5",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "7 letras"
+      ],
+      "payload": {
+        "word": "MURALHA",
+        "hint": "Estrutura defensiva que caiu em Jericó."
+      }
+    },
+    {
+      "externalId": "wordle-v2-140-oraculo",
+      "gameType": "wordle-biblico",
+      "category": "Lugares",
+      "difficulty": "HARD",
+      "biblicalReference": "1 Reis 6:16",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "7 letras"
+      ],
+      "payload": {
+        "word": "ORACULO",
+        "hint": "Parte interior e sagrada do templo de Salomão."
+      }
+    },
+    {
+      "externalId": "wordle-v2-141-rebanho",
+      "gameType": "wordle-biblico",
+      "category": "Animais",
+      "difficulty": "EASY",
+      "biblicalReference": "Salmos 77:20",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "7 letras"
+      ],
+      "payload": {
+        "word": "REBANHO",
+        "hint": "Grupo conduzido por um pastor, usado como imagem do povo."
+      }
+    },
+    {
+      "externalId": "wordle-v2-142-serafim",
+      "gameType": "wordle-biblico",
+      "category": "Personagens",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Isaías 6:2",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "7 letras"
+      ],
+      "payload": {
+        "word": "SERAFIM",
+        "hint": "Ser celestial visto pelo profeta ao redor do trono."
+      }
+    },
+    {
+      "externalId": "wordle-v2-143-soldado",
+      "gameType": "wordle-biblico",
+      "category": "Títulos",
+      "difficulty": "EASY",
+      "biblicalReference": "2 Timóteo 2:3",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "7 letras"
+      ],
+      "payload": {
+        "word": "SOLDADO",
+        "hint": "Figura usada por Paulo para ensinar dedicação e resistência."
+      }
+    },
+    {
+      "externalId": "wordle-v2-144-tributo",
+      "gameType": "wordle-biblico",
+      "category": "Conceitos",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Mateus 17:24",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "7 letras"
+      ],
+      "payload": {
+        "word": "TRIBUTO",
+        "hint": "Pagamento questionado aos discípulos em Cafarnaum."
+      }
+    },
+    {
+      "externalId": "wordle-v2-145-virtude",
+      "gameType": "wordle-biblico",
+      "category": "Conceitos",
+      "difficulty": "HARD",
+      "biblicalReference": "2 Pedro 1:5",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "7 letras"
+      ],
+      "payload": {
+        "word": "VIRTUDE",
+        "hint": "Qualidade que deve ser acrescentada à fé no crescimento cristão."
+      }
+    },
+    {
+      "externalId": "wordle-v2-146-pilatos",
+      "gameType": "wordle-biblico",
+      "category": "Personagens",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Lucas 3:1",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "7 letras"
+      ],
+      "payload": {
+        "word": "PILATOS",
+        "hint": "Governador romano envolvido no julgamento de Jesus."
+      }
+    },
+    {
+      "externalId": "wordle-v2-147-batismo",
+      "gameType": "wordle-biblico",
+      "category": "Conceitos",
+      "difficulty": "EASY",
+      "biblicalReference": "Romanos 6:4",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "7 letras"
+      ],
+      "payload": {
+        "word": "BATISMO",
+        "hint": "Ato usado para representar união com a morte e ressurreição de Cristo."
+      }
+    },
+    {
+      "externalId": "wordle-v2-148-portico",
+      "gameType": "wordle-biblico",
+      "category": "Lugares",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "João 10:23",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "7 letras"
+      ],
+      "payload": {
+        "word": "PORTICO",
+        "hint": "Área coberta do templo onde Jesus caminhou no inverno."
+      }
+    },
+    {
+      "externalId": "wordle-v2-149-tabuas",
+      "gameType": "wordle-biblico",
+      "category": "Objetos",
+      "difficulty": "EASY",
+      "biblicalReference": "Êxodo 31:18",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "6 letras"
+      ],
+      "payload": {
+        "word": "TABUAS",
+        "hint": "Peças de pedra que receberam os mandamentos da aliança."
+      }
+    },
+    {
+      "externalId": "wordle-v2-150-talento",
+      "gameType": "wordle-biblico",
+      "category": "Conceitos",
+      "difficulty": "HARD",
+      "biblicalReference": "Mateus 25:15",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "7 letras"
+      ],
+      "payload": {
+        "word": "TALENTO",
+        "hint": "Unidade de valor confiada a servos em uma parábola."
+      }
+    },
+    {
+      "externalId": "wordle-v2-151-corneta",
+      "gameType": "wordle-biblico",
+      "category": "Objetos",
+      "difficulty": "EASY",
+      "biblicalReference": "Josué 6:20",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "7 letras"
+      ],
+      "payload": {
+        "word": "CORNETA",
+        "hint": "Instrumento de sopro associado ao anúncio e à queda dos muros de Jericó."
+      }
+    },
+    {
+      "externalId": "wordle-v2-152-colunas",
+      "gameType": "wordle-biblico",
+      "category": "Objetos",
+      "difficulty": "MEDIUM",
+      "biblicalReference": "Juízes 16:29",
+      "tags": [
+        "Antigo Testamento",
+        "Expansão Wordle v2",
+        "7 letras"
+      ],
+      "payload": {
+        "word": "COLUNAS",
+        "hint": "Estruturas sobre as quais Sansão apoiou as mãos no templo filisteu."
+      }
+    },
+    {
+      "externalId": "wordle-v2-153-corinto",
+      "gameType": "wordle-biblico",
+      "category": "Lugares",
+      "difficulty": "EASY",
+      "biblicalReference": "Atos 18:1",
+      "tags": [
+        "Novo Testamento",
+        "Expansão Wordle v2",
+        "7 letras"
+      ],
+      "payload": {
+        "word": "CORINTO",
+        "hint": "Cidade onde Paulo trabalhou e ensinou por longo período."
+      }
+    }
+  ]
+}

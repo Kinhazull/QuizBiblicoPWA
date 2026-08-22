@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-12",
+  "updatedAt": "2026-08-21",
   "statuses": [
     "APPROVED_INTERNAL",
     "LICENSE_DOCUMENTED",
@@ -22,6 +22,19 @@
       "humanCurated": true,
       "use": "380 conteúdos CMS para seis jogos",
       "evidence": "tests/unit/official-base-content.test.mjs"
+    },
+    {
+      "id": "wordle-expansion-v2",
+      "kind": "content",
+      "path": "content/wordle-expansion-v2.json",
+      "origin": "Conte os Feitos; expansão editorial versionada para o Wordle",
+      "license": "Conteúdo original da plataforma; revisão bíblica humana obrigatória antes da publicação",
+      "status": "PENDING_HUMAN_REVIEW",
+      "provenance": "ORIGINAL_PLATFORM_EDITORIAL_CONTENT",
+      "aiAssisted": true,
+      "humanCurated": false,
+      "use": "153 novos conteúdos Wordle de 5, 6 e 7 letras",
+      "evidence": "tests/unit/wordle-expansion-v2.test.mjs"
     },
     {
       "id": "quiz-universal-legacy-source",
