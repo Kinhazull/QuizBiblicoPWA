@@ -1,4 +1,6 @@
-// Curated, accent-insensitive PT-BR vocabulary for Wordle guesses.
+import { WORDLE_PT_BR_WORDS } from "./wordle-pt-br-lexicon.generated.ts";
+
+// Accent-insensitive PT-BR and biblical vocabulary for Wordle guesses.
 // Answers remain server-side and are not derived from this list in the browser.
 // Keep entries normalized (A-Z), between five and seven letters, and review additions editorially.
 const GENERAL_PORTUGUESE_WORDS = `
@@ -15,7 +17,7 @@ ABRAAO ABRAO ACABE ADONAI AGUAS ALTAR AMADO ANJOS ASAFE BACIA BETEL CAIM CANAA C
 `.trim().split(/\s+/);
 
 export const WORDLE_ACCEPTED_GUESSES = new Set(
-  [...GENERAL_PORTUGUESE_WORDS, ...BIBLICAL_WORDS]
+  [...WORDLE_PT_BR_WORDS, ...GENERAL_PORTUGUESE_WORDS, ...BIBLICAL_WORDS]
     .filter(word => /^[A-Z]{5,7}$/.test(word)),
 );
 

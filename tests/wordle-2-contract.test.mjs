@@ -23,14 +23,20 @@ test("Wordle 2.0 supports variable length, accent normalization and position sel
 });
 
 test("Wordle validation combines a reviewed bundled lexicon with published CMS answers", async () => {
-  const [lexicon, words] = await Promise.all([
+  const [lexicon, words, ptBr, notices] = await Promise.all([
     read("functions/_lib/wordle-lexicon.ts"),
     read("shared/wordle-accepted-guesses.ts"),
+    read("shared/wordle-pt-br-lexicon.generated.ts"),
+    read("docs/THIRD_PARTY_NOTICES.md"),
   ]);
   assert.match(lexicon, /isBundledWordleGuess/);
   assert.match(lexicon, /content_items/);
   assert.match(lexicon, /status='PUBLISHED'/);
   assert.match(words, /GENERAL_PORTUGUESE_WORDS/);
   assert.match(words, /BIBLICAL_WORDS/);
+  assert.match(words, /WORDLE_PT_BR_WORDS/);
   assert.match(words, /\^\[A-Z\]\{5,7\}\$/);
+  assert.match(ptBr, /WORDLE_PT_BR_WORD_COUNT/);
+  assert.match(ptBr, /LibreOffice dictionaries pt_BR/);
+  assert.match(notices, /LGPL versão 3/);
 });
