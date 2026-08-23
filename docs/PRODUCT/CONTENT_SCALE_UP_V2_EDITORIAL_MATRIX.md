@@ -1,6 +1,6 @@
 # Matriz Editorial v2 — Content Scale-Up
 
-**Status:** FROZEN FOR PLANNING  
+**Status:** IMPLEMENTED — FINAL FREEZE PENDING
 **Sprint:** 27.7.5B.1  
 **Data:** 22/08/2026  
 **Escopo:** sete jogos do CMS Universal
@@ -16,12 +16,12 @@ O CMS Universal permanece a fonte da verdade. Conteúdo novo nasce como `DRAFT`,
 | Jogo | Unidade contabilizada | Meta mínima | Estado inicial conhecido |
 |---|---|---:|---:|
 | Quiz Bíblico | pergunta CMS publicada | 984 | 984 — preservar |
-| Wordle Bíblico | solução CMS publicada e única | 1.200 | 120 oficiais + 153 aprovadas para importação |
-| Linha do Tempo | sequência CMS publicada | 800 | aferir no inventário 27.7.5B.2 |
-| Memória Bíblica | par canônico único publicado | 300 | aferir no inventário 27.7.5B.2 |
-| Associação de Temas | conjunto CMS publicado | 800 | aferir no inventário 27.7.5B.2 |
-| Quem Sou Eu? | conjunto CMS publicado | 800 | aferir no inventário 27.7.5B.2 |
-| Jogo das 3 Pistas | conjunto CMS publicado | 800 | aferir no inventário 27.7.5B.2 |
+| Wordle Bíblico | solução CMS publicada e única | 1.200 | 1.201 publicados |
+| Linha do Tempo | sequência CMS publicada | 800 | 800 publicados |
+| Memória Bíblica | par canônico único publicado | 300 | 100 conteúdos / 300 pares |
+| Associação de Temas | conjunto CMS publicado | 800 | 800 publicados |
+| Quem Sou Eu? | conjunto CMS publicado | 800 | 800 publicados |
+| Jogo das 3 Pistas | conjunto CMS publicado | 800 | 800 publicados |
 
 As metas são mínimas. Contagens devem ser confirmadas em CMS, Biblioteca Universal e Catálogo Elegível após cada importação. Para Memória, repetir o mesmo par em conjuntos diferentes não aumenta a meta. Para os demais jogos, cópias ou variações meramente redacionais não contam como unidades novas.
 
@@ -179,16 +179,14 @@ Nenhum lote pode ser aplicado sem:
 |---|---|---|
 | 27.7.5B.1 | Matriz Editorial v2 | DONE localmente |
 | 27.7.5B.2 | Inventário real, lacunas e plano de lotes | DONE localmente |
-| 27.7.5B.3 | Escala Wordle até 1.200 soluções | CONTENT PRODUCED — lote 01 aprovado; lote restante de 877 candidatos aguarda revisão |
-| 27.7.5B.4 | Escala Linha do Tempo e Memória | CONTENT PRODUCED — revisão conjunta pendente |
-| 27.7.5B.5 | Escala Associação | CONTENT PRODUCED — revisão conjunta pendente |
-| 27.7.5B.6 | Escala Quem Sou Eu e Três Pistas | CONTENT PRODUCED — revisão conjunta pendente |
-| 27.7.5B.7 | Importação, publicação e reconciliação controladas | PLANNED |
-| 27.7.5B.8 | Auditoria editorial final e freeze de conteúdo | PLANNED |
+| 27.7.5B.3 | Escala Wordle até 1.200 soluções | DONE — revisão humana aprovada |
+| 27.7.5B.4 | Escala Linha do Tempo e Memória | DONE — revisão humana aprovada |
+| 27.7.5B.5 | Escala Associação | DONE — revisão humana aprovada |
+| 27.7.5B.6 | Escala Quem Sou Eu e Três Pistas | DONE — revisão humana aprovada |
+| 27.7.5B.7 | Importação, publicação e reconciliação controladas | DONE — 5.485 publicados |
+| 27.7.5B.8 | Auditoria editorial final e freeze de conteúdo | IN PROGRESS |
 
-Como exceção expressa registrada em 22/08/2026, o proprietário autorizou a produção dos 877 candidatos Wordle restantes em lote único para revisão posterior. A exceção alcança apenas o tamanho do lote: revisão humana, dry-run, importação controlada e publicação continuam gates independentes e obrigatórios.
-
-Na mesma data, o proprietário autorizou produzir em um lote conjunto os candidatos restantes dos outros cinco jogos para revisão posterior: 760 Timeline, 60 conteúdos de Memória com 180 pares, 740 Associação, 740 Quem Sou Eu? e 740 Três Pistas. Os 3.040 itens permanecem `PENDING_HUMAN_REVIEW`; a autorização de geração não constitui aprovação editorial nem autorização de escrita remota.
+As autorizações excepcionais de lote único foram seguidas por revisão e aprovação humanas explícitas. Dry-run, confirmação administrativa, aplicação idempotente, publicação e reconciliação foram executados posteriormente; a exceção de tamanho não eliminou os demais gates.
 
 ## Critérios de aceite da matriz
 

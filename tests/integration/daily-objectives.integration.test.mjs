@@ -127,9 +127,13 @@ async function publishDailyCatalog(ctx) {
   await publishGame(ctx, GameType.TIMELINE, { title: "Ordem", events: [
     { title: "Criação", position: 1 }, { title: "Dilúvio", position: 2 }, { title: "Êxodo", position: 3 },
   ] });
-  await publishGame(ctx, GameType.MEMORY, { title: "Pares", pairs: [
-    { front: "Noé", back: "Arca" }, { front: "Davi", back: "Golias" }, { front: "Moisés", back: "Êxodo" },
-  ] });
+  for (const [index, name] of ["Noé", "Davi", "Moisés"].entries()) {
+    await publishGame(ctx, GameType.MEMORY, { title: `Pares ${index + 1}`, pairs: [
+      { front: name, back: `Resposta ${index + 1}A` },
+      { front: `Frente ${index + 1}B`, back: `Resposta ${index + 1}B` },
+      { front: `Frente ${index + 1}C`, back: `Resposta ${index + 1}C` },
+    ] });
+  }
   await publishGame(ctx, GameType.ASSOCIATION, { title: "Associações", pairs: [
     { left: "Noé", right: "Arca" }, { left: "Davi", right: "Golias" }, { left: "Moisés", right: "Êxodo" },
   ] });

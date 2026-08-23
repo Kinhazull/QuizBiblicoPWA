@@ -19,9 +19,8 @@
 | KI-011 | Recuperação do owner | Médio | Recovery codes existem; perda simultânea de senha, TOTP e códigos do owner depende de procedimento operacional externo controlado. |
 | KI-012 | Advisories transitivos de `image-size` | Baixo | `vinext` fixa `image-size@2.0.2`; a correção anunciada `2.0.3` ainda não foi publicada. Exceções restritas a `GHSA-w3rx-r6r6-pgpr` e `GHSA-5p2g-fcmc-qvqq`, somente para assets locais controlados no build, devem ser removidas assim que o upstream corrigir a cadeia. |
 | KI-018 | Revalidação da rodada mobile | Release gate | Correções de Home, Perfil, Loja, Inventário, catálogo, Daily, jogos e Administração estão na `main`; repetir smoke visual/funcional em 320–390 px no artifact promovido antes do Go/No-Go. |
-| KI-019 | Conteúdo Wordle v2 em produção | Verificação operacional | O pacote de 153 conteúdos está aprovado e versionado. Confirmar por dry-run/aplicação administrativa idempotente e contagem CMS/Biblioteca que a publicação real ocorreu; não inferir pelo Git. |
-| KI-020 | Registro de resultado em rede móvel | Revalidação | Retry limitado e conclusão idempotente foram implementados após falha intermitente observada. Validar no runtime promovido e confirmar ausência de duplicação de XP, moedas ou estatísticas. |
-| KI-021 | Revisão e publicação do Content Scale-Up v2 | Planejamento editorial | Wordle possui 323 soluções aprovadas, 877 candidatos pendentes e projeção de 1.200. Os outros cinco jogos possuem 3.040 candidatos conjuntos que projetam o fechamento das metas locais. Revisão humana, correções, dry-run, importação, publicação e reconciliação permanecem abertas; nenhuma contagem remota foi inferida. |
+| KI-020 | Registro de resultado em rede móvel | Revalidação | Retry limitado, conclusão idempotente e correção do comprimento real no Wordle foram promovidos; vitória com palavra de 6 letras foi revalidada. Ainda validar perda real de resposta/rede e ausência de duplicação no Go/No-Go. |
+| KI-022 | Wordle extra fora do Catálogo Elegível | Baixa / higiene editorial | “Átila” está publicado/projetado, mas é corretamente excluído pelo Schema Registry por dica vazia. As 1.200 soluções aprovadas permanecem elegíveis; tratar depois sem bloquear a v2. |
 
 ## Encerrados
 
@@ -35,3 +34,5 @@
 - KI-010: migration 0039, secret MFA e fluxo funcional completo foram comprovados remotamente; recovery extremo do owner permanece separado em KI-011.
 - Wordle limitado a cinco letras/dicionário estreito: encerrado no código; aceita 5–7 letras, normaliza acentos e usa léxico PT-BR revisado mais respostas publicadas do CMS.
 - importação universal sem orientação: encerrado no código; a Central de Conteúdo agora conduz upload/modelo, dry-run, relatório e confirmação.
+- KI-019: expansão Wordle e Content Scale-Up v2 aplicados; Wordle reconciliado com 1.201 conteúdos publicados.
+- KI-021: Content Gate v2 concluiu amostragem, reconciliação e freeze da baseline; os sete jogos estão `CONTENT_READY_V2`.

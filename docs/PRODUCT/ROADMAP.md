@@ -57,12 +57,17 @@ Concluídas: piloto, fundação modular, Core Platform, plataforma universal e c
 | 27.7.2 | Preparação de Produção | DONE |
 | 27.7.3 | RC Final | DONE |
 | 27.7.4 | Validação Manual do Usuário | IN PROGRESS — primeira auditoria executada |
-| 27.7.5 | Correções e Revalidação | IN PROGRESS — correções implementadas na `main`; promoção/reteste pendentes |
-| 27.7.5B.1 | Matriz Editorial v2 | DONE localmente — metas e gates congelados; nenhum conteúdo importado |
-| 27.7.5B.2 | Inventário e lacunas | DONE localmente — fontes versionadas aferidas, sem consulta ou escrita remota |
-| 27.7.5B.3 | Escala Wordle | CONTENT PRODUCED — lote 01 aprovado; 877 candidatos restantes aguardam revisão humana |
-| 27.7.5B.4–B.6 | Content Scale-Up v2 — demais jogos | CONTENT PRODUCED — 3.040 candidatos aguardam revisão conjunta |
-| 27.7.5B.7–B.8 | Content Scale-Up v2 — fechamento | PLANNED — revisão, correções, dry-run, importação, reconciliação e freeze |
+| 27.7.5 | Correções e Revalidação | IN PROGRESS — promovida; Wordle revalidado, checklist amplo ainda aberto |
+| 27.7.5B.1–B.2 | Matriz, inventário e lacunas | DONE |
+| 27.7.5B.3–B.6 | Content Scale-Up v2 | DONE — revisão e aprovação humanas registradas |
+| 27.7.5B.7 | Importação, publicação e reconciliação | DONE — 5.485 conteúdos publicados |
+| 27.7.5B.8 | Auditoria final e freeze editorial | DONE — baseline produtiva congelada |
+| 27.7.5C | Content Gate v2 e antirrepetição | DONE — sete jogos `CONTENT_READY_V2` |
+| 27.7.5C.1 | Memória: combinação dinâmica dos 300 pares | DONE localmente — histórico compatível, Free/Daily/Event cobertos |
+| 27.7.5C.2 | Próximo gate de conteúdo definido pelo plano da release | NEXT |
+| 27.7.5D | Validação manual final | PLANNED |
+| 27.7.5E | Android/PWA/Web Vitals | PLANNED |
+| 27.7.5F | Jurídico/editorial final/Data Safety | PLANNED |
 | 27.7.6 | Go/No-Go Formal | PLANNED |
 | 27.7.7 | Release v2.0.0 | PLANNED |
 
@@ -93,14 +98,12 @@ Progressão e Economia administrativas não terão painéis duplicados: Analytic
 - confirmar Wordle com 5, 6 e 7 letras, seleção posicional, acentos normalizados e rejeição de palavras inexistentes;
 - confirmar Cofre liberado após ao menos uma vitória diária e metas de 3/7 independentes.
 
-### 3. Consolidar conteúdo
+### 3. Baseline editorial importada — concluída
 
-- executar dry-run administrativo da expansão Wordle v2;
-- importar/publicar idempotentemente os 153 itens somente após relatório sem bloqueios;
-- confirmar contagens no CMS, Biblioteca e Catálogo Elegível;
-- executar a sequência 27.7.5B.3–B.8 conforme a Matriz Editorial v2 e o inventário concluído: produção em lotes, revisão, importação e reconciliação;
-- atingir as metas mínimas aprovadas: Quiz 984 preservado, Wordle 1.200 soluções, Linha do Tempo 800, Memória 300 pares, Associação 800, Quem Sou Eu 800 e Três Pistas 800;
-- realizar amostragem humana dos seis jogos não-Quiz e registrar correções editoriais sem alterar as 984 perguntas já revisadas.
+- contagens reconciliadas: Quiz 984; Wordle 1.201; Linha do Tempo 800; Memória 100 conteúdos/300 pares; Associação 800; Quem Sou Eu 800; Três Pistas 800; total 5.485;
+- Content Gate v2 concluído: Biblioteca, disponibilidade e Catálogo Elegível confirmados para os sete jogos;
+- baseline congelada sem alterar as 984 perguntas já revisadas;
+- detalhes de elegibilidade, amostragem e antirrepetição em `docs/PRODUCT/CONTENT_GATE_V2.md`.
 
 ### 4. Gates humanos e externos
 

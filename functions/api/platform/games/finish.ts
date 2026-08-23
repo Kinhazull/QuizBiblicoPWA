@@ -16,7 +16,7 @@ import { findPublishedUniversalContent } from "../../../_lib/universal-content-s
 import { isSupportedWordLength, isValidGuess, normalizeWord } from "../../../../app/games/wordle/engine";
 import type { TimelineRound } from "../../../../app/games/timeline/engine";
 import { timelineRoundFromContent } from "../../../_lib/game-integrations/timeline-content";
-import { memorySetFromContent } from "../../../_lib/game-integrations/memory-content";
+import { memorySetFromContent, memorySetFromSelection } from "../../../_lib/game-integrations/memory-content";
 import type { MemorySet } from "../../../../app/games/memory/engine";
 import type { ThemeAssociationRound } from "../../../../app/games/theme-association/engine";
 import { associationRoundFromContent } from "../../../_lib/game-integrations/association-content";
@@ -25,7 +25,7 @@ import { whoAmIChallengesFromContent } from "../../../_lib/game-integrations/who
 import type { ThreeCluesChallenge } from "../../../../app/games/three-clues/engine";
 import { threeCluesChallengesFromContent } from "../../../_lib/game-integrations/three-clues-content";
 import {
-  dailyMemoryCards,
+  generatedMemoryCards,
   dailySelectionContext,
   finishDailyParticipation,
 } from "../../../_lib/platform-daily-objectives";
@@ -135,8 +135,26 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
         timelineContent.payload as TimelineContentPayload,
       );
     }
+    const historicalMemoryContent = body.gameId === "memoria-biblica" && generated?.contents[0]
+      ? {
+        id: generated.contents[0].id,
+        version: generated.contents[0].version,
+        gameType: GameType.MEMORY,
+        category: String(generated.contents[0].metadata.category ?? ""),
+        tags: Array.isArray(generated.contents[0].metadata.tags) ? generated.contents[0].metadata.tags as string[] : [],
+        difficulty: generated.contents[0].metadata.difficulty,
+        biblicalReference: typeof generated.contents[0].metadata.biblicalReference === "string" ? generated.contents[0].metadata.biblicalReference : null,
+        status: generated.contents[0].metadata.status,
+        authorId: String(generated.contents[0].metadata.authorId ?? ""),
+        reviewerId: typeof generated.contents[0].metadata.reviewerId === "string" ? generated.contents[0].metadata.reviewerId : null,
+        createdAt: Number(generated.contents[0].metadata.createdAt ?? 0),
+        updatedAt: Number(generated.contents[0].metadata.updatedAt ?? 0),
+        internalNotes: typeof generated.contents[0].metadata.internalNotes === "string" ? generated.contents[0].metadata.internalNotes : null,
+        payload: generated.contents[0].payload,
+      } as any
+      : null;
     const memoryContent = body.gameId === "memoria-biblica"
-      ? resolvedGeneratedContent ?? await findPublishedUniversalContent(
+      ? historicalMemoryContent ?? await findPublishedUniversalContent(
         env,
         String(user.organizationId),
         GameType.MEMORY,
@@ -161,10 +179,20 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
         internalNotes: memoryContent.internalNotes,
       }, memoryContent.payload);
       if (!validation.valid) throw new Error("invalid_memory_content");
-      memorySet = await memorySetFromContent(
-        memoryContent.id,
-        memoryContent.payload as MemoryContentPayload,
-      );
+      memorySet = generated
+        ? await memorySetFromSelection(
+          generated.selection.id,
+          generated.selection.seedHash,
+          generated.contents.map(content => ({
+            id: content.id,
+            version: content.version,
+            payload: content.payload as MemoryContentPayload,
+          })),
+        )
+        : await memorySetFromContent(
+          memoryContent.id,
+          memoryContent.payload as MemoryContentPayload,
+        );
     }
     const associationContent = body.gameId === "associacao-de-temas"
       ? resolvedGeneratedContent ?? await findPublishedUniversalContent(
@@ -266,10 +294,14 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
       && memoryContent
       && Array.isArray(body.revealedCardIds)
     ) {
-      const { cards } = await dailyMemoryCards(
+      const { cards } = await generatedMemoryCards(
         generated.selection.seedHash,
-        memoryContent.id,
-        memoryContent.payload as MemoryContentPayload,
+        generated.selection.id,
+        generated.contents.map(content => ({
+          id: content.id,
+          version: content.version,
+          payload: content.payload as MemoryContentPayload,
+        })),
       );
       const actualIds = new Map(cards.map(card => [card.id, `${card.pairId}:${card.side}`]));
       completionBody = {

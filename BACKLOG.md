@@ -10,9 +10,8 @@
 - executar `docs/ANDROID_PHYSICAL_CHECKLIST.md`, medir Web Vitals no domínio candidato e só depois avaliar Google Play;
 - promover o SHA final da estabilização e repetir a auditoria participante/administrativa no artifact realmente publicado;
 - confirmar por teste de rede móvel que o retry de conclusão não duplica XP, moedas, estatísticas, missões ou conquistas;
-- executar dry-run/importação idempotente dos 153 Wordles aprovados e registrar contagens CMS/Biblioteca/Catálogo Elegível;
-- revisar humanamente o lote único restante de 877 candidatos Wordle; o lote 01 foi aprovado e a exceção de volume foi autorizada pelo proprietário, sem autorizar importação ou publicação automática;
-- concluir 27.7.5B.7–B.8: revisão humana conjunta dos lotes Wordle e demais jogos, correções, dry-run, importação controlada, reconciliação e freeze editorial;
+- executar 27.7.5D: validação manual final sobre o artifact promovido;
+- revisar o Wordle extra “Átila”, publicado/projetado mas inelegível por dica vazia; recomendação atual: despublicar, salvo decisão editorial documentada em contrário;
 - concluir revisão jurídica/licenças, tratamento de adolescentes/acesso infantil incidental e Data Safety;
 - reconciliar Asset Registry, hospedagem de assets e CSP;
 - preencher o orçamento operacional versionado com quotas e consumo reais dos painéis;

@@ -39,7 +39,7 @@ Para cada jogo, iniciar uma partida livre, concluir ou abandonar e voltar ao cat
 
 Confirmar em cada um instruções claras, feedback de acerto/erro, resultado final, retorno correto e ausência do menu inferior durante a partida.
 
-- [ ] No Wordle, validar respostas de 5, 6 e 7 letras, seleção manual de posição, normalização de acento e rejeição de palavra inexistente.
+- [x] No Wordle, validar respostas de 5, 6 e 7 letras, seleção manual de posição, normalização de acento e rejeição de palavra inexistente. Evidência do proprietário em 22/08/2026 inclui promoção da correção e vitória com resposta de 6 letras; os demais comprimentos permanecem cobertos pelos testes automatizados.
 - [ ] Simular perda transitória de rede na conclusão e confirmar recuperação sem duplicação de recompensa.
 
 ## E. Desafios Diários

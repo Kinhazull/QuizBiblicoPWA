@@ -101,6 +101,7 @@ export async function generateFreePlaySelection(
     throw new Error("mode_disabled");
   }
   const request = normalizeFreePlayRequest(input);
+  const capability = getGameGenerationCapability(request.gameType)!;
   const recentContentIds = await recentFreePlayContentIds(env, identity, request.gameType);
   const selectionKey = `free:${identity.userId}:${request.idempotencyKey}`;
   const generationRequest = (includeRecent: boolean) => ({
@@ -109,13 +110,13 @@ export async function generateFreePlaySelection(
     gameType: request.gameType,
     mode: GameGenerationMode.FREE_PLAY,
     selectionKey,
-    algorithmVersion: 1,
+    algorithmVersion: capability.adapterVersion,
     seed: [
       identity.organizationId,
       identity.userId,
       request.gameType,
       request.idempotencyKey,
-      "v1",
+      `v${capability.adapterVersion}`,
       JSON.stringify(request.filters),
     ].join("|"),
     count: request.filters.count,

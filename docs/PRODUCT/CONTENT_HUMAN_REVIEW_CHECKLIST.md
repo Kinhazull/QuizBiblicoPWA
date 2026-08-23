@@ -1,6 +1,6 @@
 # Checklist humano de revisão bíblica e editorial
 
-**Estado de release:** `PROVENANCE_RESOLVED / FINAL_EDITORIAL_REVIEW_REQUIRED`.
+**Estado de release:** `SCALE_UP_APPROVED_AND_PUBLISHED / FINAL_STRATIFIED_SAMPLE_REQUIRED`.
 
 Este checklist orienta a revisão; não representa parecer teológico ou jurídico automatizado. Itens desmarcados não foram presumidos como executados e não impedem a preparação técnica da 27.7.2, mas precisam de evidência antes do Go/No-Go público.
 
@@ -30,6 +30,7 @@ Este checklist orienta a revisão; não representa parecer teológico ou jurídi
 - [ ] Memória: pares semanticamente exclusivos dentro de cada conjunto;
 - [ ] Wordle: palavra reconhecível, dica clara e referência pertinente, sem dependência da redação de tradução específica.
 - [x] Expansão Wordle v2: 153 IDs de `content/wordle-expansion-v2.json` revisados e aprovados pelo proprietário em 2026-08-21;
+- [x] Content Scale-Up v2: lotes Wordle e demais jogos revisados e aprovados pelo proprietário em 2026-08-22; aplicação reconciliada em 5.485 conteúdos publicados;
 - [ ] conteúdo publicável da RC: registrar amostra final por jogo, dificuldade, categoria, tema e referência.
 
 ## Verificações por item
@@ -53,5 +54,5 @@ Este checklist orienta a revisão; não representa parecer teológico ou jurídi
 ## Aprovação
 
 - [ ] nenhum item classificado `REPLACE_BEFORE_RELEASE` permanece sem decisão;
-- [ ] itens `PENDING_HUMAN_REVIEW` relevantes à distribuição foram aprovados ou excluídos do artifact;
+- [x] itens do Content Scale-Up v2 anteriormente `PENDING_HUMAN_REVIEW` foram aprovados e publicados; pendências jurídicas/assets continuam tratadas separadamente;
 - [ ] resultado registrado no Go/No-Go da v2.

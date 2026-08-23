@@ -5,7 +5,8 @@ import Image from "next/image";
 import { gameModules } from "../../games/sdk/gameModules";
 
 const STEPS = ["Informações", "Jogos", "Conteúdos", "Regras", "Recompensas", "Aparência", "Revisão", "Agendamento"] as const;
-const GAMES = gameModules.map(game => ({ id: game.id, name: game.name, icon: game.image, required: game.id === "quiz-biblico" ? 5 : 1 }));
+const GAMES = gameModules.map(game => ({ id: game.id, name: game.name, icon: game.image,
+  required: game.id === "quiz-biblico" ? 5 : game.id === "memoria-biblica" ? 3 : 1 }));
 
 type ContentOption = { contentId: string; contentVersion: number; title: string; category: string; difficulty: string; themes: string[]; biblicalReference: string | null };
 type SelectedContent = Pick<ContentOption, "contentId" | "contentVersion" | "title">;

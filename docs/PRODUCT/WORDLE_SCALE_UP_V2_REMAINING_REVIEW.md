@@ -1,8 +1,8 @@
 # Revisão humana — Wordle Content Scale-Up v2 — lote único restante
 
-**Estado:** PENDING_HUMAN_REVIEW  
+**Estado:** HUMAN_APPROVED / IMPORTED / PUBLISHED
 **Autorização:** lote único autorizado pelo proprietário em 22/08/2026  
-**Escopo:** 877 candidatos; nenhum item é aprovado ou publicado por este arquivo.
+**Escopo:** 877 candidatos; aprovação humana confirmada pelo proprietário e aplicação concluída pelo fluxo administrativo controlado.
 
 ## Resultado acumulado pretendido
 
@@ -912,4 +912,4 @@
 
 ## Gate
 
-O lote permanece integralmente PENDING_HUMAN_REVIEW. Aprovação, correção ou rejeição são decisões humanas. Dry-run, importação e publicação pertencem à etapa controlada 27.7.5B.7.
+O estado acima registra a promoção operacional já confirmada. O JSON versionado preserva o estado histórico anterior à decisão humana; dry-run, importação e publicação foram executados pela etapa controlada 27.7.5B.7.

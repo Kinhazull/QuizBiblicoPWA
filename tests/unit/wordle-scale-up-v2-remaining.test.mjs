@@ -106,5 +106,5 @@ test("gerador do lote restante é determinístico", async () => {
   assert.equal(await readFile(remainingUrl, "utf8"), before);
   assert.equal(await readFile(reviewUrl, "utf8"), reviewBefore);
   assert.match(reviewBefore, /877 candidatos/u);
-  assert.match(reviewBefore, /PENDING_HUMAN_REVIEW/u);
+  assert.match(reviewBefore, /HUMAN_APPROVED \/ IMPORTED \/ PUBLISHED/u);
 });

@@ -7,6 +7,7 @@ import { importUniversalContent } from "../../functions/_lib/universal-content-i
 import { listEligibleUniversalContent } from "../../functions/_lib/universal-eligible-content-catalog.ts";
 import { generateUniversalGameSelection } from "../../functions/_lib/universal-game-generator.ts";
 import { GameGenerationMode } from "../../functions/_lib/universal-game-generation-contract.ts";
+import { getGameGenerationCapability } from "../../functions/_lib/universal-game-generation-capabilities.ts";
 
 const setup = t => {
   const ctx = createTestDatabase();
@@ -61,18 +62,20 @@ test("Free Play and Daily can generate a safe selection for all six official pac
   ];
   for (const gameType of gameTypes) {
     for (const mode of [GameGenerationMode.FREE_PLAY, GameGenerationMode.DAILY]) {
+      const capability = getGameGenerationCapability(gameType);
+      assert.ok(capability);
       const result = await generateUniversalGameSelection(ctx.env, {
         organizationId: "org-1",
         requestedByUserId: "admin",
         gameType,
         mode,
         selectionKey: `official-v1:${mode}:${gameType}`,
-        algorithmVersion: 1,
+        algorithmVersion: capability.adapterVersion,
         seed: `official-v1:${mode}:${gameType}`,
-        count: 1,
+        count: capability.allowedCounts[0],
       }, 100);
       assert.equal(result.ok, true, `${gameType}:${mode}`);
-      assert.equal(result.selection.items.length, 1);
+      assert.equal(result.selection.items.length, capability.allowedCounts[0]);
     }
   }
 });

@@ -15,6 +15,9 @@ As mudanças relevantes do Conte os Feitos serão registradas neste arquivo. O f
 - Wordle com seleção de posição, palavras de 5–7 letras, normalização de acentos e léxico PT-BR aberto/revisado;
 - pacote adicional de 153 conteúdos Wordle aprovado pelo proprietário;
 - importação universal em lote guiada por upload/modelos, dry-run, relatório e confirmação explícita.
+- Content Scale-Up v2 revisado, aprovado e publicado, totalizando 5.485 conteúdos CMS nos sete jogos;
+- correção da conclusão server-side do Wordle para preservar o comprimento real de palavras de 6 e 7 letras, além do retry idempotente de registro.
+- Memória passou a compor novas partidas com três pares canônicos vindos de três fontes elegíveis, preservando seleções históricas e os contratos Free, Daily e Event.
 
 ### Release Candidate público/mobile
 

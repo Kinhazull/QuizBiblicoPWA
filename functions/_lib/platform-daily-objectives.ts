@@ -14,7 +14,7 @@ import {
 } from "../../shared/content";
 import type { AppEnv } from "./auth";
 import { associationRoundFromContent } from "./game-integrations/association-content";
-import { memorySetFromContent } from "./game-integrations/memory-content";
+import { memorySetFromContent, memorySetFromSelection, type MemorySelectionContent } from "./game-integrations/memory-content";
 import { threeCluesChallengesFromContent } from "./game-integrations/three-clues-content";
 import { timelineRoundFromContent } from "./game-integrations/timeline-content";
 import { whoAmIChallengesFromContent } from "./game-integrations/who-am-i-content";
@@ -30,6 +30,7 @@ import { sha256 } from "./security";
 
 const DEFAULT_TIME_ZONE = "America/Sao_Paulo";
 const DAILY_ALGORITHM_VERSION = 1;
+const MEMORY_DYNAMIC_ALGORITHM_VERSION = 2;
 const DAILY_GAMES = [
   GameType.WORDLE,
   GameType.QUIZ,
@@ -90,11 +91,11 @@ function nextOrganizationDayStart(at: number, timeZone: string) {
 }
 
 export function dailySelectionKey(dayKey: string, gameType: DailyGameType) {
-  return `daily:${dayKey}:${gameType}:v${DAILY_ALGORITHM_VERSION}`;
+  return `daily:${dayKey}:${gameType}:v${gameType === GameType.MEMORY ? MEMORY_DYNAMIC_ALGORITHM_VERSION : DAILY_ALGORITHM_VERSION}`;
 }
 
 export function dailySeed(organizationId: string, dayKey: string, gameType: DailyGameType) {
-  return `${organizationId}:${dayKey}:${gameType}:v${DAILY_ALGORITHM_VERSION}`;
+  return `${organizationId}:${dayKey}:${gameType}:v${gameType === GameType.MEMORY ? MEMORY_DYNAMIC_ALGORITHM_VERSION : DAILY_ALGORITHM_VERSION}`;
 }
 
 export const dailyWordleSelectionKey = (dayKey: string) =>
@@ -125,9 +126,9 @@ function generationRequest(
     gameType,
     mode: GameGenerationMode.DAILY,
     selectionKey: dailySelectionKey(dayKey, gameType),
-    algorithmVersion: DAILY_ALGORITHM_VERSION,
+    algorithmVersion: gameType === GameType.MEMORY ? MEMORY_DYNAMIC_ALGORITHM_VERSION : DAILY_ALGORITHM_VERSION,
     seed: dailySeed(organizationId, dayKey, gameType),
-    count: gameType === GameType.QUIZ ? 5 : 1,
+    count: gameType === GameType.QUIZ ? 5 : gameType === GameType.MEMORY ? 3 : 1,
     difficultyDistribution: gameType === GameType.QUIZ ? {
       [Difficulty.EASY]: 2,
       [Difficulty.MEDIUM]: 2,
@@ -175,6 +176,25 @@ export async function dailyMemoryCards(
   payload: MemoryContentPayload,
 ) {
   const set = await memorySetFromContent(contentId, payload);
+  const cards = await Promise.all(set.pairs.flatMap(pair => [
+    { pairId: pair.id, side: "a" as const, label: pair.front },
+    { pairId: pair.id, side: "b" as const, label: pair.back },
+  ]).map(async card => ({
+    ...card,
+    id: `card-${(await sha256(`${seed}:${card.pairId}:${card.side}`)).slice(0, 24)}`,
+  })));
+  return { set, cards: await deterministicOrder(cards, seed, card => card.id) };
+}
+
+export async function generatedMemoryCards(
+  seed: string,
+  selectionId: string,
+  contents: readonly MemorySelectionContent[],
+) {
+  if (contents.length === 1) {
+    return dailyMemoryCards(seed, contents[0].id, contents[0].payload);
+  }
+  const set = await memorySetFromSelection(selectionId, seed, contents);
   const cards = await Promise.all(set.pairs.flatMap(pair => [
     { pairId: pair.id, side: "a" as const, label: pair.front },
     { pairId: pair.id, side: "b" as const, label: pair.back },
@@ -235,10 +255,15 @@ export async function generatedSelectionSafePayload(
   }
   if (selection.gameType === GameType.MEMORY) {
     const content = contents[0];
-    const { set, cards } = await dailyMemoryCards(
+    const memoryContents = contents.map(item => ({
+      id: item.id,
+      version: item.version,
+      payload: item.payload as MemoryContentPayload,
+    }));
+    const { set, cards } = await generatedMemoryCards(
       seed,
-      content.id,
-      content.payload as MemoryContentPayload,
+      selection.id,
+      memoryContents,
     );
     return {
       id: content.id,
@@ -636,11 +661,14 @@ export async function validateGeneratedGameAction(
     if (!Array.isArray(cardIds) || cardIds.length !== 2 || cardIds.some(id => typeof id !== "string")) {
       throw new Error("invalid_memory_pair");
     }
-    const content = context.contents[0];
-    const { cards } = await dailyMemoryCards(
+    const { cards } = await generatedMemoryCards(
       context.selection.seedHash,
-      content.id,
-      content.payload as MemoryContentPayload,
+      context.selection.id,
+      context.contents.map(content => ({
+        id: content.id,
+        version: content.version,
+        payload: content.payload as MemoryContentPayload,
+      })),
     );
     const cardsById = new Map(cards.map(card => [card.id, card]));
     const left = cardsById.get(String(cardIds[0]));

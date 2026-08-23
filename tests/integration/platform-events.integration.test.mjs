@@ -23,6 +23,17 @@ const input = (contentId, version) => ({ title: "Evento da Comunidade", descript
   timeZone: "America/Sao_Paulo", participationXp: 20, victoryCoins: 2, completionBonusXp: 10, perfectBonusCoins: 1,
   games: [{ gameType: GameType.WORDLE, contentItems: [{ contentId, contentVersion: version }] }] });
 
+async function publishMemory(ctx, index) {
+  const draft = await createUniversalDraft(ctx.env, "org-1", "admin", { gameType: GameType.MEMORY, status: ContentStatus.DRAFT,
+    metadata: { category: "Pares", tags: ["evento"], difficulty: "MEDIUM", biblicalReference: `Referência ${index}`, status: ContentStatus.DRAFT, internalNotes: null },
+    payload: { title: `Conjunto ${index}`, pairs: [
+      { front: `Frente ${index}A`, back: `Verso ${index}A` }, { front: `Frente ${index}B`, back: `Verso ${index}B` },
+      { front: `Frente ${index}C`, back: `Verso ${index}C` },
+    ] } });
+  const published = await transitionUniversalContentStatus(ctx.env, "org-1", "admin", draft.content.id, ContentStatus.PUBLISHED, draft.content.version);
+  return { contentId: draft.content.id, contentVersion: published.content.version };
+}
+
 test("editor lista somente conteúdo elegível da organização com metadados seguros", async t => {
   const { ctx, contentId, version } = await fixture(t);
   seedOrganization(ctx, { id: "org-2", name: "Organização 2" });
@@ -56,6 +67,28 @@ test("participação é isolada, inicia uma vez e o payload não revela a respos
   const payload = await getEventSelection(ctx.env, player, event.id, game.selectionId, 2_002);
   assert.equal(JSON.stringify(payload).includes("GRACA"), false);
   assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM platform_event_participations").get().total, 1);
+});
+
+test("novo Evento de Memória persiste três fontes, reserva todas e entrega três pares dinâmicos", async t => {
+  const { ctx } = await fixture(t);
+  const contents = [];
+  for (let index = 1; index <= 3; index += 1) contents.push(await publishMemory(ctx, index));
+  const admin = { organizationId: "org-1", userId: "admin" };
+  const player = { organizationId: "org-1", userId: "player" };
+  const event = await createPlatformEvent(ctx.env, admin, {
+    ...input("unused-content", 1),
+    games: [{ gameType: GameType.MEMORY, contentItems: contents }],
+  }, 100);
+  assert.deepEqual(await validatePlatformEvent(ctx.env, "org-1", event.id), { valid: true, errors: [] });
+  await schedulePlatformEvent(ctx.env, admin, event.id, 200);
+  assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM platform_event_content_reservations WHERE event_id=?").get(event.id).total, 3);
+  const detail = await getParticipantEvent(ctx.env, player, event.id, 2_000);
+  const game = detail.games[0];
+  await startEventSelection(ctx.env, player, event.id, game.selectionId, 2_000);
+  const payload = await getEventSelection(ctx.env, player, event.id, game.selectionId, 2_001);
+  assert.equal(payload.content.pairCount, 3);
+  assert.equal(payload.content.cards.length, 6);
+  assert.equal(ctx.raw.prepare("SELECT COUNT(*) total FROM generated_game_selection_items WHERE selection_id=?").get(game.selectionId).total, 3);
 });
 
 test("cancelamento libera reservas e preserva auditoria", async t => {

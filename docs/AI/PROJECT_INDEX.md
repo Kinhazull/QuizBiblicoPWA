@@ -35,11 +35,13 @@
 - `docs/PRODUCT/CONTENT_SCALE_UP_V2_EDITORIAL_MATRIX.md` — metas e gates da expansão editorial v2
 - `docs/PRODUCT/CONTENT_SCALE_UP_V2_INVENTORY.md` — inventário local, lacunas, sobreposições e plano de lotes
 - `docs/PRODUCT/CONTENT_SCALE_UP_V2_REMAINING_GAMES_REVIEW.md` — revisão conjunta dos candidatos dos cinco jogos restantes
+- `docs/PRODUCT/CONTENT_GATE_V2.md` — freeze produtivo, elegibilidade e auditoria de antirrepetição da v2
+- `scripts/audit-content-antirepetition.mjs` — simulação determinística e read-only dos horizontes de repetição
 - `scripts/generate-content-scale-up-v2-inventory.mjs` — reprodução determinística do inventário editorial
-- `content/wordle-scale-up-v2-lot-01.json` — primeiro lote Wordle da escala v2, ainda pendente de revisão
+- `content/wordle-scale-up-v2-lot-01.json` — evidência versionada do primeiro lote Wordle posteriormente aprovado e publicado
 - `docs/PRODUCT/WORDLE_SCALE_UP_V2_LOT_01_REVIEW.md` — checklist humano integral do lote 01
 - `scripts/generate-wordle-scale-up-v2-lot-01.mjs` — fonte e geração determinística do lote 01
-- `content/wordle-scale-up-v2-remaining.json` — 877 candidatos Wordle em DRAFT, pendentes de revisão humana
+- `content/wordle-scale-up-v2-remaining.json` — fonte versionada dos 877 candidatos Wordle posteriormente revisados e publicados
 - `docs/PRODUCT/WORDLE_SCALE_UP_V2_REMAINING_REVIEW.md` — checklist integral do lote único restante
 - `scripts/generate-wordle-scale-up-v2-remaining.mjs` — geração determinística e rastreável do lote restante a partir do corpus autoral
 - `docs/EDITORIAL_GOVERNANCE.md`

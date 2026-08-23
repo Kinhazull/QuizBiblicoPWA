@@ -117,5 +117,6 @@ test("gerador e relatório conjunto são determinísticos", async () => {
   assert.equal(result.status, 0, result.stderr);
   assert.equal(await readFile(packUrl, "utf8"), before);
   assert.equal(await readFile(reviewUrl, "utf8"), reviewBefore);
-  assert.match(reviewBefore, /3040 conteúdos candidatos/u);
+  assert.match(reviewBefore, /3\.040 conteúdos candidatos/u);
+  assert.match(reviewBefore, /HUMAN_APPROVED \/ IMPORTED \/ PUBLISHED/u);
 });

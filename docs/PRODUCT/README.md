@@ -15,11 +15,11 @@ Documentos antigos são evidência histórica. Quando divergirem do estado corre
 ## Estado atual
 
 - Fases 1–7 e preparação técnica da Fase 8 concluídas.
-- Validação manual e estabilização pré-v2 (`27.7.4–27.7.5`) em andamento.
+- Estabilização técnica, Content Scale-Up e Content Gate concluídos; validação manual final `27.7.5D` é o próximo gate.
 - Sete jogos integrados ao CMS e à infraestrutura universal.
 - Modos `FREE_PLAY`, `DAILY` e `EVENT` disponíveis.
-- Wordle 2.0, importação universal guiada e rodada de consolidação mobile estão implementados na `main` e aguardam revalidação final no artifact promovido.
-- A Matriz Editorial v2 e o inventário local estão concluídos. O primeiro lote Wordle foi aprovado; 877 candidatos Wordle e 3.040 candidatos dos outros cinco jogos foram produzidos sob autorização de lote conjunto. Todos os candidatos não aprovados permanecem como DRAFT e aguardam revisão humana antes de qualquer importação.
+- Wordle 2.0, importação universal guiada e consolidação mobile foram promovidos; a conclusão Wordle de 6/7 letras foi corrigida e revalidada pelo proprietário.
+- O Content Scale-Up v2 foi revisado, aprovado e aplicado. O CMS reconciliado possui 5.485 publicados/projetados/AVAILABLE: Quiz 984, Wordle 1.201 (1.200 elegíveis), Timeline 800, Memória 100 conteúdos/300 pares, Associação 800, Quem Sou Eu? 800 e Três Pistas 800. A auditoria/freeze editorial está concluída.
 - `v1.0.0` preservada como tag histórica do piloto do Quiz.
 - Primeira release formal da plataforma prevista como `v2.0.0`, ainda sem tag ou autorização pública.
 
@@ -41,6 +41,7 @@ Documentos antigos são evidência histórica. Quando divergirem do estado corre
 | `CONTENT_SCALE_UP_V2_EDITORIAL_MATRIX.md` | metas, diversidade, identidade dos jogos e gates dos lotes v2 |
 | `CONTENT_SCALE_UP_V2_INVENTORY.md` | fontes locais, unidades canônicas, lacunas e plano de lotes v2 |
 | `CONTENT_SCALE_UP_V2_REMAINING_GAMES_REVIEW.md` | checklist conjunto dos 3.040 candidatos de Timeline, Memória, Associação, Quem Sou Eu? e Três Pistas |
+| `CONTENT_GATE_V2.md` | evidência produtiva, elegibilidade, simulação de antirrepetição e decisão por jogo |
 
 ## Regra documental
 

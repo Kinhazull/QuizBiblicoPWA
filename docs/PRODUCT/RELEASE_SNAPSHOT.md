@@ -41,15 +41,15 @@ As afirmações remotas acima possuem evidência operacional da 27.7.2; não imp
 - Core Platform, economia, coleções, Perfil 2.0 e Ranking Universal;
 - PWA production-like, Quality gates e promoção manual vinculada ao SHA/artifact;
 - Asset Pack v2 Waves 1–5 integradas; Wave 6 `POST_RELEASE`; Wave 7 `DONE` como auditoria/preparação de Store;
-- 27.7.0, 27.7.1, 27.7.2 e 27.7.3 `DONE`; 27.7.4 e 27.7.5 estão em execução conjunta: auditoria inicial concluída, correções na `main` e revalidação do artifact promovido pendente.
+- 27.7.0–27.7.3 `DONE`; estabilização técnica 27.7.5A, escala 27.7.5B e Content Gate 27.7.5C `DONE`; 27.7.5D (validação manual final) é o próximo gate.
 - Wordle 2.0 e importação universal guiada fazem parte da baseline candidata atual.
 
 ## Conteúdo e proveniência
 
 - Quiz: `PROVENANCE_RESOLVED`, com autoria interna, assistência de IA e curadoria humana; `Quiz.csv` preservado; 984 itens publicados foram reconfirmados remotamente na 27.7.2D.4;
-- pacote oficial: 380 IDs únicos — Wordle 120, Timeline 40, Memória 40, Associação 60, Quem Sou Eu 60 e Três Pistas 60 — validado por schemas/contratos;
-- expansão Wordle v2: 153 IDs adicionais aprovados (50×5 letras, 50×6 e 53×7), total potencial de 273 Wordles após importação; a contagem remota final precisa ser registrada após aplicação idempotente;
-- revisão editorial humana final: `HUMAN_APPROVAL_REQUIRED`, sem impedir preparação técnica ou RC privada;
+- pacote oficial inicial: 380 IDs únicos, preservado como origem histórica da expansão;
+- Content Scale-Up v2: revisão humana e aplicação administrativa concluídas; contagem reconciliada de 5.485 publicados/projetados/AVAILABLE — Quiz 984, Wordle 1.201 (1.200 elegíveis), Timeline 800, Memória 100 conteúdos/300 pares, Associação 800, Quem Sou Eu 800 e Três Pistas 800. Content Gate: `READY_FOR_27_7_5D`;
+- freeze editorial pós-importação: `IN_PROGRESS`; requer amostragem final e registro formal, sem nova importação;
 - textos bíblicos completos/derivados sem licença comprovada continuam fora da árvore ativa;
 - scripts que referenciam fontes removidas são `HISTORICAL / NOT_FOR_RELEASE_USE`;
 - purge do histórico Git: `HUMAN_LEGAL_REVIEW_REQUIRED`, não blocker técnico da RC.
@@ -93,7 +93,7 @@ As afirmações remotas acima possuem evidência operacional da 27.7.2; não imp
 
 ## Decisão atual
 
-**`RC_STABILIZATION_IN_PROGRESS`: a primeira validação manual encontrou problemas reais, as correções estão na `main` e o próximo gate é promover/revalidar o SHA candidato.** Ainda não existe autorização de release pública. Jurídico/editorial impedem `PUBLIC_RELEASE_GO`; Google Play permanece separado.
+**`RC_STABILIZATION_IN_PROGRESS`: as correções foram promovidas, Wordle foi revalidado e o conteúdo escalado foi aplicado.** Os próximos gates são a revalidação manual ampla, freeze editorial, jurídico/Android e Go/No-Go. Ainda não existe autorização de release pública.
 
 ## Classificação dos riscos residuais
 

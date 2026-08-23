@@ -7,6 +7,7 @@ import { sha256 } from "./security";
 import { findGeneratedSelectionById } from "./universal-game-generator";
 import { generatedSelectionHistoricalContents, generatedSelectionSafePayload } from "./platform-daily-objectives";
 import { listEligibleUniversalContent } from "./universal-eligible-content-catalog";
+import { getGameGenerationCapability } from "./universal-game-generation-capabilities";
 
 export const EventStatus = Object.freeze({
   DRAFT: "DRAFT", SCHEDULED: "SCHEDULED", ACTIVE: "ACTIVE",
@@ -15,6 +16,8 @@ export const EventStatus = Object.freeze({
 export type EventStatus = typeof EventStatus[keyof typeof EventStatus];
 
 const GAME_TYPES = new Set(Object.values(GameType));
+const eventAlgorithmVersion = (gameType: string) =>
+  getGameGenerationCapability(gameType)?.adapterVersion ?? 1;
 const ID = /^[a-zA-Z0-9._:-]{8,160}$/;
 export const EVENT_MAX_REWARDS = Object.freeze({ participationXp: 100, victoryCoins: 20, completionBonusXp: 250, perfectBonusCoins: 50 });
 const GAME_ROUTES: Readonly<Record<GameType, string>> = {
@@ -71,7 +74,7 @@ function parseGames(value: unknown): GameInput[] {
       if (!ID.test(contentId) || !Number.isSafeInteger(contentVersion) || contentVersion < 1) throw new Error("invalid_event_content");
       return { contentId, contentVersion };
     });
-    const expected = gameType === GameType.QUIZ ? 5 : 1;
+    const expected = gameType === GameType.QUIZ ? 5 : gameType === GameType.MEMORY ? 3 : 1;
     if (contentItems.length !== expected || new Set(contentItems.map(content => content.contentId)).size !== contentItems.length) {
       throw new Error("invalid_event_content_count");
     }
@@ -134,7 +137,7 @@ export async function createPlatformEvent(env: AppEnv, identity: Identity, input
       VALUES(?1,?2,?3,?4)`).bind(id, identity.organizationId, game.gameType, gameIndex + 1));
     game.contentItems.forEach((content, index) => statements.push(env.DB.prepare(`INSERT INTO platform_event_content_items(
       event_id,organization_id,game_type,content_id,content_version,position,algorithm_version
-    ) VALUES(?1,?2,?3,?4,?5,?6,1)`).bind(id, identity.organizationId, game.gameType, content.contentId, content.contentVersion, index + 1)));
+    ) VALUES(?1,?2,?3,?4,?5,?6,?7)`).bind(id, identity.organizationId, game.gameType, content.contentId, content.contentVersion, index + 1, eventAlgorithmVersion(game.gameType))));
   });
   await env.DB.batch(statements);
   await audit(env, identity, "platform_event.created", id, { games: value.games.map(game => game.gameType) }, now);
@@ -163,7 +166,7 @@ export async function updatePlatformEvent(env: AppEnv, identity: Identity, event
       .bind(eventId, identity.organizationId, game.gameType, gameIndex + 1));
     game.contentItems.forEach((content, index) => statements.push(env.DB.prepare(`INSERT INTO platform_event_content_items(
       event_id,organization_id,game_type,content_id,content_version,position,algorithm_version
-    ) VALUES(?1,?2,?3,?4,?5,?6,1)`).bind(eventId, identity.organizationId, game.gameType, content.contentId, content.contentVersion, index + 1)));
+    ) VALUES(?1,?2,?3,?4,?5,?6,?7)`).bind(eventId, identity.organizationId, game.gameType, content.contentId, content.contentVersion, index + 1, eventAlgorithmVersion(game.gameType))));
   });
   await env.DB.batch(statements);
   await audit(env, identity, "platform_event.updated", eventId, { games: value.games.map(game => game.gameType) }, now);
@@ -177,7 +180,7 @@ export async function validatePlatformEvent(env: AppEnv, organizationId: string,
   if (event.endsAt <= event.startsAt) errors.push("invalid_window");
   if (!event.games.length) errors.push("games_required");
   for (const game of event.games) {
-    const expected = game.gameType === GameType.QUIZ ? 5 : 1;
+    const expected = game.gameType === GameType.QUIZ ? 5 : game.gameType === GameType.MEMORY ? 3 : 1;
     if (game.contents.length !== expected) errors.push(`invalid_content_count:${game.gameType}`);
     for (const content of game.contents) {
       const row = await env.DB.prepare(`SELECT item.id FROM content_items item JOIN universal_content_library library
@@ -204,14 +207,15 @@ export async function schedulePlatformEvent(env: AppEnv, identity: Identity, eve
   if (!validation.valid) return { scheduled: false, validation };
   const statements: D1PreparedStatement[] = [];
   for (const game of event.games) {
+    const algorithmVersion = eventAlgorithmVersion(game.gameType);
     const selectionId = `event_selection_${(await sha256(`${eventId}:${game.gameType}`)).slice(0, 24)}`;
-    const seedHash = await sha256(`${identity.organizationId}|${eventId}|${game.gameType}|event-v1`);
+    const seedHash = await sha256(`${identity.organizationId}|${eventId}|${game.gameType}|event-v${algorithmVersion}`);
     const fingerprint = await sha256(JSON.stringify(game.contents));
     statements.push(env.DB.prepare(`INSERT INTO generated_game_selections(
       id,organization_id,requested_by_user_id,game_type,mode,selection_key,algorithm_version,seed_hash,
       request_fingerprint,status,filters_json,created_at,expires_at
-    ) VALUES(?1,?2,NULL,?3,'EVENT',?4,1,?5,?6,'ACTIVE','{}',?7,?8)`)
-      .bind(selectionId, identity.organizationId, game.gameType, `event:${eventId}:${game.gameType}`, seedHash, fingerprint, now, event.endsAt));
+    ) VALUES(?1,?2,NULL,?3,'EVENT',?4,?5,?6,?7,'ACTIVE','{}',?8,?9)`)
+      .bind(selectionId, identity.organizationId, game.gameType, `event:${eventId}:${game.gameType}`, algorithmVersion, seedHash, fingerprint, now, event.endsAt));
     game.contents.forEach((content, index) => statements.push(env.DB.prepare(`INSERT INTO generated_game_selection_items(
       selection_id,organization_id,content_id,content_version,position,audit_metadata_json,created_at
     ) SELECT ?1,?2,library.content_id,library.content_version,?3,json_object(
@@ -457,7 +461,8 @@ async function recordEventReward(env: AppEnv, identity: Identity, eventId: strin
 
 export async function suggestEventContent(env: AppEnv, organizationId: string, input: Record<string, unknown>) {
   const gameType = String(input.gameType ?? "");
-  const count = Math.max(1, Math.min(gameType === GameType.QUIZ ? 20 : 10, integer(input.count, gameType === GameType.QUIZ ? 5 : 1)));
+  const defaultCount = gameType === GameType.QUIZ ? 5 : gameType === GameType.MEMORY ? 3 : 1;
+  const count = Math.max(1, Math.min(gameType === GameType.QUIZ ? 20 : 10, integer(input.count, defaultCount)));
   if (!GAME_TYPES.has(gameType as any)) throw new Error("invalid_event_game");
   const items = await listEligibleUniversalContent(env, { organizationId, gameType, difficulty: input.difficulty as any, theme: normalizedText(input.theme, 100) || undefined, limit: 200 });
   return items.slice(0, count).map(item => ({ contentId: item.contentId, contentVersion: item.contentVersion, gameType: item.gameType,

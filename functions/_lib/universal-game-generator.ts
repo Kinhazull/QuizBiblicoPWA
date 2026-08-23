@@ -47,7 +47,10 @@ function normalizeRequest(request: UniversalGameSelectionRequest) {
   if (!capability) errors.push("gameType");
   const selectionKey = request.selectionKey.normalize("NFKC").trim();
   if (!selectionKey || selectionKey.length > 160) errors.push("selectionKey");
-  if (!Number.isInteger(request.algorithmVersion) || request.algorithmVersion !== 1) {
+  if (
+    !Number.isInteger(request.algorithmVersion)
+    || (capability && request.algorithmVersion !== capability.adapterVersion)
+  ) {
     errors.push("algorithmVersion");
   }
   if (!Number.isInteger(request.count) || request.count < 1) errors.push("count");

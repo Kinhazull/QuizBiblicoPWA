@@ -1,8 +1,8 @@
 # Revisão conjunta — Content Scale-Up v2 — demais jogos
 
-**Estado:** PENDING_HUMAN_REVIEW  
+**Estado:** HUMAN_APPROVED / IMPORTED / PUBLISHED
 **Autorização:** produção conjunta autorizada pelo proprietário em 22/08/2026  
-**Escopo:** 3040 conteúdos candidatos; nenhuma aprovação, importação ou publicação é realizada por este pacote.
+**Escopo:** 3.040 conteúdos candidatos; aprovação humana confirmada pelo proprietário e aplicação concluída pelo fluxo administrativo controlado.
 
 ## Totais
 
@@ -3069,4 +3069,4 @@
 
 ## Gate
 
-O pacote permanece integralmente PENDING_HUMAN_REVIEW. A futura aprovação conjunta não substitui dry-run, importação idempotente, publicação controlada e reconciliação CMS/Biblioteca/Catálogo.
+O estado acima registra a promoção operacional já confirmada. O JSON versionado preserva o estado histórico do pacote antes da decisão humana; produção foi reconciliada separadamente por dry-run, importação idempotente, publicação controlada e conferência CMS/Biblioteca/Catálogo.
