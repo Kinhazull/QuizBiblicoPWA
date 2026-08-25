@@ -36,4 +36,6 @@ test("editor de Eventos mantém contraste e distribuição responsiva nos seleto
   assert.match(styles, /\.event-catalog-summary \.reserved\{[^}]*color:#ffe39a/);
   assert.match(styles, /\.event-content-list\{grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
   assert.match(styles, /@media\(max-width:760px\)\{\.event-content-list\{grid-template-columns:1fr/);
+  assert.match(styles, /\.event-content-list label\{min-height:108px;height:auto;align-items:center/);
+  assert.match(styles, /\.event-content-list small\{display:block;font-size:13px;line-height:1\.4;white-space:normal;overflow-wrap:anywhere/);
 });
