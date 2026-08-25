@@ -24,7 +24,7 @@ type Recommendation = {
 
 type Dashboard = {
   metrics: { pending: number; members: number; rounds: number; review: number; health: DashboardHealth };
-  health: { status: OperationalHealth; checkedAt: number };
+  health: { status: OperationalHealth; checkedAt: number; partial?: boolean };
   usage: { activeUsers: number; started: number; completed: number; completionRate: number };
   events: { active: EventSummary | null; next: EventSummary | null };
   content: { needsReview: number; published: number; available: number; unprojected: number; libraryHealth: { total: number; counts: LibraryHealthCounts } };
@@ -106,7 +106,7 @@ export default function AdminHub() {
   }, [loadDashboard, reloadKey]);
 
   const metrics = useMemo<MetricCard[]>(() => data ? [
-    { icon: "health", title: "Saúde operacional", description: `Verificada às ${new Date(data.health.checkedAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`, value: healthLabel(data.health.status), href: "/admin/diagnostico", status: data.health.status === "HEALTHY" ? "healthy" : "attention" },
+    { icon: "health", title: "Saúde operacional", description: `Verificada às ${new Date(data.health.checkedAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}${data.health.partial ? " · telemetria parcial" : ""}`, value: healthLabel(data.health.status), href: "/admin/diagnostico", status: data.health.status === "HEALTHY" ? "healthy" : "attention" },
     { icon: "users", title: "Usuários ativos hoje", description: `${numberFormatter.format(data.metrics.members)} membros com acesso`, value: data.usage.activeUsers, href: "/admin/analytics?period=today" },
     { icon: "gamepad", title: "Partidas hoje", description: `${numberFormatter.format(data.usage.completed)} concluídas`, value: data.usage.started, href: "/admin/analytics?period=today" },
     { icon: "review", title: "Aguardando revisão", description: "Fluxo editorial universal", value: data.content.needsReview, href: "/admin/conteudo/acervo?status=IN_REVIEW" },

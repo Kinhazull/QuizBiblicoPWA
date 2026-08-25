@@ -10,7 +10,7 @@ import {
   validateGameContentAction,
   type LoadedGameContent,
 } from "../loader";
-import { areMatchingMemoryCards, memoryScore, type MemoryCard } from "./engine";
+import { areMatchingMemoryCards, claimMemoryCard, emptyMemoryTurnGate, memoryScore, type MemoryCard } from "./engine";
 import { GameType } from "../../../shared/content";
 
 const HIDE_DELAY_MS = 650;
@@ -37,12 +37,16 @@ function shuffledCards(cards: readonly MemoryDisplayCard[]) {
 export function MemoryGame() {
   const sessionId = useRef(createGameSessionId());
   const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const turnGate = useRef(emptyMemoryTurnGate());
+  const matchedRef = useRef<string[]>([]);
+  const historyRef = useRef<string[]>([]);
+  const movesRef = useRef(0);
   const [content, setContent] = useState<PublishedMemory | null>(null);
   const [loadedContent, setLoadedContent] = useState<LoadedGameContent<PublishedMemory> | null>(null);
   const [deck, setDeck] = useState<MemoryDisplayCard[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [matchedCardIds, setMatchedCardIds] = useState<string[]>([]);
-  const [revealedCardIds, setRevealedCardIds] = useState<string[]>([]);
+  const [, setRevealedCardIds] = useState<string[]>([]);
   const [moves, setMoves] = useState(0);
   const [locked, setLocked] = useState(false);
   const [status, setStatus] = useState<GamePlayStatus>("playing");
@@ -87,16 +91,25 @@ export function MemoryGame() {
   }, []);
 
   async function reveal(cardId: string) {
-    if (!content || !loadedContent || status !== "playing" || locked || selectedIds.includes(cardId)) return;
+    if (!content || !loadedContent || status !== "playing") return;
     const card = deck.find(item => item.cardId === cardId);
-    if (!card || matchedCardIds.includes(card.cardId)) return;
-    if (selectedIds.length === 0) return setSelectedIds([cardId]);
+    if (!card || matchedRef.current.includes(card.cardId)) return;
+    const claim = claimMemoryCard(turnGate.current, cardId);
+    if (claim.kind === "ignored") return;
+    turnGate.current = claim.gate;
+    if (claim.kind === "first") return setSelectedIds([cardId]);
 
-    const first = deck.find(item => item.cardId === selectedIds[0]);
-    if (!first) return;
-    const nextHistory = [...revealedCardIds, first.cardId, card.cardId];
-    const nextMoves = moves + 1;
+    const first = deck.find(item => item.cardId === claim.firstCardId);
+    if (!first) { turnGate.current = emptyMemoryTurnGate(); return; }
+    const previousHistory = historyRef.current;
+    const previousMatched = matchedRef.current;
+    const previousMoves = movesRef.current;
+    const nextHistory = [...previousHistory, first.cardId, card.cardId];
+    const nextMoves = previousMoves + 1;
+    setLocked(true);
     setSelectedIds([first.cardId, card.cardId]);
+    historyRef.current = nextHistory;
+    movesRef.current = nextMoves;
     setRevealedCardIds(nextHistory);
     setMoves(nextMoves);
 
@@ -108,12 +121,11 @@ export function MemoryGame() {
       ).catch(() => ({ match: false }))).match
       : areMatchingMemoryCards(first, card);
     if (isMatch) {
-      const nextMatched = [...matchedCardIds, first.cardId, card.cardId];
+      const nextMatched = [...previousMatched, first.cardId, card.cardId];
+      matchedRef.current = nextMatched;
       setMatchedCardIds(nextMatched);
       setMessage("Par encontrado.");
-      hideTimer.current = setTimeout(() => setSelectedIds([]), 250);
       if (nextMatched.length / 2 === content.pairCount) {
-        setLocked(true);
         setMessage("Todos os pares foram encontrados. Registrando resultado…");
         try {
           await recordPlatformGameCompletion({
@@ -125,19 +137,31 @@ export function MemoryGame() {
           });
           setStatus("won");
           setMessage(`Todos os pares encontrados! Você fez ${memoryScore(nextMoves, content.pairCount)} pontos.`);
-        } catch {
-          setMatchedCardIds(matchedCardIds);
-          setSelectedIds([]);
-          setMessage("Não foi possível registrar o resultado. Encontre o último par novamente.");
-        } finally {
           setLocked(false);
+        } catch {
+          matchedRef.current = previousMatched;
+          historyRef.current = previousHistory;
+          movesRef.current = previousMoves;
+          setMatchedCardIds(previousMatched);
+          setRevealedCardIds(previousHistory);
+          setMoves(previousMoves);
+          setSelectedIds([]);
+          turnGate.current = emptyMemoryTurnGate();
+          setLocked(false);
+          setMessage("Não foi possível registrar o resultado. Encontre o último par novamente.");
         }
+      } else {
+        hideTimer.current = setTimeout(() => {
+          turnGate.current = emptyMemoryTurnGate();
+          setSelectedIds([]);
+          setLocked(false);
+        }, 250);
       }
       return;
     }
-    setLocked(true);
     setMessage("Essas cartas não formam um par. Continue tentando.");
     hideTimer.current = setTimeout(() => {
+      turnGate.current = emptyMemoryTurnGate();
       setSelectedIds([]);
       setLocked(false);
     }, HIDE_DELAY_MS);
@@ -149,6 +173,10 @@ export function MemoryGame() {
     sessionId.current = createGameSessionId();
     setDeck(shuffledCards(content.cards as MemoryDisplayCard[]));
     setSelectedIds([]);
+    turnGate.current = emptyMemoryTurnGate();
+    matchedRef.current = [];
+    historyRef.current = [];
+    movesRef.current = 0;
     setMatchedCardIds([]);
     setRevealedCardIds([]);
     setMoves(0);

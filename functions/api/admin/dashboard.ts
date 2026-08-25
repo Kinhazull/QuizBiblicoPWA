@@ -2,7 +2,7 @@ import { requirePermission } from "../../_lib/permissions";
 import type { AppEnv } from "../../_lib/auth";
 import { json } from "../../_lib/security";
 import { getPlatformAnalytics } from "../../_lib/platform-analytics";
-import { buildOperationalHealth } from "../../_lib/operational-health";
+import { buildOperationalHealth, summarizeOperationalHealth } from "../../_lib/operational-health";
 import { EXPECTED_MIGRATION_COUNT } from "../../../shared/operational-schema-contract.mjs";
 import { getPlatformPlanningCalendar } from "../../_lib/platform-planning";
 import { deriveAdminRecommendations } from "../../_lib/admin-recommendations";
@@ -66,7 +66,8 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: Ap
       libraryHealth: { total: planning.libraryHealth.total, counts: planning.libraryHealth.counts },
     };
     const reservationSummary = { active: Number(reservations?.active || 0), expired: Number(reservations?.expired || 0) };
-    const health = { status: operational.status, checkedAt: operational.checkedAt };
+    const operationalSummary = summarizeOperationalHealth(operational.groups);
+    const health = { ...operationalSummary, checkedAt: operational.checkedAt };
 
     return json({
       metrics: {
@@ -74,7 +75,7 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: Ap
         members,
         rounds: analytics.overview.started,
         review: needsReview,
-        health: operational.status === "HEALTHY" ? "healthy" : "attention",
+        health: operationalSummary.status === "HEALTHY" ? "healthy" : "attention",
       },
       health,
       usage: {

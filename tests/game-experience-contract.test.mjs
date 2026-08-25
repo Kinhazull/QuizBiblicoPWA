@@ -49,6 +49,9 @@ test("game-specific UX remains distinct and accessible", async () => {
   assert.match(wordle, /Cinza: não pertence à palavra/);
   assert.match(timeline, /ordem narrativa apresentada na Bíblia/);
   assert.match(memory, /assetUrl/);
+  assert.match(memory, /claimMemoryCard/);
+  assert.match(memory, /historyRef\.current = previousHistory/);
+  assert.match(memory, /movesRef\.current = previousMoves/);
   assert.match(association, /Escolha um elemento de cada coluna/);
   assert.match(quiz, /Tempo encerrado — 0 pontos/);
   assert.doesNotMatch(quiz, /loadingRound \? [\s\S]{0,200}Nenhuma partida/);

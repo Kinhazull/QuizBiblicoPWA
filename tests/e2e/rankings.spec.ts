@@ -32,6 +32,13 @@ test("Ranking Universal navega entre geral, semanal e jogos com posição própr
   await expect(page.getByText("37º", { exact: true })).toBeVisible();
   await expect(page.locator('[data-position="1"] .equipped-avatar-base img')).toBeVisible();
   await expect(page.locator('[data-position="1"] .equipped-avatar-frame img')).toBeVisible();
+  const centers = await page.locator('[data-position="1"] .equipped-avatar').evaluate(element => {
+    const base = element.querySelector<HTMLElement>(".equipped-avatar-base")!.getBoundingClientRect();
+    const frame = element.querySelector<HTMLElement>(".equipped-avatar-frame")!.getBoundingClientRect();
+    return { baseX: base.x + base.width / 2, baseY: base.y + base.height / 2, frameX: frame.x + frame.width / 2, frameY: frame.y + frame.height / 2 };
+  });
+  expect(Math.abs(centers.baseX - centers.frameX)).toBeLessThan(2);
+  expect(Math.abs(centers.baseY - centers.frameY)).toBeLessThan(2);
   await page.getByRole("button", { name: "Semanal" }).click();
   await expect(page.getByText("XP ganho na semana")).toBeVisible();
   await page.getByRole("button", { name: "Por jogo" }).click();

@@ -13,8 +13,8 @@
 .equipped-avatar{overflow:visible!important}
 .equipped-avatar-base{overflow:hidden;border-radius:50%;background:radial-gradient(circle at 50% 38%,#245b88,#09223a 72%)}
 .equipped-avatar-base>.collectible-art{padding:2%}
-.equipped-avatar-frame{inset:-12%!important;width:124%!important;height:124%!important}
-.equipped-avatar-large .equipped-avatar-frame{inset:-10%!important;width:120%!important;height:120%!important}
+.equipped-avatar-frame{inset:-8%!important;width:116%!important;height:116%!important}
+.equipped-avatar-large .equipped-avatar-frame{inset:-8%!important;width:116%!important;height:116%!important}
 .platform-profile-identity :where(.equipped-avatar){transform:none}
 .platform-shop-button>svg{width:20px;height:20px}
 @media(max-width:420px){

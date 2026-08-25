@@ -3,6 +3,24 @@ export type MemorySet = { id: string; title: string; pairs: readonly MemoryPair[
 
 export type MemoryCard = { cardId: string; pairId: string; label: string };
 export type MemoryCompletionResult = { moves: number; score: number; matchedPairIds: string[] };
+export type MemoryTurnGate = { firstCardId: string | null; busy: boolean };
+export type MemoryTurnClaim =
+  | { kind: "ignored"; gate: MemoryTurnGate }
+  | { kind: "first"; gate: MemoryTurnGate }
+  | { kind: "pair"; firstCardId: string; secondCardId: string; gate: MemoryTurnGate };
+
+export const emptyMemoryTurnGate = (): MemoryTurnGate => ({ firstCardId: null, busy: false });
+
+export function claimMemoryCard(gate: MemoryTurnGate, cardId: string): MemoryTurnClaim {
+  if (gate.busy || gate.firstCardId === cardId) return { kind: "ignored", gate };
+  if (!gate.firstCardId) return { kind: "first", gate: { firstCardId: cardId, busy: false } };
+  return {
+    kind: "pair",
+    firstCardId: gate.firstCardId,
+    secondCardId: cardId,
+    gate: { firstCardId: gate.firstCardId, busy: true },
+  };
+}
 
 export function createMemoryDeck(set: MemorySet, random: () => number = Math.random) {
   const cards = set.pairs.flatMap(pair => [

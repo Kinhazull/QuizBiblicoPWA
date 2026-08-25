@@ -11,6 +11,7 @@ test("dashboard returns real organization-scoped metrics and attention", async t
   const response = await dashboard({ request: createAuthenticatedRequest("https://test/api/admin/dashboard", { token }), env: ctx.env });
   assert.equal(response.status, 200); assert.equal(response.headers.get("cache-control"), "no-store, private");
   const data = await responseJson(response); assert.equal(data.metrics.pending, 1); assert.equal(data.metrics.members, 2);
+  assert.equal(data.health.partial, true); assert.equal(data.metrics.health, data.health.status === "HEALTHY" ? "healthy" : "attention");
   assert.ok(data.recommendations.some(item => item.id === "operations:pending-users" && item.severity === "ATTENTION")); assert.ok(!data.recommendations.some(item => item.id === "ai"));
   assert.deepEqual(data.events, { active: null, next: null });
   assert.deepEqual(data.reservations, { active: 0, expired: 0 });

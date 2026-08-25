@@ -18,12 +18,14 @@ test("equipped avatar composes official avatar and frame layers", () => {
   const component = read("app/EquippedAvatar.tsx");
   const css = read("app/platform-home.css");
   assert.match(component, /data-frame/);
+  assert.match(component, /data-avatar/);
   assert.match(component, /role="img"/);
   assert.match(component, /equipped-avatar-base/);
   assert.match(component, /equipped-avatar-frame/);
   assert.match(component, /collectibleArtRegistry\[frameId\]/);
   assert.match(css, /z-index:1/);
   assert.match(css, /z-index:2/);
+  assert.match(css, /object-position:center/);
 });
 
 test("Shop and Inventory update equipped state immediately", () => {

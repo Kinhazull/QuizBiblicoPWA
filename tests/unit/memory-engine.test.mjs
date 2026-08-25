@@ -2,10 +2,22 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   areMatchingMemoryCards,
+  claimMemoryCard,
   createMemoryDeck,
+  emptyMemoryTurnGate,
   evaluateMemoryCompletion,
   memoryScore,
 } from "../../app/games/memory/engine.ts";
+
+test("memory turn gate admits exactly two cards and blocks rapid extra reveals", () => {
+  const first = claimMemoryCard(emptyMemoryTurnGate(), "card-a");
+  assert.equal(first.kind, "first");
+  const pair = claimMemoryCard(first.gate, "card-b");
+  assert.equal(pair.kind, "pair");
+  assert.deepEqual([pair.firstCardId, pair.secondCardId], ["card-a", "card-b"]);
+  assert.equal(claimMemoryCard(pair.gate, "card-c").kind, "ignored");
+  assert.equal(claimMemoryCard(first.gate, "card-a").kind, "ignored");
+});
 
 const set = {
   id: "memory-content",

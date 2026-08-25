@@ -68,3 +68,15 @@ export async function buildOperationalHealth(env: AppEnv, organizationId: string
 
   return { status: aggregate(Object.values(groups).map(group => group.status)), checkedAt: now, thresholdsVersion: 1, groups };
 }
+
+export function summarizeOperationalHealth(groups: Record<string, OperationalHealthGroup>) {
+  const checks = Object.values(groups).flatMap(group => group.checks);
+  const statuses = checks.map(item => item.status);
+  const conclusive = checks
+    .filter(item => !(item.status === "UNKNOWN" && item.code === "worker.cron_heartbeat_unavailable"))
+    .map(item => item.status);
+  return {
+    status: aggregate(conclusive.length ? conclusive : ["UNKNOWN"]),
+    partial: statuses.includes("UNKNOWN"),
+  };
+}
