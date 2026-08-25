@@ -1,6 +1,6 @@
 # Matriz técnica — Google Play Data Safety
 
-**DRAFT / HUMAN_REVIEW_REQUIRED.** Deve ser reconciliada com as definições e perguntas vigentes do Play Console no momento do envio.
+**DRAFT_FACTUAL_READY / HUMAN_REVIEW_REQUIRED / HUMAN_CONSOLE_REVIEW_REQUIRED.** A auditoria técnica 27.7.5F confirmou esta matriz contra o runtime, mas ela deve ser reconciliada por humano com as definições e perguntas vigentes do Play Console no momento do envio.
 
 | Categoria técnica | Coletado | Compartilhado | Finalidade | Obrigatório/opcional | Proteção observada | Exclusão |
 |---|---|---|---|---|---|---|

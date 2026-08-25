@@ -27,6 +27,10 @@
 - revisar/publicar Termos, Privacidade e nota editorial v2 com versionamento e novo consentimento quando necessário;
 - decidir domínio HTTPS e package ID; somente depois preparar assinatura, Digital Asset Links e AAB em faixa interna;
 - preencher Data Safety e classificação indicativa com revisão humana usando as matrizes técnicas, nunca por cópia automática.
+- criar inventário determinístico/SBOM de licenças e validar os avisos efetivamente distribuídos;
+- decidir e, se aprovado juridicamente, publicar URL pública de solicitação/instruções de exclusão para o Google Play;
+- reconciliar manifests históricos de assets com a proveniência v2 vigente;
+- decidir purge histórico dos textos bíblicos removidos e política para traduções futuras;
 
 ## Evolução controlada
 

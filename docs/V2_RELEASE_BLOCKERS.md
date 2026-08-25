@@ -1,10 +1,19 @@
 # Bloqueadores da v2
 
-## BLOCKER
+## WEB_V2_BLOCKERS
 
-Nenhum bloqueador reproduzível confirmado no ambiente local desta sprint.
+- aprovação jurídica humana das versões finais de Termos e Privacidade;
+- decisão sobre bases legais, retenção, transferência internacional, adolescentes e acesso infantil incidental;
+- fechamento humano de licenças/citações, manifests de assets e inventário completo de dependências/avisos;
+- Quality/Release Truth no SHA público final.
 
-Antes da publicação, tornam-se bloqueadores se falharem: migration/ledger final, login/logout, resultado idempotente, tentativa única Daily/Event, instalação/atualização PWA, sete jogos em 320 px ou axe serious/critical impeditivo.
+## GOOGLE_PLAY_BLOCKERS
+
+- blockers web aplicáveis;
+- domínio, package ID, assinatura, DAL, AAB e target SDK vigente;
+- Data Safety, Target Audience, classificação e Store Listing aprovados;
+- URL pública de solicitação/instruções de exclusão de conta;
+- confirmação de política de menores/Families e avisos/licenças distribuídos.
 
 ## HIGH
 
@@ -17,7 +26,7 @@ Antes da publicação, tornam-se bloqueadores se falharem: migration/ledger fina
 
 - Repetir conclusão de partidas sob rede móvel instável e confirmar que retry não duplica recompensas.
 - Reavaliar FIELD/CrUX quando houver tráfego suficiente; baseline LAB móvel no domínio público ficou boa e não revelou blocker.
-- Executar revisão jurídica de privacidade, menores e licença dos textos bíblicos.
+- Auditoria técnica jurídica/Data Safety concluída; executar aprovação jurídica humana de privacidade, menores e licenças.
 
 ## LOW
 

@@ -1,5 +1,7 @@
 # Content Release Readiness — v2.0
 
+> **Nota de estado (24/08/2026):** as contagens de 380/120 abaixo documentam o pacote oficial inicial e permanecem como histórico de proveniência. A baseline corrente, após Content Scale-Up v2 e aprovação editorial do proprietário, é 5.485 publicados/projetados/AVAILABLE: Quiz 984; Wordle 1.201 publicados/1.200 elegíveis; Timeline 800; Memória 100 conteúdos/300 pares; Associação 800; Quem Sou Eu 800; Três Pistas 800. Aprovação editorial interna não substitui revisão jurídica de citações/licenças.
+
 **Estado:** conhecido; tecnicamente pronto para validação humana final  
 **Data:** 12/08/2026  
 **Escopo:** conteúdo e assets distribuídos pela experiência v2

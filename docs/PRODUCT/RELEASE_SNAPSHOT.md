@@ -41,7 +41,7 @@ As afirmações remotas acima possuem evidência operacional da 27.7.2; não imp
 - Core Platform, economia, coleções, Perfil 2.0 e Ranking Universal;
 - PWA production-like, Quality gates e promoção manual vinculada ao SHA/artifact;
 - Asset Pack v2 Waves 1–5 integradas; Wave 6 `POST_RELEASE`; Wave 7 `DONE` como auditoria/preparação de Store;
-- 27.7.0–27.7.5E `DONE`; Android físico foi aprovado pelo proprietário e o gate PWA/Web Vitals encerrou como `PWA_ANDROID_READY`. 27.7.5F é o próximo gate.
+- 27.7.0–27.7.5E `DONE`; Android físico foi aprovado pelo proprietário e o gate PWA/Web Vitals encerrou como `PWA_ANDROID_READY`. A auditoria técnica 27.7.5F está `DONE_TECHNICAL_AUDIT / READY_FOR_HUMAN_LEGAL_REVIEW`.
 - Wordle 2.0 e importação universal guiada fazem parte da baseline candidata atual.
 
 ## Conteúdo e proveniência
@@ -93,7 +93,7 @@ As afirmações remotas acima possuem evidência operacional da 27.7.2; não imp
 
 ## Decisão atual
 
-**`RC_TECHNICAL_AND_PWA_VALIDATION_COMPLETE`: correções, conteúdo, validação manual, Android físico e PWA foram aprovados.** O próximo gate é jurídico/editorial/Data Safety, seguido do Go/No-Go. Ainda não existe autorização de release pública.
+**`RC_TECHNICAL_AND_PWA_VALIDATION_COMPLETE`: correções, conteúdo, validação manual, Android físico e PWA foram aprovados.** A auditoria técnica jurídica/Data Safety terminou; o gate atual é aprovação jurídica humana, seguido do Go/No-Go. Ainda não existe autorização de release pública.
 
 ## Classificação dos riscos residuais
 
