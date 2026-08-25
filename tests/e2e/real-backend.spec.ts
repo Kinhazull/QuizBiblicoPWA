@@ -12,6 +12,7 @@ import {
 import { onRequestPost as login } from "../../functions/api/auth/login.ts";
 import { onRequestGet as me } from "../../functions/api/auth/me.ts";
 import { onRequestPost as logout } from "../../functions/api/auth/logout.ts";
+import { onRequestPost as acceptLegalTerms } from "../../functions/api/auth/legal-acceptance.ts";
 import { onRequestGet as notifications } from "../../functions/api/notifications.ts";
 import { onRequestGet as badges } from "../../functions/api/badges.ts";
 import { onRequestGet as profile } from "../../functions/api/profile/me.ts";
@@ -46,6 +47,8 @@ async function installRealApi(page: Page, env: any) {
         response = await login({ request, env });
       else if (url.pathname === "/api/auth/me")
         response = await me({ request, env });
+      else if (url.pathname === "/api/auth/legal-acceptance")
+        response = await acceptLegalTerms({ request, env });
       else if (url.pathname === "/api/auth/logout")
         response = await logout({ request, env });
       else if (url.pathname === "/api/notifications")
@@ -77,6 +80,19 @@ async function installRealApi(page: Page, env: any) {
       });
     }
   });
+}
+
+async function acceptCurrentLegalTerms(page: Page) {
+  const dialog = page.getByRole("dialog", { name: "Confirme para continuar" });
+  await expect(dialog).toBeVisible();
+  await dialog
+    .getByRole("checkbox", { name: "Declaro que tenho 18 anos ou mais." })
+    .check();
+  await dialog.getByRole("checkbox", { name: /Li e aceito/ }).check();
+  await dialog
+    .getByRole("button", { name: "CONFIRMAR E CONTINUAR" })
+    .click();
+  await expect(dialog).toBeHidden();
 }
 
 async function publishQuizQuestions(env: any) {
@@ -147,8 +163,15 @@ test("browser completes the universal Quiz, returns to Games and logs out", asyn
     await page.locator('input[name="password"]').fill(password);
     await page.getByRole("button", { name: "Entrar" }).click();
     await expect(page.locator(".participant-bottom-nav")).toBeVisible();
+    await acceptCurrentLegalTerms(page);
+    expect(
+      context.raw.prepare(
+        "SELECT COUNT(*) total FROM legal_consents WHERE user_id=? AND terms_version=? AND privacy_version=? AND document_type=?",
+      ).get("browser-user", "2026-08-24", "2026-08-24", "terms_privacy_age_18_plus_v2")?.total,
+    ).toBe(1);
 
     await page.goto("/jogar");
+    await expect(page.getByRole("dialog", { name: "Confirme para continuar" })).toBeHidden();
     for (let index = 0; index < 5; index += 1) {
       await page.getByRole("button", { name: /Correta \d+/ }).click();
       const nextButton = page.getByRole("button", {
