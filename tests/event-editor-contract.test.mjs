@@ -35,10 +35,12 @@ test("editor de Eventos mantém contraste e distribuição responsiva nos seleto
   assert.match(styles, /\.event-catalog-summary \.available\{[^}]*color:#bdf3d4/);
   assert.match(styles, /\.event-catalog-summary \.reserved\{[^}]*color:#ffe39a/);
   assert.match(styles, /\.event-content-list\{grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
+  assert.match(styles, /\.event-content-list\{[^}]*grid-auto-rows:minmax\(104px,auto\)[^}]*gap:12px/);
   assert.match(styles, /@media\(max-width:760px\)\{\.event-content-list\{grid-template-columns:1fr/);
   assert.match(styles, /\.event-content-list label\{box-sizing:border-box;display:grid;[^}]*min-height:104px;height:auto;overflow:hidden/);
   assert.match(styles, /\.event-content-list \.event-content-meta\{display:flex;[^}]*flex-wrap:wrap/);
   assert.match(styles, /\.event-content-list small\.reference\{flex-basis:100%/);
   assert.match(styles, /@media\(max-width:760px\)[^{]*\{\.event-content-list\{grid-template-columns:1fr;[^}]*max-height:520px/);
+  assert.match(styles, /@media\(max-width:760px\)[^{]*\{\.event-content-list\{grid-template-columns:1fr;grid-auto-rows:minmax\(116px,auto\)/);
   assert.match(styles, /\.event-content-list label\{min-height:116px;height:auto;align-items:start/);
 });

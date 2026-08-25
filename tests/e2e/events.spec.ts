@@ -56,7 +56,12 @@ test("administrador cria, valida, agenda e cancela um Evento", async ({ page }) 
     return json(route, { event: { id: "event-e2e" } }, 201);
   });
   await page.route("**/api/admin/assets?status=ACTIVE", route => json(route, { assets: [{ id: "asset-event", title: "Capa oficial", type: "BANNER", status: "ACTIVE", source_url: "https://example.com/event.webp", alt_text: "Capa do evento" }] }));
-  await page.route("**/api/admin/events/suggest-content?*", route => json(route, { options: [{ contentId: "wordle-event", contentVersion: 1, title: "Palavra da fé", category: "Fé", difficulty: "EASY", themes: ["Fé"], biblicalReference: "Hebreus 11:1" }], counts: { available: 40, reserved: 2, archived: 0 } }));
+  await page.route("**/api/admin/events/suggest-content?*", route => json(route, { options: [
+    { contentId: "wordle-event", contentVersion: 1, title: "Palavra da fé", category: "Fé", difficulty: "EASY", themes: ["Fé"], biblicalReference: "Hebreus 11:1" },
+    { contentId: "wordle-event-2", contentVersion: 1, title: "Conceitos bíblicos", category: "Conceitos", difficulty: "MEDIUM", themes: ["Doutrina"], biblicalReference: "Romanos 12:2" },
+    { contentId: "wordle-event-3", contentVersion: 1, title: "Lugares da história bíblica", category: "Lugares", difficulty: "HARD", themes: ["História"], biblicalReference: "Josué 6:1" },
+    { contentId: "wordle-event-4", contentVersion: 1, title: "Objetos e significados", category: "Objetos", difficulty: "EASY", themes: ["Símbolos"], biblicalReference: "Êxodo 25:10" },
+  ], counts: { available: 40, reserved: 2, archived: 0 } }));
 
   await page.goto("/admin/eventos");
   await page.getByLabel("Título").fill("Semana da Fé");
@@ -64,6 +69,14 @@ test("administrador cria, valida, agenda e cancela um Evento", async ({ page }) 
   await page.getByRole("button", { name: "Próximo" }).click();
   await page.getByText("Wordle Bíblico", { exact: true }).click();
   await page.getByRole("button", { name: "Próximo" }).click();
+  const cardRects = await page.locator(".event-content-list > label").evaluateAll(elements => elements.map(element => {
+    const rect = element.getBoundingClientRect();
+    return { left: Math.round(rect.left), top: rect.top, bottom: rect.bottom };
+  }));
+  for (const [index, card] of cardRects.entries()) {
+    const previousInColumn = cardRects.slice(0, index).filter(candidate => candidate.left === card.left).at(-1);
+    if (previousInColumn) expect(card.top - previousInColumn.bottom).toBeGreaterThanOrEqual(10);
+  }
   await page.getByText("Palavra da fé", { exact: true }).click();
   await page.getByRole("button", { name: "Próximo" }).click();
   await page.getByLabel("Regra de conclusão").selectOption("MINIMUM");
