@@ -29,13 +29,13 @@ TWA mantém uma base Web e o modelo de custo mínimo. Um wrapper próprio duplic
 | deep links | somente escopo Web atual; decidir rotas suportadas antes de configurar intent filters |
 | offline | fallback público apenas; login/jogos/progressão exigem rede |
 | login/atualização | contratos PWA automatizados; Android físico pendente |
-| público-alvo v2 | adolescentes e adultos; crianças não são público-alvo formal (`RESOLVED_PRODUCT_DECISION`) |
+| público-alvo v2 | `ADULTS_ONLY_18_PLUS`, com confirmação explícita e sem coleta de nascimento (`RESOLVED_PRODUCT_DECISION`) |
 | Target Audience and Content | faixas exatas e consequências jurídicas/políticas são `HUMAN_REVIEW_REQUIRED`; nenhuma resposta foi submetida |
 | Families | não aderir automaticamente; suporte infantil/supervisionado é `POST_RELEASE` |
 
 ## Sequência segura futura
 
-1. aprovar documentos jurídicos, Data Safety, classificação indicativa, tratamento de adolescentes e acesso incidental por crianças;
+1. aprovar documentos jurídicos, Data Safety, classificação indicativa e política 18+ no console;
 2. escolher/controlar domínio e package ID;
 3. concluir arte final e store listing;
 4. executar checklist Android físico na PWA;

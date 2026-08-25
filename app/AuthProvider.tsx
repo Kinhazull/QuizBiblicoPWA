@@ -12,6 +12,7 @@ export type AuthenticatedUser = {
   mfaStatus?: "disabled" | "pending" | "active";
   mfaVerified?: boolean;
   mfaEnrollmentRequired?: boolean;
+  legalAcceptanceRequired?: boolean;
 };
 
 type AuthState = {

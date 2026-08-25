@@ -49,7 +49,8 @@ export async function exportUserData(env: AppEnv, user: Identity) {
       FROM user_platform_statistics_official_days_utc WHERE user_id=?1 AND organization_id=?2 ORDER BY day_key DESC`)),
     rows(bindUser(`SELECT game_id gameId,difficulty_key difficulty,sessions_completed sessionsCompleted
       FROM user_platform_game_difficulty_statistics WHERE user_id=?1 AND organization_id=?2`)),
-    rows(bindUser(`SELECT c.terms_version termsVersion,c.privacy_version privacyVersion,c.accepted_at acceptedAt
+    rows(bindUser(`SELECT c.terms_version termsVersion,c.privacy_version privacyVersion,
+      c.document_type documentType,c.accepted_at acceptedAt
       FROM legal_consents c JOIN users u ON u.id=c.user_id WHERE c.user_id=?1 AND u.organization_id=?2`)),
     rows(bindUser(`SELECT n.notification_key notificationKey,n.read_at readAt FROM notification_receipts n
       JOIN users u ON u.id=n.user_id WHERE n.user_id=?1 AND u.organization_id=?2`)),

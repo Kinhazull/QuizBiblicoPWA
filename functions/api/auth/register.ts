@@ -1,6 +1,6 @@
 import { hashPassword, json, normalizeUsername, sha256 } from "../../_lib/security";
 import type { AppEnv } from "../../_lib/auth";
-import { PRIVACY_VERSION, TERMS_VERSION } from "../../_lib/legal";
+import { LEGAL_ACCEPTANCE_TYPE, PRIVACY_VERSION, TERMS_VERSION } from "../../_lib/legal";
 import { enforceRateLimit, requestFingerprint, strongEnough } from "../../_lib/abuse";
 
 export const onRequestPost = async ({ request, env }: { request: Request; env: AppEnv }) => {
@@ -12,6 +12,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
   const password = String(body.password || "");
   const inviteCode = String(body.inviteCode || "").trim().toUpperCase();
   if (displayName.length < 3 || username.length < 3 || !strongEnough(password) || !inviteCode) return json({ error: "invalid_fields" }, 400);
+  if (body.adultConfirmed !== true) return json({ error: "adult_confirmation_required" }, 400);
   if (body.legalAccepted !== true || body.termsVersion !== TERMS_VERSION || body.privacyVersion !== PRIVACY_VERSION) return json({ error: "legal_consent_required" }, 400);
 
   const codeHash = await sha256(inviteCode);
@@ -26,7 +27,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
   const status = invite.approval_required ? "pending" : "active";
   const consentColumns = new Set(((await env.DB.prepare("PRAGMA table_info(legal_consents)").all()).results as any[]).map(column => column.name));
   const consentStatement = consentColumns.has("organization_id")
-    ? env.DB.prepare(`INSERT INTO legal_consents (id,user_id,terms_version,privacy_version,accepted_at,organization_id,document_type,ip_hash,user_agent) VALUES (?1,?2,?3,?4,?5,?6,'combined',?7,?8)`).bind(crypto.randomUUID(), id, TERMS_VERSION, PRIVACY_VERSION, now, invite.organization_id, fingerprint, String(request.headers.get("user-agent") || "").slice(0,300))
+    ? env.DB.prepare(`INSERT INTO legal_consents (id,user_id,terms_version,privacy_version,accepted_at,organization_id,document_type,ip_hash,user_agent) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9)`).bind(crypto.randomUUID(), id, TERMS_VERSION, PRIVACY_VERSION, now, invite.organization_id, LEGAL_ACCEPTANCE_TYPE, fingerprint, String(request.headers.get("user-agent") || "").slice(0,300))
     : env.DB.prepare(`INSERT INTO legal_consents (id,user_id,terms_version,privacy_version,accepted_at) VALUES (?1,?2,?3,?4,?5)`).bind(crypto.randomUUID(), id, TERMS_VERSION, PRIVACY_VERSION, now);
   const reserved=await env.DB.prepare("UPDATE invitations SET uses=uses+1 WHERE id=?1 AND active=1 AND (expires_at IS NULL OR expires_at>?2) AND (max_uses IS NULL OR uses<max_uses)").bind(invite.id,now).run();
   if(!reserved.meta.changes)return json({error:"invitation_limit"},409);

@@ -50,7 +50,7 @@ Waves 1–5 estão `DONE`: Brand/PWA, sete jogos, recompensas, colecionáveis e 
 - 27.7.2D.4 MFA produtivo: `MFA_PRODUCTION_OPERATIONAL_VERIFIED`. A mesma conta administrativa controlada concluiu primeiro fator, enrollment pela UI, confirmação TOTP, sessão `mfa_verified`, acesso administrativo, logout, novo login com challenge MFA e rejeição única de replay. O D1 confirmou MFA `active`, `key_version=1`, oito recovery codes não utilizados, metadado anti-replay e zero challenges pendentes, sem selecionar segredo, IV ou hashes. Operational Health autenticado ficou saudável; ledger 40/0039, `quick_check=ok`, FKs limpas, Quiz 984, oficiais 380, economia sem saldos negativos e Outbox com dois eventos entregues. Consumo manual de recovery code não foi forçado.
 - 27.7.3 RC Final: `DONE`; a versão formal permanece `2.0.0-rc.1`.
 - 27.7.4 Validação Manual do Usuário: `DONE / HUMAN_VERIFIED`. A auditoria real em navegador/celular percorreu login, MFA, Home, Perfil, Loja, Inventário, Jogos, Daily, sete jogos e Administração; os problemas reproduzíveis foram corrigidos e a revalidação final do proprietário não registrou blocker/major.
-- 27.7.5 Correções e Revalidação: `IN_PROGRESS / READY_FOR_HUMAN_LEGAL_REVIEW`. Layout, contraste, navegação, assets, superfícies participante/Admin e registro idempotente foram estabilizados; A–E e a auditoria técnica 27.7.5F estão concluídos. Termos, Privacidade, licenças e Data Safety ainda exigem aprovação humana antes do Go/No-Go.
+- 27.7.5 Correções e Revalidação: `TECHNICALLY_FINAL / HUMAN_LEGAL_REVIEW_REQUIRED`. A–E, a auditoria 27.7.5F e o alinhamento técnico 27.7.5F.1E estão concluídos. Termos, Privacidade e Data Safety continuam sujeitos à aprovação humana antes do Go/No-Go.
 - 27.7.5B.1 Matriz Editorial v2: `DONE_LOCAL / DOCUMENTATION_ONLY`. Foram congeladas as metas mínimas de escala, unidades de contagem, distribuições, identidade editorial dos sete jogos, controle de duplicidade e gates de lote.
 - 27.7.5B.2 Inventário e lacunas: `DONE`; o inventário histórico orientou a escala e foi substituído pelas contagens operacionais reconciliadas após importação.
 - 27.7.5B.3–B.6 Escala editorial: `DONE / HUMAN_APPROVED`. O proprietário revisou e aprovou o lote Wordle restante e o lote conjunto dos demais jogos. Os arquivos versionados permanecem como evidência da geração e revisão.
@@ -63,7 +63,8 @@ Waves 1–5 estão `DONE`: Brand/PWA, sete jogos, recompensas, colecionáveis e 
 - Wordle 2.0: seleção posicional de letras, normalização de acentos, respostas de 5–7 letras e validação server-side por léxico PT-BR aberto/revisado mais respostas CMS. O pacote editorial adicional contém 153 itens aprovados (50 de 5, 50 de 6 e 53 de 7 letras), sem duplicar os 120 Wordles oficiais anteriores.
 - Importação universal: interface administrativa guiada em três etapas, upload/colar/modelos JSON e CSV, dry-run sem escrita, relatório legível e confirmação explícita. Permissão e validação server-side permanecem obrigatórias.
 - ajuste pós-27.6: controlador pessoa física e `suporteconteosfeitos@gmail.com` definidos; CPF/endereço residencial não serão publicados e eventual endereço físico segue sujeito à revisão jurídica.
-- ajuste pós-27.6: público-alvo formal da v2 definido como adolescentes e adultos; crianças ficaram fora do público-alvo. Tratamento jurídico de adolescentes/acesso incidental infantil permanece pendente e contas supervisionadas são pós-release.
+- 27.7.5F.1A–F.1D: direção jurídica do produto, política `ADULTS_ONLY_18_PLUS`, retenção conservadora e posição factual sobre fornecedores/processamento internacional foram definidas.
+- 27.7.5F.1E: cadastro exige declaração 18+ separada e não pré-marcada; contas existentes reaceitam uma única vez a versão jurídica `2026-08-24`; evidência versionada permanece em `legal_consents`; `/privacidade/conta` é pública. Não há coleta de data de nascimento.
 - ajuste pós-27.6: v2 sem exclusão automática por inatividade; matriz técnica preliminar de retenção definida e possível processamento internacional reconhecido. Prazos/mecanismos jurídicos e qualquer automação permanecem pendentes.
 
 ## Capacidades atuais
@@ -98,7 +99,7 @@ Waves 1–5 estão `DONE`: Brand/PWA, sete jogos, recompensas, colecionáveis e 
 ## Riscos correntes
 
 - métricas FIELD/CrUX ainda não possuem tráfego/amostra suficiente; a baseline LAB e o Android físico já foram aprovados;
-- licenças bíblicas, tratamento jurídico de adolescentes/acesso infantil incidental e Data Safety aguardam revisão humana/jurídica;
+- licenças bíblicas, aprovação humana dos documentos v2 e preenchimento humano do Data Safety aguardam revisão; a política técnica de público é `ADULTS_ONLY_18_PLUS`;
 - textos ACF/Almeida completos e quatro derivados foram removidos da árvore ativa da v2; não havia consumidor runtime. O histórico Git não foi reescrito e eventual purge permanece decisão jurídica;
 - as 984 perguntas e os 380 conteúdos oficiais têm proveniência interna declarada pelo proprietário (`AI_ASSISTED`, com curadoria humana); a lacuna CSV→CMS é de rastreabilidade, não de autoria externa;
 - os 16 colecionáveis funcionais usam derivados oficiais do Asset Pack v2; os IDs históricos permanecem intactos, `frame-aliance → frame-covenant` e `frame-real → frame-royal` são aliases exclusivamente visuais, e emojis permanecem apenas como fallback;

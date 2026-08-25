@@ -57,7 +57,7 @@ Concluídas: piloto, fundação modular, Core Platform, plataforma universal e c
 | 27.7.2 | Preparação de Produção | DONE |
 | 27.7.3 | RC Final | DONE |
 | 27.7.4 | Validação Manual do Usuário | DONE — revalidação humana sem blocker/major |
-| 27.7.5 | Correções e Revalidação | IN PROGRESS — auditoria técnica A–F concluída; revisão jurídica humana é o gate atual |
+| 27.7.5 | Correções e Revalidação | TECHNICALLY FINAL — revisão jurídica humana é o gate atual |
 | 27.7.5B.1–B.2 | Matriz, inventário e lacunas | DONE |
 | 27.7.5B.3–B.6 | Content Scale-Up v2 | DONE — revisão e aprovação humanas registradas |
 | 27.7.5B.7 | Importação, publicação e reconciliação | DONE — 5.485 conteúdos publicados |
@@ -68,13 +68,15 @@ Concluídas: piloto, fundação modular, Core Platform, plataforma universal e c
 | 27.7.5D | Validação manual final | DONE — evidência humana, zero blocker/major informado |
 | 27.7.5E | Android/PWA/Web Vitals | DONE — `PWA_ANDROID_READY`, FIELD ainda sem amostra |
 | 27.7.5F | Jurídico/editorial final/Data Safety | DONE_TECHNICAL_AUDIT — `READY_FOR_HUMAN_LEGAL_REVIEW` |
+| 27.7.5F.1A–F.1D | Decisões jurídicas de produto, 18+, retenção e transferências | DONE |
+| 27.7.5F.1E | Legal Alignment v2 | TECHNICALLY_FINAL — `HUMAN_LEGAL_REVIEW_REQUIRED` |
 | 27.7.6 | Go/No-Go Formal | BLOCKED — aguarda aprovações jurídicas/Data Safety humanas |
 | 27.7.7 | Release v2.0.0 | PLANNED |
 
 Progressão e Economia administrativas não terão painéis duplicados: Analytics 2.0 permanece o destino agregado. Uma Sprint 27.3.2 só será necessária se requisitos operacionais especializados, distintos dos Analytics atuais, forem aprovados.
 
 - manter PWA/Android e atualização sob regressão; gate atual encerrado na 27.7.5E;
-- concluir revisão de citações/licenças remanescentes, purge histórico, tratamento de adolescentes/acesso infantil incidental e Data Safety;
+- concluir revisão humana de citações/licenças, documentos v2 e Data Safety; a política técnica 18+ já está implementada;
 - alinhar Asset Registry, hospedagem e CSP;
 - reduzir superfícies legadas com telemetria e rollback;
 - preencher o orçamento operacional com quotas/consumo reais e aprovar juridicamente os prazos da matriz de retenção antes de qualquer automação;
@@ -108,7 +110,7 @@ Progressão e Economia administrativas não terão painéis duplicados: Analytic
 ### 4. Gates humanos e externos
 
 - Android físico, instalação PWA, teclado, background/foreground, offline/update e baseline LAB pública: concluídos; reavaliar FIELD/CrUX quando houver tráfego suficiente;
-- aprovar Termos, Privacidade, público adolescente/acesso incidental, retenção, transferências e Data Safety;
+- aprovar Termos, Privacidade, suficiência jurídica da política 18+, retenção, transferências e Data Safety;
 - confirmar licença/proveniência de assets e citações usadas publicamente;
 - decidir domínio/package ID/assinatura/DAL/AAB apenas para a trilha Google Play, separada do lançamento web.
 

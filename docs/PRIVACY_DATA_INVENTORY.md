@@ -41,10 +41,10 @@
 
 ## Público-alvo e menores
 
-- público-alvo formal da v2: adolescentes e adultos (`RESOLVED_PRODUCT_DECISION`);
-- crianças não integram o público-alvo formal, mas não existe bloqueio técnico ou verificação etária que impeça acesso incidental;
-- idade mínima jurídica definitiva, base legal e tratamento de dados de adolescentes: `HUMAN_LEGAL_REVIEW_REQUIRED`;
-- consentimento parental, conta infantil, vínculo responsável/dependente e controles supervisionados: `NOT_IMPLEMENTED` / `POST_RELEASE`.
+- política técnica da v2: `ADULTS_ONLY_18_PLUS` (`RESOLVED_PRODUCT_DECISION`);
+- cadastro e reaceitação da versão jurídica exigem declaração explícita, separada e não pré-marcada de 18 anos ou mais;
+- não há coleta de data de nascimento nem conta infantil/supervisionada; crianças e adolescentes não integram o público-alvo;
+- a declaração e as versões aceitas são registradas em `legal_consents`; eficácia jurídica e redação final permanecem `HUMAN_LEGAL_REVIEW_REQUIRED`.
 
 ## Matriz técnica preliminar de retenção
 
@@ -88,4 +88,4 @@ Esses papéis não significam que todos os fornecedores recebem os mesmos dados.
 
 ## Decisões obrigatórias
 
-Fundamentos LGPD, prazos jurídicos por categoria, tratamento de adolescentes, acesso incidental por crianças, mecanismo/base legal de transferência internacional, restauração pós-exclusão, necessidade de endereço físico e identidade formal adicional quando exigida são `HUMAN_REVIEW_REQUIRED`. O tipo de controlador, o contato institucional, o público-alvo formal, a ausência de exclusão automática por inatividade e a matriz técnica preliminar estão resolvidos como decisões de produto para a fase atual.
+Fundamentos LGPD, prazos jurídicos por categoria, mecanismo/base legal de transferência internacional, restauração pós-exclusão, necessidade de endereço físico e identidade formal adicional quando exigida são `HUMAN_REVIEW_REQUIRED`. Controlador, contato, público `ADULTS_ONLY_18_PLUS`, ausência de exclusão automática por inatividade e matriz técnica preliminar estão resolvidos.

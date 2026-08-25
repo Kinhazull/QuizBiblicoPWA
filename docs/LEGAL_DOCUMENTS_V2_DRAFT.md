@@ -23,8 +23,8 @@ O contato institucional aprovado substitui o e-mail pessoal nas superfícies jur
 - visibilidade de perfil/rankings e isolamento por organização;
 - Cloudflare como runtime/D1/observabilidade e GitHub como código/CI/artifacts operacionais, sem presumir que recebem os mesmos dados;
 - possível processamento internacional por fornecedores; localização, mecanismo/base legal e redação definitiva: `HUMAN_LEGAL_REVIEW_REQUIRED`;
-- público-alvo formal da v2: adolescentes e adultos; crianças não integram o público-alvo formal (`RESOLVED_PRODUCT_DECISION`);
-- tratamento de dados de adolescentes e consequências de eventual acesso incidental por crianças: `HUMAN_LEGAL_REVIEW_REQUIRED`;
+- público-alvo formal da v2: `ADULTS_ONLY_18_PLUS`, com confirmação explícita e sem coleta de data de nascimento (`RESOLVED_PRODUCT_DECISION`);
+- suficiência jurídica da autodeclaração e redação final: `HUMAN_LEGAL_REVIEW_REQUIRED`;
 - suporte específico a crianças, contas infantis ou supervisionadas: `NOT_IMPLEMENTED` / `POST_RELEASE`;
 - exportação, correção, pedido de exclusão, anonimização e dados preservados;
 - retenção por categoria, backups e restauração;
@@ -58,4 +58,4 @@ A v2 não excluirá contas automaticamente por inatividade (`RESOLVED_PRODUCT_DE
 
 ## Classificação e público
 
-No questionário de classificação, declarar com precisão: temática religiosa/bíblica, competição leve, economia estritamente virtual sem compra real, conteúdo gerado somente por editores autorizados e ausência atual de chat público. Para a v2, o produto é formalmente direcionado a adolescentes e adultos; crianças não integram seu público-alvo formal. O proprietário/revisor deve preencher as faixas etárias exatas conforme as regras vigentes, avaliar o tratamento de adolescentes e o acesso incidental por crianças e não aderir automaticamente ao Families. Nenhuma faixa etária exata é escolhida neste documento.
+No questionário de classificação, declarar com precisão: temática religiosa/bíblica, competição leve, economia virtual sem compra real, conteúdo de editores autorizados e ausência de chat público. A v2 adota `ADULTS_ONLY_18_PLUS`; o proprietário deve configurar a faixa correspondente nas regras vigentes e não aderir ao Families sem decisão jurídica explícita.

@@ -41,7 +41,7 @@ As afirmações remotas acima possuem evidência operacional da 27.7.2; não imp
 - Core Platform, economia, coleções, Perfil 2.0 e Ranking Universal;
 - PWA production-like, Quality gates e promoção manual vinculada ao SHA/artifact;
 - Asset Pack v2 Waves 1–5 integradas; Wave 6 `POST_RELEASE`; Wave 7 `DONE` como auditoria/preparação de Store;
-- 27.7.0–27.7.5E `DONE`; Android físico foi aprovado pelo proprietário e o gate PWA/Web Vitals encerrou como `PWA_ANDROID_READY`. A auditoria técnica 27.7.5F está `DONE_TECHNICAL_AUDIT / READY_FOR_HUMAN_LEGAL_REVIEW`.
+- 27.7.0–27.7.5E `DONE`; Android físico e PWA/Web Vitals estão aprovados. A 27.7.5F.1E encerrou o alinhamento técnico como `TECHNICALLY_FINAL / HUMAN_LEGAL_REVIEW_REQUIRED`.
 - Wordle 2.0 e importação universal guiada fazem parte da baseline candidata atual.
 
 ## Conteúdo e proveniência
@@ -78,8 +78,9 @@ As afirmações remotas acima possuem evidência operacional da 27.7.2; não imp
 
 ## Jurídico e Google Play
 
-- controlador, contato institucional, público-alvo adolescentes/adultos, ausência de controles infantis fictícios e ausência de exclusão automática por inatividade são decisões registradas;
-- Termos/Privacidade, bases/prazos, adolescentes/acesso incidental, transferências e citações/licenças exigem `HUMAN_LEGAL_REVIEW_REQUIRED` antes do Go público;
+- controlador, contato institucional, política `ADULTS_ONLY_18_PLUS`, ausência de coleta de nascimento e ausência de exclusão automática por inatividade são decisões registradas;
+- cadastro e reaceitação única da versão `2026-08-24` persistem evidência versionada; `/privacidade/conta` é pública;
+- Termos/Privacidade, bases/prazos, transferências e citações/licenças exigem `HUMAN_LEGAL_REVIEW_REQUIRED` antes do Go público;
 - Google Play é `BLOCKED_EXTERNAL / FUTURE_PUBLICATION_PREPARATION` e não bloqueia RC web.
 
 ## Checklist operacional da 27.7.2

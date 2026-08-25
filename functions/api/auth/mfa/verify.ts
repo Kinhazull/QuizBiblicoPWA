@@ -2,6 +2,7 @@ import type { AppEnv } from "../../../_lib/auth";
 import { enforceRateLimit, requestFingerprint } from "../../../_lib/abuse";
 import { decryptMfaSecret, verifyTotp } from "../../../_lib/mfa";
 import { json, randomToken, sessionCookie, sha256 } from "../../../_lib/security";
+import { hasCurrentLegalAcceptance } from "../../../_lib/legal";
 
 export const onRequestPost = async ({ request, env }: { request: Request; env: AppEnv }) => {
   const body: any = await request.json().catch(() => ({}));
@@ -43,5 +44,5 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
   ]);
   if (Number(results[0]?.meta?.changes || 0) !== 1 || Number(results[1]?.meta?.changes || 0) !== 1 || Number(results[2]?.meta?.changes || 0) !== 1) return json({ error: "invalid_mfa_code" }, 401);
   const secureCookie = String(env.LOCAL_LAN_DEVELOPMENT) !== "true";
-  return json({ ok: true, user: { id: row.user_id, displayName: row.display_name, role: row.role, mustChangePassword: Boolean(row.must_change_password), mfaStatus: "active", mfaVerified: true, mfaEnrollmentRequired: false } }, 200, { "set-cookie": sessionCookie(sessionToken, Boolean(row.persistent), secureCookie) });
+  return json({ ok: true, user: { id: row.user_id, displayName: row.display_name, role: row.role, mustChangePassword: Boolean(row.must_change_password), mfaStatus: "active", mfaVerified: true, mfaEnrollmentRequired: false, legalAcceptanceRequired: !(await hasCurrentLegalAcceptance(env.DB, String(row.user_id))) } }, 200, { "set-cookie": sessionCookie(sessionToken, Boolean(row.persistent), secureCookie) });
 };

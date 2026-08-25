@@ -1,6 +1,7 @@
 import { currentUser, type AppEnv } from "../../_lib/auth";
 import { effectivePermissions } from "../../_lib/permissions";
 import { json,readCookie,sha256 } from "../../_lib/security";
+import { hasCurrentLegalAcceptance } from "../../_lib/legal";
 
 export const onRequestGet = async ({ request, env }: { request: Request; env: AppEnv }) => {
   const user = await currentUser(request, env);
@@ -8,5 +9,5 @@ export const onRequestGet = async ({ request, env }: { request: Request; env: Ap
   if (!user) return json({ authenticated: false }, 401);
   const role = String((user as any).role);
   const mfaStatus = String((user as any).mfaStatus || "disabled");
-  return json({ authenticated: true, user: { ...user, mfaVerified: Boolean((user as any).mfaVerified), mfaEnrollmentRequired: ["owner", "admin"].includes(role) && mfaStatus !== "active", permissions: await effectivePermissions(env, user) } });
+  return json({ authenticated: true, user: { ...user, mfaVerified: Boolean((user as any).mfaVerified), mfaEnrollmentRequired: ["owner", "admin"].includes(role) && mfaStatus !== "active", legalAcceptanceRequired: !(await hasCurrentLegalAcceptance(env.DB, String((user as any).id))), permissions: await effectivePermissions(env, user) } });
 };

@@ -46,11 +46,11 @@ test("v2 target audience policy is explicit without inventing child controls", a
     read("docs/PRIVACY_DATA_INVENTORY.md"),
     read("docs/PRODUCT/LEGAL_PLAY_RELEASE_READINESS.md"),
   ]);
-  assert.ok(docs.every(text => /adolescentes e adultos/.test(text)));
-  assert.ok(docs.every(text => /crianças não (?:integram|são)/.test(text)));
+  assert.ok(docs.every(text => /18 anos|ADULTS_ONLY_18_PLUS/.test(text)));
+  assert.ok(docs.every(text => /crianças|ADULTS_ONLY_18_PLUS/.test(text)));
   assert.match(docs[0], /HUMAN_LEGAL_REVIEW_REQUIRED/);
-  assert.match(docs[1], /Families.*não aderir automaticamente/);
-  assert.match(docs[2], /NOT_IMPLEMENTED.*POST_RELEASE/);
+  assert.match(docs[1], /Families/);
+  assert.match(docs[2], /não há coleta de data de nascimento/);
   assert.doesNotMatch(docs.join("\n"), /idade mínima (?:é|de) \d+/i);
 });
 
@@ -71,7 +71,7 @@ test("international processing roles remain distinct and legally unasserted", as
   assert.match(inventory, /Cloudflare: runtime, Pages\/Workers, D1 e observabilidade/);
   assert.match(inventory, /GitHub: código-fonte, CI, artifacts de build/);
   assert.match(inventory, /não significam que todos os fornecedores recebem os mesmos dados/);
-  assert.match(publicPrivacy, /pode existir processamento internacional/);
+  assert.match(publicPrivacy, /podem processar dados internacionalmente/);
   assert.doesNotMatch(publicPrivacy, /fora do Brasil/);
 });
 

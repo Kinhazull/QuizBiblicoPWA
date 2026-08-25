@@ -3,7 +3,7 @@
 ## WEB_V2_BLOCKERS
 
 - aprovação jurídica humana das versões finais de Termos e Privacidade;
-- decisão sobre bases legais, retenção, transferência internacional, adolescentes e acesso infantil incidental;
+- aprovação humana das bases legais, retenção conservadora e texto de transferência internacional já documentados tecnicamente;
 - fechamento humano de licenças/citações, manifests de assets e inventário completo de dependências/avisos;
 - Quality/Release Truth no SHA público final.
 
@@ -13,7 +13,7 @@
 - domínio, package ID, assinatura, DAL, AAB e target SDK vigente;
 - Data Safety, Target Audience, classificação e Store Listing aprovados;
 - URL pública de solicitação/instruções de exclusão de conta;
-- confirmação de política de menores/Families e avisos/licenças distribuídos.
+- confirmação humana no Play Console da política `ADULTS_ONLY_18_PLUS`, sem adesão ao Families, e avisos/licenças distribuídos.
 
 ## HIGH
 

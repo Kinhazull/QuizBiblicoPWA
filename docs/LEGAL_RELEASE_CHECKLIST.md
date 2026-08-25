@@ -13,7 +13,7 @@ Este documento organiza a revisão humana; ele não substitui orientação jurí
 - Regra operacional aprovada: menores somente serão aprovados após autorização identificável de pelo menos um responsável legal; não será coletada data de nascimento sem necessidade.
 - Guarda da evidência: **a evidência da autorização do responsável legal será mantida pela organização responsável pelo participante, em meio físico ou digital, fora do banco de dados do aplicativo**.
 
-> Estas regras pertencem ao piloto histórico v1. Para a v2, o público-alvo formal foi redefinido como adolescentes e adultos; crianças não integram o público-alvo formal. Não existe age gate, conta supervisionada ou consentimento parental implementado na v2. Faixas etárias e obrigações jurídicas permanecem sob revisão humana.
+> Estas regras pertencem ao piloto histórico v1. Para a v2, vigora `ADULTS_ONLY_18_PLUS`: cadastro e reaceitação exigem autodeclaração 18+, sem coleta de nascimento. Crianças e adolescentes não integram o público-alvo. A eficácia jurídica e as declarações do Play permanecem sob revisão humana.
 - Retenção histórica proposta para o piloto: perfil enquanto a conta estiver ativa; suspensão imediata após pedido válido; anonimização em até 30 dias; registros técnicos e de segurança por até 12 meses; backups operacionais por até 30 dias; resultados históricos somente de forma anonimizada; evidências de consentimento pelo prazo necessário à comprovação. **Não constitui compromisso jurídico da v2.**
 - Operadores técnicos atualmente utilizados: **Cloudflare** (Pages, Workers e D1) e **GitHub** (código e automação de implantação).
 

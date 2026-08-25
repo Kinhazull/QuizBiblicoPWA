@@ -35,6 +35,7 @@ import { PasswordVisibility } from "./PasswordVisibility";
 import { GameNavigationProvider } from "./GameNavigationContext";
 import { LegacyRouteRedirects } from "./LegacyRouteRedirects";
 import { APP_VERSION } from "./app-version";
+import { LegalAcceptanceGate } from "./LegalAcceptanceGate";
 
 export const metadata: Metadata = {
   title: "Conte os Feitos — Jogos e Desafios Bíblicos",
@@ -50,5 +51,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="pt-BR"><body><AuthProvider><GameNavigationProvider><PasswordVisibility /><LegacyRouteRedirects /><a className="skip-link" href="#main-content">Pular para o conteúdo</a><BackNavigation /><AdminQuickNav /><ParticipantChrome /><LearningQuickNav /><AuthRecoveryLink /><PwaStatus /><div id="main-content">{children}</div></GameNavigationProvider></AuthProvider></body></html>;
+  return <html lang="pt-BR"><body><AuthProvider><GameNavigationProvider><PasswordVisibility /><LegalAcceptanceGate /><LegacyRouteRedirects /><a className="skip-link" href="#main-content">Pular para o conteúdo</a><BackNavigation /><AdminQuickNav /><ParticipantChrome /><LearningQuickNav /><AuthRecoveryLink /><PwaStatus /><div id="main-content">{children}</div></GameNavigationProvider></AuthProvider></body></html>;
 }

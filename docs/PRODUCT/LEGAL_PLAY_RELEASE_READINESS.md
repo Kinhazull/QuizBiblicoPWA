@@ -3,8 +3,8 @@
 | Classe | Estado |
 |---|---|
 | `TECHNICAL_GO` | auditoria técnica 27.7.5F concluída; exportação, sessões, pedido/anonimização, consentimento versionado, PWA production-like, cache seguro, manifest e inventário técnico |
-| `HUMAN_REVIEW_REQUIRED` | identidade formal adicional/endereço físico quando juridicamente necessários, bases legais, retenção, tratamento de adolescentes/acesso incidental por crianças, transferência internacional, documentos finais, Data Safety e classificação |
-| `LEGAL_BLOCKER` | aprovação pública dos Termos/Privacidade; licenças do acervo/textos/assets; revisão jurídica sobre adolescentes/acesso incidental por crianças e direitos do titular |
+| `HUMAN_REVIEW_REQUIRED` | identidade/endereço quando necessários, bases legais, retenção, suficiência da autodeclaração 18+, transferência internacional, documentos finais, Data Safety e classificação |
+| `LEGAL_BLOCKER` | aprovação pública dos Termos/Privacidade; licenças do acervo/textos/assets; revisão jurídica da política 18+ e direitos do titular |
 | `PLAY_STORE_BLOCKER` | domínio, package ID, assinatura, DAL, AAB, target SDK vigente, listing, Data Safety, classificação e URL pública de exclusão de conta |
 | `POST_RELEASE` | imagens futuras da Memória, decisão sobre Bíblia completa/múltiplas traduções, automação de retenção/SBOM e recursos nativos sem requisito atual |
 
@@ -20,7 +20,7 @@ Textos bíblicos integrais sem licença comprovada e seus derivados não integra
 - contas inativas: `NOT_IMPLEMENTED`;
 - tipo de controlador: `RESOLVED` — pessoa física responsável pelo projeto;
 - contato institucional: `RESOLVED` — `suporteconteosfeitos@gmail.com`.
-- público-alvo v2: `RESOLVED_PRODUCT_DECISION` — adolescentes e adultos; crianças não são público-alvo formal.
+- público-alvo v2: `RESOLVED_PRODUCT_DECISION` — `ADULTS_ONLY_18_PLUS`, com confirmação explícita no cadastro e na reaceitação.
 - controles infantis/contas supervisionadas: `NOT_IMPLEMENTED` / `POST_RELEASE`.
 - contas inativas: `RESOLVED_PRODUCT_DECISION` — nenhuma exclusão automática na v2; pedido de exclusão permanece implementado.
 - retenção: `RESOLVED_PRODUCT_DECISION` — matriz técnica preliminar definida, sem limpeza automática; prazos jurídicos continuam pendentes.
@@ -29,7 +29,7 @@ Textos bíblicos integrais sem licença comprovada e seus derivados não integra
 ## Ações do proprietário antes do Go/No-Go
 
 1. nomear revisor jurídico e confirmar eventual identidade formal adicional e necessidade de endereço físico, sem publicar CPF ou endereço residencial;
-2. aprovar fundamentos, prazos jurídicos de retenção, tratamento de adolescentes, acesso incidental por crianças e mecanismo/base legal de transferência internacional;
+2. aprovar fundamentos, prazos jurídicos, suficiência da autodeclaração 18+ e mecanismo/base legal de transferência internacional;
 3. revisar e publicar versões finais de Termos, Privacidade e nota editorial;
 4. aprovar juridicamente a proveniência/licença já inventariada e reconciliar metadados históricos de assets;
 5. decidir domínio HTTPS e package ID sem reutilização indevida;

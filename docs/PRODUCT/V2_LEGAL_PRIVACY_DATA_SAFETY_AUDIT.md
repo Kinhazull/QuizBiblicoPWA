@@ -2,7 +2,7 @@
 
 **Sprint:** 27.7.5F  
 **Data:** 24/08/2026  
-**Estado:** `DONE_TECHNICAL_AUDIT / READY_FOR_HUMAN_LEGAL_REVIEW`  
+**Estado:** `TECHNICALLY_FINAL / HUMAN_LEGAL_REVIEW_REQUIRED`
 **Natureza:** diagnóstico técnico e factual; não constitui parecer jurídico nem autorização de publicação.
 
 ## 1. Escopo e evidência
@@ -72,7 +72,7 @@ Para Google Play, falta uma URL pública dedicada de solicitação/instruções 
 
 ## 7. Público-alvo e menores
 
-A decisão de produto é adolescentes e adultos; crianças não são público-alvo formal. Não há coleta de data de nascimento, age gate, conta supervisionada ou mecanismo parental. A faixa etária exata no Play Console, a base aplicável a adolescentes e o tratamento de acesso infantil incidental exigem decisão jurídica humana. O projeto não deve aderir ao Families nem declarar bloqueio infantil técnico sem essa decisão.
+A decisão de produto é `ADULTS_ONLY_18_PLUS`. Cadastro e reaceitação exigem confirmação separada, explícita e não pré-marcada de 18 anos ou mais, sem coletar data de nascimento. Crianças e adolescentes não integram o público-alvo e o produto não deve aderir ao Families. A suficiência jurídica dessa autodeclaração e o preenchimento do Play Console exigem revisão humana.
 
 ## 8. Conteúdo bíblico e proveniência
 
@@ -115,7 +115,7 @@ Proteções observadas: HTTPS, RBAC, isolamento organizacional, autoridade serve
 ### WEB_V2_BLOCKERS
 
 1. aprovação jurídica humana das versões finais de Termos e Privacidade;
-2. decisão documentada sobre bases legais, retenção, transferência internacional, adolescentes e acesso infantil incidental;
+2. aprovação humana das bases legais, retenção conservadora e posição de transferência internacional documentadas;
 3. fechamento humano de licenças/citações, manifests de assets e inventário completo de dependências/avisos;
 4. Release Truth/Quality do SHA final após qualquer alteração de runtime ou documento incluído no artifact.
 
@@ -131,7 +131,7 @@ Proteções observadas: HTTPS, RBAC, isolamento organizacional, autoridade serve
 
 - revisor jurídico, identidade formal adicional/endereço quando realmente exigidos;
 - bases legais, retenção, transferência internacional e direitos do titular;
-- faixa etária, adolescentes e acesso infantil incidental;
+- eficácia jurídica e redação final da política 18+;
 - Termos, Privacidade, Data Safety e classificação;
 - licenças de traduções/citações, assets externos, dependências e eventual purge histórico;
 - Go/No-Go com versão, SHA, data e escopo.
@@ -147,4 +147,4 @@ Proteções observadas: HTTPS, RBAC, isolamento organizacional, autoridade serve
 
 ## 13. Decisão
 
-**Auditoria técnica concluída.** O projeto está `READY_FOR_HUMAN_LEGAL_REVIEW`, mas permanece **NO-GO para release pública v2.0.0 e Google Play** até o fechamento das aprovações humanas e blockers acima. Nenhuma migration, deploy, alteração de secret, publicação, tag ou release foi executada nesta auditoria.
+**Alinhamento técnico concluído.** A 27.7.5F.1E implementa confirmação 18+, reaceitação versionada idempotente, documentos públicos revisados e URL pública de exclusão, sem migration. O estado é `TECHNICALLY_FINAL / HUMAN_LEGAL_REVIEW_REQUIRED`; permanece **NO-GO** até aprovação humana e blockers externos.

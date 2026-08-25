@@ -3,7 +3,7 @@
 **Auditoria:** Sprint 27.7.0 — 13/08/2026  
 **Decisão 27.7.0:** `READY_FOR_27_7_1`  
 **Fechamento 27.7.3 (registro histórico):** RC final `DONE`; naquele momento, `27.7.4` era a próxima etapa.
-**Situação posterior em 24/08/2026:** 27.7.5A–27.7.5E concluídas; sete jogos `CONTENT_READY_V2`, validação manual humana aprovada e gate `PWA_ANDROID_READY`. A auditoria técnica 27.7.5F está concluída e encaminhada para revisão jurídica humana. Estado corrente: `docs/AI/CURRENT_STATE.md`, `docs/PRODUCT/ROADMAP.md`, `docs/PRODUCT/RELEASE_SNAPSHOT.md`, `docs/PRODUCT/CONTENT_GATE_V2.md`, `docs/PRODUCT/PWA_ANDROID_WEB_VITALS_27_7_5E.md` e `docs/PRODUCT/V2_LEGAL_PRIVACY_DATA_SAFETY_AUDIT.md`.
+**Situação posterior em 24/08/2026:** 27.7.5A–27.7.5F.1E concluídas tecnicamente; sete jogos `CONTENT_READY_V2`, validação humana e PWA aprovadas. O alinhamento jurídico técnico está `TECHNICALLY_FINAL / HUMAN_LEGAL_REVIEW_REQUIRED`.
 **Escopo inicial:** auditoria local. As evidências operacionais da 27.7.2 abaixo atualizam explicitamente os estados remotos comprovados.
 
 Este é o registro central da sequência 27.7. Documentos históricos continuam úteis, mas afirmações remotas ou anteriores às Waves de arte não substituem esta baseline.
@@ -93,7 +93,7 @@ Conclusão: não resta blocker técnico de preparação produtiva. A baseline es
 
 ### Blockers humanos
 
-- aprovação jurídica de Termos/Privacidade, bases legais, prazos, adolescentes/acesso infantil incidental e processamento internacional;
+- aprovação jurídica de Termos/Privacidade, bases legais, prazos e processamento internacional;
 - decisão jurídica sobre blobs históricos de traduções bíblicas e revisão de citações públicas;
 - revisão bíblica/editorial amostral final;
 - aprovação visual e capturas finais da Store;
@@ -146,16 +146,16 @@ Conclusão: não resta blocker técnico de preparação produtiva. A baseline es
 
 ### Decisões de produto resolvidas
 
-- público formal: adolescentes e adultos;
-- crianças não são público-alvo formal;
-- não existem age gate, consentimento parental ou contas infantis fictícias;
+- público formal: `ADULTS_ONLY_18_PLUS`;
+- cadastro e contas existentes confirmam 18+ e a versão jurídica vigente, sem coleta de nascimento;
+- crianças e adolescentes não são público-alvo; não existem consentimento parental ou contas infantis fictícias;
 - retenção técnica permanece preliminar e sem exclusão destrutiva automática.
 
 ### Revisão humana/jurídica obrigatória
 
 - identidade/endereço do controlador se exigidos legalmente;
 - bases e prazos finais de retenção;
-- acesso infantil incidental e adolescentes;
+- eficácia jurídica da autodeclaração 18+ e redação final correspondente;
 - subprocessadores/transferências internacionais reais;
 - aprovação final de Termos, Privacidade e Data Safety;
 - purge ou retenção jurídica dos blobs históricos.

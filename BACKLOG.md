@@ -11,7 +11,7 @@
 - coletar FIELD/CrUX ou RUM de custo zero quando houver tráfego suficiente; não confundir LAB atual com percentil real;
 - confirmar por teste de rede móvel que o retry de conclusão não duplica XP, moedas, estatísticas, missões ou conquistas;
 - revisar o Wordle extra “Átila”, publicado/projetado mas inelegível por dica vazia; recomendação atual: despublicar, salvo decisão editorial documentada em contrário;
-- concluir revisão jurídica/licenças, tratamento de adolescentes/acesso infantil incidental e Data Safety;
+- concluir aprovação jurídica humana/licenças e Data Safety; o contrato técnico `ADULTS_ONLY_18_PLUS` já está implementado;
 - reconciliar Asset Registry, hospedagem de assets e CSP;
 - preencher o orçamento operacional versionado com quotas e consumo reais dos painéis;
 - aprovar juridicamente os prazos da matriz preliminar e só então desenhar limpeza por domínio/tabela;
@@ -23,7 +23,7 @@
 - decidir juridicamente se os blobs históricos dos textos integrais exigem purge dedicado e se ACF/Almeida poderão ter uso futuro;
 - preservar os aliases aprovados `frame-covenant`→`frame-aliance` e `frame-royal`→`frame-real`; emojis seguem somente como fallback;
 - revisar todos os assets `ACTIVE` e hosts do Asset Registry contra o manifesto de proveniência e a CSP.
-- confirmar eventual identidade/endereço necessários e aprovar bases/prazos legais, tratamento de adolescentes/acesso infantil incidental e mecanismo de transferência internacional; controlador, contato, público-alvo, ausência de exclusão por inatividade e matriz técnica preliminar já estão definidos;
+- confirmar eventual identidade/endereço necessários e aprovar bases/prazos e mecanismo de transferência internacional; controlador, contato, público 18+, ausência de exclusão por inatividade e matriz técnica já estão definidos;
 - revisar/publicar Termos, Privacidade e nota editorial v2 com versionamento e novo consentimento quando necessário;
 - decidir domínio HTTPS e package ID; somente depois preparar assinatura, Digital Asset Links e AAB em faixa interna;
 - preencher Data Safety e classificação indicativa com revisão humana usando as matrizes técnicas, nunca por cópia automática.

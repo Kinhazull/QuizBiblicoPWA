@@ -3,6 +3,7 @@ import type { AppEnv } from "../../_lib/auth";
 import { enforceRateLimit, requestFingerprint } from "../../_lib/abuse";
 import { effectivePermissions } from "../../_lib/permissions";
 import { MFA_CHALLENGE_TTL_MS } from "../../_lib/mfa";
+import { hasCurrentLegalAcceptance } from "../../_lib/legal";
 
 export const onRequestPost = async ({ request, env }: { request: Request; env: AppEnv }) => {
   const body: any = await request.json().catch(() => null);
@@ -63,5 +64,5 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: A
   ]);
   const secureCookie = String(env.LOCAL_LAN_DEVELOPMENT) !== "true";
   const mfaEnrollmentRequired = ["owner", "admin"].includes(user.role);
-  return json({ ok: true, mustChangePassword: Boolean(user.must_change_password), mfaEnrollmentRequired, user: { id: user.id, displayName: user.display_name, role: user.role, mustChangePassword: Boolean(user.must_change_password), permissions, mfaStatus: "disabled", mfaVerified: false, mfaEnrollmentRequired } }, 200, { "set-cookie": sessionCookie(token, persistent, secureCookie) });
+  return json({ ok: true, mustChangePassword: Boolean(user.must_change_password), mfaEnrollmentRequired, user: { id: user.id, displayName: user.display_name, role: user.role, mustChangePassword: Boolean(user.must_change_password), permissions, mfaStatus: "disabled", mfaVerified: false, mfaEnrollmentRequired, legalAcceptanceRequired: !(await hasCurrentLegalAcceptance(env.DB, String(user.id))) } }, 200, { "set-cookie": sessionCookie(token, persistent, secureCookie) });
 };

@@ -23,7 +23,7 @@ test("fonte corrente distingue baseline remota comprovada dos gates finais da RC
   assert.match(roadmap, /27\.7\.2 \| Preparação de Produção \| DONE/);
   assert.match(roadmap, /27\.7\.3 \| RC Final \| DONE/);
   assert.match(roadmap, /27\.7\.4 \| Validação Manual do Usuário \| DONE/);
-  assert.match(roadmap, /27\.7\.5 \| Correções e Revalidação \| IN PROGRESS/);
+  assert.match(roadmap, /27\.7\.5 \| Correções e Revalidação \| TECHNICALLY FINAL/);
   assert.match(roadmap, /27\.7\.5E \| Android\/PWA\/Web Vitals \| DONE/);
   assert.match(snapshot, /0039: `0039_PRODUCTION_VERIFIED`/);
   assert.match(snapshot, /PAGES_RUNTIME_SMOKE_VERIFIED/);
