@@ -4,7 +4,7 @@ import { readFile } from "node:fs/promises";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("fonte corrente distingue baseline remota comprovada da estabilização em andamento", async () => {
+test("fonte corrente distingue baseline remota comprovada dos gates finais da RC", async () => {
   const [state, roadmap, snapshot, issues, deprecations] = await Promise.all([
     read("docs/AI/CURRENT_STATE.md"),
     read("docs/PRODUCT/ROADMAP.md"),
@@ -22,12 +22,14 @@ test("fonte corrente distingue baseline remota comprovada da estabilização em 
   assert.match(roadmap, /27\.7\.0 \| Release Readiness Final \| DONE/);
   assert.match(roadmap, /27\.7\.2 \| Preparação de Produção \| DONE/);
   assert.match(roadmap, /27\.7\.3 \| RC Final \| DONE/);
-  assert.match(roadmap, /27\.7\.4 \| Validação Manual do Usuário \| IN PROGRESS/);
+  assert.match(roadmap, /27\.7\.4 \| Validação Manual do Usuário \| DONE/);
   assert.match(roadmap, /27\.7\.5 \| Correções e Revalidação \| IN PROGRESS/);
+  assert.match(roadmap, /27\.7\.5E \| Android\/PWA\/Web Vitals \| DONE/);
   assert.match(snapshot, /0039: `0039_PRODUCTION_VERIFIED`/);
   assert.match(snapshot, /PAGES_RUNTIME_SMOKE_VERIFIED/);
   assert.match(snapshot, /WORKER_CURRENT_VERIFIED/);
-  assert.match(snapshot, /RC_STABILIZATION_IN_PROGRESS/);
+  assert.match(snapshot, /RC_TECHNICAL_AND_PWA_VALIDATION_COMPLETE/);
+  assert.match(snapshot, /32796200354/);
   assert.doesNotMatch(snapshot, /REMOTE_UNKNOWN \/ TO_VERIFY_IN_27_7_2/);
   assert.doesNotMatch(snapshot, /Analytics 2\.0 não faz parte|ainda não foi iniciado/);
   assert.doesNotMatch(issues, /runtime ainda usa a identidade anterior/);

@@ -8,15 +8,15 @@ Antes da publicação, tornam-se bloqueadores se falharem: migration/ledger fina
 
 ## HIGH
 
-- Promover e revalidar o SHA final que contém a rodada de estabilização mobile, Wordle, registro idempotente e importador guiado.
+- SHA `98b0dc45...` promovido e revalidado; Quality, promoção e PWA Release estão verdes no mesmo SHA.
 - Expansão Wordle v2 confirmada em produção: 1.201 publicados/projetados, exatamente 1.200 soluções válidas no Catálogo Elegível. Gate encerrado; o item extra inelegível está registrado como higiene editorial.
-- Validar instalação, background/foreground, atualização e teclado virtual em Android físico.
+- Android físico, instalação, background/foreground, atualização, teclado e recuperação de rede: encerrados por evidência humana do proprietário na 27.7.5E.
 - Confirmar domínio público HTTPS e Digital Asset Links antes de qualquer TWA.
 
 ## MEDIUM
 
 - Repetir conclusão de partidas sob rede móvel instável e confirmar que retry não duplica recompensas.
-- Obter baseline de Web Vitals no ambiente público real; desenvolvimento local não representa CDN/Workers.
+- Reavaliar FIELD/CrUX quando houver tráfego suficiente; baseline LAB móvel no domínio público ficou boa e não revelou blocker.
 - Executar revisão jurídica de privacidade, menores e licença dos textos bíblicos.
 
 ## LOW

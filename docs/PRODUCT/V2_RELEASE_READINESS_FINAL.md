@@ -3,7 +3,7 @@
 **Auditoria:** Sprint 27.7.0 — 13/08/2026  
 **Decisão 27.7.0:** `READY_FOR_27_7_1`  
 **Fechamento 27.7.3 (registro histórico):** RC final `DONE`; naquele momento, `27.7.4` era a próxima etapa.
-**Situação posterior em 22/08/2026:** estabilização 27.7.5A, escala 27.7.5B e Content Gate 27.7.5C concluídos; os sete jogos estão `CONTENT_READY_V2`. A validação manual 27.7.5D é o próximo gate. Estado corrente: `docs/AI/CURRENT_STATE.md`, `docs/PRODUCT/ROADMAP.md`, `docs/PRODUCT/RELEASE_SNAPSHOT.md` e `docs/PRODUCT/CONTENT_GATE_V2.md`.
+**Situação posterior em 24/08/2026:** 27.7.5A–27.7.5E concluídas; sete jogos `CONTENT_READY_V2`, validação manual humana aprovada e gate `PWA_ANDROID_READY`. 27.7.5F é o próximo gate. Estado corrente: `docs/AI/CURRENT_STATE.md`, `docs/PRODUCT/ROADMAP.md`, `docs/PRODUCT/RELEASE_SNAPSHOT.md`, `docs/PRODUCT/CONTENT_GATE_V2.md` e `docs/PRODUCT/PWA_ANDROID_WEB_VITALS_27_7_5E.md`.
 **Escopo inicial:** auditoria local. As evidências operacionais da 27.7.2 abaixo atualizam explicitamente os estados remotos comprovados.
 
 Este é o registro central da sequência 27.7. Documentos históricos continuam úteis, mas afirmações remotas ou anteriores às Waves de arte não substituem esta baseline.
@@ -53,9 +53,9 @@ Este é o registro central da sequência 27.7. Documentos históricos continuam 
 | AB. Analytics | READY | — |
 | AC. Central Administrativa | READY_WITH_MANUAL_CHECK | Contratos estão cobertos; smoke por papel/permissão deve integrar a RC final. |
 | AD. Os 7 jogos | READY | — |
-| AE. PWA | READY_WITH_MANUAL_CHECK | Gate production-like existe; instalação Android física ainda pendente. |
-| AF. Offline/update | READY_WITH_MANUAL_CHECK | Automatizado localmente; validar ciclo real no dispositivo/domínio candidato. |
-| AG. Responsividade | READY_WITH_MANUAL_CHECK | Contratos/Playwright anteriores existem; checklist final em aparelhos permanece obrigatório. |
+| AE. PWA | READY | Gate production-like e remoto aprovados; instalação Android física confirmada pelo proprietário. |
+| AF. Offline/update | READY | Gate A→B automatizado e ciclo Android humano aprovados. |
+| AG. Responsividade | READY | Contratos, Playwright e validação Android humana sem blocker/major. |
 | AH. Acessibilidade | READY_WITH_MANUAL_CHECK | Contratos automatizados existem; navegação/leitor de tela manual final permanece necessária. |
 | AI. Brand v2 | READY | — |
 | AJ. Game Art | READY | — |
@@ -65,7 +65,7 @@ Este é o registro central da sequência 27.7. Documentos históricos continuam 
 | AN. Conteúdo | READY_WITH_MANUAL_CHECK | 984 perguntas e 380 itens oficiais foram reconfirmados remotamente; revisão bíblica humana amostral segue aberta para release pública. |
 | AO. Licenças/proveniência | BLOCKED_EXTERNAL | Proveniência interna está registrada; purge histórico e revisão de citações/licenças exigem decisão jurídica humana. |
 | AP. Jurídico/LGPD | BLOCKED_EXTERNAL | Documentos são tecnicamente coerentes, mas Termos/Privacidade, bases/prazos e transferências precisam de aprovação jurídica humana. |
-| AQ. Google Play/TWA | BLOCKED_EXTERNAL | Domínio, package ID, assinatura, DAL, AAB, Play Console e Android físico ainda não existem/foram validados. Não bloqueia a RC web. |
+| AQ. Google Play/TWA | BLOCKED_EXTERNAL | Domínio, package ID, assinatura, DAL, AAB, target SDK, Play Console e Store Listing ainda não existem/foram validados. Android/PWA da RC web já foi aprovado. |
 | AR. CI | READY | Quality `31760852798` e browser-smoke aprovados no SHA `7921a05`. |
 | AS. Release Truth | READY | Quality `31760852798`, artifact `9204548500`, promoção `31764192229`, deployment Pages `8be3bbd5` e smoke estão encadeados e comprovados; `1e78facd` foi somente registro Git skipped. |
 | AT. Rollback | READY | Backup pré-0039, reconciliador, compare, checksum e runbooks possuem evidência; restore isolado histórico foi aprovado. |
@@ -101,7 +101,7 @@ Conclusão: não resta blocker técnico de preparação produtiva. A baseline es
 
 ### Blockers externos
 
-- Android físico, domínio HTTPS canônico e medições públicas de Web Vitals;
+- domínio HTTPS canônico para TWA, FIELD/CrUX após tráfego real e requisitos externos do Play;
 - Google Play Console, target SDK vigente, Data Safety, Target Audience, classificação, DAL e AAB;
 - correção upstream do `image-size` transitivo.
 

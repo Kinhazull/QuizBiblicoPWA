@@ -22,3 +22,18 @@ test("catálogo do editor usa permissão de Eventos e consultas parametrizadas",
   assert.match(service, /\.bind\(organizationId, \.\.\.batch\)/);
   assert.doesNotMatch(service, /IN \(\$\{batch\.join/);
 });
+
+test("editor de Eventos mantém contraste e distribuição responsiva nos seletores", async () => {
+  const [source, styles] = await Promise.all([
+    readFile(new URL("app/admin/eventos/EventWizard.tsx", root), "utf8"),
+    readFile(new URL("app/events.css", root), "utf8"),
+  ]);
+  assert.match(source, /className="available"/);
+  assert.match(source, /className="reserved"/);
+  assert.match(source, /aria-label="Resumo do catálogo"/);
+  assert.match(styles, /\.event-game-picker label\.selected\{[^}]*background:#123d35[^}]*color:#f7fffb/);
+  assert.match(styles, /\.event-catalog-summary \.available\{[^}]*color:#bdf3d4/);
+  assert.match(styles, /\.event-catalog-summary \.reserved\{[^}]*color:#ffe39a/);
+  assert.match(styles, /\.event-content-list\{grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
+  assert.match(styles, /@media\(max-width:760px\)\{\.event-content-list\{grid-template-columns:1fr/);
+});

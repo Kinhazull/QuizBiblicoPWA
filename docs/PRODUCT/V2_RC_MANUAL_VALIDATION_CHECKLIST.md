@@ -3,7 +3,7 @@
 **Uso:** Sprints 27.7.4–27.7.5 — Validação Manual e Revalidação
 **Resultado por item:** `PASS`, `FAIL`, `OBSERVAÇÃO` ou `NÃO TESTADO`
 
-**Estado em 22/08/2026:** primeira auditoria executada e correções implementadas na `main`. Este checklist deve ser repetido no SHA/artifact promovido; a execução anterior não substitui a revalidação final.
+**Estado em 24/08/2026:** revalidação final informada pelo proprietário como aprovada, sem `BLOCKER` ou `MAJOR`. A seção Android/PWA foi consolidada em `docs/PRODUCT/PWA_ANDROID_WEB_VITALS_27_7_5E.md`; a autoria da evidência humana permanece explícita.
 
 Registre cada problema em “Problemas encontrados” com a tela, ação realizada, resultado esperado e resultado observado. Não inclua senhas, códigos MFA, recovery codes ou outros dados sensíveis.
 
@@ -97,15 +97,15 @@ Confirmar em cada um instruções claras, feedback de acerto/erro, resultado fin
 
 ## N. PWA e instalação
 
-- [ ] Instalar pelo navegador compatível.
-- [ ] Abrir pelo ícone instalado e conferir nome/ícone/tema.
-- [ ] Fechar e reabrir sem perda inesperada de sessão ou navegação.
+- [x] Instalar pelo navegador compatível — confirmado pelo proprietário.
+- [x] Abrir pelo ícone instalado e conferir nome/ícone/tema — confirmado pelo proprietário.
+- [x] Fechar e reabrir sem perda inesperada de sessão ou navegação — confirmado pelo proprietário.
 
 ## O. Offline
 
-- [ ] Com a aplicação já carregada, ativar modo offline.
-- [ ] Confirmar fallback público amigável e ausência de dados privados em cache.
-- [ ] Voltar online e confirmar recuperação normal.
+- [x] Com a aplicação já carregada, ativar modo offline — confirmado pelo proprietário.
+- [x] Confirmar fallback público amigável e ausência de dados privados em cache — evidência humana + contrato automatizado.
+- [x] Voltar online e confirmar recuperação normal — confirmado pelo proprietário.
 
 ## P. Administração
 

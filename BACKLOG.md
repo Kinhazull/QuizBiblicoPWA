@@ -7,10 +7,9 @@
 - remover em limpeza posterior os assets antigos de app icon/favicon classificados como `REPLACED_NOT_REFERENCED`, após confirmar ausência de consumidores externos;
 - avaliar `splash-brand.png` somente quando existir uma splash nativa/Store real, sem criar atraso artificial;
 
-- executar `docs/ANDROID_PHYSICAL_CHECKLIST.md`, medir Web Vitals no domínio candidato e só depois avaliar Google Play;
-- promover o SHA final da estabilização e repetir a auditoria participante/administrativa no artifact realmente publicado;
+- registrar modelo/Android/navegador na próxima matriz de aparelhos; a validação funcional Android/PWA atual já foi aprovada;
+- coletar FIELD/CrUX ou RUM de custo zero quando houver tráfego suficiente; não confundir LAB atual com percentil real;
 - confirmar por teste de rede móvel que o retry de conclusão não duplica XP, moedas, estatísticas, missões ou conquistas;
-- executar 27.7.5D: validação manual final sobre o artifact promovido;
 - revisar o Wordle extra “Átila”, publicado/projetado mas inelegível por dica vazia; recomendação atual: despublicar, salvo decisão editorial documentada em contrário;
 - concluir revisão jurídica/licenças, tratamento de adolescentes/acesso infantil incidental e Data Safety;
 - reconciliar Asset Registry, hospedagem de assets e CSP;

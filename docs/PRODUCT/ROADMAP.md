@@ -48,7 +48,7 @@ Concluídas: piloto, fundação modular, Core Platform, plataforma universal e c
 | 27.2 | Operação e recuperação | DONE |
 | 27.3 | Retirada do legado e superfícies administrativas incompletas | DONE localmente |
 | 27.3.1 | Sustentabilidade Operacional e Custo Zero | DONE localmente |
-| 27.4 | Qualidade Real, CI e PWA | DONE localmente; Android físico pendente |
+| 27.4 | Qualidade Real, CI e PWA | DONE |
 | 27.5 | Conteúdo, Arte e Licenças | DONE localmente; revisão/licenças e arte final pendentes |
 | 27.6 | Jurídico e Google Play | DONE localmente; decisões humanas bloqueiam release |
 | Pós-27.6 | Isolamento de textos bíblicos completos | DONE localmente; árvore ativa limpa, purge histórico sob decisão jurídica |
@@ -56,24 +56,24 @@ Concluídas: piloto, fundação modular, Core Platform, plataforma universal e c
 | 27.7.1 | Fechamento dos blockers internos | DONE localmente |
 | 27.7.2 | Preparação de Produção | DONE |
 | 27.7.3 | RC Final | DONE |
-| 27.7.4 | Validação Manual do Usuário | IN PROGRESS — primeira auditoria executada |
-| 27.7.5 | Correções e Revalidação | IN PROGRESS — promovida; Wordle revalidado, checklist amplo ainda aberto |
+| 27.7.4 | Validação Manual do Usuário | DONE — revalidação humana sem blocker/major |
+| 27.7.5 | Correções e Revalidação | IN PROGRESS — gates A–E concluídos; F é o próximo |
 | 27.7.5B.1–B.2 | Matriz, inventário e lacunas | DONE |
 | 27.7.5B.3–B.6 | Content Scale-Up v2 | DONE — revisão e aprovação humanas registradas |
 | 27.7.5B.7 | Importação, publicação e reconciliação | DONE — 5.485 conteúdos publicados |
 | 27.7.5B.8 | Auditoria final e freeze editorial | DONE — baseline produtiva congelada |
 | 27.7.5C | Content Gate v2 e antirrepetição | DONE — sete jogos `CONTENT_READY_V2` |
 | 27.7.5C.1 | Memória: combinação dinâmica dos 300 pares | DONE localmente — histórico compatível, Free/Daily/Event cobertos |
-| 27.7.5C.2 | Próximo gate de conteúdo definido pelo plano da release | NEXT |
-| 27.7.5D | Validação manual final | PLANNED |
-| 27.7.5E | Android/PWA/Web Vitals | PLANNED |
-| 27.7.5F | Jurídico/editorial final/Data Safety | PLANNED |
+| 27.7.5C.2 | Encerramento do gate de conteúdo | DONE |
+| 27.7.5D | Validação manual final | DONE — evidência humana, zero blocker/major informado |
+| 27.7.5E | Android/PWA/Web Vitals | DONE — `PWA_ANDROID_READY`, FIELD ainda sem amostra |
+| 27.7.5F | Jurídico/editorial final/Data Safety | NEXT |
 | 27.7.6 | Go/No-Go Formal | PLANNED |
 | 27.7.7 | Release v2.0.0 | PLANNED |
 
 Progressão e Economia administrativas não terão painéis duplicados: Analytics 2.0 permanece o destino agregado. Uma Sprint 27.3.2 só será necessária se requisitos operacionais especializados, distintos dos Analytics atuais, forem aprovados.
 
-- validar PWA e Android físico, atualização e ciclo de vida;
+- manter PWA/Android e atualização sob regressão; gate atual encerrado na 27.7.5E;
 - concluir revisão de citações/licenças remanescentes, purge histórico, tratamento de adolescentes/acesso infantil incidental e Data Safety;
 - alinhar Asset Registry, hospedagem e CSP;
 - reduzir superfícies legadas com telemetria e rollback;
@@ -107,7 +107,7 @@ Progressão e Economia administrativas não terão painéis duplicados: Analytic
 
 ### 4. Gates humanos e externos
 
-- concluir Android físico, instalação PWA, teclado, background/foreground, offline/update e Web Vitals públicos;
+- Android físico, instalação PWA, teclado, background/foreground, offline/update e baseline LAB pública: concluídos; reavaliar FIELD/CrUX quando houver tráfego suficiente;
 - aprovar Termos, Privacidade, público adolescente/acesso incidental, retenção, transferências e Data Safety;
 - confirmar licença/proveniência de assets e citações usadas publicamente;
 - decidir domínio/package ID/assinatura/DAL/AAB apenas para a trilha Google Play, separada do lançamento web.

@@ -1,16 +1,16 @@
 # Snapshot de release e Go/No-Go
 
 **Status:** CURRENT  
-**Data:** 22/08/2026
+**Data:** 24/08/2026
 **Baseline:** `2.0.0-rc.1`
 
 ## Identidade formal da RC
 
-- estado: `RC_STABILIZATION / FEATURE_FREEZE`;
+- estado: `RC_TECHNICAL_AND_PWA_VALIDATION_COMPLETE / FEATURE_FREEZE`;
 - `REPOSITORY_RC_SHA`: commit que contém este snapshot, resolvido por `git rev-parse HEAD`; o relatório operacional da 27.7.3 registra o SHA literal e os checks anexados a ele;
-- `REPOSITORY_CURRENT_SHA`: `09950e31e322940120a6efe4e4b12b07de77d293`;
-- `RUNTIME_VERIFIED_SHA`: `7921a0576dacba02720a3fcac871b6afe4412ed0` (último encadeamento formal registrado; não representa automaticamente os commits posteriores);
-- Pages deployment: `8be3bbd5-95a7-4251-8ef3-dd4e6d079bef`;
+- `REPOSITORY_CURRENT_SHA`: `98b0dc45cbbeb36d9a979c5558d531744878c83c`;
+- `RUNTIME_VERIFIED_SHA`: `98b0dc45cbbeb36d9a979c5558d531744878c83c`;
+- Quality `32794998206`, promoção controlada `32795432790` e PWA Release `32796200354`: `SUCCESS` no mesmo SHA;
 - Worker: versão 61, deployment `1c6ed2c6-0371-4972-a19c-df2e7ea4a2d2`;
 - D1: `33fc35a0-46cf-4756-b6be-89b07371256c`, ledger 40/`0039_administrative_mfa.sql`;
 - gates locais da RC: `test:all` 285/285, Playwright 100 aprovados/4 ignorados/0 falhas, PWA production-like 10/10, typecheck, lint, build 66/66 páginas, Pages Functions e Worker dry-run aprovados;
@@ -24,11 +24,11 @@ Até o Go/No-Go são permitidos apenas blocker/regressão, segurança, acessibil
 ## Release Truth
 
 - branch observada: `main`;
-- HEAD/`origin/main` operacional verificado: `7921a0576dacba02720a3fcac871b6afe4412ed0`;
+- HEAD/`origin/main` operacional verificado: `98b0dc45cbbeb36d9a979c5558d531744878c83c`;
 - migration local mais recente: `0039_administrative_mfa.sql`;
 - 0039: `0039_PRODUCTION_VERIFIED`; ledger remoto 40, zero pendências;
 - MFA: `MFA_PRODUCTION_OPERATIONAL_VERIFIED`; enrollment pela UI, TOTP, sessão `mfa_verified`, novo login, replay rejection e recovery generation comprovados sem exposição de credenciais;
-- Pages: `PAGES_RELEASE_TRUTH_VERIFIED` e `PAGES_RUNTIME_SMOKE_VERIFIED`; Quality `31760852798` → artifact `9204548500` → promoção oficial `31764192229` → deployment `8be3bbd5-95a7-4251-8ef3-dd4e6d079bef` no SHA `7921a0576dacba02720a3fcac871b6afe4412ed0` → smoke das quatro rotas aprovado. O registro Git `1e78facd-f710-4ea8-b2ce-3e97bb739661` foi comprovado como `skipped`, sem artifact ou alteração de produção;
+- Pages: `PAGES_RELEASE_TRUTH_VERIFIED / PAGES_RUNTIME_SMOKE_VERIFIED`; o encadeamento histórico `31760852798` → `31764192229` → deployment `8be3bbd5-95a7-4251-8ef3-dd4e6d079bef` comprovou a Release Truth inicial. A baseline corrente avançou para Quality `32794998206` → promoção controlada `32795432790` no SHA `98b0dc45cbbeb36d9a979c5558d531744878c83c`; o PWA Release `32796200354` aprovou esse mesmo SHA;
 - Worker: `WORKER_CURRENT_VERIFIED`, versão 61 (`bb9269ae-2065-4611-ad71-940c12403a11`), deployment `1c6ed2c6-0371-4972-a19c-df2e7ea4a2d2`, D1 esperado e cron `* * * * *`; execução recorrente sem heartbeat permanece desconhecida.
 
 As afirmações remotas acima possuem evidência operacional da 27.7.2; não implicam aprovação jurídica ou release pública.
@@ -41,7 +41,7 @@ As afirmações remotas acima possuem evidência operacional da 27.7.2; não imp
 - Core Platform, economia, coleções, Perfil 2.0 e Ranking Universal;
 - PWA production-like, Quality gates e promoção manual vinculada ao SHA/artifact;
 - Asset Pack v2 Waves 1–5 integradas; Wave 6 `POST_RELEASE`; Wave 7 `DONE` como auditoria/preparação de Store;
-- 27.7.0–27.7.3 `DONE`; estabilização técnica 27.7.5A, escala 27.7.5B e Content Gate 27.7.5C `DONE`; 27.7.5D (validação manual final) é o próximo gate.
+- 27.7.0–27.7.5E `DONE`; Android físico foi aprovado pelo proprietário e o gate PWA/Web Vitals encerrou como `PWA_ANDROID_READY`. 27.7.5F é o próximo gate.
 - Wordle 2.0 e importação universal guiada fazem parte da baseline candidata atual.
 
 ## Conteúdo e proveniência
@@ -93,7 +93,7 @@ As afirmações remotas acima possuem evidência operacional da 27.7.2; não imp
 
 ## Decisão atual
 
-**`RC_STABILIZATION_IN_PROGRESS`: as correções foram promovidas, Wordle foi revalidado e o conteúdo escalado foi aplicado.** Os próximos gates são a revalidação manual ampla, freeze editorial, jurídico/Android e Go/No-Go. Ainda não existe autorização de release pública.
+**`RC_TECHNICAL_AND_PWA_VALIDATION_COMPLETE`: correções, conteúdo, validação manual, Android físico e PWA foram aprovados.** O próximo gate é jurídico/editorial/Data Safety, seguido do Go/No-Go. Ainda não existe autorização de release pública.
 
 ## Classificação dos riscos residuais
 
@@ -106,6 +106,6 @@ As afirmações remotas acima possuem evidência operacional da 27.7.2; não imp
 | masters Store em `public/` | `RISK_ACCEPTED / POST_RELEASE` |
 | advisories transitivos aceitos | `RISK_ACCEPTED`, com exceções restritas e revisão periódica |
 | APIs históricas mantidas | `RISK_ACCEPTED / POST_RELEASE`, retirada somente com telemetria e rollback |
-| Web Vitals públicos | `MANUAL_CHECK` antes do Go público; não bloqueia RC privada |
+| Web Vitals | baseline LAB móvel boa; FIELD/CrUX sem amostra suficiente, reavaliar pós-tráfego |
 
 Revisão editorial/bíblica e jurídica não bloqueiam RC privada/controlada, mas são `HUMAN_APPROVAL_REQUIRED` antes de `PUBLIC_RELEASE_GO`. Google Play é `BLOCKED_EXTERNAL / FUTURE_PUBLICATION_PREPARATION` e não integra o caminho crítico da RC web.
