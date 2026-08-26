@@ -84,6 +84,28 @@ test("Statistics and Progress criteria unlock knowledge, frequency and level ach
   assert.deepEqual(unlocked(ctx), ["active_7_days", "first_steps", "level_5", "perfect_first", "word_apprentice"]);
 });
 
+test("the persisted v1 catalog identity remains compatible with the runtime consumer", async t => {
+  const ctx = setup(t);
+  ctx.raw.prepare(`INSERT INTO platform_achievement_definitions(
+    id,code,version,name,description,icon,scope_type,game_id,criterion_json,secret,status,created_at,updated_at)
+    VALUES('achievement:level_5:v1','level_5',1,'Bem-vindo à Jornada','Alcance o nível 5 na plataforma.',NULL,
+      'global',NULL,?,0,'active',0,0)`).run(JSON.stringify({
+    metric: "level",
+    operator: "greater_than_or_equal",
+    target: 5,
+    category: "progression",
+    rarity: "silver",
+    visibility: "visible",
+    reward: { xp: 150, coins: 30 },
+  }));
+
+  const result = await withFrozenTime(NOW, () => publishOfficialCoreEvent(ctx.env, event("persisted-v1"), NOW));
+
+  assert.equal(result.status, "completed");
+  assert.equal(ctx.raw.prepare("SELECT name FROM platform_achievement_definitions WHERE code='level_5' AND version=1").get().name, "Bem-vindo à Jornada");
+  assert.equal(ctx.raw.prepare("SELECT state FROM core_platform_event_processing WHERE event_id='game-finished-persisted-v1' AND consumer_id='platform-achievements'").get().state, "completed");
+});
+
 test("v1 and practice events are completed as ineligible without unlock or reward", async t => {
   const ctx = setup(t);
   await publishOfficialCoreEvent(ctx.env, event("legacy", { version: 1 }), NOW);

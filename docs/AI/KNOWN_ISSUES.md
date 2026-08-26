@@ -21,6 +21,7 @@
 | KI-018 | Revalidação da rodada mobile | Release gate | Correções de Home, Perfil, Loja, Inventário, catálogo, Daily, jogos e Administração estão na `main`; repetir smoke visual/funcional em 320–390 px no artifact promovido antes do Go/No-Go. |
 | KI-020 | Registro de resultado em rede móvel | Revalidação | Retry limitado, conclusão idempotente e correção do comprimento real no Wordle foram promovidos; vitória com palavra de 6 letras foi revalidada. Ainda validar perda real de resposta/rede e ausência de duplicação no Go/No-Go. |
 | KI-022 | Wordle extra fora do Catálogo Elegível | Baixa / higiene editorial | “Átila” está publicado/projetado, mas é corretamente excluído pelo Schema Registry por dica vazia. As 1.200 soluções aprovadas permanecem elegíveis; tratar depois sem bloquear a v2. |
+| KI-023 | Dead letter de Conquistas | Release blocker técnico | Um `GAME_FINISHED` do Wordle chegou a `dead_letter` no consumer `platform-achievements` porque o catálogo v1 em runtime renomeou `level_5` sem nova versão. A identidade v1 foi restaurada localmente; exige Quality/promoção do código corrigido e reprocessamento administrativo explícito do único recibo, sem repetir os consumidores já concluídos. |
 
 ## Encerrados
 

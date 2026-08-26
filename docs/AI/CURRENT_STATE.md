@@ -65,6 +65,7 @@ Waves 1–5 estão `DONE`: Brand/PWA, sete jogos, recompensas, colecionáveis e 
 - ajuste pós-27.6: controlador pessoa física e `suporteconteosfeitos@gmail.com` definidos; CPF/endereço residencial não serão publicados e eventual endereço físico segue sujeito à revisão jurídica.
 - 27.7.5F.1A–F.1D: direção jurídica do produto, política `ADULTS_ONLY_18_PLUS`, retenção conservadora e posição factual sobre fornecedores/processamento internacional foram definidas.
 - 27.7.5F.1E: cadastro exige declaração 18+ separada e não pré-marcada; contas existentes reaceitam uma única vez a versão jurídica `2026-08-24`; evidência versionada permanece em `legal_consents`; `/privacidade/conta` é pública. Não há coleta de data de nascimento.
+- 27.7.6A Reconciliação de Conquistas: `FIX_REQUIRED_BEFORE_GO`. A análise read-only encontrou um único `dead_letter` no consumer `platform-achievements`: a identidade persistida de `level_5` v1 (`Bem-vindo à Jornada`) divergiu do runtime após uma renomeação sem incremento de versão. A identidade canônica v1 foi restaurada apenas localmente; o candidato de release precisa incorporar, validar e promover a correção antes do reprocessamento administrativo explícito do recibo.
 - ajuste pós-27.6: v2 sem exclusão automática por inatividade; matriz técnica preliminar de retenção definida e possível processamento internacional reconhecido. Prazos/mecanismos jurídicos e qualquer automação permanecem pendentes.
 
 ## Capacidades atuais
