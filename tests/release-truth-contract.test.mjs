@@ -29,7 +29,7 @@ test("fonte corrente distingue baseline remota comprovada dos gates finais da RC
   assert.match(snapshot, /PAGES_RUNTIME_SMOKE_VERIFIED/);
   assert.match(snapshot, /WORKER_CURRENT_VERIFIED/);
   assert.match(snapshot, /RC_TECHNICAL_AND_PWA_VALIDATION_COMPLETE/);
-  assert.match(snapshot, /32796200354/);
+  assert.match(snapshot, /32925202745/);
   assert.doesNotMatch(snapshot, /REMOTE_UNKNOWN \/ TO_VERIFY_IN_27_7_2/);
   assert.doesNotMatch(snapshot, /Analytics 2\.0 não faz parte|ainda não foi iniciado/);
   assert.doesNotMatch(issues, /runtime ainda usa a identidade anterior/);

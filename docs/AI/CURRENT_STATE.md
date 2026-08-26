@@ -1,7 +1,7 @@
 # Estado operacional corrente
 
 **Status:** CURRENT — fonte oficial de verdade operacional
-**Atualização:** 24/08/2026
+**Atualização:** 26/08/2026
 **Roadmap canônico:** `docs/PRODUCT/ROADMAP.md`
 **Snapshot de release:** `docs/PRODUCT/RELEASE_SNAPSHOT.md`
 
@@ -15,7 +15,7 @@ Waves 1–5 estão `DONE`: Brand/PWA, sete jogos, recompensas, colecionáveis e 
 
 - versão local: `2.0.0-rc.1`;
 - branch integrada: `main`;
-- HEAD/runtime de referência: `98b0dc45cbbeb36d9a979c5558d531744878c83c`, com Quality `32794998206`, promoção controlada `32795432790` e PWA Release `32796200354` aprovados;
+- HEAD/runtime de referência: `302c8809ef557cac84063f0334598392d9322891`, com Quality `32925202745`, promoção controlada `32925638973` e PWA Release `32925760612` aprovados;
 - migration local mais recente: `0039_administrative_mfa.sql`;
 - a migration 0038 pertence ao schema moderno e não deve ser tratada como legado;
 - ledger remoto verificado: 40 migrations, última `0039_administrative_mfa.sql`, zero pendências;
@@ -65,7 +65,7 @@ Waves 1–5 estão `DONE`: Brand/PWA, sete jogos, recompensas, colecionáveis e 
 - ajuste pós-27.6: controlador pessoa física e `suporteconteosfeitos@gmail.com` definidos; CPF/endereço residencial não serão publicados e eventual endereço físico segue sujeito à revisão jurídica.
 - 27.7.5F.1A–F.1D: direção jurídica do produto, política `ADULTS_ONLY_18_PLUS`, retenção conservadora e posição factual sobre fornecedores/processamento internacional foram definidas.
 - 27.7.5F.1E: cadastro exige declaração 18+ separada e não pré-marcada; contas existentes reaceitam uma única vez a versão jurídica `2026-08-24`; evidência versionada permanece em `legal_consents`; `/privacidade/conta` é pública. Não há coleta de data de nascimento.
-- 27.7.6A Reconciliação de Conquistas: `FIX_REQUIRED_BEFORE_GO`. A análise read-only encontrou um único `dead_letter` no consumer `platform-achievements`: a identidade persistida de `level_5` v1 (`Bem-vindo à Jornada`) divergiu do runtime após uma renomeação sem incremento de versão. A identidade canônica v1 foi restaurada apenas localmente; o candidato de release precisa incorporar, validar e promover a correção antes do reprocessamento administrativo explícito do recibo.
+- 27.7.6A–A.2 Reconciliação de Conquistas: `RESOLVED / RECONCILED`. O runtime canônico no SHA `302c8809ef557cac84063f0334598392d9322891` foi promovido e o único receipt `platform-achievements` foi reprocessado por ferramenta operacional fail-closed. `active_7_days` foi concedida uma vez, com +150 XP e +30 moedas; a recompensa-base permaneceu única e o Event Engine terminou sem dead-letter relevante. O Go/No-Go formal ainda deve ser repetido.
 - ajuste pós-27.6: v2 sem exclusão automática por inatividade; matriz técnica preliminar de retenção definida e possível processamento internacional reconhecido. Prazos/mecanismos jurídicos e qualquer automação permanecem pendentes.
 
 ## Capacidades atuais

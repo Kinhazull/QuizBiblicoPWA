@@ -43,6 +43,7 @@
     "db:reset-pilot:apply": "node scripts/reset-pilot-production-data.mjs --apply",
     "db:reset-pilot:verify": "node scripts/reset-pilot-production-data.mjs --verify",
     "worker:awards:migrate": "wrangler d1 migrations apply quiz-biblico-db --remote --config workers/journey-awards/wrangler.jsonc",
+    "ops:reprocess-event-consumer": "node scripts/reprocess-event-consumer.mjs",
     "worker:awards:deploy": "wrangler deploy --config workers/journey-awards/wrangler.jsonc"
   },
   "dependencies": {
